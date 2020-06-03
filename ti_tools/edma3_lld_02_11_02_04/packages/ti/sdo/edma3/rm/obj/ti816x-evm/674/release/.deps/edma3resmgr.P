@@ -1,0 +1,9 @@
+obj/ti816x-evm/674/release/edma3resmgr.oe674: src/edma3resmgr.c
+obj/ti816x-evm/674/release/edma3resmgr.oe674: ../../../../ti/sdo/edma3/rm/src/edma3resmgr.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: ../../../../ti/sdo/edma3/rm/edma3_rm.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: /datalocal/ti_tools/cgt_dsp/cgt6x_7_3_1//include/stdint.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: ../../../../ti/sdo/edma3/rm/edma3_common.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: ../../../../ti/sdo/edma3/rm/src/edma3_rl_cc.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: ../../../../ti/sdo/edma3/rm/src/edma3_rl_tc.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: /datalocal/ti_tools/cgt_dsp/cgt6x_7_3_1//include/assert.h
+obj/ti816x-evm/674/release/edma3resmgr.oe674: /datalocal/ti_tools/cgt_dsp/cgt6x_7_3_1//include/linkage.h

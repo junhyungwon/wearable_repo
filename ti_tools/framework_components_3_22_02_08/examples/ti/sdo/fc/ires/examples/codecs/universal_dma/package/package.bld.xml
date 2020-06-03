@@ -1,0 +1,1060 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.ires.examples.codecs.universal_dma" version="1, 0, 0" producerId="undefined">
+    <units>
+        <module name="UNIVERSAL_DMA"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="universal_dma_ti.c"/>
+        <srcFile name="universal_dma_ti_ires.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/universal_dma_ti.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64P.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oe64P.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oe64P.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe64T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oe64T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oe64T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oe674.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oe674.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oe674.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oearp32.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oearp32.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oearp32.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o86U.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o86U.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o86U.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.ov5T.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.ov5T.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.ov5T.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.obnc.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.obnc.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.obnc.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.o470uC.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.o470uC.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.o470uC.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oem3.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oem3.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oem3.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_ecpy.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_ecpy/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_ecpy.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_ecpy/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/release/universal_dma_ti_TRACE_ecpy.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/release/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="lib/debug/universal_dma_ti_TRACE_ecpy.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.oea8f.dep" src="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti.oea8f.dep" src="universal_dma_ti.c"/>
+        <srcFile name="package/lib/lib/debug/universal_dma_ti_TRACE_ecpy/universal_dma_ti_ires.oea8f.dep" src="universal_dma_ti_ires.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_ires_examples_codecs_universal_dma.tar.dep" src="package/rel/ti_sdo_fc_ires_examples_codecs_universal_dma.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/universal_dma_ti"
+        pname="lib/debug/universal_dma_ti.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/universal_dma_ti"
+        pname="lib/release/universal_dma_ti.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/universal_dma_ti_TRACE"
+        pname="lib/release/universal_dma_ti_TRACE.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/universal_dma_ti_TRACE"
+        pname="lib/debug/universal_dma_ti_TRACE.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/universal_dma_ti_ecpy"
+        pname="lib/debug/universal_dma_ti_ecpy.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/universal_dma_ti_ecpy"
+        pname="lib/release/universal_dma_ti_ecpy.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/universal_dma_ti_TRACE_ecpy"
+        pname="lib/release/universal_dma_ti_TRACE_ecpy.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/universal_dma_ti_TRACE_ecpy"
+        pname="lib/debug/universal_dma_ti_TRACE_ecpy.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_ires_examples_codecs_universal_dma"
+        pname="ti_sdo_fc_ires_examples_codecs_universal_dma.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="universal_dma_ti.h"/>
+        <file name="lib"/>
+        <file name="package.bld"/>
+        <file name="universal_dma_ti_priv.h"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/universal_dma_ti.a64P"/>
+        <file name="package/package_ti.sdo.fc.ires.examples.codecs.universal_dma.c"/>
+        <file name="universal_dma_ti.c"/>
+        <file name="universal_dma_ti_ires.c"/>
+        <file name="lib/release/universal_dma_ti.a64P"/>
+        <file name="lib/release/universal_dma_ti_TRACE.a64P"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.a64P"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.a64P"/>
+        <file name="lib/release/universal_dma_ti_ecpy.a64P"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.a64P"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.a64P"/>
+        <file name="lib/debug/universal_dma_ti.a674"/>
+        <file name="lib/release/universal_dma_ti.a674"/>
+        <file name="lib/release/universal_dma_ti_TRACE.a674"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.a674"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.a674"/>
+        <file name="lib/release/universal_dma_ti_ecpy.a674"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.a674"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.a674"/>
+        <file name="lib/debug/universal_dma_ti.ae64P"/>
+        <file name="lib/release/universal_dma_ti.ae64P"/>
+        <file name="lib/release/universal_dma_ti_TRACE.ae64P"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.ae64P"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.ae64P"/>
+        <file name="lib/release/universal_dma_ti_ecpy.ae64P"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.ae64P"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.ae64P"/>
+        <file name="lib/debug/universal_dma_ti.ae64T"/>
+        <file name="lib/release/universal_dma_ti.ae64T"/>
+        <file name="lib/release/universal_dma_ti_TRACE.ae64T"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.ae64T"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.ae64T"/>
+        <file name="lib/release/universal_dma_ti_ecpy.ae64T"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.ae64T"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.ae64T"/>
+        <file name="lib/debug/universal_dma_ti.ae674"/>
+        <file name="lib/release/universal_dma_ti.ae674"/>
+        <file name="lib/release/universal_dma_ti_TRACE.ae674"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.ae674"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.ae674"/>
+        <file name="lib/release/universal_dma_ti_ecpy.ae674"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.ae674"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.ae674"/>
+        <file name="lib/debug/universal_dma_ti.aearp32"/>
+        <file name="lib/release/universal_dma_ti.aearp32"/>
+        <file name="lib/release/universal_dma_ti_TRACE.aearp32"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.aearp32"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.aearp32"/>
+        <file name="lib/release/universal_dma_ti_ecpy.aearp32"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.aearp32"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.aearp32"/>
+        <file name="lib/debug/universal_dma_ti.a86U"/>
+        <file name="lib/release/universal_dma_ti.a86U"/>
+        <file name="lib/release/universal_dma_ti_TRACE.a86U"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.a86U"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.a86U"/>
+        <file name="lib/release/universal_dma_ti_ecpy.a86U"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.a86U"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.a86U"/>
+        <file name="lib/debug/universal_dma_ti.av5T"/>
+        <file name="lib/release/universal_dma_ti.av5T"/>
+        <file name="lib/release/universal_dma_ti_TRACE.av5T"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.av5T"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.av5T"/>
+        <file name="lib/release/universal_dma_ti_ecpy.av5T"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.av5T"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.av5T"/>
+        <file name="lib/debug/universal_dma_ti.abnc"/>
+        <file name="lib/release/universal_dma_ti.abnc"/>
+        <file name="lib/release/universal_dma_ti_TRACE.abnc"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.abnc"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.abnc"/>
+        <file name="lib/release/universal_dma_ti_ecpy.abnc"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.abnc"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.abnc"/>
+        <file name="lib/debug/universal_dma_ti.a470uC"/>
+        <file name="lib/release/universal_dma_ti.a470uC"/>
+        <file name="lib/release/universal_dma_ti_TRACE.a470uC"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.a470uC"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.a470uC"/>
+        <file name="lib/release/universal_dma_ti_ecpy.a470uC"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.a470uC"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.a470uC"/>
+        <file name="lib/debug/universal_dma_ti.aem3"/>
+        <file name="lib/release/universal_dma_ti.aem3"/>
+        <file name="lib/release/universal_dma_ti_TRACE.aem3"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.aem3"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.aem3"/>
+        <file name="lib/release/universal_dma_ti_ecpy.aem3"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.aem3"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.aem3"/>
+        <file name="lib/debug/universal_dma_ti.aea8f"/>
+        <file name="lib/release/universal_dma_ti.aea8f"/>
+        <file name="lib/release/universal_dma_ti_TRACE.aea8f"/>
+        <file name="lib/debug/universal_dma_ti_TRACE.aea8f"/>
+        <file name="lib/debug/universal_dma_ti_ecpy.aea8f"/>
+        <file name="lib/release/universal_dma_ti_ecpy.aea8f"/>
+        <file name="lib/release/universal_dma_ti_TRACE_ecpy.aea8f"/>
+        <file name="lib/debug/universal_dma_ti_TRACE_ecpy.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

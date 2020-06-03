@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.utils.osal.noOS" version="1, 0, 0" producerId="undefined">
+    <units>
+        <module name="Settings"/>
+        <module name="GateNull"/>
+        <module name="GateMPNull"/>
+        <module name="SemThreadNull"/>
+        <module name="SemProcessNull"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="GateNull.c"/>
+        <srcFile name="GateMPNull.c"/>
+        <srcFile name="SemThreadNull.c"/>
+        <srcFile name="SemProcessNull.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/noOS.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o64P.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.o64P.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.o64P.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.o64P.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.o64P.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o64P.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.o64P.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.o64P.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.o64P.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.o64P.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o674.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.o674.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.o674.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.o674.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.o674.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o674.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.o674.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.o674.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.o674.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.o674.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oe64P.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.oe64P.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.oe64P.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.oe64P.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.oe64P.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oe64P.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.oe64P.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.oe64P.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.oe64P.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.oe64P.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oe64T.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.oe64T.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.oe64T.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.oe64T.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.oe64T.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oe64T.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.oe64T.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.oe64T.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.oe64T.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.oe64T.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oe674.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.oe674.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.oe674.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.oe674.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.oe674.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oe674.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.oe674.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.oe674.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.oe674.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.oe674.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oearp32.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.oearp32.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.oearp32.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.oearp32.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.oearp32.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oearp32.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.oearp32.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.oearp32.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.oearp32.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.oearp32.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o86U.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.o86U.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.o86U.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.o86U.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.o86U.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o86U.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.o86U.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.o86U.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.o86U.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.o86U.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.ov5T.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.ov5T.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.ov5T.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.ov5T.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.ov5T.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.ov5T.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.ov5T.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.ov5T.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.ov5T.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.ov5T.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.obnc.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.obnc.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.obnc.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.obnc.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.obnc.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.obnc.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.obnc.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.obnc.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.obnc.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.obnc.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o470uC.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.o470uC.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.o470uC.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.o470uC.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.o470uC.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.o470uC.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.o470uC.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.o470uC.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.o470uC.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.o470uC.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oem3.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.oem3.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.oem3.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.oem3.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.oem3.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oem3.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.oem3.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.oem3.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.oem3.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.oem3.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/debug/noOS.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oea8f.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateNull.oea8f.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/GateMPNull.oea8f.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemThreadNull.oea8f.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/debug/noOS/SemProcessNull.oea8f.dep" src="SemProcessNull.c"/>
+        <srcFile name="lib/release/noOS.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/noOS/package/package_ti.sdo.fc.utils.osal.noOS.oea8f.dep" src="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateNull.oea8f.dep" src="GateNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/GateMPNull.oea8f.dep" src="GateMPNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemThreadNull.oea8f.dep" src="SemThreadNull.c"/>
+        <srcFile name="package/lib/lib/release/noOS/SemProcessNull.oea8f.dep" src="SemProcessNull.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_utils_osal_noOS.tar.dep" src="package/rel/ti_sdo_fc_utils_osal_noOS.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/noOS"
+        pname="lib/debug/noOS.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/noOS"
+        pname="lib/release/noOS.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_utils_osal_noOS"
+        pname="ti_sdo_fc_utils_osal_noOS.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/noOS.a64P"/>
+        <file name="package/package_ti.sdo.fc.utils.osal.noOS.c"/>
+        <file name="GateNull.c"/>
+        <file name="GateMPNull.c"/>
+        <file name="SemThreadNull.c"/>
+        <file name="SemProcessNull.c"/>
+        <file name="lib/release/noOS.a64P"/>
+        <file name="lib/debug/noOS.a674"/>
+        <file name="lib/release/noOS.a674"/>
+        <file name="lib/debug/noOS.ae64P"/>
+        <file name="lib/release/noOS.ae64P"/>
+        <file name="lib/debug/noOS.ae64T"/>
+        <file name="lib/release/noOS.ae64T"/>
+        <file name="lib/debug/noOS.ae674"/>
+        <file name="lib/release/noOS.ae674"/>
+        <file name="lib/debug/noOS.aearp32"/>
+        <file name="lib/release/noOS.aearp32"/>
+        <file name="lib/debug/noOS.a86U"/>
+        <file name="lib/release/noOS.a86U"/>
+        <file name="lib/debug/noOS.av5T"/>
+        <file name="lib/release/noOS.av5T"/>
+        <file name="lib/debug/noOS.abnc"/>
+        <file name="lib/release/noOS.abnc"/>
+        <file name="lib/debug/noOS.a470uC"/>
+        <file name="lib/release/noOS.a470uC"/>
+        <file name="lib/debug/noOS.aem3"/>
+        <file name="lib/release/noOS.aem3"/>
+        <file name="lib/debug/noOS.aea8f"/>
+        <file name="lib/release/noOS.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

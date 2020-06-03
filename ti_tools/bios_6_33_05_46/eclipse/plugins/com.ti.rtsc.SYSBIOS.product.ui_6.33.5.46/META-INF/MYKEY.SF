@@ -1,0 +1,602 @@
+Signature-Version: 1.0
+Created-By: 1.5.0_22 (Sun Microsystems Inc.)
+SHA1-Digest-Manifest-Main-Attributes: xwxFvr73AKOCkJJ/xTJXI8dVHsI=
+SHA1-Digest-Manifest: YTKg4mNrCYh78v24sA7fIMZFrRg=
+
+Name: resources/c28/include/F28M35E52C1.cmd
+SHA1-Digest: CYNXj0QyZNq6lW7E2xkWXj9N0lI=
+
+Name: resources/msp430/eg22x/clkswi.c
+SHA1-Digest: WQyb6kCc0U1Lam2fuYRKFkCtxj4=
+
+Name: resources/c28/include/TMS320F2809.cmd
+SHA1-Digest: P2nWkChOkyrgyZ1zqTa2CKgc9Ac=
+
+Name: resources/generic/minimal/c28/app.cfg
+SHA1-Digest: v2Goo339KJpiMbpHVSsQ8OToImk=
+
+Name: resources/m3/include/F28M35E52B1.cmd
+SHA1-Digest: tnaYngz4scucrHXWDwK3wdjT4kg=
+
+Name: resources/msp430/task/task.c
+SHA1-Digest: iHVIJUtMGFN8ZKUZ+1Xcmpn7WOk=
+
+Name: resources/generic/clock/clock.c
+SHA1-Digest: 5yvixguCFSYQLOgfueN0BZA8s9c=
+
+Name: resources/c28/include/TMS320F2808.cmd
+SHA1-Digest: cPzgwfdnm7Rf21kApvAiIaRbR68=
+
+Name: resources/c28/include/F28M35M22C1.cmd
+SHA1-Digest: SoqCx9ntG2qc5jAK0Ni61fhN3SE=
+
+Name: resources/c28/include/TMS320C28343.cmd
+SHA1-Digest: 97Y76kfKQzfRYVypNKUqRPqSt+o=
+
+Name: resources/m3/include/F28M35E22B1.cmd
+SHA1-Digest: RxB0a/Rx/19TivA1/FdGP2G6y7Y=
+
+Name: resources/c28/include/TMS320F28030.cmd
+SHA1-Digest: fiokH0N3P4v7UDD04U6xE8s1hW0=
+
+Name: resources/generic/typical/app.cfg
+SHA1-Digest: R1uFlo+YLutn5MxOw5D2qokm3ZQ=
+
+Name: resources/generic/mutex/mutex.cfg
+SHA1-Digest: WCque4/lQuqfXJsebBeJ9a+G2vg=
+
+Name: resources/m3/include/F28M35H52B1.cmd
+SHA1-Digest: O/YNnxNhb1Y3xiSInK7GM45Wr6k=
+
+Name: resources/c28/include/F28M35E32B1.cmd
+SHA1-Digest: s0bwE6U/klBscqXeUDafyVrl/Io=
+
+Name: resources/generic/mutex/mutex.c
+SHA1-Digest: xrpc2xyQL2ZE+0Ldi18/X9sRH6g=
+
+Name: resources/c28/include/TMS320C2811.cmd
+SHA1-Digest: DavDqctciUASNliHpDNsE8MX7tk=
+
+Name: resources/m3/include/F28M35M52B1.cmd
+SHA1-Digest: Upygl/l9fRIRUjPsn5om75tcpa4=
+
+Name: resources/generic/static/static.cfg
+SHA1-Digest: +V6Dh724gXb0x7dqK9gY4m3vjZc=
+
+Name: resources/generic/memory/memory.c
+SHA1-Digest: MC0hHRaCORgyO297aFCIuzINz6o=
+
+Name: resources/c28/include/F28M35E50C1.cmd
+SHA1-Digest: QZwM9X2k4/cA5/oArb2npctkVJs=
+
+Name: resources/c28/include/TMS320F28065.cmd
+SHA1-Digest: lNnxpfW0M6J7fhp5KG34qdAzjWk=
+
+Name: resources/c28/include/TMS320F2810.cmd
+SHA1-Digest: XwQsT30w0bq9/zvXh/nKNxxuTYY=
+
+Name: resources/c28/include/F28M35M50C1.cmd
+SHA1-Digest: 6/RJn6T5CCns7Nj0kCSbwKxtQJY=
+
+Name: resources/c28/task/task.cfg
+SHA1-Digest: RDLXaeNudFjKVrgmr/UJeLyPia8=
+
+Name: resources/c28/include/TMS320F2802.cmd
+SHA1-Digest: uOH3D5exvV/kl0fX028mLWEGydI=
+
+Name: resources/c28/include/TMS320C28346.cmd
+SHA1-Digest: qj1/SIz8NgTnr8GF06HCyoT4Wq0=
+
+Name: resources/c28/include/F28M35M52C1.cmd
+SHA1-Digest: G5tW5Q05taIOHMqYSLNTTYQZR6w=
+
+Name: plugin.properties
+SHA1-Digest: endUfSJYcOoh7kSUcRVEv/D+LyA=
+
+Name: resources/generic/swi/swi.cfg
+SHA1-Digest: JoyI+Al29Xh9UjzE5uB/kbY80us=
+
+Name: resources/generic/swi/swi.c
+SHA1-Digest: YUItYxcATic02ek9V/DzJ4RF4PY=
+
+Name: resources/generic/static/msp430/static.cfg
+SHA1-Digest: 660aVCgXrUV4sltH2kCdjEQkrYw=
+
+Name: resources/m3/include/F28M35H50C1.cmd
+SHA1-Digest: bnBuZuUMeGonJX6So6dTwegubbY=
+
+Name: resources/m3/include/F28M35E32C1.cmd
+SHA1-Digest: h93zAjLnGZJFin4Eozd0MBsKMJo=
+
+Name: resources/c28/include/TMS320F28035.cmd
+SHA1-Digest: OTF2Ko1q90ITocU8YQmhrDnBT3A=
+
+Name: resources/c28/include/TMS320F28054F.cmd
+SHA1-Digest: Am+UidhBiPABYHtKfB1BOA+ZyeA=
+
+Name: resources/generic/error/msp430/error.cfg
+SHA1-Digest: MwBaVT45pP80YgX9cgO4PS+kbnw=
+
+Name: resources/c28/include/TMS320F2811.cmd
+SHA1-Digest: WIXHQnQgmP00saY9XH/x2zV0pZc=
+
+Name: toc_top.xml
+SHA1-Digest: 1uRwsp6EfJC9nxFG3dALlmm5QhY=
+
+Name: resources/c28/include/TMS320F280200.cmd
+SHA1-Digest: J7Rpqc998oSjyTA1IY6Nk67SfmI=
+
+Name: resources/c28/include/TMS320F28050.cmd
+SHA1-Digest: urMyuBCD06wbWF3wW2IyIdKeF0U=
+
+Name: resources/c28/include/F28M35M20C1.cmd
+SHA1-Digest: m2IKLj8MTflHcXkRe0+KaUo1mdE=
+
+Name: resources/c28/idle/idle.c
+SHA1-Digest: fFNqeYbLZZA+udFCiKk6fkGiYww=
+
+Name: resources/generic/small/c28/small.cfg
+SHA1-Digest: PKBWZOIJ1IBKWYaYDN90tfhKK4U=
+
+Name: resources/c28/include/F28M35H20B1.cmd
+SHA1-Digest: 1PVyOeY9qlHxhwFhkGRSjjKd5Jc=
+
+Name: resources/c28/include/TMS320F28033.cmd
+SHA1-Digest: sXloItC0Rfto6Y6YyuwrDFX5bFw=
+
+Name: resources/c28/include/TMS320C2802.cmd
+SHA1-Digest: a2/E95+AGSJs6dZ7xZUwut9x8p4=
+
+Name: resources/c28/include/F28M35H52B1.cmd
+SHA1-Digest: bNpmOfXEeUh5J7pIXIfqnWxfP0g=
+
+Name: resources/generic/stairstep/stairstep.cfg
+SHA1-Digest: gB1/2ErPGjvZGryLpXGHOvAZwQk=
+
+Name: resources/m3/include/F28M35H22B1.cmd
+SHA1-Digest: +CVadba9CCcxB2RkdpYyawkZt3Q=
+
+Name: resources/c28/include/F28M35E20C1.cmd
+SHA1-Digest: rV70fOaovbYvSxYxyhfCTEbFaF0=
+
+Name: resources/c28/include/TMS320C2801.cmd
+SHA1-Digest: uQ2Hva51Ee08u1JM2hq5vp7fl48=
+
+Name: resources/makefile.defs
+SHA1-Digest: gOcanvLkZ8VxhALgi2bhN9GFm00=
+
+Name: resources/c28/include/TMS320F28032.cmd
+SHA1-Digest: rsUX2bgugAmx/zxE1bxsQDh/99g=
+
+Name: resources/c28/include/TMS320F28044.cmd
+SHA1-Digest: y/XstZaz3oMTppAufZrkj28klhQ=
+
+Name: resources/c28/include/TMS320F28052F.cmd
+SHA1-Digest: iHM5BUiFoxFm3ZpJ3EZuFX366zw=
+
+Name: resources/m3/include/F28M35E50C1.cmd
+SHA1-Digest: rUbb5fZqs+g2uNUy+CWxoLNsAFU=
+
+Name: resources/c28/include/F28M35H50B1.cmd
+SHA1-Digest: cOFgIGyOrpL/mRMcyDsCYvz+kow=
+
+Name: resources/c28/include/F28M35H22B1.cmd
+SHA1-Digest: 3K1gkSelIOuEoEJ4RsmklN8Cebg=
+
+Name: resources/c28/include/TMS320C28345.cmd
+SHA1-Digest: Zbw4rcGynfNiBrMjBl6ZmHr7vBs=
+
+Name: resources/c28/include/TMS320F28063.cmd
+SHA1-Digest: rEA33l350rfd21/b6yLrAtwmPDY=
+
+Name: resources/m3/include/F28M35E32B1.cmd
+SHA1-Digest: NcGEpujBjEY2mzhQX2Qqp+ufvms=
+
+Name: resources/c28/include/F28M35M32B1.cmd
+SHA1-Digest: 9cmG/uIOELxA+lE90zxgsD5mDTo=
+
+Name: resources/c28/include/TMS320F2806.cmd
+SHA1-Digest: zzZt15lSsuUNmC/TmymuoUPAn9Y=
+
+Name: resources/generic/minimal/msp430/app.cfg
+SHA1-Digest: hsQs/G/8P7TJBM0eWpn2G6I26rU=
+
+Name: resources/c28/include/TMS320F28235.cmd
+SHA1-Digest: uxXwXUCAOMR6XMGPbXtl1MFbXYg=
+
+Name: resources/c28/include/TMS320F28335.cmd
+SHA1-Digest: ORtCmuw2bOxHHGP0I85mbIbpiew=
+
+Name: resources/generic/typical/main.c
+SHA1-Digest: nLu/vmQDA2JaPhFBDmfyr6Ji5CA=
+
+Name: resources/c28/include/TMS320F28027.cmd
+SHA1-Digest: GoYYwV1WGO0wSFbxLoJxusEwBXc=
+
+Name: resources/c28/include/TMS320F28015.cmd
+SHA1-Digest: AyBy/ssO+Qb8V44DmSLLYV+HmoA=
+
+Name: resources/msp430/swi/swi.cfg
+SHA1-Digest: NRjNOj3s5oeVo3S68bxd4glmxmU=
+
+Name: resources/c28/include/F28M35E32C1.cmd
+SHA1-Digest: clMqSMTJWzqDc89GrWfG0O12mAA=
+
+Name: resources/generic/stairstep/c28/stairstep.cfg
+SHA1-Digest: emflVbrSICA1NrretisN+yxQRu4=
+
+Name: resources/generic/typical/c28/app.cfg
+SHA1-Digest: 9aLV5pQBe7fUmR2d4UE3op37WBY=
+
+Name: resources/m3/include/F28M35M22C1.cmd
+SHA1-Digest: DOalQ5mC8YE66mYQ0xwH6ezqCpY=
+
+Name: resources/generic/hello/hello.cfg
+SHA1-Digest: eNQv2RPUvWgnDRHsitCmhzORhoY=
+
+Name: resources/generic/bigtime/c28/bigtime.cfg
+SHA1-Digest: 4HpCGY8XQoLhyJHUYnmzZydeE/k=
+
+Name: resources/c28/include/TMS320F28052M.cmd
+SHA1-Digest: hzDP76+djW0nWt1CtfGqkC0tAZs=
+
+Name: resources/m3/include/F28M35H32C1.cmd
+SHA1-Digest: 5HLjZdnD/qTc8cIBJgMS5wxcIW0=
+
+Name: resources/generic/typical/msp430/app.cfg
+SHA1-Digest: c8jGkWQI900W4V1I/nDEgs5JtKg=
+
+Name: resources/generic/log/msp430/log.cfg
+SHA1-Digest: OVFT7i4uLIffMjCYhub4Rth2RAU=
+
+Name: resources/c28/include/F28M35H22C1.cmd
+SHA1-Digest: Hd45oO6cmzFRGSh4YbUcX0PYAdc=
+
+Name: resources/m3/include/F28M35M20C1.cmd
+SHA1-Digest: g1TF8dd8Qwd59DI3Df93RpTBBp4=
+
+Name: resources/generic/minimal/main.c
+SHA1-Digest: yEk08+ACQinH2Pp7j0wf4Mnu95A=
+
+Name: resources/c28/task/task.c
+SHA1-Digest: oUdijQw4T+xOdNJsZ391HQejPTM=
+
+Name: resources/c28/include/F28M35H32C1.cmd
+SHA1-Digest: YBRQodQXtCP1arLQoxRsPDZf7+U=
+
+Name: resources/generic/bigtime/bigtime.cpp
+SHA1-Digest: HYw0K0Yl/Z2GWXKUAXOQ67cgXQM=
+
+Name: resources/c28/include/TMS320F28022.cmd
+SHA1-Digest: 9fdvPpQr5uOaneMimRX776lepM4=
+
+Name: resources/generic/mutex/c28/mutex.cfg
+SHA1-Digest: F9K124LA9rTcvhgqNVdrYwozV28=
+
+Name: resources/generic/stairstep/stairstep.c
+SHA1-Digest: 0MLK0qAZzYvp7DVTIujQTkqSLic=
+
+Name: resources/c28/include/TMS320F28062.cmd
+SHA1-Digest: BOfyYqAr2cyrGR4HKad40ZKqB4g=
+
+Name: resources/msp430/idle/idle.c
+SHA1-Digest: Kb9043w5rZcR3BNpj+0kF8PXvac=
+
+Name: resources/msp430/idle/idle.cfg
+SHA1-Digest: qT8CqC5llAudeCDISb4FbwwRFNM=
+
+Name: resources/generic/clock/msp430/clock.cfg
+SHA1-Digest: emVt/Ck3XHyvyeXTU3UxNtXk6/w=
+
+Name: resources/msp430/swi/swi.c
+SHA1-Digest: aTgG/cU0tYD7eu+9KZ6Ku39rTHg=
+
+Name: resources/generic/event/msp430/event.cfg
+SHA1-Digest: yBi1xbPZCcmKY6wqbEjpJyFNlQ4=
+
+Name: resources/m3/include/F28M35M50B1.cmd
+SHA1-Digest: 4gPeqpGO1178poAFDRTCe5MMtBs=
+
+Name: resources/m3/include/F28M35H50B1.cmd
+SHA1-Digest: KkNoTIj55Ud7GMoOGVj6Uak0mEc=
+
+Name: resources/generic/memory/memory.cfg
+SHA1-Digest: c8lh8Jkc2BH2ee4RR0XWkp4yBM8=
+
+Name: resources/generic/memory/msp430/memory.cfg
+SHA1-Digest: HxntMNoog6vYtphGzS4YAonjpAg=
+
+Name: resources/c28/include/TMS320F28234.cmd
+SHA1-Digest: yg8VVsWumzb82opBuTpcPts2EWA=
+
+Name: resources/generic/bigtime/bigtime.cfg
+SHA1-Digest: VRYUy+bH8NmJX8yv1g63WMTmL0c=
+
+Name: resources/c28/include/TMS320F28053.cmd
+SHA1-Digest: YCD3ee0mXXkQ3YM8ufHk6De3/vA=
+
+Name: plugin.xml
+SHA1-Digest: 5/MIKvE7mzu/JBKwFwtZwUUnh8w=
+
+Name: resources/generic/static/static.c
+SHA1-Digest: 7Sl/buiMFZGnWFJmTX18yaHl9vE=
+
+Name: resources/c28/include/TMS320C28341.cmd
+SHA1-Digest: g08a9W1wa6+ohYJvkLsTdRXNBQ0=
+
+Name: resources/c28/include/TMS320C28344.cmd
+SHA1-Digest: zPIKKM1uZHn6XmZappLpKHi3lzc=
+
+Name: resources/generic/bigtime/msp430/bigtime.cfg
+SHA1-Digest: gpw/qp6OitHLlFsQ3OHzOZiCc2g=
+
+Name: resources/generic/clock/c28/clock.cfg
+SHA1-Digest: 3Z/D9snc6rypJzSrj9KLeGxr6+o=
+
+Name: resources/c28/include/TMS320F28068.cmd
+SHA1-Digest: J1XRDBjmeyudlqcz8L5ACpjnq3w=
+
+Name: resources/c28/include/TMS320F28334.cmd
+SHA1-Digest: C4aqxd1E7Hwab4deXatmPv4vBGw=
+
+Name: resources/generic/static/c28/static.cfg
+SHA1-Digest: CbdYCo0DKr1LBNsrVBDquAGE/qA=
+
+Name: resources/c28/include/F28M35E20B1.cmd
+SHA1-Digest: szRy0gZUjr9xNxOGWhKuHC4o2MU=
+
+Name: resources/c28/include/TMS320F28054M.cmd
+SHA1-Digest: FRDCWllP82GJz3gyg3b3ngsXo9g=
+
+Name: resources/c28/include/TMS320F2812.cmd
+SHA1-Digest: XviqlJ4+zsfJJJEV5JLmWyFOwCM=
+
+Name: resources/generic/hello/hello.c
+SHA1-Digest: beHg2FJQp6PUgUZBp7L9smVrf7E=
+
+Name: resources/c28/include/TMS320F28069.cmd
+SHA1-Digest: wH9FJZGm+ft3xeMWLruSZIrevwI=
+
+Name: resources/c28/include/TMS320C28342.cmd
+SHA1-Digest: XuvqHV/Q1fK0um7g5q3CIZBaPhA=
+
+Name: resources/c28/include/F28M35E22B1.cmd
+SHA1-Digest: pXCNEr9aqiphyjMKLfGt61ahWCI=
+
+Name: resources/m3/include/F28M35H20B1.cmd
+SHA1-Digest: hU3V2/hFf7XlvV3KE4wYADPwF/w=
+
+Name: resources/c28/include/F28M35E52B1.cmd
+SHA1-Digest: ukt2tkUT0bHSalSWaIEJpLXvuDs=
+
+Name: resources/m3/include/F28M35E22C1.cmd
+SHA1-Digest: XcvhPuatd6ffQc/rqnMhXkEe0Ys=
+
+Name: resources/m3/include/F28M35M20B1.cmd
+SHA1-Digest: 1ccje0qIDJUG4BEwuDpAeZzt/Rk=
+
+Name: resources/generic/error/error.cfg
+SHA1-Digest: dwKMGDvzPJOgrxcdh5nUHV1J170=
+
+Name: resources/generic/log/c28/log.cfg
+SHA1-Digest: GWH/27RosSwwZih3019Br1BKgLE=
+
+Name: resources/m3/include/F28M35E50B1.cmd
+SHA1-Digest: 6obcOvq88Ps+DTGxR/EnU3OwSHg=
+
+Name: resources/c28/include/TMS320F28020.cmd
+SHA1-Digest: cQToZ9BKRIoaM7G20D9T9vlETKE=
+
+Name: resources/c28/include/TMS320R2810.cmd
+SHA1-Digest: I9vAfOj6KpUH4xW4tHv4976WZi8=
+
+Name: resources/c28/include/TMS320F28064.cmd
+SHA1-Digest: VehUqj4KL+JNXdk4v6vJ+gUDcC8=
+
+Name: resources/m3/include/F28M35E20B1.cmd
+SHA1-Digest: HN5A3Aw9S2Fr+w05GqU88VQpNDY=
+
+Name: resources/c28/include/TMS320C2810.cmd
+SHA1-Digest: AWqEc+tULKwZkSNZfB651VT2wbY=
+
+Name: resources/c28/include/F28M35M50B1.cmd
+SHA1-Digest: 4gbAQM1sUCgvrNjxa2GKabexpF8=
+
+Name: resources/c28/swi/swi.c
+SHA1-Digest: U7Pa9ja/g3ZGXfEUfcA4Z1QT2+o=
+
+Name: resources/c28/include/TMS320F28023.cmd
+SHA1-Digest: yMmQtr27nhiNmJD4SL7s8HD38EY=
+
+Name: resources/generic/mutex/msp430/mutex.cfg
+SHA1-Digest: GnPvvZ/V7U8cGa3GiN7gX1IB37Y=
+
+Name: resources/generic/minimal/app.cfg
+SHA1-Digest: 2z7MUeuRsB6MsmWZ2kFQUTrDxMI=
+
+Name: resources/c28/include/TMS320F28031.cmd
+SHA1-Digest: HlXMi9IwhR6yF4KQMA4gdjRN7Bw=
+
+Name: resources/m3/include/F28M35M22B1.cmd
+SHA1-Digest: QJCnbBivk+/k6y1vNRqhxpJOg4w=
+
+Name: eclipse_toc.xml
+SHA1-Digest: 0yGD5qelieTZ5JoCMF2cViPwfDQ=
+
+Name: resources/generic/hello/c28/hello.cfg
+SHA1-Digest: E0Igf25owsWMDWxO8z/F/iiRhNg=
+
+Name: resources/msp430/task/task.cfg
+SHA1-Digest: C4cRFJstpiZHNRv0QGOuG8a5eMk=
+
+Name: resources/generic/event/event.c
+SHA1-Digest: qeXbh4X231701px+PNtpbv7X+vQ=
+
+Name: resources/generic/event/c28/event.cfg
+SHA1-Digest: tB6RExiIlCkwTCoB2IzDaB7HWjo=
+
+Name: resources/generic/hello/msp430/hello.cfg
+SHA1-Digest: c96JFcwICcmv8lxsT3YRgy/A780=
+
+Name: resources/c28/include/TMS320F28054.cmd
+SHA1-Digest: rd0KeRTtY6UNSFgQlTwhrbjiVRw=
+
+Name: resources/c28/include/TMS320F28066.cmd
+SHA1-Digest: 0ADGtwhVj8saLmQYTb7HLd73ubI=
+
+Name: resources/generic/error/error.c
+SHA1-Digest: ALWGJIxCrcTqJbX4283nenWvbTo=
+
+Name: resources/c28/idle/idle.cfg
+SHA1-Digest: DsS07096t1SRasOMAoeEX7BugcI=
+
+Name: resources/m3/include/F28M35H22C1.cmd
+SHA1-Digest: zNNQ0HaU3PnY9E/q7tVJldStQH0=
+
+Name: resources/generic/stairstep/msp430/stairstep.cfg
+SHA1-Digest: jkeUtbeknxrJNSa1uZRpR5v96RU=
+
+Name: resources/msp430/eg22x/clkswi.cfg
+SHA1-Digest: rWkohigfefsi865g2vKZVX39A4k=
+
+Name: resources/c28/include/TMS320R2811.cmd
+SHA1-Digest: JeuccQ1lAEmHPMlg/iR2gXioEIc=
+
+Name: resources/c28/include/TMS320F28067.cmd
+SHA1-Digest: v7Smt41ZIoszO7y9ZR2B4EBSwvo=
+
+Name: resources/generic/swi/msp430/swi.cfg
+SHA1-Digest: okef4MzqHVqP5DeVJifE5V5/Qpo=
+
+Name: resources/generic/swi/c28/swi.cfg
+SHA1-Digest: V7XvSR0KtVRwpcWOqnhlVYyliEY=
+
+Name: resources/c28/include/F28M35M32C1.cmd
+SHA1-Digest: vdVJZ5G3jmSd0+1NZCEuwN0J2kQ=
+
+Name: resources/generic/event/event.cfg
+SHA1-Digest: 6lMsRi+5m1koLHEqQ26JOk9UHcc=
+
+Name: resources/c28/include/TMS320F28034.cmd
+SHA1-Digest: F13kWj6VPAuPOOo6zO9enqRjna4=
+
+Name: resources/c28/include/TMS320F2801.cmd
+SHA1-Digest: obvMMc+c4oZl3borbqlyHShqjHk=
+
+Name: resources/c28/include/F28M35H52C1.cmd
+SHA1-Digest: g6TnkKtXZ6O2hN3dLu/U9zIjwxA=
+
+Name: resources/c28/include/F28M35E22C1.cmd
+SHA1-Digest: 4XmqDZ7TGK4VGr+BCkcrrNemcnE=
+
+Name: resources/c28/include/F28M35M20B1.cmd
+SHA1-Digest: B624AocXbLdpBx95ROsuPudjoKQ=
+
+Name: resources/generic/log/log.cfg
+SHA1-Digest: PrxVCiz0tklLZMJkVfJQ+0HG7VU=
+
+Name: resources/generic/small/msp430/small.cfg
+SHA1-Digest: HK44gtguwOPpFekeUZLlOdo29J4=
+
+Name: resources/m3/include/F28M35H32B1.cmd
+SHA1-Digest: jp3C6Aobn+5Gf1X25yURGKI+VVw=
+
+Name: resources/c28/pie/pie.c
+SHA1-Digest: Cv+6rOPXVy8CUkN2RhG/b4tHb+0=
+
+Name: resources/c28/swi/swi.cfg
+SHA1-Digest: tDm5Vi+/A5SE58ONzZDdJ+oLvZk=
+
+Name: resources/c28/include/F28M35E50B1.cmd
+SHA1-Digest: oVkmeTMJZ6XVSA2It3rWht8kanQ=
+
+Name: resources/c28/include/TMS320F28052.cmd
+SHA1-Digest: cCXMfA18K25uZRE3iYOTip6mJsQ=
+
+Name: resources/generic/error/c28/error.cfg
+SHA1-Digest: sLKecgIVB/scEt5uggexdL5Y5aM=
+
+Name: resources/c28/include/TMS320C2812.cmd
+SHA1-Digest: 1hPJ6rPr6WZA4NWNes6WB4QlVTg=
+
+Name: resources/c28/include/TMS320F28016.cmd
+SHA1-Digest: hr8mM5kPlIGA1jtcinc6B2/ldCM=
+
+Name: resources/c28/include/F28M35M22B1.cmd
+SHA1-Digest: XI5NOpDRsSQpvhbv+WMhJq32bEg=
+
+Name: resources/generic/small/small.c
+SHA1-Digest: 49CDyOK+Gf0ZOaWis1DzAqJNV6w=
+
+Name: resources/c28/include/TMS320R2812.cmd
+SHA1-Digest: 6s8mD4/b4Bq4Jb8/n5mbzXxv3pA=
+
+Name: resources/c28/include/TMS320F28051.cmd
+SHA1-Digest: C8rRCUg9j/ry+u5eg7cXfS7KBn4=
+
+Name: resources/c28/include/F28M35M52B1.cmd
+SHA1-Digest: ojg/leAaBvKQCqIHkIlw5G0DWNk=
+
+Name: resources/m3/include/F28M35M32C1.cmd
+SHA1-Digest: b51SO+H6gHSioZc7ZyXrOnvOtcI=
+
+Name: resources/generic/small/small.cfg
+SHA1-Digest: y034ewlXY557O0PWcuPQiBn+G9M=
+
+Name: resources/c28/include/TMS320F28055.cmd
+SHA1-Digest: +qUadRMuyXyj56PapsNIFKFJvxE=
+
+Name: resources/c28/include/F28M35H32B1.cmd
+SHA1-Digest: /OBS96Jk9R4ckaRUGz5hahN/I9c=
+
+Name: resources/m3/include/F28M35E20C1.cmd
+SHA1-Digest: wkGuDcdJuq3tw7mKbHCWDSoxSmM=
+
+Name: resources/c28/include/F28M35H20C1.cmd
+SHA1-Digest: H//NXghZqm8Fb3U1JlH4EqdHGuw=
+
+Name: resources/c28/include/TMS320F28021.cmd
+SHA1-Digest: ySGisI2qqdqqdgRzDgwvmtfmHvA=
+
+Name: resources/c28/include/F28M35H50C1.cmd
+SHA1-Digest: 2Kb7c8+bOwldVIszuCZ+sffY9js=
+
+Name: resources/m3/include/F28M35H20C1.cmd
+SHA1-Digest: qtPe/v/2FKhX0Tuj3EsltV3dWGo=
+
+Name: resources/generic/clock/clock.cfg
+SHA1-Digest: e9UcOdYLAJ6HPspWFYdwSowt0VI=
+
+Name: resources/m3/include/F28M35M50C1.cmd
+SHA1-Digest: /FD3vAuoBl0ebBw/cNtf1Ya+hnc=
+
+Name: resources/m3/include/F28M35M52C1.cmd
+SHA1-Digest: wEmxz/soWuU1B/7Q0peab1RdwNc=
+
+Name: resources/c28/include/TMS320F28026.cmd
+SHA1-Digest: fKTCCDiSbaRXDxx4iOcdZ8TjCUs=
+
+Name: resources/m3/include/F28M35E52C1.cmd
+SHA1-Digest: wx5+2lLYAu31seoaLz9w3ubqk5U=
+
+Name: resources/m3/include/F28M35M32B1.cmd
+SHA1-Digest: ZoS2GVbdePcfdZ/JSiZv4efQM1s=
+
+Name: resources/c28/include/TMS320F28332.cmd
+SHA1-Digest: WGRYqFxV6q0N0CTXlDc81wQzCjI=
+
+Name: resources/generic/memory/c28/memory.cfg
+SHA1-Digest: jBaXCwHJlkUGQQUD1VpS3vBmbcI=
+
+Name: resources/m3/include/F28M35H52C1.cmd
+SHA1-Digest: 4moEmIsBpCTReI/EJ7Ii28DUWBg=
+
+Name: resources/c28/include/TMS320F28232.cmd
+SHA1-Digest: Kqv1bAMgpcCIZrsqSCbkifi20Sc=
+
+Name: resources/generic/log/log.c
+SHA1-Digest: QiPuUOIQapIWj9aPG5ooUjtUNl8=
+
+Name: resources/c28/pie/pie.cfg
+SHA1-Digest: lbOxze/rvistGO/nVrNPspiYmTs=
+

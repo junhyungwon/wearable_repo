@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.utils.loggers" version="1, 0, 0" producerId="osal_1_22_01_09">
+    <units>
+        <interface name="ILoggerMFP"/>
+        <module name="LoggerSysTID"/>
+        <module name="LoggerMFPNull"/>
+        <module name="LogMFP"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="LoggerSysTID.c"/>
+        <srcFile name="LoggerMFPNull.c"/>
+        <srcFile name="LogMFP.c"/>
+        <srcFile name="LoggerSysTID_posix.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/loggers.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.o64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.o64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.o64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.o64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.o64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.o64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.o64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.o64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.o64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.o64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.o64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.o64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.o64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.o64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.o64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.o64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.oe64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.oe64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.oe64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.oe64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.oe64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.oe64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.oe64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.oe64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.oe64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.oe64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.oe64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.oe64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.oe64P.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.oe64P.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.oe64P.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.oe64P.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.o674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.o674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.o674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.o674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.o674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.o674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.o674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.o674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.o674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.o674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.o674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.o674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.o674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.o674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.o674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.o674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.oe674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.oe674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.oe674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.oe674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.oe674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.oe674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.oe674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.oe674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.oe674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.oe674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.oe674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.oe674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.oe674.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.oe674.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.oe674.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.oe674.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.oe64T.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.oe64T.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.oe64T.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.oe64T.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.oe64T.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.oe64T.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.oe64T.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.oe64T.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.oe64T.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.oe64T.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.oe64T.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.oe64T.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.oe64T.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.oe64T.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.oe64T.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.oe64T.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.oem3.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.oem3.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.oem3.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.oem3.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.oem3.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.oem3.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.oem3.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.oem3.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.oem3.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.oem3.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.oem3.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.oem3.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.oem3.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.oem3.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.oem3.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.oem3.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.o86U.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID_posix.o86U.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.o86U.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.o86U.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.o86U.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID_posix.o86U.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.o86U.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.o86U.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.ov5T.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID_posix.ov5T.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.ov5T.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.ov5T.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.ov5T.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID_posix.ov5T.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.ov5T.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.ov5T.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.oqv7.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID_posix.oqv7.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.oqv7.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.oqv7.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.oqv7.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID_posix.oqv7.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.oqv7.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.oqv7.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.obnc.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID_posix.obnc.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.obnc.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.obnc.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.obnc.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID_posix.obnc.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.obnc.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.obnc.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.o470uC.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID_posix.o470uC.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.o470uC.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.o470uC.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.o470uC.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID_posix.o470uC.dep" src="LoggerSysTID_posix.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.o470uC.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.o470uC.dep" src="LogMFP.c"/>
+        <srcFile name="lib/debug/loggers.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/loggers/package/package_ti.sdo.utils.loggers.oea8f.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerSysTID.oea8f.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LoggerMFPNull.oea8f.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/debug/loggers/LogMFP.oea8f.dep" src="LogMFP.c"/>
+        <srcFile name="lib/release/loggers.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/loggers/package/package_ti.sdo.utils.loggers.oea8f.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerSysTID.oea8f.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LoggerMFPNull.oea8f.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/release/loggers/LogMFP.oea8f.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program/loggers.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/package/package_ti.sdo.utils.loggers.oea8f.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerSysTID.oea8f.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LoggerMFPNull.oea8f.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program/loggers/LogMFP.oea8f.dep" src="LogMFP.c"/>
+        <srcFile name="lib/whole_program_debug/loggers.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/package/package_ti.sdo.utils.loggers.oea8f.dep" src="package/package_ti.sdo.utils.loggers.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerSysTID.oea8f.dep" src="LoggerSysTID.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LoggerMFPNull.oea8f.dep" src="LoggerMFPNull.c"/>
+        <srcFile name="package/lib/lib/whole_program_debug/loggers/LogMFP.oea8f.dep" src="LogMFP.c"/>
+        <srcFile name="package/rel/ti_sdo_utils_loggers.tar.dep" src="package/rel/ti_sdo_utils_loggers.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.evmDM6446:testInst"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evmDM6446:testInst"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,1"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/cs/arm/arm-2007q3"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="qnx.targets.arm.Qnx"
+            version="qnx.targets.arm.Qnx{1,0,4.4,2"
+            platform="host.platforms.arm"
+            isa="v7A"
+            suffix="qv7"
+            rootDir="/apps/qnx/6.5.0/host/linux/x86/usr"
+            os="Qnx"
+            rts="qnx.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/vendors2005/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.a64P"
+        profile="whole_program"
+        target="ti.targets.C64P"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.a64P"
+        profile="whole_program_debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.ae64P"
+        profile="whole_program"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.ae64P"
+        profile="whole_program_debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.a674"
+        profile="whole_program"
+        target="ti.targets.C674"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.a674"
+        profile="whole_program_debug"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.ae674"
+        profile="whole_program"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.ae674"
+        profile="whole_program_debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.ae64T"
+        profile="whole_program"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.ae64T"
+        profile="whole_program_debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.aem3"
+        profile="whole_program"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.aem3"
+        profile="whole_program_debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.aqv7"
+        profile="release"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.aqv7"
+        profile="debug"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/loggers"
+        pname="lib/debug/loggers.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/loggers"
+        pname="lib/release/loggers.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/whole_program/loggers"
+        pname="lib/whole_program/loggers.aea8f"
+        profile="whole_program"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/whole_program_debug/loggers"
+        pname="lib/whole_program_debug/loggers.aea8f"
+        profile="whole_program_debug"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_utils_loggers"
+        pname="ti_sdo_utils_loggers.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="LoggerSysTID.h"/>
+        <file name="package.bld"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/loggers.a64P"/>
+        <file name="package/package_ti.sdo.utils.loggers.c"/>
+        <file name="LoggerSysTID.c"/>
+        <file name="LoggerMFPNull.c"/>
+        <file name="LogMFP.c"/>
+        <file name="lib/release/loggers.a64P"/>
+        <file name="lib/whole_program/loggers.a64P"/>
+        <file name="lib/whole_program_debug/loggers.a64P"/>
+        <file name="lib/debug/loggers.ae64P"/>
+        <file name="lib/release/loggers.ae64P"/>
+        <file name="lib/whole_program/loggers.ae64P"/>
+        <file name="lib/whole_program_debug/loggers.ae64P"/>
+        <file name="lib/debug/loggers.a674"/>
+        <file name="lib/release/loggers.a674"/>
+        <file name="lib/whole_program/loggers.a674"/>
+        <file name="lib/whole_program_debug/loggers.a674"/>
+        <file name="lib/debug/loggers.ae674"/>
+        <file name="lib/release/loggers.ae674"/>
+        <file name="lib/whole_program/loggers.ae674"/>
+        <file name="lib/whole_program_debug/loggers.ae674"/>
+        <file name="lib/debug/loggers.ae64T"/>
+        <file name="lib/release/loggers.ae64T"/>
+        <file name="lib/whole_program/loggers.ae64T"/>
+        <file name="lib/whole_program_debug/loggers.ae64T"/>
+        <file name="lib/debug/loggers.aem3"/>
+        <file name="lib/release/loggers.aem3"/>
+        <file name="lib/whole_program/loggers.aem3"/>
+        <file name="lib/whole_program_debug/loggers.aem3"/>
+        <file name="lib/debug/loggers.a86U"/>
+        <file name="LoggerSysTID_posix.c"/>
+        <file name="lib/release/loggers.a86U"/>
+        <file name="lib/debug/loggers.av5T"/>
+        <file name="lib/release/loggers.av5T"/>
+        <file name="lib/release/loggers.aqv7"/>
+        <file name="lib/debug/loggers.aqv7"/>
+        <file name="lib/debug/loggers.abnc"/>
+        <file name="lib/release/loggers.abnc"/>
+        <file name="lib/debug/loggers.a470uC"/>
+        <file name="lib/release/loggers.a470uC"/>
+        <file name="lib/debug/loggers.aea8f"/>
+        <file name="lib/release/loggers.aea8f"/>
+        <file name="lib/whole_program/loggers.aea8f"/>
+        <file name="lib/whole_program_debug/loggers.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

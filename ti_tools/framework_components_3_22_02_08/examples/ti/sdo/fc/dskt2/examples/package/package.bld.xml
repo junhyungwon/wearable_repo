@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.dskt2.examples" version="1, 0, 0" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.c"/>
+        <srcFile name="test0.c"/>
+        <srcFile name="iusescratch.c"/>
+        <srcFile name="usescratch_ti.c"/>
+        <srcFile name="usescratch_ti_vtab.c"/>
+        <srcFile name="dskt2_config.c"/>
+        <srcFile name="main_BIOS.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="dskt2.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.oe64T.dep" src="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.dep" src="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.oe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.oe674.dep" src="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.dep" src="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/test0.o64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/iusescratch.o64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/usescratch_ti.o64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/usescratch_ti_vtab.o64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/dskt2_config.o64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/test0.oe64P.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/iusescratch.oe64P.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/usescratch_ti.oe64P.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64P.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/dskt2_config.oe64P.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example.xe64T.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example/test0.oe64T.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example/iusescratch.oe64T.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example/usescratch_ti.oe64T.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe64T.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example/dskt2_config.oe64T.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example/main_BIOS.oe64T.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example.xe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example/test0.oe674.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example/iusescratch.oe674.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example/usescratch_ti.oe674.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe674.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example/dskt2_config.oe674.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example/main_BIOS.oe674.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example.xe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example/test0.oe674.dep" src="test0.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example/iusescratch.oe674.dep" src="iusescratch.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example/usescratch_ti.oe674.dep" src="usescratch_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example/usescratch_ti_vtab.oe674.dep" src="usescratch_ti_vtab.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example/dskt2_config.oe674.dep" src="dskt2_config.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example/main_BIOS.oe674.dep" src="main_BIOS.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_dskt2_examples.tar.dep" src="package/rel/ti_sdo_fc_dskt2_examples.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example.pe64T"
+        target="ti.targets.elf.C64T"
+        platform="ti.platforms.sdp4430:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example.pe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674"
+        cfgScript="dskt2.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example.pe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI814X:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674"
+        cfgScript="dskt2.cfg"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example.xe64T"
+        target="ti.targets.elf.C64T"
+        platform="ti.platforms.sdp4430:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example.xe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674"
+        cfgScript="dskt2.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example"
+        pname="bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example.xe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI814X:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674"
+        cfgScript="dskt2.cfg"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example.xe64T"
+        args=""
+        groupName="bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example.xe64T"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example.xe674"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example.xe674"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example.xe674"
+        args=""
+        groupName="bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example.xe674"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_dskt2_examples"
+        pname="ti_sdo_fc_dskt2_examples.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="test0.c"/>
+        <file name="iusescratch.c"/>
+        <file name="usescratch_ti.c"/>
+        <file name="usescratch_ti_vtab.c"/>
+        <file name="dskt2_config.c"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/dskt2Example_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430_test_dsp/debug/dskt2Example_pe64T.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/dskt2Example_pe674.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/dskt2Example_pe674.cfg"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

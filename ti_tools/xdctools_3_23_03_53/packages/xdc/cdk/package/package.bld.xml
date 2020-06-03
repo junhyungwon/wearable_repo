@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="xdc.cdk" version="1, 0, 0, 0" producerId="/db/ztree/library/trees/xdc/xdc-y25x/src/">
+    <units>
+    </units>
+    <sources>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="package/rel/xdc_cdk.zip.dep" src="package/rel/xdc_cdk.xdc.inc"/>
+    </makefiles>
+    <targets>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="xdc_cdk"
+        pname="xdc_cdk.zip"
+        label="default"
+        relScript="xdc/release/filters/what.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="langref/xdcSpec.pdf"/>
+        <file name="langref/xdcScript.pdf"/>
+        <file name="xdc.pdf"/>
+        <file name="xs.pdf"/>
+        <file name="xdcpkg.pdf"/>
+        <file name="spruex4.pdf"/>
+        <file name="spraa67.pdf"/>
+        <file name="spru007h.pdf"/>
+        <file name="bld_faq.html"/>
+        <file name="faq.html"/>
+        <file name="readme.html"/>
+        <file name="web_papers"/>
+        <file name="package/package.cfg.xdc.inc"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

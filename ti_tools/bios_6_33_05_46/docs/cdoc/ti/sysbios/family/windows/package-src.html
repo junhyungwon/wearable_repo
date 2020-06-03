@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><title>package ti.sysbios.family.windows</title>
+<meta name="googlebot" content="noindex,nofollow">
+<link rel="stylesheet" type="text/css" href="../../../../src.css"/>
+</head>
+<body>
+<pre class=src>
+     1    <span class="comment">/* 
+</span>     2    <span class="comment"> * Copyright (c) 2012, Texas Instruments Incorporated
+</span>     3    <span class="comment"> * All rights reserved.
+</span>     4    <span class="comment"> *
+</span>     5    <span class="comment"> * Redistribution and use in source and binary forms, with or without
+</span>     6    <span class="comment"> * modification, are permitted provided that the following conditions
+</span>     7    <span class="comment"> * are met:
+</span>     8    <span class="comment"> *
+</span>     9    <span class="comment"> * *  Redistributions of source code must retain the above copyright
+</span>    10    <span class="comment"> *    notice, this list of conditions and the following disclaimer.
+</span>    11    <span class="comment"> *
+</span>    12    <span class="comment"> * *  Redistributions in binary form must reproduce the above copyright
+</span>    13    <span class="comment"> *    notice, this list of conditions and the following disclaimer in the
+</span>    14    <span class="comment"> *    documentation and/or other materials provided with the distribution.
+</span>    15    <span class="comment"> *
+</span>    16    <span class="comment"> * *  Neither the name of Texas Instruments Incorporated nor the names of
+</span>    17    <span class="comment"> *    its contributors may be used to endorse or promote products derived
+</span>    18    <span class="comment"> *    from this software without specific prior written permission.
+</span>    19    <span class="comment"> *
+</span>    20    <span class="comment"> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+</span>    21    <span class="comment"> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+</span>    22    <span class="comment"> * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+</span>    23    <span class="comment"> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+</span>    24    <span class="comment"> * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+</span>    25    <span class="comment"> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+</span>    26    <span class="comment"> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+</span>    27    <span class="comment"> * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+</span>    28    <span class="comment"> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+</span>    29    <span class="comment"> * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+</span>    30    <span class="comment"> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</span>    31    <span class="comment"> * */</span>
+    32    <span class="comment">/*
+</span>    33    <span class="comment"> *  ======== package.xdc ========
+</span>    34    <span class="comment"> *
+</span>    35    <span class="comment"> */</span>
+    36    
+    37    <span class=key>requires</span> ti.sysbios.interfaces;
+    38    
+    39    
+    40    <span class="xdoc">/*! Native Windows SYS/BIOS Support
+</span>    41    <span class="xdoc"> *
+</span>    42    <span class="xdoc"> *  This package supports SYS/BIOS programs which are built and run as
+</span>    43    <span class="xdoc"> *  native Windows executables. This enables applications to be
+</span>    44    <span class="xdoc"> *  developed and tested on Windows using native Windows development
+</span>    45    <span class="xdoc"> *  tools.
+</span>    46    <span class="xdoc"> *
+</span>    47    <span class="xdoc"> *  Although this package emulates timers and interrupts, special
+</span>    48    <span class="xdoc"> *  consideration must be given to the fact that Windows is not a
+</span>    49    <span class="xdoc"> *  real-time operating system. A program will not run in real-time
+</span>    50    <span class="xdoc"> *  nor is it cycle equivalent to a target program.
+</span>    51    <span class="xdoc"> *
+</span>    52    <span class="xdoc"> *  On Windows, the timer period may be programmed to as little as
+</span>    53    <span class="xdoc"> *  one millisecond, however, the actual minimum timer period is
+</span>    54    <span class="xdoc"> *  10 - 15 milliseconds. This latency results from the Windows clock
+</span>    55    <span class="xdoc"> *  ticking at 10 milliseconds with additional delays in the Windows
+</span>    56    <span class="xdoc"> *  kernel. See below for more details on clock rate considerations.
+</span>    57    <span class="xdoc"> *
+</span>    58    <span class="xdoc"> *  This package emulates the C64+ DSP core with respect to hardware
+</span>    59    <span class="xdoc"> *  interrupt handling and dispatching. Currently, the only supported
+</span>    60    <span class="xdoc"> *  platform is host.platform.PC.
+</span>    61    <span class="xdoc"> *
+</span>    62    <span class="xdoc"> *  <b>@a(Motivation)</b>
+</span>    63    <span class="xdoc"> *  You can use SYS/BIOS emulation on Windows to model your application
+</span>    64    <span class="xdoc"> *  on a high-level operating system before moving to simulators or
+</span>    65    <span class="xdoc"> *  hardware.
+</span>    66    <span class="xdoc"> *
+</span>    67    <span class="xdoc"> *  When developing a software module, such as a codec, a common practice
+</span>    68    <span class="xdoc"> *  is to first write a "Golden C" version. Once the software is stable,
+</span>    69    <span class="xdoc"> *  the Golden C version is used as a baseline for porting to specific
+</span>    70    <span class="xdoc"> *  target platforms.
+</span>    71    <span class="xdoc"> *
+</span>    72    <span class="xdoc"> *  When developing the Golden C version, it is often preferable to do
+</span>    73    <span class="xdoc"> *  this work on a High-Level Operating System (HLOS), such as Windows.
+</span>    74    <span class="xdoc"> *  This allows the use of HLOS tool-chains for code profiling and
+</span>    75    <span class="xdoc"> *  validation. Providing a SYS/BIOS Emulation layer that runs on Windows
+</span>    76    <span class="xdoc"> *  makes this effort more efficient. It allows a native SYS/BIOS application
+</span>    77    <span class="xdoc"> *  to be built and run as a native Windows executable.
+</span>    78    <span class="xdoc"> *
+</span>    79    <span class="xdoc"> *  <b>@a(High_Level_Description)</b>
+</span>    80    <span class="xdoc"> *  SYS/BIOS emulation is supported by implementing the platform proxy
+</span>    81    <span class="xdoc"> *  modules for Windows. These modules are contained in the
+</span>    82    <span class="xdoc"> *  ti.sysbios.family.windows package. These proxy modules provide
+</span>    83    <span class="xdoc"> *  interfaces for the following:
+</span>    84    <span class="xdoc"> *
+</span>    85    <span class="xdoc"> *  <b>@p(blist)</b>
+</span>    86    <span class="xdoc"> *  - hardware interrupts
+</span>    87    <span class="xdoc"> *  - thread context switching
+</span>    88    <span class="xdoc"> *  - general purpose timers
+</span>    89    <span class="xdoc"> *  - system clock tick counter
+</span>    90    <span class="xdoc"> *  <b>@p</b>
+</span>    91    <span class="xdoc"> *
+</span>    92    <span class="xdoc"> *  To implement these interfaces, some hardware functionality is
+</span>    93    <span class="xdoc"> *  emulated in the proxy modules because Windows does not allow
+</span>    94    <span class="xdoc"> *  direct access to the hardware.
+</span>    95    <span class="xdoc"> *
+</span>    96    <span class="xdoc"> *  The following figure shows a block diagram of both a C64x+
+</span>    97    <span class="xdoc"> *  implementation and a Windows implementation.
+</span>    98    <span class="xdoc"> *
+</span>    99    <span class="xdoc"> *  <b>@p(html)</b>
+</span>   100    <span class="xdoc"> *  &lt;img src="./doc-files/emulation.gif" /&gt;
+</span>   101    <span class="xdoc"> *  <b>@p</b>
+</span>   102    <span class="xdoc"> *
+</span>   103    <span class="xdoc"> *  Application code written in C that makes only SYS/BIOS API calls
+</span>   104    <span class="xdoc"> *  should not require any changes. However, any code written for
+</span>   105    <span class="xdoc"> *  peripheral control will need to be replaced. Peripherals are
+</span>   106    <span class="xdoc"> *  not modeled in the emulation package.
+</span>   107    <span class="xdoc"> *
+</span>   108    <span class="xdoc"> *  The SYS/BIOS Kernel does not require any changes. Through XDC
+</span>   109    <span class="xdoc"> *  configuration, the kernel binds with the appropriate proxy
+</span>   110    <span class="xdoc"> *  modules relevant to the target platform (that is, for the
+</span>   111    <span class="xdoc"> *  Windows platform or a hardware platform).
+</span>   112    <span class="xdoc"> *
+</span>   113    <span class="xdoc"> *  When building the application, XDC configuration is used to
+</span>   114    <span class="xdoc"> *  select the run-time platform. Through configuration options,
+</span>   115    <span class="xdoc"> *  the application can bind with the appropriate modules that are
+</span>   116    <span class="xdoc"> *  hardware or emulation specific. This will most likely pertain
+</span>   117    <span class="xdoc"> *  to peripheral and/or test framework code.
+</span>   118    <span class="xdoc"> *
+</span>   119    <span class="xdoc"> *  On hardware platforms, peripheral devices typically raise interrupts
+</span>   120    <span class="xdoc"> *  to the CPU which then invokes the Hwi dispatcher to service it.
+</span>   121    <span class="xdoc"> *  To emulate this behavior, the SYS/BIOS emulation package simulates an
+</span>   122    <span class="xdoc"> *  interrupt that preempts the currently running task and invokes the
+</span>   123    <span class="xdoc"> *  Hwi dispatcher. This is done asynchronously with respect to SYS/BIOS
+</span>   124    <span class="xdoc"> *  tasks.
+</span>   125    <span class="xdoc"> *
+</span>   126    <span class="xdoc"> *  The Windows emulation package faithfully emulates the SYS/BIOS scheduler
+</span>   127    <span class="xdoc"> *  behavior. That is to say that task scheduling will occur in the same
+</span>   128    <span class="xdoc"> *  order on Windows as on hardware. However, interrupts are not real-time.
+</span>   129    <span class="xdoc"> *  Therefore, interrupt preemption will differ, and this may invoke the
+</span>   130    <span class="xdoc"> *  scheduler in a different sequence than observed when running on hardware.
+</span>   131    <span class="xdoc"> *
+</span>   132    <span class="xdoc"> *  Windows Win32 API functions may be invoked alongside SYS/BIOS API
+</span>   133    <span class="xdoc"> *  functions. This should be kept to a minimum in order to encourage
+</span>   134    <span class="xdoc"> *  code encapsulation and to maximize code reuse between hardware and
+</span>   135    <span class="xdoc"> *  the Windows platform.
+</span>   136    <span class="xdoc"> *
+</span>   137    <span class="xdoc"> *  <b>@a(Clock_Rate_Considerations)</b>
+</span>   138    <span class="xdoc"> *  When running on Windows Emulation, the SYS/BIOS clock is configured to
+</span>   139    <span class="xdoc"> *  tick much slower. This is necessary because the Windows clock ticks
+</span>   140    <span class="xdoc"> *  slower than a typical hardware clock. Thus, any code that depends on
+</span>   141    <span class="xdoc"> *  clock ticks, instead of wall clock duration, should take this into
+</span>   142    <span class="xdoc"> *  account during the configuration phase.
+</span>   143    <span class="xdoc"> *
+</span>   144    <span class="xdoc"> *  For example, if {<b>@link</b> ti.sysbios.knl.Task#sleep Task_sleep(500)} is
+</span>   145    <span class="xdoc"> *  called on a hardware platform where the SYS/BIOS clock ticks every one
+</span>   146    <span class="xdoc"> *  millisecond (resulting in a 500 millisecond sleep period), then the
+</span>   147    <span class="xdoc"> *  sleep period should be normalized for the Windows platform using the
+</span>   148    <span class="xdoc"> *  following formula:
+</span>   149    <span class="xdoc"> *
+</span>   150    <span class="xdoc"> *  <b>@p(code)</b>
+</span>   151    <span class="xdoc"> *  windowsTicks = 500 / (Clock_tickPeriod / 1000)
+</span>   152    <span class="xdoc"> *  <b>@p</b>
+</span>   153    <span class="xdoc"> *
+</span>   154    <span class="xdoc"> *  where the `Clock_tickPeriod` is the SYS/BIOS clock tick period on Windows.
+</span>   155    <span class="xdoc"> */</span>
+   156    <span class=key>package</span> ti.sysbios.family.windows [2,0,0,0] {
+   157        <span class=key>module</span> Hwi;
+   158        <span class=key>module</span> IntrinsicsSupport;
+   159        <span class=key>module</span> Settings;
+   160        <span class=key>module</span> TaskSupport;
+   161        <span class=key>module</span> Timer;
+   162        <span class=key>module</span> TimestampProvider;
+   163    }
+   164    <span class="comment">/*
+</span>   165    <span class="comment"> *  @(#) ti.sysbios.family.windows; 2, 0, 0, 0,553; 5-18-2012 06:05:20; /db/vtree/library/trees/avala/avala-q37x/src/ xlibrary
+</span>   166    <span class="comment">
+</span>   167    <span class="comment"> */</span>
+   168    
+</pre>
+</body></html>

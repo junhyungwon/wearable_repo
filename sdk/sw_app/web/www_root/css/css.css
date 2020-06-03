@@ -1,0 +1,29 @@
+/* CSS Document */
+
+img { 
+border : 0; 
+} 
+
+a:link {                    
+    text-decoration:none;        
+}                            
+a:visited {                            
+    text-decoration:none;                  
+}                                      
+a:hover {                              
+    color:#ff6600;                         
+    text-decoration:none;        
+}
+
+.bold  { font-weight: bold }
+.italic{ font-style: italic }
+
+#text1{ font: italic bold 20px serif; }
+
+.tbl_1 {
+    width:400px;
+    background-color:#213238;
+    table-layout:fixed;
+}
+
+

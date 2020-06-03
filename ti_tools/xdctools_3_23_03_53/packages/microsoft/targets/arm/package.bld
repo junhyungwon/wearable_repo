@@ -1,0 +1,17 @@
+/*
+ *  Copyright 2012 by Texas Instruments Incorporated.
+ *
+ */
+
+/*
+ *  ======== package.bld ========
+ *
+ */
+
+Pkg.otherFiles = ["std.h", "linkcmd.xdt"];
+Pkg.otherSrcs = Pkg.otherFiles;
+/*
+ *  @(#) microsoft.targets.arm; 1, 0, 0, 0,286; 4-27-2012 17:07:30; /db/ztree/library/trees/xdctargets/xdctargets-f21x/src/ xlibrary
+
+ */
+

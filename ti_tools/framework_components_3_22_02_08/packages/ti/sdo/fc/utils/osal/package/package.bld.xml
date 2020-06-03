@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.utils.osal" version="1, 0, 0" producerId="undefined">
+    <units>
+        <module name="OsalFactory"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="OsalFactory.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/sem.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.o64P.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.o64P.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.o64P.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.o64P.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.o674.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.o674.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.o674.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.o674.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.oe64P.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.oe64P.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.oe64P.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.oe64P.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.oe64T.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.oe64T.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.oe64T.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.oe64T.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.oe674.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.oe674.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.oe674.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.oe674.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.oearp32.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.oearp32.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.oearp32.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.oearp32.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.o86U.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.o86U.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.o86U.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.o86U.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.ov5T.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.ov5T.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.ov5T.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.ov5T.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.obnc.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.obnc.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.obnc.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.obnc.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.o470uC.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.o470uC.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.o470uC.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.o470uC.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.oem3.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.oem3.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.oem3.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.oem3.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/debug/sem.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sem/package/package_ti.sdo.fc.utils.osal.oea8f.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/debug/sem/OsalFactory.oea8f.dep" src="OsalFactory.c"/>
+        <srcFile name="lib/release/sem.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sem/package/package_ti.sdo.fc.utils.osal.oea8f.dep" src="package/package_ti.sdo.fc.utils.osal.c"/>
+        <srcFile name="package/lib/lib/release/sem/OsalFactory.oea8f.dep" src="OsalFactory.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_utils_osal.tar.dep" src="package/rel/ti_sdo_fc_utils_osal.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/sem"
+        pname="lib/debug/sem.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/sem"
+        pname="lib/release/sem.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_utils_osal"
+        pname="ti_sdo_fc_utils_osal.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/sem.a64P"/>
+        <file name="package/package_ti.sdo.fc.utils.osal.c"/>
+        <file name="OsalFactory.c"/>
+        <file name="lib/release/sem.a64P"/>
+        <file name="lib/debug/sem.a674"/>
+        <file name="lib/release/sem.a674"/>
+        <file name="lib/debug/sem.ae64P"/>
+        <file name="lib/release/sem.ae64P"/>
+        <file name="lib/debug/sem.ae64T"/>
+        <file name="lib/release/sem.ae64T"/>
+        <file name="lib/debug/sem.ae674"/>
+        <file name="lib/release/sem.ae674"/>
+        <file name="lib/debug/sem.aearp32"/>
+        <file name="lib/release/sem.aearp32"/>
+        <file name="lib/debug/sem.a86U"/>
+        <file name="lib/release/sem.a86U"/>
+        <file name="lib/debug/sem.av5T"/>
+        <file name="lib/release/sem.av5T"/>
+        <file name="lib/debug/sem.abnc"/>
+        <file name="lib/release/sem.abnc"/>
+        <file name="lib/debug/sem.a470uC"/>
+        <file name="lib/release/sem.a470uC"/>
+        <file name="lib/debug/sem.aem3"/>
+        <file name="lib/release/sem.aem3"/>
+        <file name="lib/debug/sem.aea8f"/>
+        <file name="lib/release/sem.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

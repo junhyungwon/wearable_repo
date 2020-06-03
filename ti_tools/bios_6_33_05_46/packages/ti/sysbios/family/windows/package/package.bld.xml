@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sysbios.family.windows" version="2, 0, 0, 0" producerId="undefined">
+    <units>
+        <module name="Hwi"/>
+        <module name="IntrinsicsSupport"/>
+        <module name="Settings"/>
+        <module name="TaskSupport"/>
+        <module name="Timer"/>
+        <module name="TimestampProvider"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sysbios.family.windows.c"/>
+        <srcFile name="Hwi.c"/>
+        <srcFile name="IntrinsicsSupport.c"/>
+        <srcFile name="TaskSupport.c"/>
+        <srcFile name="Timer.c"/>
+        <srcFile name="TimestampProvider.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/ti.sysbios.family.windows.a86W.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/ti.sysbios.family.windows/package/package_ti.sysbios.family.windows.o86W.dep" src="package/package_ti.sysbios.family.windows.c"/>
+        <srcFile name="package/lib/lib/debug/ti.sysbios.family.windows/Hwi.o86W.dep" src="Hwi.c"/>
+        <srcFile name="package/lib/lib/debug/ti.sysbios.family.windows/IntrinsicsSupport.o86W.dep" src="IntrinsicsSupport.c"/>
+        <srcFile name="package/lib/lib/debug/ti.sysbios.family.windows/TaskSupport.o86W.dep" src="TaskSupport.c"/>
+        <srcFile name="package/lib/lib/debug/ti.sysbios.family.windows/Timer.o86W.dep" src="Timer.c"/>
+        <srcFile name="package/lib/lib/debug/ti.sysbios.family.windows/TimestampProvider.o86W.dep" src="TimestampProvider.c"/>
+        <srcFile name="package/rel/ti_sysbios_family_windows.tar.gz.dep" src="package/rel/ti_sysbios_family_windows.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="microsoft.targets.Win32"
+            version="microsoft.targets.Win32{1,0,14.00,50727"
+            platform="host.platforms.PC"
+            isa="x86"
+            suffix="86W"
+            rootDir="/db/toolsrc/library/tools/vendors/msvc/8.0"
+            os="Windows"
+            rts="microsoft.targets.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/ti.sysbios.family.windows"
+        pname="lib/debug/ti.sysbios.family.windows.a86W"
+        profile="debug"
+        target="microsoft.targets.Win32"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sysbios_family_windows"
+        pname="../../../..//../exports/ti_sysbios_family_windows.tar.gz"
+        label="default"
+        relScript="scripts/copyright_xml.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="doc-files"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/ti.sysbios.family.windows.a86W"/>
+        <file name="package/package_ti.sysbios.family.windows.c"/>
+        <file name="Hwi.c"/>
+        <file name="IntrinsicsSupport.c"/>
+        <file name="TaskSupport.c"/>
+        <file name="Timer.c"/>
+        <file name="TimestampProvider.c"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

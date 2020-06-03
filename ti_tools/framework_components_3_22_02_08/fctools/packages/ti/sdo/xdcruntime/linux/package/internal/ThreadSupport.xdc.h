@@ -1,0 +1,140 @@
+/*
+ *  Do not modify this file; it is automatically 
+ *  generated and any modifications will be overwritten.
+ *
+ * @(#) xdc-y21
+ */
+
+#ifndef ti_sdo_xdcruntime_linux_ThreadSupport__INTERNAL__
+#define ti_sdo_xdcruntime_linux_ThreadSupport__INTERNAL__
+
+#ifndef ti_sdo_xdcruntime_linux_ThreadSupport__internalaccess
+#define ti_sdo_xdcruntime_linux_ThreadSupport__internalaccess
+#endif
+
+#include <ti/sdo/xdcruntime/linux/ThreadSupport.h>
+
+#undef xdc_FILE__
+#ifndef xdc_FILE
+#define xdc_FILE__ NULL
+#else
+#define xdc_FILE__ xdc_FILE
+#endif
+
+/* self */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_self
+#define ti_sdo_xdcruntime_linux_ThreadSupport_self ti_sdo_xdcruntime_linux_ThreadSupport_self__F
+
+/* start */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_start
+#define ti_sdo_xdcruntime_linux_ThreadSupport_start ti_sdo_xdcruntime_linux_ThreadSupport_start__F
+
+/* yield */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_yield
+#define ti_sdo_xdcruntime_linux_ThreadSupport_yield ti_sdo_xdcruntime_linux_ThreadSupport_yield__F
+
+/* compareOsPriorities */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_compareOsPriorities
+#define ti_sdo_xdcruntime_linux_ThreadSupport_compareOsPriorities ti_sdo_xdcruntime_linux_ThreadSupport_compareOsPriorities__F
+
+/* sleep */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_sleep
+#define ti_sdo_xdcruntime_linux_ThreadSupport_sleep ti_sdo_xdcruntime_linux_ThreadSupport_sleep__F
+
+/* join */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_join
+#define ti_sdo_xdcruntime_linux_ThreadSupport_join ti_sdo_xdcruntime_linux_ThreadSupport_join__F
+
+/* getPriority */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_getPriority
+#define ti_sdo_xdcruntime_linux_ThreadSupport_getPriority ti_sdo_xdcruntime_linux_ThreadSupport_getPriority__F
+
+/* setPriority */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_setPriority
+#define ti_sdo_xdcruntime_linux_ThreadSupport_setPriority ti_sdo_xdcruntime_linux_ThreadSupport_setPriority__F
+
+/* getOsPriority */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_getOsPriority
+#define ti_sdo_xdcruntime_linux_ThreadSupport_getOsPriority ti_sdo_xdcruntime_linux_ThreadSupport_getOsPriority__F
+
+/* setOsPriority */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_setOsPriority
+#define ti_sdo_xdcruntime_linux_ThreadSupport_setOsPriority ti_sdo_xdcruntime_linux_ThreadSupport_setOsPriority__F
+
+/* getOsHandle */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_getOsHandle
+#define ti_sdo_xdcruntime_linux_ThreadSupport_getOsHandle ti_sdo_xdcruntime_linux_ThreadSupport_getOsHandle__F
+
+/* getTls */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_getTls
+#define ti_sdo_xdcruntime_linux_ThreadSupport_getTls ti_sdo_xdcruntime_linux_ThreadSupport_getTls__F
+
+/* setTls */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_setTls
+#define ti_sdo_xdcruntime_linux_ThreadSupport_setTls ti_sdo_xdcruntime_linux_ThreadSupport_setTls__F
+
+/* stat */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_stat
+#define ti_sdo_xdcruntime_linux_ThreadSupport_stat ti_sdo_xdcruntime_linux_ThreadSupport_stat__F
+
+/* Module_startup */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_Module_startup
+#define ti_sdo_xdcruntime_linux_ThreadSupport_Module_startup ti_sdo_xdcruntime_linux_ThreadSupport_Module_startup__F
+
+/* Instance_init */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_Instance_init
+#define ti_sdo_xdcruntime_linux_ThreadSupport_Instance_init ti_sdo_xdcruntime_linux_ThreadSupport_Instance_init__F
+
+/* Instance_finalize */
+#undef ti_sdo_xdcruntime_linux_ThreadSupport_Instance_finalize
+#define ti_sdo_xdcruntime_linux_ThreadSupport_Instance_finalize ti_sdo_xdcruntime_linux_ThreadSupport_Instance_finalize__F
+
+/* module */
+#define ThreadSupport_module ((ti_sdo_xdcruntime_linux_ThreadSupport_Module_State *)(xdc__MODOBJADDR__(ti_sdo_xdcruntime_linux_ThreadSupport_Module__state__V)))
+#if !defined(__cplusplus) || !defined(ti_sdo_xdcruntime_linux_ThreadSupport__cplusplus)
+#define module ((ti_sdo_xdcruntime_linux_ThreadSupport_Module_State *)(xdc__MODOBJADDR__(ti_sdo_xdcruntime_linux_ThreadSupport_Module__state__V)))
+#endif
+/* per-module runtime symbols */
+#undef Module__MID
+#define Module__MID ti_sdo_xdcruntime_linux_ThreadSupport_Module__id__C
+#undef Module__DGSINCL
+#define Module__DGSINCL ti_sdo_xdcruntime_linux_ThreadSupport_Module__diagsIncluded__C
+#undef Module__DGSENAB
+#define Module__DGSENAB ti_sdo_xdcruntime_linux_ThreadSupport_Module__diagsEnabled__C
+#undef Module__DGSMASK
+#define Module__DGSMASK ti_sdo_xdcruntime_linux_ThreadSupport_Module__diagsMask__C
+#undef Module__LOGDEF
+#define Module__LOGDEF ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerDefined__C
+#undef Module__LOGOBJ
+#define Module__LOGOBJ ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerObj__C
+#undef Module__LOGFXN0
+#define Module__LOGFXN0 ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerFxn0__C
+#undef Module__LOGFXN1
+#define Module__LOGFXN1 ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerFxn1__C
+#undef Module__LOGFXN2
+#define Module__LOGFXN2 ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerFxn2__C
+#undef Module__LOGFXN4
+#define Module__LOGFXN4 ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerFxn4__C
+#undef Module__LOGFXN8
+#define Module__LOGFXN8 ti_sdo_xdcruntime_linux_ThreadSupport_Module__loggerFxn8__C
+#undef Module__G_OBJ
+#define Module__G_OBJ ti_sdo_xdcruntime_linux_ThreadSupport_Module__gateObj__C
+#undef Module__G_PRMS
+#define Module__G_PRMS ti_sdo_xdcruntime_linux_ThreadSupport_Module__gatePrms__C
+#undef Module__GP_create
+#define Module__GP_create ti_sdo_xdcruntime_linux_ThreadSupport_Module_GateProxy_create
+#undef Module__GP_delete
+#define Module__GP_delete ti_sdo_xdcruntime_linux_ThreadSupport_Module_GateProxy_delete
+#undef Module__GP_enter
+#define Module__GP_enter ti_sdo_xdcruntime_linux_ThreadSupport_Module_GateProxy_enter
+#undef Module__GP_leave
+#define Module__GP_leave ti_sdo_xdcruntime_linux_ThreadSupport_Module_GateProxy_leave
+#undef Module__GP_query
+#define Module__GP_query ti_sdo_xdcruntime_linux_ThreadSupport_Module_GateProxy_query
+
+/* Object__sizingError */
+#line 1 "Error_inconsistent_object_size_in_ti.sdo.xdcruntime.linux.ThreadSupport"
+typedef char ti_sdo_xdcruntime_linux_ThreadSupport_Object__sizingError[sizeof(ti_sdo_xdcruntime_linux_ThreadSupport_Object) > sizeof(ti_sdo_xdcruntime_linux_ThreadSupport_Struct) ? -1 : 1];
+
+
+#endif /* ti_sdo_xdcruntime_linux_ThreadSupport__INTERNAL____ */

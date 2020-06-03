@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- 
+Copyright (c) 2011, Texas Instruments Incorporated
+All rights reserved.
+-->
+
+<gep name="C28x/Boot" title="Concerto C28x Boot" version="1">
+<page name="Basic" title="Boot/Startup Options">
+<html><body><table>
+  <tr><td colspan="2">
+    <control type="checkbox" label="Add C28x Boot management to my configuration" value="value:this.$used" bold="true"/></td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td>
+      <h1>System Configuration</h1>
+        <table>
+        <tr>
+          <td><control type="checkbox" 
+                       label="Enable boot from FLASH" 
+                       value="value:this.bootFromFlash"
+                       tooltip="value:this.bootFromFlash.$summary"/></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table></body></html>
+</page>
+
+<properties name="Advanced" title="All Options" enabled="true" visible="true" link="this"/>
+
+</gep>
+<!--
+/*
+ * @(#) ti.catalog.c2800.concertoInit; 1, 0, 0,27; 4-24-2012 14:55:55; /db/ztree/library/trees/platform/platform-n20x/src/
+ */
+-->
+

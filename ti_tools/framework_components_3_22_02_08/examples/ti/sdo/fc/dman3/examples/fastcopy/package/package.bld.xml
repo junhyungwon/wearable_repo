@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.dman3.examples.fastcopy" version="1, 0, 0" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.c"/>
+        <srcFile name="fastcopytest.c"/>
+        <srcFile name="mySem.c"/>
+        <srcFile name="fcpy.c"/>
+        <srcFile name="ifcpy.c"/>
+        <srcFile name="fcpy_ti.c"/>
+        <srcFile name="fcpy_ti_ialg.c"/>
+        <srcFile name="fcpy_ti_idma3.c"/>
+        <srcFile name="fcpy_ti_idma3vt.c"/>
+        <srcFile name="fcpy_ti_ifcpy.c"/>
+        <srcFile name="fcpy_ti_ifcpyvt.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="fastcopytest.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.dep" src="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.oe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.oe674.dep" src="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.dep" src="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fastcopytest.o64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy.o64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/ifcpy.o64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti.o64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.o64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.o64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.o64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.o64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.o64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fastcopytest.o64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy.o64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/ifcpy.o64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti.o64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.o64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.o64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.o64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.o64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.o64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fastcopytest.o64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy.o64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/ifcpy.o64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti.o64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.o64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.o64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.o64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.o64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.o64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fastcopytest.o64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy.o64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/ifcpy.o64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti.o64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.o64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.o64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.o64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.o64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.o64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fastcopytest.o64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy.o64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/ifcpy.o64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti.o64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.o64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.o64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.o64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.o64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.o64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fastcopytest.oe64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy.oe64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/ifcpy.oe64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fastcopytest.oe64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy.oe64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/ifcpy.oe64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fastcopytest.oe64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy.oe64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/ifcpy.oe64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fastcopytest.oe64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy.oe64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/ifcpy.oe64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fastcopytest.oe64P.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy.oe64P.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/ifcpy.oe64P.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe64P.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe64P.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe64P.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe64P.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe64P.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe64P.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios.xe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fastcopytest.oe674.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/mySem.oe674.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy.oe674.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/ifcpy.oe674.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe674.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe674.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe674.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe674.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe674.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe674.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios.xe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fastcopytest.oe674.dep" src="fastcopytest.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/mySem.oe674.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy.oe674.dep" src="fcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/ifcpy.oe674.dep" src="ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy_ti.oe674.dep" src="fcpy_ti.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy_ti_ialg.oe674.dep" src="fcpy_ti_ialg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3.oe674.dep" src="fcpy_ti_idma3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy_ti_idma3vt.oe674.dep" src="fcpy_ti_idma3vt.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpy.oe674.dep" src="fcpy_ti_ifcpy.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios/fcpy_ti_ifcpyvt.oe674.dep" src="fcpy_ti_ifcpyvt.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_dman3_examples_fastcopy.tar.dep" src="package/rel/ti_sdo_fc_dman3_examples_fastcopy.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios.pe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674"
+        cfgScript="fastcopytest.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios.pe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI814X:test_dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674"
+        cfgScript="fastcopytest.cfg"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6446:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios.xe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674"
+        cfgScript="fastcopytest.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios"
+        pname="bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios.xe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI814X:test_dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674"
+        cfgScript="fastcopytest.cfg"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.x64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.xe64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios.xe674"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios.xe674"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios.xe674"
+        args=""
+        groupName="bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios.xe674"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_dman3_examples_fastcopy"
+        pname="ti_sdo_fc_dman3_examples_fastcopy.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="evmDM6446"/>
+        <file name="evmDM6437"/>
+        <file name="evmDM6467"/>
+        <file name="evmDM648"/>
+        <file name="dsk6455"/>
+        <file name="evm3530"/>
+        <file name="evmTI814X"/>
+        <file name="evmTI816X"/>
+        <file name="fcpy.h"/>
+        <file name="fcpy_ti.h"/>
+        <file name="fcpy_ti_priv.h"/>
+        <file name="ifcpy.h"/>
+        <file name="fastcopytest.c"/>
+        <file name="mySem.c"/>
+        <file name="fcpy.c"/>
+        <file name="ifcpy.c"/>
+        <file name="fcpy_ti.c"/>
+        <file name="fcpy_ti_ialg.c"/>
+        <file name="fcpy_ti_idma3.c"/>
+        <file name="fcpy_ti_idma3vt.c"/>
+        <file name="fcpy_ti_ifcpy.c"/>
+        <file name="fcpy_ti_ifcpyvt.c"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446_test_dsp/debug/fastcopytest_bios_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X_test_dsp/debug/fastcopytest_bios_pe674.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI814X_test_dsp/debug/fastcopytest_bios_pe674.cfg"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

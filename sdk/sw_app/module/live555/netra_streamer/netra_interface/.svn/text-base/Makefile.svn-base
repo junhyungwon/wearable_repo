@@ -1,0 +1,50 @@
+ROOTDIR = ../../../..
+include $(ROOTDIR)/Rules.make
+
+#CODEGEN_PATH_A8  := /opt/CodeSourcery
+#CODEGEN_PREFIX   := $(CODEGEN_PATH_A8)/bin/arm-none-linux-gnueabi-
+#CODEGEN_PATH_A8  = /opt/netra/toolchain/2009q1-203
+#CSTOOL_DIR=$(CODEGEN_PATH_A8)
+#CSTOOL_PREFIX=$(CSTOOL_DIR)/bin/arm-none-linux-gnueabi-
+#CSTOOL_PATH=$(CSTOOL_DIR)/bin
+
+
+INCLUDES += -I./ -I../netra_interface
+
+C_FLAGS += -Wall -g
+AR_FLAGS += -r
+
+
+CC = $(CODEGEN_PREFIX)gcc $(INCLUDES) $(C_FLAGS) -c
+AR = $(CODEGEN_PREFIX)ar
+
+
+REL_LIB1 = Netra_interface.a
+
+
+REL_OBJ1 = NetraDrvMsg.o Netra_interface.o sem_util.o msg_util.o
+
+
+all:  $(REL_LIB1)
+
+$(REL_LIB1): $(REL_OBJ1)
+	$(AR) $(AR_FLAGS) $(REL_LIB1) $(REL_OBJ1)
+
+
+msg_util.o: msg_util.c Msg_Def.h
+	$(CC) $(C_FLAGS) -o $@ $<
+
+NetraDrvMsg.o: NetraDrvMsg.c NetraDrvMsg.h
+	$(CC) $(C_FLAGS) -o $@ $<
+
+Netra_interface.o: Netra_interface.c Netra_interface.h
+	$(CC) $(C_FLAGS) -o $@ $<
+
+sem_util.o: sem_util.c sem_util.h
+	$(CC) $(C_FLAGS) -o $@ $<
+
+	
+clean:
+	-$(RM) -f *.o
+	-$(RM) -f *.a
+

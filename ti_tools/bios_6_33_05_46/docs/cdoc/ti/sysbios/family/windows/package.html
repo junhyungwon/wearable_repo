@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>package ti.sysbios.family.windows</title>
+<meta name="description" content="Native Windows SYS/BIOS Support">
+<link rel="stylesheet" type="text/css" href="../../../../xdoc.css" />
+</head>
+<body><div id="xdocWrapper"><div id="xdocContent">
+<table class="xdocHdr"><tr>
+<td class="xdocHdrTitle"><span class="xdoc-kw1">package</span> <span class="xdoc-id">ti.sysbios.family.windows</span></td>
+<td class="xdocHdrArrow">
+<a class="xdocHdrLink" href="../../../../ti/sysbios/family/windows/Hwi.html" title="module Hwi"><img class="xdocHdrArrow" src="../../../../Arrow_right.png"/></a></td>
+</table>
+<div class=xdocHdrIndex><a class=xdocHdrIndex title="right-click to capture" href="../../../../index.html#ti/sysbios/family/windows/package.html">index URL</a></div>
+<p class="xdocHdrSummary">Native Windows SYS/BIOS Support</p>
+<ul class="xdocToc">
+<li class="xdocToc"><a class="xdocToc" href="#xdoc-sect-1">DETAILS</a></li>
+<li class="xdocToc"><a class="xdocToc" href="#xdoc-sect-2">MOTIVATION</a></li>
+<li class="xdocToc"><a class="xdocToc" href="#xdoc-sect-3">HIGH_LEVEL_DESCRIPTION</a></li>
+<li class="xdocToc"><a class="xdocToc" href="#xdoc-sect-4">CLOCK_RATE_CONSIDERATIONS</a></li>
+</ul>
+<div class="xdocBrief">
+This package supports SYS/BIOS programs which are built and run as
+  native Windows executables. This enables applications to be
+  developed and tested on Windows using native Windows development
+  tools.
+[&nbsp;<a class="xdocBrief" href="#xdoc-desc">more</a>&nbsp;...&nbsp;]
+</div>
+<table class="xdocLabel"><tr>
+<td class="xdocLabelLeft"><tt><span class="xdoc-id">XDCspec</span></tt> declarations</td>
+<td class="xdocLabelRight">sourced in <a class="xdocLink" href="../../../../ti/sysbios/family/windows/package-src.html"><span class="xdocLabelFile">ti/sysbios/family/windows/package.xdc</span></a></td>
+</tr></table>
+<div class="xdocSynX">
+<div class="xdocSynCode">
+<tt></tt><span class="xdoc-kw1">requires</span> <a class="xdoc-link" href="../../../../ti/sysbios/interfaces/package.html" title="ti.sysbios.interfaces">ti.sysbios.interfaces</a>;
+</div>
+<div class="xdocSynSpacer">&nbsp;</div>
+<div class="xdocSynCode">
+<tt></tt><span class="xdoc-kw1">package</span> <go><span class="xdoc-id">ti.sysbios.family.windows</span></go> [2, 0, 0, 0] {
+</div>
+<div class="xdocSynSpacer">&nbsp;</div>
+<div class="xdocSynCode">
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt><span class="xdoc-kw1">module</span> <a class='xdocSynGo' href='../../../../ti/sysbios/family/windows/Hwi.html' title='ti.sysbios.family.windows.Hwi'><span class="xdoc-id">Hwi</span>;</a>
+</div>
+<div class='xdocSynSum'><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>//&nbsp;Windows emulation Hardware Interrupt Support Module</div>
+<div class="xdocSynCode">
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt><span class="xdoc-kw1">module</span> <a class='xdocSynGo' href='../../../../ti/sysbios/family/windows/Settings.html' title='ti.sysbios.family.windows.Settings'><span class="xdoc-id">Settings</span>;</a>
+</div>
+<div class='xdocSynSum'><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>//&nbsp;Device/Family-specific delegate assignment module for 
+  Windows emulation targets</div>
+<div class="xdocSynCode">
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt><span class="xdoc-kw1">module</span> <a class='xdocSynGo' href='../../../../ti/sysbios/family/windows/TaskSupport.html' title='ti.sysbios.family.windows.TaskSupport'><span class="xdoc-id">TaskSupport</span>;</a>
+</div>
+<div class='xdocSynSum'><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>//&nbsp;Windows Task Support Module</div>
+<div class="xdocSynCode">
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt><span class="xdoc-kw1">module</span> <a class='xdocSynGo' href='../../../../ti/sysbios/family/windows/Timer.html' title='ti.sysbios.family.windows.Timer'><span class="xdoc-id">Timer</span>;</a>
+</div>
+<div class='xdocSynSum'><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>//&nbsp;Timer Peripherals Manager for Windows family</div>
+<div class="xdocSynCode">
+<tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt><span class="xdoc-kw1">module</span> <a class='xdocSynGo' href='../../../../ti/sysbios/family/windows/TimestampProvider.html' title='ti.sysbios.family.windows.TimestampProvider'><span class="xdoc-id">TimestampProvider</span>;</a>
+</div>
+<div class='xdocSynSum'><tt>&nbsp;&nbsp;&nbsp;&nbsp;</tt>//&nbsp;TimestampProvider implementation for Windows</div>
+<div class="xdocSynCode">
+<tt></tt>}
+</div>
+</div>
+<span id="xdoc-desc"></span>
+<span id="xdoc-sect-1"></span>
+<div class="xdocSect">DETAILS</div>
+<div class="xdocText">This package supports SYS/BIOS programs which are built and run as
+  native Windows executables. This enables applications to be
+  developed and tested on Windows using native Windows development
+  tools.</div>
+<div class="xdocText">Although this package emulates timers and interrupts, special
+  consideration must be given to the fact that Windows is not a
+  real-time operating system. A program will not run in real-time
+  nor is it cycle equivalent to a target program.</div>
+<div class="xdocText">On Windows, the timer period may be programmed to as little as
+  one millisecond, however, the actual minimum timer period is
+  10 - 15 milliseconds. This latency results from the Windows clock
+  ticking at 10 milliseconds with additional delays in the Windows
+  kernel. See below for more details on clock rate considerations.</div>
+<div class="xdocText">This package emulates the C64+ DSP core with respect to hardware
+  interrupt handling and dispatching. Currently, the only supported
+  platform is host.platform.PC.</div>
+<span id="xdoc-sect-2"></span>
+<div class="xdocSect">MOTIVATION</div>
+<div class="xdocText">You can use SYS/BIOS emulation on Windows to model your application
+  on a high-level operating system before moving to simulators or
+  hardware.</div>
+<div class="xdocText">When developing a software module, such as a codec, a common practice
+  is to first write a "Golden C" version. Once the software is stable,
+  the Golden C version is used as a baseline for porting to specific
+  target platforms.</div>
+<div class="xdocText">When developing the Golden C version, it is often preferable to do
+  this work on a High-Level Operating System (HLOS), such as Windows.
+  This allows the use of HLOS tool-chains for code profiling and
+  validation. Providing a SYS/BIOS Emulation layer that runs on Windows
+  makes this effort more efficient. It allows a native SYS/BIOS application
+  to be built and run as a native Windows executable.</div>
+<span id="xdoc-sect-3"></span>
+<div class="xdocSect">HIGH_LEVEL_DESCRIPTION</div>
+<div class="xdocText">SYS/BIOS emulation is supported by implementing the platform proxy
+  modules for Windows. These modules are contained in the
+  ti.sysbios.family.windows package. These proxy modules provide
+  interfaces for the following:</div>
+<div class="xdocText"><UL><LI> hardware interrupts
+</LI><LI> thread context switching
+</LI><LI> general purpose timers
+</LI><LI> system clock tick counter
+</LI></UL></div>
+<div class="xdocText">To implement these interfaces, some hardware functionality is
+  emulated in the proxy modules because Windows does not allow
+  direct access to the hardware.</div>
+<div class="xdocText">The following figure shows a block diagram of both a C64x+
+  implementation and a Windows implementation.</div>
+<div class="xdocText"><img src="./doc-files/emulation.gif" /></div>
+<div class="xdocText">Application code written in C that makes only SYS/BIOS API calls
+  should not require any changes. However, any code written for
+  peripheral control will need to be replaced. Peripherals are
+  not modeled in the emulation package.</div>
+<div class="xdocText">The SYS/BIOS Kernel does not require any changes. Through XDC
+  configuration, the kernel binds with the appropriate proxy
+  modules relevant to the target platform (that is, for the
+  Windows platform or a hardware platform).</div>
+<div class="xdocText">When building the application, XDC configuration is used to
+  select the run-time platform. Through configuration options,
+  the application can bind with the appropriate modules that are
+  hardware or emulation specific. This will most likely pertain
+  to peripheral and/or test framework code.</div>
+<div class="xdocText">On hardware platforms, peripheral devices typically raise interrupts
+  to the CPU which then invokes the Hwi dispatcher to service it.
+  To emulate this behavior, the SYS/BIOS emulation package simulates an
+  interrupt that preempts the currently running task and invokes the
+  Hwi dispatcher. This is done asynchronously with respect to SYS/BIOS
+  tasks.</div>
+<div class="xdocText">The Windows emulation package faithfully emulates the SYS/BIOS scheduler
+  behavior. That is to say that task scheduling will occur in the same
+  order on Windows as on hardware. However, interrupts are not real-time.
+  Therefore, interrupt preemption will differ, and this may invoke the
+  scheduler in a different sequence than observed when running on hardware.</div>
+<div class="xdocText">Windows Win32 API functions may be invoked alongside SYS/BIOS API
+  functions. This should be kept to a minimum in order to encourage
+  code encapsulation and to maximize code reuse between hardware and
+  the Windows platform.</div>
+<span id="xdoc-sect-4"></span>
+<div class="xdocSect">CLOCK_RATE_CONSIDERATIONS</div>
+<div class="xdocText">When running on Windows Emulation, the SYS/BIOS clock is configured to
+  tick much slower. This is necessary because the Windows clock ticks
+  slower than a typical hardware clock. Thus, any code that depends on
+  clock ticks, instead of wall clock duration, should take this into
+  account during the configuration phase.</div>
+<div class="xdocText">For example, if <a class="xdoc-link" href="../../../../ti/sysbios/knl/Task.html#sleep" title="ti.sysbios.knl.Task.sleep">Task_sleep(500)</a> is
+  called on a hardware platform where the SYS/BIOS clock ticks every one
+  millisecond (resulting in a 500 millisecond sleep period), then the
+  sleep period should be normalized for the Windows platform using the
+  following formula:</div>
+<div class="xdocText"><PRE class="Example">  windowsTicks = 500 / (Clock_tickPeriod / 1000)
+</PRE></div>
+<div class="xdocText">where the <tt>Clock_tickPeriod</tt> is the SYS/BIOS clock tick period on Windows.</div>
+<div id="xdocDate">generated on Fri, 18 May 2012 23:07:53 GMT</div>
+</div></div></body>
+</html>

@@ -1,0 +1,4 @@
+obj/ti816x-evm/674/release/edma3_ti816x_cfg.oe674: src/configs/edma3_ti816x_cfg.c
+obj/ti816x-evm/674/release/edma3_ti816x_cfg.oe674: ../../../../ti/sdo/edma3/rm/edma3_rm.h
+obj/ti816x-evm/674/release/edma3_ti816x_cfg.oe674: /datalocal/ti_tools/cgt_dsp/cgt6x_7_3_1//include/stdint.h
+obj/ti816x-evm/674/release/edma3_ti816x_cfg.oe674: ../../../../ti/sdo/edma3/rm/edma3_common.h

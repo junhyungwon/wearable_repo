@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.rcm" version="2, 0, 0" producerId="undefined">
+    <units>
+        <module name="RcmClient"/>
+        <module name="RcmServer"/>
+        <module name="Settings"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="RcmClient.c"/>
+        <srcFile name="RcmServer.c"/>
+        <srcFile name="RcmUtils.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/rcm.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.o64P.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.o64P.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.o64P.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.o64P.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.o64P.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.o64P.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.o64P.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.o64P.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.o674.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.o674.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.o674.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.o674.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.o674.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.o674.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.o674.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.o674.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.oe64P.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.oe64P.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.oe64P.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.oe64P.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.oe64P.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.oe64P.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.oe64P.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.oe64P.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.oe64T.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.oe64T.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.oe64T.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.oe64T.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.oe64T.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.oe64T.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.oe64T.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.oe64T.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.oe674.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.oe674.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.oe674.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.oe674.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.oe674.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.oe674.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.oe674.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.oe674.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.oearp32.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.oearp32.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.oearp32.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.oearp32.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.oearp32.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.oearp32.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.oearp32.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.oearp32.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.oem3.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.oem3.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.oem3.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.oem3.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.oem3.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.oem3.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.oem3.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.oem3.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm/package/package_ti.sdo.rcm.oea8f.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmClient.oea8f.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmServer.oea8f.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm/RcmUtils.oea8f.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm/package/package_ti.sdo.rcm.oea8f.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm/RcmClient.oea8f.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm/RcmServer.oea8f.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm/RcmUtils.oea8f.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm_syslink.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm_syslink/package/package_ti.sdo.rcm.ov5T.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmClient.ov5T.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmServer.ov5T.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmUtils.ov5T.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm_syslink.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm_syslink/package/package_ti.sdo.rcm.ov5T.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmClient.ov5T.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmServer.ov5T.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmUtils.ov5T.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm_syslink.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm_syslink/package/package_ti.sdo.rcm.obnc.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmClient.obnc.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmServer.obnc.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmUtils.obnc.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm_syslink.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm_syslink/package/package_ti.sdo.rcm.obnc.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmClient.obnc.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmServer.obnc.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmUtils.obnc.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm_syslink.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm_syslink/package/package_ti.sdo.rcm.o470uC.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmClient.o470uC.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmServer.o470uC.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmUtils.o470uC.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm_syslink.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm_syslink/package/package_ti.sdo.rcm.o470uC.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmClient.o470uC.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmServer.o470uC.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmUtils.o470uC.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/release/rcm_syslink.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/rcm_syslink/package/package_ti.sdo.rcm.oqv7.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmClient.oqv7.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmServer.oqv7.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/release/rcm_syslink/RcmUtils.oqv7.dep" src="RcmUtils.c"/>
+        <srcFile name="lib/debug/rcm_syslink.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/rcm_syslink/package/package_ti.sdo.rcm.oqv7.dep" src="package/package_ti.sdo.rcm.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmClient.oqv7.dep" src="RcmClient.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmServer.oqv7.dep" src="RcmServer.c"/>
+        <srcFile name="package/lib/debug/rcm_syslink/RcmUtils.oqv7.dep" src="RcmUtils.c"/>
+        <srcFile name="package/rel/ti_sdo_rcm.tar.dep" src="package/rel/ti_sdo_rcm.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="qnx.targets.arm.Qnx"
+            version="qnx.targets.arm.Qnx{1,0,4.4,2"
+            platform="host.platforms.arm"
+            isa="v7A"
+            suffix="qv7"
+            rootDir="/apps/qnx/6.5.0/host/linux/x86/usr"
+            os="Qnx"
+            rts="qnx.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/rcm"
+        pname="lib/debug/rcm.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/rcm"
+        pname="lib/release/rcm.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/rcm_syslink"
+        pname="lib/debug/rcm_syslink.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/rcm_syslink"
+        pname="lib/release/rcm_syslink.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/rcm_syslink"
+        pname="lib/debug/rcm_syslink.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/rcm_syslink"
+        pname="lib/release/rcm_syslink.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/rcm_syslink"
+        pname="lib/debug/rcm_syslink.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/rcm_syslink"
+        pname="lib/release/rcm_syslink.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/rcm_syslink"
+        pname="lib/release/rcm_syslink.aqv7"
+        profile="release"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/debug/rcm_syslink"
+        pname="lib/debug/rcm_syslink.aqv7"
+        profile="debug"
+        target="qnx.targets.arm.Qnx"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_rcm"
+        pname="ti_sdo_rcm.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="doc-files"/>
+        <file name="package.bld"/>
+        <file name="RcmClient.h"/>
+        <file name="RcmServer.h"/>
+        <file name="RcmTypes.h"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/rcm.a64P"/>
+        <file name="lib/release/rcm.a64P"/>
+        <file name="lib/debug/rcm.a674"/>
+        <file name="lib/release/rcm.a674"/>
+        <file name="lib/debug/rcm.ae64P"/>
+        <file name="lib/release/rcm.ae64P"/>
+        <file name="lib/debug/rcm.ae64T"/>
+        <file name="lib/release/rcm.ae64T"/>
+        <file name="lib/debug/rcm.ae674"/>
+        <file name="lib/release/rcm.ae674"/>
+        <file name="lib/debug/rcm.aearp32"/>
+        <file name="lib/release/rcm.aearp32"/>
+        <file name="lib/debug/rcm.aem3"/>
+        <file name="lib/release/rcm.aem3"/>
+        <file name="lib/debug/rcm.aea8f"/>
+        <file name="lib/release/rcm.aea8f"/>
+        <file name="lib/debug/rcm_syslink.av5T"/>
+        <file name="lib/release/rcm_syslink.av5T"/>
+        <file name="lib/debug/rcm_syslink.abnc"/>
+        <file name="lib/release/rcm_syslink.abnc"/>
+        <file name="lib/debug/rcm_syslink.a470uC"/>
+        <file name="lib/release/rcm_syslink.a470uC"/>
+        <file name="lib/release/rcm_syslink.aqv7"/>
+        <file name="lib/debug/rcm_syslink.aqv7"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

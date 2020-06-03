@@ -1,0 +1,12 @@
+/*
+ *  Copyright 2012 by Texas Instruments Incorporated.
+ *
+ */
+
+Pkg.otherFiles = ["runh", "linkcmd.xdt", "linkUtils.xs", "std.h"];
+Pkg.otherSrcs  = ["linkcmd.xdt", "linkUtils.xs"];
+/*
+ *  @(#) gnu.targets; 1, 0, 1,534; 4-27-2012 17:07:22; /db/ztree/library/trees/xdctargets/xdctargets-f21x/src/ xlibrary
+
+ */
+

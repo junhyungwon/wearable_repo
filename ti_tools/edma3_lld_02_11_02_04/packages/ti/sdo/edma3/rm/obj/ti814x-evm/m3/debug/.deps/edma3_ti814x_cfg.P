@@ -1,0 +1,4 @@
+obj/ti814x-evm/m3/debug/edma3_ti814x_cfg.oem3: src/configs/edma3_ti814x_cfg.c
+obj/ti814x-evm/m3/debug/edma3_ti814x_cfg.oem3: ../../../../ti/sdo/edma3/rm/edma3_rm.h
+obj/ti814x-evm/m3/debug/edma3_ti814x_cfg.oem3: /datalocal/ti_tools/cgt_m3/cgt470_4_9_0//include/stdint.h
+obj/ti814x-evm/m3/debug/edma3_ti814x_cfg.oem3: ../../../../ti/sdo/edma3/rm/edma3_common.h

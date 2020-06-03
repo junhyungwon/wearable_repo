@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.rman.examples.hdvicp.hdvicp2" version="1, 0, 0" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.c"/>
+        <srcFile name="ires_algorithm.c"/>
+        <srcFile name="app_ducati.c"/>
+        <srcFile name="main_BIOS.c"/>
+        <srcFile name="myHdvicp.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="ires_algorithm.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.dep" src="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp/ires_algorithm.oem3.dep" src="ires_algorithm.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp/app_ducati.oem3.dep" src="app_ducati.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp/main_BIOS.oem3.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp/myHdvicp.oem3.dep" src="myHdvicp.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp/ires_algorithm.oem3.dep" src="ires_algorithm.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp/app_ducati.oem3.dep" src="app_ducati.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp/main_BIOS.oem3.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp/myHdvicp.oem3.dep" src="myHdvicp.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp/ires_algorithm.oem3.dep" src="ires_algorithm.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp/app_ducati.oem3.dep" src="app_ducati.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp/main_BIOS.oem3.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp/myHdvicp.oem3.dep" src="myHdvicp.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_rman_examples_hdvicp_hdvicp2.tar.dep" src="package/rel/ti_sdo_fc_rman_examples_hdvicp_hdvicp2.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_evmTI814X/debug/hdvicp"
+        pname="bin/ti_platforms_evmTI814X/debug/hdvicp.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI814X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/debug/hdvicp"
+        pname="bin/ti_platforms_evmTI816X/debug/hdvicp.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_sdp4430/debug/hdvicp"
+        pname="bin/ti_platforms_sdp4430/debug/hdvicp.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.sdp4430"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_evmTI814X/debug/hdvicp"
+        pname="bin/ti_platforms_evmTI814X/debug/hdvicp.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI814X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/debug/hdvicp"
+        pname="bin/ti_platforms_evmTI816X/debug/hdvicp.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_sdp4430/debug/hdvicp"
+        pname="bin/ti_platforms_sdp4430/debug/hdvicp.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.sdp4430"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_evmTI814X/debug/hdvicp.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI814X/debug/hdvicp.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/debug/hdvicp.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/debug/hdvicp.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_sdp4430/debug/hdvicp.xem3"
+        args=""
+        groupName="bin/ti_platforms_sdp4430/debug/hdvicp.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_rman_examples_hdvicp_hdvicp2"
+        pname="ti_sdo_fc_rman_examples_hdvicp_hdvicp2.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="makefile"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI814X/debug/hdvicp_pem3.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/hdvicp_pem3.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430/debug/hdvicp_pem3.cfg"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

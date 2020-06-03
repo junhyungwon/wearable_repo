@@ -1,0 +1,898 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.rman.examples.nullresource.test" version="1, 0, 0" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.c"/>
+        <srcFile name="app.c"/>
+        <srcFile name="main_BIOS.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="ires_algorithm.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.oe64T.dep" src="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.dep" src="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.oe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.dep" src="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.oea8f.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/nullres/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres.xe64T.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres/app.oe64T.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres/main_BIOS.oe64T.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres.xe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres/app.oe674.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres/main_BIOS.oe674.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres/app.oem3.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres/main_BIOS.oem3.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres/app.oem3.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres/main_BIOS.oem3.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres/app.oem3.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres/main_BIOS.oem3.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres.xea8f.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres/app.oea8f.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres/main_BIOS.oea8f.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/nullres/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/nullres/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_rman_examples_nullresource_test.tar.dep" src="package/rel/ti_sdo_fc_rman_examples_nullresource_test.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C66"
+            version="ti.targets.elf.C66{1,0,7.2,0"
+            platform="ti.platforms.simTCI6616"
+            isa="66"
+            suffix="e66"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_evmDM6446/debug/nullres"
+        pname="bin/ti_platforms_evmDM6446/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6446"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455/debug/nullres"
+        pname="bin/ti_platforms_dsk6455/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648/debug/nullres"
+        pname="bin/ti_platforms_evmDM648/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467/debug/nullres"
+        pname="bin/ti_platforms_evmDM6467/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm3530/debug/nullres"
+        pname="bin/ti_platforms_evm3530/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/nullres"
+        pname="bin/ti_platforms_evm6472/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/nullres"
+        pname="bin/ti_platforms_evm6474/debug/nullres.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6446/debug/nullres"
+        pname="bin/ti_platforms_evmDM6446/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6446"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455/debug/nullres"
+        pname="bin/ti_platforms_dsk6455/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648/debug/nullres"
+        pname="bin/ti_platforms_evmDM648/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467/debug/nullres"
+        pname="bin/ti_platforms_evmDM6467/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm3530/debug/nullres"
+        pname="bin/ti_platforms_evm3530/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/nullres"
+        pname="bin/ti_platforms_evm6472/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/nullres"
+        pname="bin/ti_platforms_evm6474/debug/nullres.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_sdp4430/debug/nullres"
+        pname="bin/ti_platforms_sdp4430/debug/nullres.pe64T"
+        target="ti.targets.elf.C64T"
+        platform="ti.platforms.sdp4430"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/debug/nullres"
+        pname="bin/ti_platforms_evmTI816X/debug/nullres.pe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/debug/nullres"
+        pname="bin/ti_platforms_evmTI816X/debug/nullres.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_sdp4430/debug/nullres"
+        pname="bin/ti_platforms_sdp4430/debug/nullres.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.sdp4430"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI813X/debug/nullres"
+        pname="bin/ti_platforms_evmTI813X/debug/nullres.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI813X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/debug/nullres"
+        pname="bin/ti_platforms_evmTI816X/debug/nullres.pea8f"
+        target="ti.targets.arm.elf.A8F"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/nullres"
+        pname="bin/ti_platforms_evm6678/debug/nullres.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6670/debug/nullres"
+        pname="bin/ti_platforms_evm6670/debug/nullres.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66"
+        cfgScript="ires_algorithm.cfg"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_evmDM6446/debug/nullres"
+        pname="bin/ti_platforms_evmDM6446/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6446"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455/debug/nullres"
+        pname="bin/ti_platforms_dsk6455/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648/debug/nullres"
+        pname="bin/ti_platforms_evmDM648/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467/debug/nullres"
+        pname="bin/ti_platforms_evmDM6467/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm3530/debug/nullres"
+        pname="bin/ti_platforms_evm3530/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/nullres"
+        pname="bin/ti_platforms_evm6472/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/nullres"
+        pname="bin/ti_platforms_evm6474/debug/nullres.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6446/debug/nullres"
+        pname="bin/ti_platforms_evmDM6446/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6446"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455/debug/nullres"
+        pname="bin/ti_platforms_dsk6455/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648/debug/nullres"
+        pname="bin/ti_platforms_evmDM648/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467/debug/nullres"
+        pname="bin/ti_platforms_evmDM6467/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm3530/debug/nullres"
+        pname="bin/ti_platforms_evm3530/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/nullres"
+        pname="bin/ti_platforms_evm6472/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/nullres"
+        pname="bin/ti_platforms_evm6474/debug/nullres.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_sdp4430/debug/nullres"
+        pname="bin/ti_platforms_sdp4430/debug/nullres.xe64T"
+        target="ti.targets.elf.C64T"
+        platform="ti.platforms.sdp4430"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/debug/nullres"
+        pname="bin/ti_platforms_evmTI816X/debug/nullres.xe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/debug/nullres"
+        pname="bin/ti_platforms_evmTI816X/debug/nullres.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_sdp4430/debug/nullres"
+        pname="bin/ti_platforms_sdp4430/debug/nullres.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.sdp4430"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI813X/debug/nullres"
+        pname="bin/ti_platforms_evmTI813X/debug/nullres.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI813X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/debug/nullres"
+        pname="bin/ti_platforms_evmTI816X/debug/nullres.xea8f"
+        target="ti.targets.arm.elf.A8F"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/nullres"
+        pname="bin/ti_platforms_evm6678/debug/nullres.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66"
+        cfgScript="ires_algorithm.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6670/debug/nullres"
+        pname="bin/ti_platforms_evm6670/debug/nullres.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66"
+        cfgScript="ires_algorithm.cfg"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_evmDM6446/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6446/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/nullres.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/nullres.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6446/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6446/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/nullres.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/nullres.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_sdp4430/debug/nullres.xe64T"
+        args=""
+        groupName="bin/ti_platforms_sdp4430/debug/nullres.xe64T"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/debug/nullres.xe674"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/debug/nullres.xe674"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/debug/nullres.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/debug/nullres.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_sdp4430/debug/nullres.xem3"
+        args=""
+        groupName="bin/ti_platforms_sdp4430/debug/nullres.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI813X/debug/nullres.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI813X/debug/nullres.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/debug/nullres.xea8f"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/debug/nullres.xea8f"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/nullres.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/nullres.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6670/debug/nullres.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6670/debug/nullres.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_rman_examples_nullresource_test"
+        pname="ti_sdo_fc_rman_examples_nullresource_test.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="makefile"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6446/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/nullres_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pe64T.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pe674.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pem3.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_sdp4430/debug/nullres_pem3.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI813X/debug/nullres_pem3.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/nullres_pea8f.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/nullres_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/nullres_pe66.cfg"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

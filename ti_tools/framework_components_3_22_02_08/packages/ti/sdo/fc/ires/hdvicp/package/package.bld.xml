@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.ires.hdvicp" version="1, 0, 1" producerId="undefined">
+    <units>
+        <module name="HDVICP"/>
+        <module name="HDVICP2"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="iresman_hdvicp.c"/>
+        <srcFile name="ires_hdvicp.c"/>
+        <srcFile name="hdvicp_config.c"/>
+        <srcFile name="iresman_hdvicp2.c"/>
+        <srcFile name="ires_hdvicp2.c"/>
+        <srcFile name="iresman_hdvicp2_setup.c"/>
+        <srcFile name="hdvicp2cfg.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/hdvicp.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o64P.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.o64P.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.o64P.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.o64P.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o64P.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.o64P.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.o64P.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.o64P.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o674.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.o674.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.o674.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.o674.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o674.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.o674.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.o674.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.o674.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oe64P.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.oe64P.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.oe64P.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.oe64P.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oe64P.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.oe64P.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.oe64P.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.oe64P.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oe64T.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.oe64T.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.oe64T.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.oe64T.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oe64T.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.oe64T.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.oe64T.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.oe64T.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oe674.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.oe674.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.oe674.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.oe674.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oe674.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.oe674.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.oe674.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.oe674.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oearp32.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.oearp32.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.oearp32.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.oearp32.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oearp32.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.oearp32.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.oearp32.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.oearp32.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o86U.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.o86U.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.o86U.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.o86U.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o86U.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.o86U.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.o86U.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.o86U.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.ov5T.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.ov5T.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.ov5T.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.ov5T.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.ov5T.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.ov5T.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.ov5T.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.ov5T.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.obnc.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.obnc.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.obnc.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.obnc.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.obnc.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.obnc.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.obnc.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.obnc.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o470uC.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.o470uC.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.o470uC.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.o470uC.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.o470uC.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.o470uC.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.o470uC.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.o470uC.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/debug/hdvicp2.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp2/package/package_ti.sdo.fc.ires.hdvicp.oem3.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp2/iresman_hdvicp2.oem3.dep" src="iresman_hdvicp2.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp2/ires_hdvicp2.oem3.dep" src="ires_hdvicp2.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp2/iresman_hdvicp2_setup.oem3.dep" src="iresman_hdvicp2_setup.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp2/hdvicp2cfg.oem3.dep" src="hdvicp2cfg.c"/>
+        <srcFile name="lib/release/hdvicp2.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp2/package/package_ti.sdo.fc.ires.hdvicp.oem3.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp2/iresman_hdvicp2.oem3.dep" src="iresman_hdvicp2.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp2/ires_hdvicp2.oem3.dep" src="ires_hdvicp2.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp2/iresman_hdvicp2_setup.oem3.dep" src="iresman_hdvicp2_setup.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp2/hdvicp2cfg.oem3.dep" src="hdvicp2cfg.c"/>
+        <srcFile name="lib/debug/hdvicp.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oea8f.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/iresman_hdvicp.oea8f.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/ires_hdvicp.oea8f.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/debug/hdvicp/hdvicp_config.oea8f.dep" src="hdvicp_config.c"/>
+        <srcFile name="lib/release/hdvicp.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/hdvicp/package/package_ti.sdo.fc.ires.hdvicp.oea8f.dep" src="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/iresman_hdvicp.oea8f.dep" src="iresman_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/ires_hdvicp.oea8f.dep" src="ires_hdvicp.c"/>
+        <srcFile name="package/lib/lib/release/hdvicp/hdvicp_config.oea8f.dep" src="hdvicp_config.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_ires_hdvicp.tar.dep" src="package/rel/ti_sdo_fc_ires_hdvicp.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/hdvicp2"
+        pname="lib/debug/hdvicp2.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/hdvicp2"
+        pname="lib/release/hdvicp2.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/hdvicp"
+        pname="lib/debug/hdvicp.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/hdvicp"
+        pname="lib/release/hdvicp.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_ires_hdvicp"
+        pname="ti_sdo_fc_ires_hdvicp.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="iresman_hdvicp.h"/>
+        <file name="ires_hdvicp.h"/>
+        <file name="iresman_protocol_hdvicp.h"/>
+        <file name="_hdvicp.h"/>
+        <file name="ires_hdvicp2.h"/>
+        <file name="_hdvicp2.h"/>
+        <file name="hdvicp2.h"/>
+        <file name="iresman_protocol_hdvicp2.h"/>
+        <file name="package.bld"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/hdvicp.a64P"/>
+        <file name="package/package_ti.sdo.fc.ires.hdvicp.c"/>
+        <file name="iresman_hdvicp.c"/>
+        <file name="ires_hdvicp.c"/>
+        <file name="hdvicp_config.c"/>
+        <file name="lib/release/hdvicp.a64P"/>
+        <file name="lib/debug/hdvicp.a674"/>
+        <file name="lib/release/hdvicp.a674"/>
+        <file name="lib/debug/hdvicp.ae64P"/>
+        <file name="lib/release/hdvicp.ae64P"/>
+        <file name="lib/debug/hdvicp.ae64T"/>
+        <file name="lib/release/hdvicp.ae64T"/>
+        <file name="lib/debug/hdvicp.ae674"/>
+        <file name="lib/release/hdvicp.ae674"/>
+        <file name="lib/debug/hdvicp.aearp32"/>
+        <file name="lib/release/hdvicp.aearp32"/>
+        <file name="lib/debug/hdvicp.a86U"/>
+        <file name="lib/release/hdvicp.a86U"/>
+        <file name="lib/debug/hdvicp.av5T"/>
+        <file name="lib/release/hdvicp.av5T"/>
+        <file name="lib/debug/hdvicp.abnc"/>
+        <file name="lib/release/hdvicp.abnc"/>
+        <file name="lib/debug/hdvicp.a470uC"/>
+        <file name="lib/release/hdvicp.a470uC"/>
+        <file name="lib/debug/hdvicp2.aem3"/>
+        <file name="iresman_hdvicp2.c"/>
+        <file name="ires_hdvicp2.c"/>
+        <file name="iresman_hdvicp2_setup.c"/>
+        <file name="hdvicp2cfg.c"/>
+        <file name="lib/release/hdvicp2.aem3"/>
+        <file name="lib/debug/hdvicp.aea8f"/>
+        <file name="lib/release/hdvicp.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

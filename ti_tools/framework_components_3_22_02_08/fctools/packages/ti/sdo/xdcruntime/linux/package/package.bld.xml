@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.xdcruntime.linux" version="1, 0, 0" producerId="osal_1_22_01_09">
+    <units>
+        <module name="GateThreadSupport"/>
+        <module name="GateProcessSupport"/>
+        <module name="SemThreadSupport"/>
+        <module name="SemProcessSupport"/>
+        <module name="ThreadSupport"/>
+        <module name="TimestampPosix"/>
+        <module name="Settings"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="GateThreadSupport.c"/>
+        <srcFile name="GateProcessSupport.c"/>
+        <srcFile name="SemThreadSupport.c"/>
+        <srcFile name="SemProcessSupport.c"/>
+        <srcFile name="ThreadSupport.c"/>
+        <srcFile name="TimestampPosix.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/osal_linux_86U.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/package/package_ti.sdo.xdcruntime.linux.o86U.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/GateThreadSupport.o86U.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/GateProcessSupport.o86U.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/SemThreadSupport.o86U.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/SemProcessSupport.o86U.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/ThreadSupport.o86U.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_86U/TimestampPosix.o86U.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/release/osal_linux_86U.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/package/package_ti.sdo.xdcruntime.linux.o86U.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/GateThreadSupport.o86U.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/GateProcessSupport.o86U.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/SemThreadSupport.o86U.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/SemProcessSupport.o86U.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/ThreadSupport.o86U.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_86U/TimestampPosix.o86U.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/debug/osal_linux_470.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.ov5T.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateThreadSupport.ov5T.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateProcessSupport.ov5T.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemThreadSupport.ov5T.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemProcessSupport.ov5T.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/ThreadSupport.ov5T.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/TimestampPosix.ov5T.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/release/osal_linux_470.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.ov5T.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateThreadSupport.ov5T.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateProcessSupport.ov5T.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemThreadSupport.ov5T.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemProcessSupport.ov5T.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/ThreadSupport.ov5T.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/TimestampPosix.ov5T.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/debug/osal_linux_470.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.oqv7.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateThreadSupport.oqv7.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateProcessSupport.oqv7.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemThreadSupport.oqv7.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemProcessSupport.oqv7.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/ThreadSupport.oqv7.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/TimestampPosix.oqv7.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/release/osal_linux_470.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.oqv7.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateThreadSupport.oqv7.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateProcessSupport.oqv7.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemThreadSupport.oqv7.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemProcessSupport.oqv7.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/ThreadSupport.oqv7.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/TimestampPosix.oqv7.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/debug/osal_linux_470.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.obnc.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateThreadSupport.obnc.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateProcessSupport.obnc.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemThreadSupport.obnc.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemProcessSupport.obnc.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/ThreadSupport.obnc.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/TimestampPosix.obnc.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/release/osal_linux_470.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.obnc.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateThreadSupport.obnc.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateProcessSupport.obnc.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemThreadSupport.obnc.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemProcessSupport.obnc.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/ThreadSupport.obnc.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/TimestampPosix.obnc.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/debug/osal_linux_470.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.o470uC.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateThreadSupport.o470uC.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/GateProcessSupport.o470uC.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemThreadSupport.o470uC.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/SemProcessSupport.o470uC.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/ThreadSupport.o470uC.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/debug/osal_linux_470/TimestampPosix.o470uC.dep" src="TimestampPosix.c"/>
+        <srcFile name="lib/release/osal_linux_470.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/package/package_ti.sdo.xdcruntime.linux.o470uC.dep" src="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateThreadSupport.o470uC.dep" src="GateThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/GateProcessSupport.o470uC.dep" src="GateProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemThreadSupport.o470uC.dep" src="SemThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/SemProcessSupport.o470uC.dep" src="SemProcessSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/ThreadSupport.o470uC.dep" src="ThreadSupport.c"/>
+        <srcFile name="package/lib/lib/release/osal_linux_470/TimestampPosix.o470uC.dep" src="TimestampPosix.c"/>
+        <srcFile name="package/rel/ti_sdo_xdcruntime_linux.tar.dep" src="package/rel/ti_sdo_xdcruntime_linux.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,1"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/cs/arm/arm-2007q3"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="qnx.targets.arm.Qnx"
+            version="qnx.targets.arm.Qnx{1,0,4.4,2"
+            platform="host.platforms.arm"
+            isa="v7A"
+            suffix="qv7"
+            rootDir="/apps/qnx/6.5.0/host/linux/x86/usr"
+            os="Qnx"
+            rts="qnx.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/osal_linux_86U"
+        pname="lib/debug/osal_linux_86U.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/osal_linux_86U"
+        pname="lib/release/osal_linux_86U.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/osal_linux_470"
+        pname="lib/debug/osal_linux_470.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/osal_linux_470"
+        pname="lib/release/osal_linux_470.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/osal_linux_470"
+        pname="lib/debug/osal_linux_470.aqv7"
+        profile="debug"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/release/osal_linux_470"
+        pname="lib/release/osal_linux_470.aqv7"
+        profile="release"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/debug/osal_linux_470"
+        pname="lib/debug/osal_linux_470.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/osal_linux_470"
+        pname="lib/release/osal_linux_470.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/osal_linux_470"
+        pname="lib/debug/osal_linux_470.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/osal_linux_470"
+        pname="lib/release/osal_linux_470.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_xdcruntime_linux"
+        pname="ti_sdo_xdcruntime_linux.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/osal_linux_86U.a86U"/>
+        <file name="package/package_ti.sdo.xdcruntime.linux.c"/>
+        <file name="GateThreadSupport.c"/>
+        <file name="GateProcessSupport.c"/>
+        <file name="SemThreadSupport.c"/>
+        <file name="SemProcessSupport.c"/>
+        <file name="ThreadSupport.c"/>
+        <file name="TimestampPosix.c"/>
+        <file name="lib/release/osal_linux_86U.a86U"/>
+        <file name="lib/debug/osal_linux_470.av5T"/>
+        <file name="lib/release/osal_linux_470.av5T"/>
+        <file name="lib/debug/osal_linux_470.aqv7"/>
+        <file name="lib/release/osal_linux_470.aqv7"/>
+        <file name="lib/debug/osal_linux_470.abnc"/>
+        <file name="lib/release/osal_linux_470.abnc"/>
+        <file name="lib/debug/osal_linux_470.a470uC"/>
+        <file name="lib/release/osal_linux_470.a470uC"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

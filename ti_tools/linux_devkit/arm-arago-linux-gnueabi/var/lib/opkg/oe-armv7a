@@ -1,0 +1,447 @@
+Package: arago-feed-configs-dbg
+Version: 1.0-r12.6
+Recommends: arago-feed-configs (= 1.0-r12.6), arago-feed-configs-dbg
+Section: devel
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: ec42f600f4d8e1ab0382d83cff284c4d
+Size: 714
+Filename: arago-feed-configs-dbg_1.0-r12.6_armv7a.ipk
+Source: file:///OE/arago/recipes/arago/arago-feed-configs.bb
+Description: Configuration files for online package repositories aka feeds
+OE: arago-feed-configs
+HomePage: unknown
+Priority: optional
+
+
+Package: arago-feed-configs-dev
+Version: 1.0-r12.6
+Depends: arago-feed-configs (= 1.0-r12.6)
+Recommends: arago-feed-configs-dev
+Section: devel
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: be5a3e9615f7e50b5867fbf2b9b9bd02
+Size: 716
+Filename: arago-feed-configs-dev_1.0-r12.6_armv7a.ipk
+Source: file:///OE/arago/recipes/arago/arago-feed-configs.bb
+Description: Configuration files for online package repositories aka feeds
+OE: arago-feed-configs
+HomePage: unknown
+Priority: optional
+
+
+Package: arago-feed-configs
+Version: 1.0-r12.6
+Recommends: opkg
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 53fef8a7b5300c3b2c5a3c13114bf0b5
+Size: 2842
+Filename: arago-feed-configs_1.0-r12.6_armv7a.ipk
+Source: file:///OE/arago/recipes/arago/arago-feed-configs.bb
+Description: Configuration files for online package repositories aka feeds
+OE: arago-feed-configs
+HomePage: unknown
+Priority: optional
+
+
+Package: binutils-dev
+Version: 2.20.1-r10.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 0983209d980e32d652516da90cc2113e
+Size: 2845828
+Filename: binutils-dev_2.20.1-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: binutils: GNU collection of binary utilities
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: gdbserver
+Version: 7.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: ff257f72cc00887128a89f429c72ed72
+Size: 80694
+Filename: gdbserver_7.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: gdb: GNU debugger
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: glibc-dbg
+Version: 2.12.2-r10.6
+Recommends: glibc-dbg, libsegfault-dbg, glibc-thread-db-dbg, glibc-extra-nss-dbg
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: a25fd0245d2db1781160bff8fc6232c1
+Size: 540172
+Filename: glibc-dbg_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: glibc-extra-nss
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 6f8d8f582a530aadb74fc2d76ac3c880
+Size: 44486
+Filename: glibc-extra-nss_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: glibc: nis, nisplus and hesiod search services
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: glibc-utils
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 3f708f0fc765a7c93d7d3cf45c62ccc3
+Size: 148358
+Filename: glibc-utils_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: glibc: misc utilities like iconf, local, gencat, tzselect, rpcinfo, ...
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libc6-dev
+Version: 2.12.2-r10.6
+Depends: libc6, libthread-db1, glibc-extra-nss
+Provides: libc-dev, libc6-dev, virtual-libc-dev
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: b66bde9aa407e91629d18ad734437758
+Size: 68076312
+Filename: libc6-dev_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libc6
+Version: 2.12.2-r10.6
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: c1ce05f832d3e8ed508138d2c071c0a7
+Size: 1530670
+Filename: libc6_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libgcc1-dev
+Version: 4.5.3-r10.6
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 13f47251c55f9a387b4d4baf5846aabb
+Size: 856
+Filename: libgcc1-dev_4.5.3-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libgcc1
+Version: 4.5.3-r10.6
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 911d2c0c8d5d5a8a8988f09fa2468fb7
+Size: 684
+Filename: libgcc1_4.5.3-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libopkg-dev
+Version: 0.1.8+svnr609-r5-arago2.6
+Depends: libopkg0
+Recommends: libc6-dev
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 28fc5ac8c8d8c0959f62ccade3249f20
+Size: 321954
+Filename: libopkg-dev_0.1.8+svnr609-r5-arago2.6_armv7a.ipk
+Source: svn://opkg.googlecode.com/svn;module=trunk;proto=http file://configure file://0001-opkg_message-send-Collected-errors-messages-to-stder.patch
+Description: Opkg Package Manager
+OE: opkg
+HomePage: unknown
+Priority: optional
+
+
+Package: libopkg0
+Version: 0.1.8+svnr609-r5-arago2.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 7821a1536c7ce013b933b6fc4e56358c
+Size: 73792
+Filename: libopkg0_0.1.8+svnr609-r5-arago2.6_armv7a.ipk
+Source: svn://opkg.googlecode.com/svn;module=trunk;proto=http file://configure file://0001-opkg_message-send-Collected-errors-messages-to-stder.patch
+Description: Opkg Package Manager Library
+OE: opkg
+HomePage: unknown
+Priority: optional
+
+
+Package: libsegfault
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 9a94056279d8edc5a214529d672a5535
+Size: 5178
+Filename: libsegfault_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libstdc++-dev
+Version: 4.5.3-r10.6
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 2501555c5f2207ad024c647ead3400a7
+Size: 3225290
+Filename: libstdc++-dev_4.5.3-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libstdc++
+Version: 4.5.3-r10.6
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: d1550a0a37a764999cdbbcf5aa624f98
+Size: 686
+Filename: libstdc++_4.5.3-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libthread-db1
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 67538fe9a8d367b094e6626842050781
+Size: 10824
+Filename: libthread-db1_2.12.2-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: libz-dbg
+Version: 1.2.3-r7.0.6
+Recommends: libz1 (= 1.2.3-r7.0.6), glibc-dbg, libz-dbg
+Section: devel
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 2620a31f082c36b547d90d2584fa3197
+Size: 45052
+Filename: libz-dbg_1.2.3-r7.0.6_armv7a.ipk
+Source: http://www.zlib.net/zlib-1.2.3.tar.bz2 file://visibility.patch file://autotools.patch
+Description: Zlib Compression Library
+OE: zlib
+HomePage: http://www.gzip.org/zlib/
+Priority: required
+
+
+Package: libz-dev
+Version: 1.2.3-r7.0.6
+Depends: libz1 (= 1.2.3-r7.0.6), libz1
+Recommends: libc6-dev, libz-dev
+Section: devel
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 9dda11e3ce505adfb1f95426df710cd0
+Size: 22702
+Filename: libz-dev_1.2.3-r7.0.6_armv7a.ipk
+Source: http://www.zlib.net/zlib-1.2.3.tar.bz2 file://visibility.patch file://autotools.patch
+Description: Zlib Compression Library
+OE: zlib
+HomePage: http://www.gzip.org/zlib/
+Priority: required
+
+
+Package: libz-static
+Version: 1.2.3-r7.0.6
+Section: libs
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 92e1baaa7fbbda378ac9be2f5a333010
+Size: 101118
+Filename: libz-static_1.2.3-r7.0.6_armv7a.ipk
+Source: http://www.zlib.net/zlib-1.2.3.tar.bz2 file://visibility.patch file://autotools.patch
+Description: Zlib Compression Library
+OE: zlib
+HomePage: http://www.gzip.org/zlib/
+Priority: required
+
+
+Package: libz1
+Version: 1.2.3-r7.0.6
+Depends: libc6 (>= 2.12.2)
+Section: libs
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 0a48693769e4b3bb93825f53d1388753
+Size: 43360
+Filename: libz1_1.2.3-r7.0.6_armv7a.ipk
+Source: http://www.zlib.net/zlib-1.2.3.tar.bz2 file://visibility.patch file://autotools.patch
+Description: Zlib Compression Library
+OE: zlib
+HomePage: http://www.gzip.org/zlib/
+Priority: required
+
+
+Package: linux-libc-headers-dev
+Version: 2.6.31-r10.6
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: f9198fc146f4e87ef408c73730573ba1
+Size: 715872
+Filename: linux-libc-headers-dev_2.6.31-r10.6_armv7a.ipk
+Source: file://SUPPORTED
+Description: Version 1.0-r10 of package external-toolchain-arago
+OE: external-toolchain-arago
+HomePage: unknown
+Priority: optional
+
+
+Package: opkg-dbg
+Version: 0.1.8+svnr609-r5-arago2.6
+Recommends: opkg (= 0.1.8+svnr609-r5-arago2.6), libopkg-dbg, glibc-dbg, opkg-dbg
+Section: devel
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 7620ce5a5c5f2514532024a0ad91cace
+Size: 154300
+Filename: opkg-dbg_0.1.8+svnr609-r5-arago2.6_armv7a.ipk
+Source: svn://opkg.googlecode.com/svn;module=trunk;proto=http file://configure file://0001-opkg_message-send-Collected-errors-messages-to-stder.patch
+Description: Opkg Package Manager
+OE: opkg
+HomePage: unknown
+Priority: optional
+
+
+Package: opkg-dev
+Version: 0.1.8+svnr609-r5-arago2.6
+Depends: opkg (= 0.1.8+svnr609-r5-arago2.6)
+Recommends: libopkg-dev, libc6-dev
+Section: devel
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: eaed2f01dbfbedebc0807308b3b6dc76
+Size: 17424
+Filename: opkg-dev_0.1.8+svnr609-r5-arago2.6_armv7a.ipk
+Source: svn://opkg.googlecode.com/svn;module=trunk;proto=http file://configure file://0001-opkg_message-send-Collected-errors-messages-to-stder.patch
+Description: Opkg Package Manager
+OE: opkg
+HomePage: unknown
+Priority: optional
+
+
+Package: opkg-doc
+Version: 0.1.8+svnr609-r5-arago2.6
+Section: doc
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: ed30460166e4bfc897812040db039759
+Size: 2776
+Filename: opkg-doc_0.1.8+svnr609-r5-arago2.6_armv7a.ipk
+Source: svn://opkg.googlecode.com/svn;module=trunk;proto=http file://configure file://0001-opkg_message-send-Collected-errors-messages-to-stder.patch
+Description: Opkg Package Manager
+OE: opkg
+HomePage: unknown
+Priority: optional
+
+
+Package: opkg
+Version: 0.1.8+svnr609-r5-arago2.6
+Depends: libopkg0 (>= 0.1.8+svnr609), libc6 (>= 2.12.2)
+Provides: update-alternatives
+Replaces: opkg-nogpg, opkg-nogpg-nocurl
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 02625826319031f4c8a95e2e469ffba9
+Size: 10038
+Filename: opkg_0.1.8+svnr609-r5-arago2.6_armv7a.ipk
+Source: svn://opkg.googlecode.com/svn;module=trunk;proto=http file://configure file://0001-opkg_message-send-Collected-errors-messages-to-stder.patch
+Description: Opkg Package Manager
+OE: opkg
+HomePage: unknown
+Priority: optional
+
+
+Package: task-sdk-bare
+Version: 1.0-r2-arago3.6
+Depends: libc6, virtual-libc-dev, glibc-utils, libsegfault, libthread-db1, libgcc1, libstdc++, libstdc++-dev, gdbserver, binutils-dev, linux-libc-headers-dev
+Section: base
+Architecture: armv7a
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+MD5Sum: 2708d9a02f1fbfa2106ea1b6f8b868a2
+Size: 778
+Filename: task-sdk-bare_1.0-r2-arago3.6_armv7a.ipk
+Source: file:///OE/arago-oe-dev/recipes/tasks/task-sdk-bare.bb
+Description: Packages for a standalone  SDK or external toolchain
+OE: task-sdk-bare
+HomePage: unknown
+Priority: optional
+
+

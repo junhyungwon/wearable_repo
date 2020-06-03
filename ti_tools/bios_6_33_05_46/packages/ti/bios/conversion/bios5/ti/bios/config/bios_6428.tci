@@ -1,0 +1,23 @@
+/*
+ *  Copyright 2012 by Texas Instruments Incorporated.
+ *
+ */
+
+/*
+ *  ======== bios_6428.tci ========
+ *  This file contains BIOS settings for 6428.
+ *
+ */
+
+utils.importFile("ti/bios/config/bios_6452.tci");
+
+/*
+ *  ======== bios.init6428 ========
+ *  BIOS initialization for the 6428 is same as for 6452
+ */
+bios.init6428 = bios.init6452;
+/*
+ *  @(#) ti.bios.conversion; 2, 0, 0, 0,535; 5-18-2012 06:03:18; /db/vtree/library/trees/avala/avala-q37x/src/ xlibrary
+
+ */
+

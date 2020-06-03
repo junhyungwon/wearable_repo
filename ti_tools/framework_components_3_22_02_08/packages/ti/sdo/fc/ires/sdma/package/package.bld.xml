@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.ires.sdma" version="1, 0, 0" producerId="undefined">
+    <units>
+        <module name="SDMA"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="iresman_sdma.c"/>
+        <srcFile name="ires_sdma.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/sdma.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sdma/package/package_ti.sdo.fc.ires.sdma.ov5T.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/iresman_sdma.ov5T.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/ires_sdma.ov5T.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/release/sdma.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sdma/package/package_ti.sdo.fc.ires.sdma.ov5T.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/iresman_sdma.ov5T.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/ires_sdma.ov5T.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/debug/sdma.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sdma/package/package_ti.sdo.fc.ires.sdma.obnc.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/iresman_sdma.obnc.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/ires_sdma.obnc.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/release/sdma.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sdma/package/package_ti.sdo.fc.ires.sdma.obnc.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/iresman_sdma.obnc.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/ires_sdma.obnc.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/debug/sdma.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sdma/package/package_ti.sdo.fc.ires.sdma.o470uC.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/iresman_sdma.o470uC.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/ires_sdma.o470uC.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/release/sdma.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sdma/package/package_ti.sdo.fc.ires.sdma.o470uC.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/iresman_sdma.o470uC.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/ires_sdma.o470uC.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/debug/sdma.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/sdma/package/package_ti.sdo.fc.ires.sdma.oea8f.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/iresman_sdma.oea8f.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/debug/sdma/ires_sdma.oea8f.dep" src="ires_sdma.c"/>
+        <srcFile name="lib/release/sdma.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/sdma/package/package_ti.sdo.fc.ires.sdma.oea8f.dep" src="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/iresman_sdma.oea8f.dep" src="iresman_sdma.c"/>
+        <srcFile name="package/lib/lib/release/sdma/ires_sdma.oea8f.dep" src="ires_sdma.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_ires_sdma.tar.dep" src="package/rel/ti_sdo_fc_ires_sdma.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/sdma"
+        pname="lib/debug/sdma.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/sdma"
+        pname="lib/release/sdma.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/sdma"
+        pname="lib/debug/sdma.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/sdma"
+        pname="lib/release/sdma.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/sdma"
+        pname="lib/debug/sdma.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/sdma"
+        pname="lib/release/sdma.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/sdma"
+        pname="lib/debug/sdma.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/sdma"
+        pname="lib/release/sdma.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_ires_sdma"
+        pname="ti_sdo_fc_ires_sdma.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="iresman_sdma.h"/>
+        <file name="ires_sdma.h"/>
+        <file name="iresman_protocol_sdma.h"/>
+        <file name="_sdma.h"/>
+        <file name="package.bld"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/sdma.av5T"/>
+        <file name="package/package_ti.sdo.fc.ires.sdma.c"/>
+        <file name="iresman_sdma.c"/>
+        <file name="ires_sdma.c"/>
+        <file name="lib/release/sdma.av5T"/>
+        <file name="lib/debug/sdma.abnc"/>
+        <file name="lib/release/sdma.abnc"/>
+        <file name="lib/debug/sdma.a470uC"/>
+        <file name="lib/release/sdma.a470uC"/>
+        <file name="lib/debug/sdma.aea8f"/>
+        <file name="lib/release/sdma.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

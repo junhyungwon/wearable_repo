@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.rman" version="2, 0, 0" producerId="undefined">
+    <units>
+        <module name="RMAN"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="rman.c"/>
+        <srcFile name="rmancfg.c"/>
+        <srcFile name="rman_staticConfig.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/rman.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.o64P.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.o64P.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.o64P.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.o64P.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.o64P.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.o64P.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.o64P.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.o64P.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.o674.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.o674.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.o674.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.o674.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.o674.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.o674.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.o674.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.o674.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.oe64P.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.oe64P.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.oe64P.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.oe64P.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.oe64P.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.oe64P.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.oe64P.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.oe64P.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.oe64T.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.oe64T.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.oe64T.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.oe64T.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.oe64T.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.oe64T.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.oe64T.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.oe64T.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.oe674.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.oe674.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.oe674.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.oe674.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.oe674.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.oe674.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.oe674.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.oe674.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.oearp32.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.oearp32.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.oearp32.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.oearp32.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.oearp32.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.oearp32.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.oearp32.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.oearp32.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rmanNoYield.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/package/package_ti.sdo.fc.rman.o86U.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman.o86U.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rmancfg.o86U.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman_staticConfig.o86U.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rmanNoYield.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/package/package_ti.sdo.fc.rman.o86U.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman.o86U.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rmancfg.o86U.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman_staticConfig.o86U.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rmanNoYield.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/package/package_ti.sdo.fc.rman.ov5T.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman.ov5T.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rmancfg.ov5T.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman_staticConfig.ov5T.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rmanNoYield.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/package/package_ti.sdo.fc.rman.ov5T.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman.ov5T.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rmancfg.ov5T.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman_staticConfig.ov5T.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rmanNoYield.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/package/package_ti.sdo.fc.rman.obnc.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman.obnc.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rmancfg.obnc.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman_staticConfig.obnc.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rmanNoYield.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/package/package_ti.sdo.fc.rman.obnc.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman.obnc.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rmancfg.obnc.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman_staticConfig.obnc.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rmanNoYield.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/package/package_ti.sdo.fc.rman.o470uC.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman.o470uC.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rmancfg.o470uC.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rmanNoYield/rman_staticConfig.o470uC.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rmanNoYield.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/package/package_ti.sdo.fc.rman.o470uC.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman.o470uC.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rmancfg.o470uC.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rmanNoYield/rman_staticConfig.o470uC.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.oem3.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.oem3.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.oem3.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.oem3.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.oem3.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.oem3.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.oem3.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.oem3.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/debug/rman.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/rman/package/package_ti.sdo.fc.rman.oea8f.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman.oea8f.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rmancfg.oea8f.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/debug/rman/rman_staticConfig.oea8f.dep" src="rman_staticConfig.c"/>
+        <srcFile name="lib/release/rman.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/rman/package/package_ti.sdo.fc.rman.oea8f.dep" src="package/package_ti.sdo.fc.rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman.oea8f.dep" src="rman.c"/>
+        <srcFile name="package/lib/lib/release/rman/rmancfg.oea8f.dep" src="rmancfg.c"/>
+        <srcFile name="package/lib/lib/release/rman/rman_staticConfig.oea8f.dep" src="rman_staticConfig.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_rman.tar.dep" src="package/rel/ti_sdo_fc_rman.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/rmanNoYield"
+        pname="lib/debug/rmanNoYield.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/rmanNoYield"
+        pname="lib/release/rmanNoYield.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/rmanNoYield"
+        pname="lib/debug/rmanNoYield.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/rmanNoYield"
+        pname="lib/release/rmanNoYield.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/rmanNoYield"
+        pname="lib/debug/rmanNoYield.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/rmanNoYield"
+        pname="lib/release/rmanNoYield.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/rmanNoYield"
+        pname="lib/debug/rmanNoYield.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/rmanNoYield"
+        pname="lib/release/rmanNoYield.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/rman"
+        pname="lib/debug/rman.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/rman"
+        pname="lib/release/rman.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_rman"
+        pname="ti_sdo_fc_rman.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="rman.h"/>
+        <file name="package.bld"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/rman.a64P"/>
+        <file name="package/package_ti.sdo.fc.rman.c"/>
+        <file name="rman.c"/>
+        <file name="rmancfg.c"/>
+        <file name="rman_staticConfig.c"/>
+        <file name="lib/release/rman.a64P"/>
+        <file name="lib/debug/rman.a674"/>
+        <file name="lib/release/rman.a674"/>
+        <file name="lib/debug/rman.ae64P"/>
+        <file name="lib/release/rman.ae64P"/>
+        <file name="lib/debug/rman.ae64T"/>
+        <file name="lib/release/rman.ae64T"/>
+        <file name="lib/debug/rman.ae674"/>
+        <file name="lib/release/rman.ae674"/>
+        <file name="lib/debug/rman.aearp32"/>
+        <file name="lib/release/rman.aearp32"/>
+        <file name="lib/debug/rmanNoYield.a86U"/>
+        <file name="lib/release/rmanNoYield.a86U"/>
+        <file name="lib/debug/rmanNoYield.av5T"/>
+        <file name="lib/release/rmanNoYield.av5T"/>
+        <file name="lib/debug/rmanNoYield.abnc"/>
+        <file name="lib/release/rmanNoYield.abnc"/>
+        <file name="lib/debug/rmanNoYield.a470uC"/>
+        <file name="lib/release/rmanNoYield.a470uC"/>
+        <file name="lib/debug/rman.aem3"/>
+        <file name="lib/release/rman.aem3"/>
+        <file name="lib/debug/rman.aea8f"/>
+        <file name="lib/release/rman.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

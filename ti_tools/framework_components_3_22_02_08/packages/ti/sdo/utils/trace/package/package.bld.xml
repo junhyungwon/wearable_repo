@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.utils.trace" version="1, 0, 0" producerId="undefined">
+    <units>
+        <module name="GT"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="gt.c"/>
+        <srcFile name="CBuf.c"/>
+        <srcFile name="gt_config.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/gt.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.o64P.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.o64P.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.o64P.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.o64P.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.o64P.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.o64P.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.o64P.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.o64P.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.o674.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.o674.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.o674.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.o674.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.o674.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.o674.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.o674.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.o674.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.oe64P.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.oe64P.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.oe64P.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.oe64P.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.oe64P.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.oe64P.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.oe64P.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.oe64P.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.oe64T.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.oe64T.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.oe64T.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.oe64T.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.oe64T.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.oe64T.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.oe64T.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.oe64T.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.oe674.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.oe674.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.oe674.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.oe674.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.oe674.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.oe674.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.oe674.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.oe674.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.oearp32.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.oearp32.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.oearp32.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.oearp32.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.oearp32.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.oearp32.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.oearp32.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.oearp32.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.o86U.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.o86U.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.o86U.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.o86U.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.o86U.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.o86U.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.o86U.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.o86U.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.ov5T.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.ov5T.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.ov5T.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.ov5T.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.ov5T.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.ov5T.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.ov5T.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.ov5T.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.obnc.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.obnc.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.obnc.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.obnc.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.obnc.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.obnc.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.obnc.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.obnc.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.o470uC.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.o470uC.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.o470uC.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.o470uC.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.o470uC.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.o470uC.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.o470uC.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.o470uC.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.oem3.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.oem3.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.oem3.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.oem3.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.oem3.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.oem3.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.oem3.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.oem3.dep" src="gt_config.c"/>
+        <srcFile name="lib/debug/gt.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/gt/package/package_ti.sdo.utils.trace.oea8f.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt.oea8f.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/debug/gt/CBuf.oea8f.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/debug/gt/gt_config.oea8f.dep" src="gt_config.c"/>
+        <srcFile name="lib/release/gt.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/gt/package/package_ti.sdo.utils.trace.oea8f.dep" src="package/package_ti.sdo.utils.trace.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt.oea8f.dep" src="gt.c"/>
+        <srcFile name="package/lib/lib/release/gt/CBuf.oea8f.dep" src="CBuf.c"/>
+        <srcFile name="package/lib/lib/release/gt/gt_config.oea8f.dep" src="gt_config.c"/>
+        <srcFile name="package/rel/ti_sdo_utils_trace.tar.dep" src="package/rel/ti_sdo_utils_trace.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/gt"
+        pname="lib/debug/gt.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/gt"
+        pname="lib/release/gt.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_utils_trace"
+        pname="ti_sdo_utils_trace.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="gt.h"/>
+        <file name="CBuf.h"/>
+        <file name="package.bld"/>
+        <file name="simple_GCArmv5T.mak"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/gt.a64P"/>
+        <file name="lib/release/gt.a64P"/>
+        <file name="lib/debug/gt.a674"/>
+        <file name="lib/release/gt.a674"/>
+        <file name="lib/debug/gt.ae64P"/>
+        <file name="lib/release/gt.ae64P"/>
+        <file name="lib/debug/gt.ae64T"/>
+        <file name="lib/release/gt.ae64T"/>
+        <file name="lib/debug/gt.ae674"/>
+        <file name="lib/release/gt.ae674"/>
+        <file name="lib/debug/gt.aearp32"/>
+        <file name="lib/release/gt.aearp32"/>
+        <file name="lib/debug/gt.a86U"/>
+        <file name="lib/release/gt.a86U"/>
+        <file name="lib/debug/gt.av5T"/>
+        <file name="lib/release/gt.av5T"/>
+        <file name="lib/debug/gt.abnc"/>
+        <file name="lib/release/gt.abnc"/>
+        <file name="lib/debug/gt.a470uC"/>
+        <file name="lib/release/gt.a470uC"/>
+        <file name="lib/debug/gt.aem3"/>
+        <file name="lib/release/gt.aem3"/>
+        <file name="lib/debug/gt.aea8f"/>
+        <file name="lib/release/gt.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

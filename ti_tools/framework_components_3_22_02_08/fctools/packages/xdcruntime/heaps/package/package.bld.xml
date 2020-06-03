@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="xdcruntime.heaps" version="1, 0, 0" producerId="osal_1_22_01_09">
+    <units>
+        <module name="HeapStdAlign"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="HeapStdAlign.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/release/heaps.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.o64P.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.o64P.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.o64P.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.o64P.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.oe64P.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.oe64P.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.oe64P.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.oe64P.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.o674.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.o674.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.o674.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.o674.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.oe674.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.oe674.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.oe674.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.oe674.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.oe64T.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.oe64T.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.oe64T.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.oe64T.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.oem3.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.oem3.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.oem3.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.oem3.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.o86U.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.o86U.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.o86U.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.o86U.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.ov5T.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.ov5T.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.ov5T.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.ov5T.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.oqv7.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.oqv7.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.aqv7.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.oqv7.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.oqv7.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.obnc.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.obnc.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.obnc.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.obnc.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.o470uC.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.o470uC.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.o470uC.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.o470uC.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/release/heaps.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/heaps/package/package_xdcruntime.heaps.oea8f.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/release/heaps/HeapStdAlign.oea8f.dep" src="HeapStdAlign.c"/>
+        <srcFile name="lib/debug/heaps.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/heaps/package/package_xdcruntime.heaps.oea8f.dep" src="package/package_xdcruntime.heaps.c"/>
+        <srcFile name="package/lib/lib/debug/heaps/HeapStdAlign.oea8f.dep" src="HeapStdAlign.c"/>
+        <srcFile name="package/rel/xdcruntime_heaps.tar.dep" src="package/rel/xdcruntime_heaps.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.evmDM6446:testInst"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evmDM6446:testInst"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,1"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/cs/arm/arm-2007q3"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="qnx.targets.arm.Qnx"
+            version="qnx.targets.arm.Qnx{1,0,4.4,2"
+            platform="host.platforms.arm"
+            isa="v7A"
+            suffix="qv7"
+            rootDir="/apps/qnx/6.5.0/host/linux/x86/usr"
+            os="Qnx"
+            rts="qnx.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/vendors2005/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.aqv7"
+        profile="release"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.aqv7"
+        profile="debug"
+        target="qnx.targets.arm.Qnx"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/heaps"
+        pname="lib/release/heaps.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/heaps"
+        pname="lib/debug/heaps.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="xdcruntime_heaps"
+        pname="xdcruntime_heaps.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="HeapStdAlign.h"/>
+        <file name="package.bld"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/release/heaps.a64P"/>
+        <file name="package/package_xdcruntime.heaps.c"/>
+        <file name="HeapStdAlign.c"/>
+        <file name="lib/debug/heaps.a64P"/>
+        <file name="lib/release/heaps.ae64P"/>
+        <file name="lib/debug/heaps.ae64P"/>
+        <file name="lib/release/heaps.a674"/>
+        <file name="lib/debug/heaps.a674"/>
+        <file name="lib/release/heaps.ae674"/>
+        <file name="lib/debug/heaps.ae674"/>
+        <file name="lib/release/heaps.ae64T"/>
+        <file name="lib/debug/heaps.ae64T"/>
+        <file name="lib/release/heaps.aem3"/>
+        <file name="lib/debug/heaps.aem3"/>
+        <file name="lib/release/heaps.a86U"/>
+        <file name="lib/debug/heaps.a86U"/>
+        <file name="lib/release/heaps.av5T"/>
+        <file name="lib/debug/heaps.av5T"/>
+        <file name="lib/release/heaps.aqv7"/>
+        <file name="lib/debug/heaps.aqv7"/>
+        <file name="lib/release/heaps.abnc"/>
+        <file name="lib/debug/heaps.abnc"/>
+        <file name="lib/release/heaps.a470uC"/>
+        <file name="lib/debug/heaps.a470uC"/>
+        <file name="lib/release/heaps.aea8f"/>
+        <file name="lib/debug/heaps.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

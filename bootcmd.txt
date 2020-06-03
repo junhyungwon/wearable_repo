@@ -1,0 +1,43 @@
+
+setenv ipaddr 192.168.1.252;setenv serverip 192.168.1.24;
+sntp;date;date;
+
+//#----- U-boot write ----------------------
+<from tftp to nand>
+mw.b 0x81000000 0xFF 0x20000;tftp 0x81000000 u-boot_fit.min.nand;nand erase 0x0 0x20000;nand write.i 0x81000000 0x0 0x20000;
+
+mw.b 0x81000000 0xFF 0x30000;tftp 0x81000000 u-boot_fit.bin;nand erase 0x020000 0xA0000;nand write.i 0x81000000 0x020000 0x30000;
+
+<from sd to nand>
+mw.b 0x81000000 0xFF 0x20000;mmc rescan;fatload mmc 0 0x81000000 u-boot_fit.min.nand;nand erase 0x0 0x20000;nand write.i 0x81000000 0x0 0x20000;
+
+mw.b 0x81000000 0xFF 0x30000;mmc rescan;fatload mmc 0 0x81000000 u-boot_fit.bin;nand erase 0x020000 0xA0000;nand write.i 0x81000000 0x020000 0x30000;
+
+//#----- env -------------------------------
+nand erase 0x0C0000 0x20000
+
+//#----- Kernel write ----------------------
+<from tftp to nand>
+mw.b 0x81000000 0xFF 0x300000;tftp 0x81000000 uImage_fit;nand erase 0x00220000 0x300000;nand write 0x81000000 0x00220000 ${filesize};
+
+<from sd to nand>
+mw.b 0x81000000 0xFF 0x300000;mmc rescan;fatload mmc 0 0x81000000 uImage_fit;nand erase 0x00220000 0x300000;nand write 0x81000000 0x00220000 ${filesize}
+
+//#--- ubifs write -----------------------
+<from tftp to nand>
+nand scrub 0x00520000 0x46E0000;tftp 0x81000000 rfs_fit.ubifs;nand erase 0x00520000 0x46E0000;nand write 0x81000000 0x00520000 ${filesize};
+
+<from sd to nand>
+nand scrub 0x00520000 0x46E0000;mmc rescan;fatload mmc 0 0x81000000 rfs_fit.ubifs;nand erase 0x00520000 0x46E0000;nand write 0x81000000 0x00520000 ${filesize};
+
+//#--- mcu write -----------------------
+mmc rescan;fatload mmc 0 0x81000000 mcu_fitt.txt;mcu update
+
+******************************************************
+* Boot Commnad
+******************************************************
+--------- NAND / NAND_BOOT ---------
+setenv bootcmd 'run update; nboot.e 0x81000000 0 0x00220000;bootm 0x81000000';setenv bootargs 'mem=180M console=ttyO0,115200n8 noinitrd rw ubi.mtd=5,2048 rootfstype=ubifs root=ubi0:rootfs ip=off vram=6M notifyk.vpssm3_sva=0xBFD00000' eth=${ethaddr}
+
+--------- TFTP / NFS_BOOT ----------
+setenv bootcmd 'run update; tftpboot 0x81000000 uImage_fit;bootm 0x81000000';setenv bootargs 'mem=180M console=ttyO0,115200n8 root=/dev/nfs rw rootfstype=ubifs nfsroot=192.168.1.24:/home/hwjun/proj/fitt360/target/rfs,nolock ip=192.168.1.252:192.168.1.24:192.168.1.1:255.255.255.0::eth0:off notifyk.vpssm3_sva=0xBFD00000' eth=${ethaddr}

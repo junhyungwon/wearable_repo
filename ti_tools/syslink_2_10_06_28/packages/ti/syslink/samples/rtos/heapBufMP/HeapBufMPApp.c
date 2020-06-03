@@ -1,0 +1,295 @@
+/*
+ *  @file   HeapBufMPApp.c
+ *
+ *  @brief      HeapBufMP application on RTOS side
+ *
+ *
+ *  ============================================================================
+ *
+ *  Copyright (c) 2008-2012, Texas Instruments Incorporated
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *  
+ *  *  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *  
+ *  *  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *  
+ *  *  Neither the name of Texas Instruments Incorporated nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *  
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ *  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ *  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ *  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ *  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ *  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *  Contact information for paper mail:
+ *  Texas Instruments
+ *  Post Office Box 655303
+ *  Dallas, Texas 75265
+ *  Contact information: 
+ *  http://www-k.ext.ti.com/sc/technical-support/product-information-centers.htm?
+ *  DCMP=TIHomeTracking&HQS=Other+OT+home_d_contact
+ *  ============================================================================
+ *  
+ */
+
+
+
+#include <xdc/std.h>
+#include <string.h>
+
+/*  -----------------------------------XDC.RUNTIME module Headers    */
+#include <xdc/runtime/System.h>
+#include <xdc/runtime/Error.h>
+#include <xdc/runtime/Memory.h>
+
+/*  ----------------------------------- BIOS6 module Headers         */
+#include <ti/sysbios/BIOS.h>
+#include <ti/sysbios/knl/Task.h>
+
+/*  ----------------------------------- Utils Headers                */
+#include <ti/ipc/Ipc.h>
+#include <xdc/runtime/IHeap.h>
+#include <ti/ipc/MultiProc.h>
+#include <ti/ipc/Notify.h>
+#include <ti/ipc/SharedRegion.h>
+#include <ti/ipc/GateMP.h>
+#include <ti/ipc/HeapBufMP.h>
+
+#include <ti/sysbios/knl/Semaphore.h>
+/*  ----------------------------------- To get globals from .cfg Header */
+#include <xdc/cfg/global.h>
+
+
+/** ============================================================================
+ *  Macros and types
+ *  ============================================================================
+ */
+/* Memory for remotely created heap */
+#define HEAPBUFMPSHMEM_SIZE           0x10000
+
+/*!
+ *  @brief  Name of the heap created by hostapp.
+ */
+#define HEAPBUFMPHOST_PREFIX     "HEAPBUFMPHOST"
+
+/*!
+ *  @brief  Name of the locally created heap.
+ */
+#define HEAPBUFMPSLAVE_PREFIX    "HEAPBUFMPSLAVE"
+
+/*!
+ *  @brief  Length of message Q Names
+ */
+#define  HEAPBUFMPAPP_NAMELENGTH   80u
+
+/*!
+ *  @brief  Buffer size
+ */
+#define BUFSIZE                  256u
+
+/*!
+ *  @brief  Number of blocks
+ */
+#define NUMBLOCKS                16u
+
+/*!
+ *  @brief  Shared Region ID
+ */
+#define APP_SHAREDREGION_ENTRY_ID   0u
+
+
+#define APPNOTIFY_EVENT_NO          11u
+
+/* Sync notify event */
+#define SYNC_NOTIFY_EVENT           12u
+
+/** ============================================================================
+ *  Globals
+ *  ============================================================================
+ */
+HeapBufMP_Handle     HeapBufMPApp_handleLocal;
+HeapBufMP_Handle     HeapBufMPApp_handleRemote;
+
+Semaphore_Handle   semHandle1 ;
+
+Void APPNotify_callbackFxn (UInt16 procId,UInt16 lineId, UInt32 eventNo,
+           UArg arg, UInt32 payload)
+{
+    Semaphore_post((Semaphore_Object*)arg);
+}
+
+/** ============================================================================
+ *  Functions
+ *  ============================================================================
+ */
+Int main()
+{
+    Int32 status = Ipc_S_SUCCESS;
+    do {
+        /* Call Ipc_start() */
+        status = Ipc_start();
+    } while (status != Ipc_S_SUCCESS);
+    BIOS_start();
+    return (0);
+}
+
+/*
+ *  ======== HeapBufMPApp_taskFxn ========
+ *  Task function for HeapBufMP application
+ */
+Void HeapBufMPApp_taskFxn(UArg arg0, UArg arg1)
+{
+    Int32               status = 0;
+    UInt16              procId = (UInt16) arg0;
+    UInt32              shAddr = 0;
+    HeapBufMP_Params    heapBufMPParams;
+    Ptr                 heapBlock;
+    UInt16              localProcId;
+    Error_Block         eb;
+    Char                tempStr [HEAPBUFMPAPP_NAMELENGTH];
+    UInt32              appAddr;
+    IHeap_Handle        heapBufMPAppHandle = NULL;
+    UInt16              remoteProcId = (UInt16) arg0;
+    Semaphore_Params    semParams;
+
+    System_printf("\nHeapBufMP Application starts\n");
+
+    Error_init(&eb);
+
+    do {
+        status = Ipc_attach(remoteProcId);
+    } while (status < 0);
+
+    localProcId = MultiProc_self ( );
+
+    Semaphore_Params_init (&semParams) ;
+    semParams.mode = Semaphore_Mode_BINARY;
+    semHandle1 = Semaphore_create (0, &semParams, &eb) ;
+    if (semHandle1 == NULL) {
+        Error_check (&eb) ;
+        System_printf ("Failed to Create the semaphore exiting ....%s: %d :\n",
+                       __FILE__, __LINE__) ;
+        return ;
+    }
+
+    heapBufMPAppHandle = SharedRegion_getHeap (APP_SHAREDREGION_ENTRY_ID);
+    if (heapBufMPAppHandle == NULL)
+    {
+        System_printf ("Error in SharedRegion_getHeap\n");
+    }
+    else {
+        System_printf ("Heap in SharedRegion_getHeap : %x\n", heapBufMPAppHandle);
+    }
+
+    Error_init(&eb);
+    shAddr = (UInt32) Memory_alloc ((IHeap_Handle)heapBufMPAppHandle,
+                                 HEAPBUFMPSHMEM_SIZE,
+                                 0,
+                                 &eb);
+    System_printf ("shAddr: %x\n", shAddr);
+
+    /*
+     *  Create the heap.
+     */
+    appAddr = shAddr;
+    HeapBufMP_Params_init(&heapBufMPParams);
+    memset (tempStr, 0, HEAPBUFMPAPP_NAMELENGTH);
+    System_sprintf (tempStr,
+                    "%s_%d%d",
+                    HEAPBUFMPSLAVE_PREFIX,
+                    procId,
+                    localProcId);
+    heapBufMPParams.name           = tempStr;
+    heapBufMPParams.regionId       = APP_SHAREDREGION_ENTRY_ID;
+    heapBufMPParams.sharedAddr     = (Ptr) appAddr;
+    heapBufMPParams.align          = 128;
+    heapBufMPParams.numBlocks      = NUMBLOCKS;
+    heapBufMPParams.blockSize      = BUFSIZE;
+    heapBufMPParams.exact          = TRUE;
+    heapBufMPParams.gate           = NULL;
+    HeapBufMPApp_handleLocal = HeapBufMP_create (&heapBufMPParams);
+
+    Notify_registerEvent(
+                     procId,
+                     0,
+                     APPNOTIFY_EVENT_NO,
+                     (Notify_FnNotifyCbck) APPNotify_callbackFxn,
+                     (UArg) semHandle1);
+
+    Semaphore_pend(semHandle1, BIOS_WAIT_FOREVER) ;
+
+    System_printf ("Got App notification ....:\n") ;
+
+    /*
+     *  Open the heap that is created on the Arm. Loop until opened.
+     */
+    memset (tempStr, 0, HEAPBUFMPAPP_NAMELENGTH);
+    System_sprintf (tempStr,
+                    "%s_%d%d",
+                    HEAPBUFMPHOST_PREFIX,
+                    procId,
+                    localProcId);
+    do {
+        status = HeapBufMP_open(tempStr, &HeapBufMPApp_handleRemote);
+        if (status == HeapBufMP_E_NOTFOUND) {
+            Task_sleep (10);
+        }
+    }
+    while (status == HeapBufMP_E_NOTFOUND);
+
+    if (HeapBufMPApp_handleLocal == NULL){
+        System_printf("handle null");
+    }
+    else {
+        heapBlock = HeapBufMP_alloc (HeapBufMPApp_handleLocal,
+                                     BUFSIZE,
+                                     /*0u*/Memory_getMaxDefaultTypeAlign ());
+
+        if (heapBlock != NULL){
+            System_printf("\nBlock allocated successfully\n");
+
+            HeapBufMP_free (HeapBufMPApp_handleLocal,
+                            heapBlock,
+                            BUFSIZE);
+        }
+
+        /* Send information about number of events received/sent to the host. */
+        status = Notify_sendEvent (procId,
+                                   0,
+                                   SYNC_NOTIFY_EVENT,
+                                   0,
+                                   TRUE);
+        if(status < 0) {
+            System_printf("Error: Notify_sendEvent() failed. \n");
+        }
+
+    }
+
+    HeapBufMP_close(&HeapBufMPApp_handleRemote);
+    /* Cannot delete the HeapBufMP because the remote processor may still be
+     * accessing it.
+     */
+
+    /* Spin until Ipc_detach success then stop */
+    do {
+        status = Ipc_detach(remoteProcId);
+    } while (status < 0);
+
+    Ipc_stop();
+
+    System_printf("\nHeapBufMP Application ends\n");
+}
+

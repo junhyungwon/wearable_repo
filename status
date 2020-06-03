@@ -1,0 +1,411 @@
+[33mcommit ca1d49043ef60e0433ac05f47f6408023e4dff05[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Mar 6 15:16:24 2019 +0900
+
+    1. delete white line on display layout, 2. record overwrite 중 record off시 sd led blink 되는 부분 수정
+
+[33mcommit 10bd1a13ce62c10642e186fb37761dd4741fc1a3[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Fri Feb 22 17:06:42 2019 +0900
+
+    linux 시간과 windows에서 보이는 파일 생성시간 같도록 하는 binary 추가
+
+[33mcommit dd4c3be7f01bb2f493e2738c53032a8adbca3591[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Fri Feb 22 16:40:45 2019 +0900
+
+    time zone 설정을 위한 zoneinfo 이용시 시스템 time은 UTC 로 설정됨
+    이에따라 M3 측면에서 Enoding .osd의 경우 local time.으로 변경하기 위한 부분 추가, record에서 file 생성시 encoder에서 나온 시간
+    그대로 사용하도록 수정 되었, timesync 후 tz_set 바이너리 실행:
+
+[33mcommit ce2dca3678ebd28a3af3829c0c8000493c500461[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Fri Feb 22 12:14:36 2019 +0900
+
+    TIME_ZONE 을 이용...time_zone = TIME_ZONE; 3건 수정
+
+[33mcommit 9df33423edcf9824ce209de3a10f63839d23b486[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Thu Feb 21 11:04:23 2019 +0900
+
+    이전 버전과의 setting 호환을 위한 부분 수정, version up 1.00.05
+
+[33mcommit 6e9d2e7653797f30ab7eaabf780c8824c2ce118d[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Feb 20 16:06:11 2019 +0900
+
+    app_set time_zone, timeserer 항목 설정오류 수정
+
+[33mcommit d06289c6b8fe1d5103003b36bc0c781772568d9c[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 19 17:35:30 2019 +0900
+
+    modification setting for sw reset
+
+[33mcommit e072ee022c8f27eee662546304a71e4be025353e[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 19 15:31:00 2019 +0900
+
+    onvif reboot 시 호출 함수 변경
+
+[33mcommit efa3f3f488d73836db339ad7a5b3696b8aecab4a[m
+Merge: 2029f1d 8fc3dc8
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Tue Feb 19 14:38:16 2019 +0900
+
+    Merge branch 'master' of https://github.com/linkflowlab/fitt360-firmware-security
+    
+    ...절취선...
+
+[33mcommit 2029f1db0be5b5cb6e025eb13541dfdd6d74d7e8[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Tue Feb 19 14:37:17 2019 +0900
+
+    GetNetworkInterface  추가.
+    : onvifserver 모듈의 제공 요청에 응답하는 기능
+
+[33mcommit 8fc3dc84aee38d64e5b779dae5302d9fb70f48a7[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 19 14:09:31 2019 +0900
+
+    add reset function to app_set.h
+
+[33mcommit a18402cfbfa74a213ed15549e2424b810ad84aaf[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 19 14:07:55 2019 +0900
+
+    add app_setting_rest for sw, hw reset, factory default function modified
+
+[33mcommit d0bf071f028e42148f2538e0794f3458e8822ec2[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 19 11:30:14 2019 +0900
+
+    ip_set_change 할경우 STATIC IP일때 network type 설정 안하던 오류 수정
+
+[33mcommit 59daee2eccdc9336475205386c4ccfd70c0790c6[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 19 10:40:58 2019 +0900
+
+    dhcp 설정 부분 추가, onvif server와의 통신에서 dhcp, ip, gateway, subnetmask 설정 부분 추가
+
+[33mcommit 287681249db6eaeb4021ff7417fe60ff7cf81e38[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Fri Feb 15 18:13:01 2019 +0900
+
+    onvif server 재시간 루틴 수정
+
+[33mcommit adc79ffcc51ad7be85ec7657f68b6005726b5702[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Fri Feb 15 17:07:42 2019 +0900
+
+    onvifserver wifi, cradle on/off에 따른 재시동 부분 수정
+
+[33mcommit c94299f6ba388fe700f32e15e2ef69366712378a[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Fri Feb 15 16:09:12 2019 +0900
+
+    Added interfaces SetNetworkInterfaces(), SetDefaultGateway() for NETWORK Settings
+
+[33mcommit 39f33c38a4c6c346b29d1e4539bb08ca839b7384[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Fri Feb 15 12:26:37 2019 +0900
+
+    reduce MAX_SERVER_PORT 4=>1
+
+[33mcommit 50fc61fd5a09d83f599ab69f0f73d1d6b49f74f2[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Feb 13 16:26:03 2019 +0900
+
+    onvif server restart 조건추가 기존 wifi dongle state 에 cradle 상태 변화 추가
+
+[33mcommit fbcef6ebce7f6997897ca89fa75115d70bc398f7[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Feb 13 15:37:41 2019 +0900
+
+    wifi 를 통한 onvifserver 접속 기능 수정, local time server 지원을 위한 option -t 추가
+
+[33mcommit 4c01d3ef80dfa54559aa1dc7cda847e1df0279ad[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Wed Feb 13 11:42:38 2019 +0900
+
+    onvifserver 시작 루틴 몽땅 쓰레드로 변경
+
+[33mcommit 6eedb041adcdf94ef31ddbe82bb92562e06035d2[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Feb 12 14:35:01 2019 +0900
+
+    timezone, timeserver 항목 축가
+
+[33mcommit 81763c2b69c60f16f6434f53122b7653fdb3214b[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Mon Feb 11 15:43:15 2019 +0900
+
+    설정에 dns server 주소 추가, wis-streamer 접속을 원활하게 VIDEO_MAX_FRAME_SIZE 조절
+
+[33mcommit 71d72ddc8a768d03eb7c8f37c6523f372817491a[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Fri Feb 8 19:34:37 2019 +0900
+
+    onvif network 관련 프로토콜 뼈대 추가
+
+[33mcommit df8ae0cc5ba8fa6d288e24cd27d5cf5fc5b20f0b[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Fri Feb 8 12:33:11 2019 +0900
+
+    Added SetSystemDateTime basic protocol
+
+[33mcommit 9abc8fd925737ae9d243df78c206a3f379372b1f[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Thu Feb 7 11:56:35 2019 +0900
+
+    disable onvif debug log file
+
+[33mcommit f9bc6dc350afebf8ab57f81b62607f07de59cab1[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Thu Jan 31 14:23:07 2019 +0900
+
+    video Gop runtime, 설정 추가
+
+[33mcommit 293576357cd636d443d6acc225f93111e3e0f107[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Jan 30 17:33:49 2019 +0900
+
+    onvif xml user항목 수정 version up 1.00.01
+
+[33mcommit 7738e70d406181eb0a05bb0b1a0ac53866bf1562[m
+Merge: f5df2e7 2b498fc
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Wed Jan 30 17:15:33 2019 +0900
+
+    Merge branch 'master' of https://github.com/linkflowlab/fitt360-firmware-security
+
+[33mcommit f5df2e7e2c0b48337b74bbe8f08b90dc622c4deb[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Wed Jan 30 17:14:35 2019 +0900
+
+    update init onvifconfig.xml
+
+[33mcommit 2b498fce291181531a2c38ed0f690da1126e74ca[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Jan 30 17:07:02 2019 +0900
+
+    onvif를 통한 runtime 설정 추가, version 1.00.00 으로 변경
+
+[33mcommit c1c0205a68ee96d90c67dcd52ff305535e2aba7c[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Jan 30 12:41:25 2019 +0900
+
+    wis-streamer 교체 rtsp BANK_SIZE 조절, IP Header TOS 추가
+
+[33mcommit 2523929a72ba2c6fa8c439e2ed51ec6b15866f69[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Wed Jan 30 12:22:46 2019 +0900
+
+    Change received the string parameters of ONVIF SetVideEncoderConfiguration.
+
+[33mcommit 9982c260e4f5bb6813ebe3f62f70d98cd1044957[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Tue Jan 29 17:12:31 2019 +0900
+
+    update video encoder setting values on /tmp/onvifconfig.xml
+
+[33mcommit 83128dd484782df9d2d79f7b27ccab6bacb32870[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Tue Jan 29 16:23:13 2019 +0900
+
+    onvif관련get&set resolution, timezone 구조체 추가, mcfw multi sclice 지원
+
+[33mcommit 8ebb02efab400a41d95cfe705bfc89d9089c8031[m
+Merge: 7a68bed 0a02070
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Tue Jan 29 12:43:30 2019 +0900
+
+    Merge branch 'master' of https://github.com/linkflowlab/fitt360-firmware-security
+
+[33mcommit 7a68bed2f5979dc167c55fef49079d2957031974[m
+Author: bk3810 <bkkim@linkflow.co.kr>
+Date:   Tue Jan 29 12:35:20 2019 +0900
+
+    modified the rtsp port for onvif 2nd profile of the /tmp/onvifconfig.xml
+
+[33mcommit 0a020704c95d710c9083ce27e1755cd1dbde597d[m
+Author: BKKIM <bkkim@linkflow.co.kr>
+Date:   Thu Jan 24 11:37:10 2019 +0900
+
+    modify start_uds() with pthread
+
+[33mcommit ad936ec29ccb9de2c424d949b19e42e4f7d7867b[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Mon Jan 21 15:11:51 2019 +0900
+
+    runtime set 추가 resolution, bitrate, framerate, ratecontrol
+
+[33mcommit 75f73e3c7fa6c0d2e9bab6d2b4ab4e6129d1efe3[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Thu Jan 17 14:48:09 2019 +0900
+
+    1. add rate control function, 2. add framerate control function, 3. add bitrate control function, 4. server on_off, 5, ftp on_off, 6. ADD LTE MODEM-hucom, 7. Modify default setting same as pc viewer default setting
+
+[33mcommit ab83c249d47b0f3ed7eb6d5e32079d8c370a016a[m
+Author: BKKIM <bkkim@linkflow.co.kr>
+Date:   Thu Jan 10 21:01:28 2019 +0900
+
+    ONVIF툴을 사용하여 해생도 설정 가능(HD<->SD)
+
+[33mcommit f866522f0452caaf8978044c93b39672ca866dca[m
+Author: BKKIM <bkkim@linkflow.co.kr>
+Date:   Wed Jan 9 22:30:14 2019 +0900
+
+    ONVIF UDS Socket 생성확인 및  onvifserver와 통신확인
+
+[33mcommit dda51a78c3d6b6591834202f50669b9435360bf4[m
+Merge: b2ac905 644c61e
+Author: BKKIM <bkkim@linkflow.co.kr>
+Date:   Tue Jan 8 11:54:14 2019 +0900
+
+    Merge branch 'master' of https://github.com/linkflowlab/fitt360-firmware-security
+
+[33mcommit b2ac905c6349e8a58bda99ae6ed04977c606a79b[m
+Author: BKKIM <bkkim@linkflow.co.kr>
+Date:   Tue Jan 8 11:52:43 2019 +0900
+
+    Profile S Test
+
+[33mcommit 644c61e9539ec45e388867a7aca04dfd2642d45d[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Fri Dec 21 17:02:27 2018 +0900
+
+    ftp파일 전송중 예외사항 처리 추가
+
+[33mcommit 09f799225f5c25744b073d15016affbacb94d40a[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Thu Dec 20 18:33:09 2018 +0900
+
+    ftp 서버 연동시 file handling 부분 수정 ,Cradle에 ethernet 연결(Ethernet 대역과 server 설정 대역 다른경우) -> system시작 -->systme 종료 시 정상종료 안되는 문제 수정 ,display OSD SD <---> HD toggle 시 on/off mismatch ,SD Card full + overwrite OFF 시 record 및 종료 오류 수정,1.ftp 서버에 접속 전송중 시스템 종료시 오류 file 손상 오류 발생 가능 수정 ,2.cradle & Ethernet 연결 상태에서 주기적으로 ftp 접속시도 시점 이전에 recording 시도 시 오류 발생 가능 수정
+    booting beep음 발생 후 약 5초간 record key 중단시킴 , cradle & Ethernet 미연결 시 부팅 후 바로 recording 가능
+    , default setting에서 deviceId 오류 수정
+
+[33mcommit c270beec63b74f8b6b9cc0ae5b478475063b45cb[m
+Author: BKKIM <bkkim@BKMINT19.local>
+Date:   Tue Dec 18 21:42:07 2018 +0900
+
+    BKKIM
+    2018.12.18
+    1. Make /tmp/onvifconfig.xml before start /opt/fit/bin/onvifserver
+    2. Copy the /opt/fit/bin/onvifsnapshot.jpg to /tmp/ before start /opt/fit/bin/onvifserver
+
+[33mcommit 71685751d7743b433d50a3256950559e0e1c3d34[m
+Author: BKKIM <bkkim@BKMINT19.local>
+Date:   Mon Dec 17 19:12:22 2018 +0900
+
+    added new app_onvif.hc and added ignore file name 'sdk/psp/kernel/.config.old'
+
+[33mcommit 6b831d05dc052de2339acf2dbceb1a9106e748ff[m
+Merge: 7464106 8b6ed4e
+Author: BKKIM <bkkim@BKMINT19.local>
+Date:   Mon Dec 17 19:09:18 2018 +0900
+
+    fix conflict
+
+[33mcommit 746410663c3dfcc13e8898b7276758d5fbe676da[m
+Author: BKKIM <bkkim@BKMINT19.local>
+Date:   Mon Dec 17 19:01:17 2018 +0900
+
+    Inserted command of start onvif on App_main.c file
+
+[33mcommit 8b6ed4ec35406616cc50107d4b283d2c0908b975[m
+Merge: 7f525b6 6f6d820
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Mon Dec 17 16:39:09 2018 +0900
+
+    Merge branch 'master' of https://github.com/linkflowlab/fitt360-firmware-security
+
+[33mcommit 7f525b6671d6cc1f7213cd43e11d0027cc6ee854[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Mon Dec 17 16:34:16 2018 +0900
+
+    file manager추가, recorded file search routine변경 , record관련 issues fixed, ftp 전송 routine 안정화, timesync routine 안정화
+
+[33mcommit 6f6d82085c6e10a3ccbf58ec9cdf633debaf1ba3[m
+Author: BKKIM <bkkim@BKMINT19.local>
+Date:   Mon Dec 17 10:38:34 2018 +0900
+
+    About Onvif, updated the .gitignore and the sdk/Makefile
+
+[33mcommit 89f88ffde2a07444605bb6d93dc4ea4efdd1e971[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Wed Dec 12 15:18:11 2018 +0900
+
+    timesync 처리함수 구조 수정, ddns USE define 삭제& app_set 에 ddns on/off 추가
+
+[33mcommit 859ec7b7bf0cd2673014dfad4d2df96252450842[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Mon Dec 10 17:18:38 2018 +0900
+
+    ftp server 시작 시점 조정
+
+[33mcommit 68450468d0b3cdad1729dbda21e157f7a0f3c62a[m
+Author: Hyung won Jun <hwjun0915@hanmail.net>
+Date:   Mon Dec 10 16:48:08 2018 +0900
+
+    module/avi 의Make file 수정, hw_test powerkey <--> record key, 기타 warning 제거, live555 make 구문추가
+
+[33mcommit 6b39e0b23f813458ea89a2414cbc2225b9620546[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Thu Nov 29 19:32:03 2018 +0900
+
+    Revert wis-streamer with previous one
+
+[33mcommit 7f4a0c717c529df7a9baaae21161a4c6cdc368de[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Thu Nov 29 18:56:49 2018 +0900
+
+    Fix cfg overwrite bug
+
+[33mcommit 60d99d5bf8a16f19b1e16ceefb0c32d060af514c[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Wed Nov 28 21:12:25 2018 +0900
+
+    Add script to make dat file for deploy
+
+[33mcommit 03fd29c58f43c12ad55848cc2f7554b91152fc89[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Thu Nov 29 02:21:30 2018 +0900
+
+    Added trouble shooting doc for 32bit build system(debian linux)
+
+[33mcommit 6d9ddfd7ef3b116abe5cd7c6872d2701329fb992[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Wed Nov 28 02:58:18 2018 +0900
+
+    Fix build
+    Build system does not make proper directory in specific cases
+
+[33mcommit d207e61331a31c39c6a3b971a2b2e26b3d2c661a[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Tue Nov 27 23:51:33 2018 +0900
+
+    Remove unnecessary file
+    Remove auto-generating files
+    Remove deploy files
+    Modified .gitignore
+
+[33mcommit 494d10c0e892016bb7d8f2560ef96a5ce15eadf7[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Wed Nov 28 03:10:21 2018 +0900
+
+    Added gitignore
+
+[33mcommit d180471658209341550f57bf5b987e933d169ac0[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Tue Nov 27 23:05:46 2018 +0900
+
+    * Modify Makefile in order to treat large files to use git repo (100MB limitation).
+    * Added clean and unzip functions in Makefile to clean build
+    * Fix Makefile to prevent permission issue
+
+[33mcommit 1d798d00494b20f01198094a49c7ff42718ce37e[m
+Author: Aiden Kim <aiden@linkflow.co.kr>
+Date:   Tue Nov 27 21:52:48 2018 +0900
+
+    Initial source code upload

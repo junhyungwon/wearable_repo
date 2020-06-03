@@ -1,0 +1,139 @@
+Package: libc6
+Version: 2.12.2-r10.6
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651070
+Auto-Installed: yes
+
+Package: opkg
+Version: 0.1.8+svnr609-r5-arago2.6
+Depends: libopkg0 (>= 0.1.8+svnr609), libc6 (>= 2.12.2)
+Provides: update-alternatives
+Replaces: opkg-nogpg, opkg-nogpg-nocurl
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651087
+Auto-Installed: yes
+
+Package: libstdc++-dev
+Version: 4.5.3-r10.6
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651086
+Auto-Installed: yes
+
+Package: libopkg0
+Version: 0.1.8+svnr609-r5-arago2.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651087
+Auto-Installed: yes
+
+Package: libstdc++
+Version: 4.5.3-r10.6
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: glibc-utils
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: libthread-db1
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: gdbserver
+Version: 7.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651086
+Auto-Installed: yes
+
+Package: linux-libc-headers-dev
+Version: 2.6.31-r10.6
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651087
+Auto-Installed: yes
+
+Package: glibc-extra-nss
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: libsegfault
+Version: 2.12.2-r10.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: libc6-dev
+Version: 2.12.2-r10.6
+Depends: libc6, libthread-db1, glibc-extra-nss
+Provides: libc-dev, libc6-dev, virtual-libc-dev
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: arago-feed-configs
+Version: 1.0-r12.6
+Recommends: opkg
+Provides:
+Status: install user installed
+Architecture: armv7a
+Conffiles:
+Installed-Time: 1319651087
+
+Package: task-sdk-bare
+Version: 1.0-r2-arago3.6
+Depends: libc6, virtual-libc-dev, glibc-utils, libsegfault, libthread-db1, libgcc1, libstdc++, libstdc++-dev, gdbserver, binutils-dev, linux-libc-headers-dev
+Provides:
+Status: install user installed
+Architecture: armv7a
+Installed-Time: 1319651087
+
+Package: libgcc1
+Version: 4.5.3-r10.6
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651085
+Auto-Installed: yes
+
+Package: binutils-dev
+Version: 2.20.1-r10.6
+Depends: libc6 (>= 2.12.2)
+Provides:
+Status: install ok installed
+Architecture: armv7a
+Installed-Time: 1319651087
+Auto-Installed: yes
+

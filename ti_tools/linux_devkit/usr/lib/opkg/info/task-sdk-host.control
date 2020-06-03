@@ -1,0 +1,13 @@
+Package: task-sdk-host
+Version: 1.0-r3.6
+Description: Host packages for the standalone SDK or external toolchain
+Section: base
+Priority: optional
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+License: MIT
+Architecture: i686-armv7a-sdk
+OE: task-sdk-host
+Homepage: unknown
+Build: next/c2b43ee
+Depends: binutils-cross-sdk, gcc-cross-sdk, gdb-cross-sdk, pkgconfig-sdk, opkg-sdk, libtool-sdk
+Source: file:///OE/arago-oe-dev/recipes/tasks/task-sdk-host.bb

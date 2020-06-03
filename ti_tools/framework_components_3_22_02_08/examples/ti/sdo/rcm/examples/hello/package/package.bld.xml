@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.rcm.examples.hello" version="" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.c"/>
+        <srcFile name="main_server_BIOS.c"/>
+        <srcFile name="Server.c"/>
+        <srcFile name="main_host_HLOS.c"/>
+        <srcFile name="Hello.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="Server.cfg"/>
+        <srcFile name="Hello.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.oqv7.dep" src="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.dep" src="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx/main_server_BIOS.oem3.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx/Server.oem3.dep" src="Server.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello.xqv7.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello/main_host_HLOS.oqv7.dep" src="main_host_HLOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello/Hello.oqv7.dep" src="Hello.c"/>
+        <srcFile name="package/rel/ti_sdo_rcm_examples_hello.tar.dep" src="package/rel/ti_sdo_rcm_examples_hello.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="qnx.targets.arm.Qnx"
+            version="qnx.targets.arm.Qnx{1,0,4.4,2"
+            platform="host.platforms.arm"
+            isa="v7A"
+            suffix="qv7"
+            rootDir="/apps/qnx/6.5.0/host/linux/x86/usr"
+            os="Qnx"
+            rts="qnx.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx"
+        pname="bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI814X:qnx_video"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22VIDEO-M3%22%2C%20hostProcName%3A%20%22HOST%22%2C%20sr0Name%3A%20%22SR_0%22%2C%20syslink%3A%20true%20%7D"
+        />
+    <configuration name="bin/ti_platforms_evmTI814X/Qnx/debug/Hello"
+        pname="bin/ti_platforms_evmTI814X/Qnx/debug/Hello.pqv7"
+        target="qnx.targets.arm.Qnx"
+        platform="ti.platforms.evmTI814X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7"
+        cfgScript="Hello.cfg"
+        cfgArgs="%7B%20procName%3A%20%22HOST%22%2C%20sr0Name%3A%20%22IPC_SR0%22%20%7D"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx"
+        pname="bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI814X:qnx_video"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx_pem3"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22VIDEO-M3%22%2C%20hostProcName%3A%20%22HOST%22%2C%20sr0Name%3A%20%22SR_0%22%2C%20syslink%3A%20true%20%7D"
+        />
+    <executable name="bin/ti_platforms_evmTI814X/Qnx/debug/Hello"
+        pname="bin/ti_platforms_evmTI814X/Qnx/debug/Hello.xqv7"
+        target="qnx.targets.arm.Qnx"
+        platform="ti.platforms.evmTI814X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI814X/Qnx/debug/Hello_pqv7"
+        cfgScript="Hello.cfg"
+        cfgArgs="%7B%20procName%3A%20%22HOST%22%2C%20sr0Name%3A%20%22IPC_SR0%22%20%7D"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI814X/bios/debug/Server_video_qnx.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI814X/Qnx/debug/Hello.xqv7"
+        args=""
+        groupName="bin/ti_platforms_evmTI814X/Qnx/debug/Hello.xqv7"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_rcm_examples_hello"
+        pname="ti_sdo_rcm_examples_hello.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

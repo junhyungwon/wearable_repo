@@ -1,0 +1,1609 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.rman.examples.dmaXferScratch" version="1, 0, 0" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.c"/>
+        <srcFile name="app.c"/>
+        <srcFile name="mySem.c"/>
+        <srcFile name="main_BIOS.c"/>
+        <srcFile name="edma3_all_cfg.c"/>
+        <srcFile name="edma3_c6472_cfg.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="dmaXferScratch.cfg"/>
+        <srcFile name="dmaXferScratchMulti.cfg"/>
+        <srcFile name="singleImage.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.dep" src="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.dep" src="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.dep" src="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.oe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.dep" src="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.dep" src="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.oe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.dep" src="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch/mySem.o64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch/mySem.oe64P.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch.xe674.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch/app.oe674.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch/mySem.oe674.dep" src="mySem.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch/main_BIOS.oe674.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/edma3_c6472_cfg.o64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/edma3_c6472_cfg.oe64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/edma3_c6472_cfg.o64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/edma3_c6472_cfg.oe64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/edma3_c6472_cfg.o64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/edma3_c6472_cfg.oe64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/edma3_c6472_cfg.o64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/edma3_c6472_cfg.oe64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/edma3_c6472_cfg.o64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/edma3_c6472_cfg.oe64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/edma3_c6472_cfg.o64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/edma3_c6472_cfg.oe64P.dep" src="edma3_c6472_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2/app.o64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2/edma3_all_cfg.o64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2/main_BIOS.o64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2/app.oe64P.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2/edma3_all_cfg.oe64P.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2/main_BIOS.oe64P.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage.xe66.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage/app.oe66.dep" src="app.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage/edma3_all_cfg.oe66.dep" src="edma3_all_cfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage/main_BIOS.oe66.dep" src="main_BIOS.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_rman_examples_dmaXferScratch.tar.dep" src="package/rel/ti_sdo_fc_rman_examples_dmaXferScratch.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C66"
+            version="ti.targets.elf.C66{1,0,7.2,0"
+            platform="ti.platforms.simTCI6616"
+            isa="66"
+            suffix="e66"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_dsk6455/debug/dmaXferScratch"
+        pname="bin/ti_platforms_dsk6455/debug/dmaXferScratch.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM648/debug/dmaXferScratch.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm3530/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evm3530/debug/dmaXferScratch.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_dsk6455/debug/dmaXferScratch"
+        pname="bin/ti_platforms_dsk6455/debug/dmaXferScratch.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM648/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM648/debug/dmaXferScratch.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmDM6467/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm3530/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evm3530/debug/dmaXferScratch.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmTI816X/debug/dmaXferScratch.pe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%204%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%204%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%205%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%205%2C%20numCores%3A6%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A3%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A3%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A3%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A3%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A3%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A3%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%204%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%205%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%206%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%207%2C%20numCores%3A8%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A4%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A4%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A4%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A4%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6678/debug/singleImage"
+        pname="bin/ti_platforms_evm6678/debug/singleImage.pe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66"
+        cfgScript="singleImage.cfg"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_dsk6455/debug/dmaXferScratch"
+        pname="bin/ti_platforms_dsk6455/debug/dmaXferScratch.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM648/debug/dmaXferScratch.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evm3530/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evm3530/debug/dmaXferScratch.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_dsk6455/debug/dmaXferScratch"
+        pname="bin/ti_platforms_dsk6455/debug/dmaXferScratch.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.dsk6455"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM648/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM648/debug/dmaXferScratch.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM648"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evmDM6467/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evmDM6467"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evm3530/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evm3530/debug/dmaXferScratch.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/debug/dmaXferScratch"
+        pname="bin/ti_platforms_evmTI816X/debug/dmaXferScratch.xe674"
+        target="ti.targets.elf.C674"
+        platform="ti.platforms.evmTI816X"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674"
+        cfgScript="dmaXferScratch.cfg"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%204%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%204%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%205%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5"
+        pname="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%205%2C%20numCores%3A6%7D"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A3%7D"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A3%7D"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A3%7D"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A3%7D"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A3%7D"
+        />
+    <executable name="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6474"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A3%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%204%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%205%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%206%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7"
+        pname="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%207%2C%20numCores%3A8%7D"
+        />
+    <executable name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%200%2C%20numCores%3A4%7D"
+        />
+    <executable name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%201%2C%20numCores%3A4%7D"
+        />
+    <executable name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%202%2C%20numCores%3A4%7D"
+        />
+    <executable name="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3"
+        pname="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6670"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66"
+        cfgScript="dmaXferScratchMulti.cfg"
+        cfgArgs="%7BcoreId%3A%203%2C%20numCores%3A4%7D"
+        />
+    <executable name="bin/ti_platforms_evm6678/debug/singleImage"
+        pname="bin/ti_platforms_evm6678/debug/singleImage.xe66"
+        target="ti.targets.elf.C66"
+        platform="ti.platforms.evm6678"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66"
+        cfgScript="singleImage.cfg"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_dsk6455/debug/dmaXferScratch.x64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455/debug/dmaXferScratch.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648/debug/dmaXferScratch.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648/debug/dmaXferScratch.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.x64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530/debug/dmaXferScratch.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530/debug/dmaXferScratch.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_dsk6455/debug/dmaXferScratch.xe64P"
+        args=""
+        groupName="bin/ti_platforms_dsk6455/debug/dmaXferScratch.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM648/debug/dmaXferScratch.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM648/debug/dmaXferScratch.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evmDM6467/debug/dmaXferScratch.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530/debug/dmaXferScratch.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530/debug/dmaXferScratch.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/debug/dmaXferScratch.xe674"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/debug/dmaXferScratch.xe674"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6678/debug/singleImage.xe66"
+        args=""
+        groupName="bin/ti_platforms_evm6678/debug/singleImage.xe66"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_rman_examples_dmaXferScratch"
+        pname="ti_sdo_fc_rman_examples_dmaXferScratch.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="makefile"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_dsk6455/debug/dmaXferScratch_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM648/debug/dmaXferScratch_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmDM6467/debug/dmaXferScratch_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm3530/debug/dmaXferScratch_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evmTI816X/debug/dmaXferScratch_pe674.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti0_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti1_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti2_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti3_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti4_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6472/debug/dmaXferScratchMulti5_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti0_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti1_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_p64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6474/debug/dmaXferScratchMulti2_pe64P.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti0_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti1_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti2_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti3_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti4_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti5_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti6_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/dmaXferScratchMulti7_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti0_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti1_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti2_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6670/debug/dmaXferScratchMulti3_pe66.cfg"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.xdc.inc"/>
+        <file name="package/cfg/bin/ti_platforms_evm6678/debug/singleImage_pe66.cfg"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

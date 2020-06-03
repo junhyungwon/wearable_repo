@@ -1,0 +1,13 @@
+Package: gdbserver
+Version: 7.2-r10.6
+Description: gdb: GNU debugger
+Section: base
+Priority: optional
+Maintainer: Arago Developers <arago-devel@gforge.ti.com>
+License: GPLv3+
+Architecture: armv7a
+OE: external-toolchain-arago
+Homepage: unknown
+Build: next/c2b43ee
+Depends: libc6 (>= 2.12.2)
+Source: file://SUPPORTED

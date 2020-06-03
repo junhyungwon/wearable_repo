@@ -1,0 +1,6 @@
+* Build trouble shooting
+
+1. If we cannot find ti_tools binaries even though it is located in right position
+=> it may be caused by uninstallation of linux 32bit compatibles. Probable that you may use 64bit OS=> Install proper packages
+
+> sudo apt-get install lib32bz2-1.0 lib32gcc1 lib32ncurses5 lib32stdc++6 lib32tinfo5 lib32z1

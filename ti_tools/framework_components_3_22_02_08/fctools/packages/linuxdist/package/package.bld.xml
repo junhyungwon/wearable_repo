@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="linuxdist" version="1, 0, 0" producerId="osal_1_22_01_09">
+    <units>
+    </units>
+    <sources>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="package/rel/linuxdist.tar.dep" src="package/rel/linuxdist.xdc.inc"/>
+    </makefiles>
+    <targets>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="linuxdist"
+        pname="linuxdist.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="preconfig/development/preConfig_p86U.c"/>
+        <file name="preconfig/development/preConfig_pv5T.c"/>
+        <file name="preconfig/development/preConfig.cfg"/>
+        <file name="preconfig/development/sources.inc"/>
+        <file name="preconfig/development/Makefile"/>
+        <file name="preconfig/production/preConfig_p86U.c"/>
+        <file name="preconfig/production/preConfig_pv5T.c"/>
+        <file name="preconfig/production/preConfig.cfg"/>
+        <file name="preconfig/production/sources.inc"/>
+        <file name="preconfig/production/Makefile"/>
+        <file name="build/Makefile"/>
+        <file name="cstubs/Makefile"/>
+        <file name="cstubs/LoggerPosix.c"/>
+        <file name="example/Makefile"/>
+        <file name="example/ClientApp.c"/>
+        <file name="example/RandNum.c"/>
+        <file name="example/RandNum.h"/>
+        <file name="package/package.cfg.xdc.inc"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

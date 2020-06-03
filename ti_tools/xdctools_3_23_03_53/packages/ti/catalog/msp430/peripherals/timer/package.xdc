@@ -1,0 +1,25 @@
+/* --COPYRIGHT--,EPL
+ *  Copyright (c) 2008 Texas Instruments and others.
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of the Eclipse Public License v1.0
+ *  which accompanies this distribution, and is available at
+ *  http://www.eclipse.org/legal/epl-v10.html
+ * 
+ *  Contributors:
+ *      Texas Instruments - initial implementation
+ * 
+ * --/COPYRIGHT--*/
+requires ti.catalog.msp430.peripherals.clock;
+
+/*!
+ *  ======== ti.catalog.msp430.peripherals.timer ========
+ *  MSP430 Timer_A and Timer_B peripherals
+ */
+package ti.catalog.msp430.peripherals.timer [1, 0, 0] {
+    module Timer_A2, Timer1_A2;
+    module Timer_A5, Timer0_A5;
+    module Timer_A3, Timer0_A3, Timer1_A3, Timer2_A3;
+    module Timer_B3;
+    module Timer_B7, Timer0_B7;
+    interface ITimer, ITimer_A, ITimer_B;
+}

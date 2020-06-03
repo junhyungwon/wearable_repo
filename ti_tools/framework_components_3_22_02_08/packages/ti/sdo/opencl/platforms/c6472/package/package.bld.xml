@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.opencl.platforms.c6472" version="1, 0, 0" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="Device.c"/>
+        <srcFile name="Platform.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.o64P.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.o64P.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.o64P.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.o64P.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.o64P.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.o64P.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.o674.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.o674.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.o674.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.o674.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.o674.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.o674.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oe64P.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.oe64P.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.oe64P.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oe64P.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.oe64P.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.oe64P.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oe64T.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.oe64T.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.oe64T.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oe64T.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.oe64T.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.oe64T.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oe674.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.oe674.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.oe674.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oe674.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.oe674.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.oe674.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oearp32.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.oearp32.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.oearp32.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oearp32.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.oearp32.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.oearp32.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oem3.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.oem3.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.oem3.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oem3.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.oem3.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.oem3.dep" src="Platform.c"/>
+        <srcFile name="lib/debug/opencl_platform_c6472.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oea8f.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Device.oea8f.dep" src="Device.c"/>
+        <srcFile name="package/lib/debug/opencl_platform_c6472/Platform.oea8f.dep" src="Platform.c"/>
+        <srcFile name="lib/release/opencl_platform_c6472.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/package/package_ti.sdo.opencl.platforms.c6472.oea8f.dep" src="package/package_ti.sdo.opencl.platforms.c6472.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Device.oea8f.dep" src="Device.c"/>
+        <srcFile name="package/lib/release/opencl_platform_c6472/Platform.oea8f.dep" src="Platform.c"/>
+        <srcFile name="package/rel/ti_sdo_opencl_platforms_c6472.tar.dep" src="package/rel/ti_sdo_opencl_platforms_c6472.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/opencl_platform_c6472"
+        pname="lib/debug/opencl_platform_c6472.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/opencl_platform_c6472"
+        pname="lib/release/opencl_platform_c6472.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_opencl_platforms_c6472"
+        pname="ti_sdo_opencl_platforms_c6472.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="package.bld"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/debug/opencl_platform_c6472.a64P"/>
+        <file name="lib/release/opencl_platform_c6472.a64P"/>
+        <file name="lib/debug/opencl_platform_c6472.a674"/>
+        <file name="lib/release/opencl_platform_c6472.a674"/>
+        <file name="lib/debug/opencl_platform_c6472.ae64P"/>
+        <file name="lib/release/opencl_platform_c6472.ae64P"/>
+        <file name="lib/debug/opencl_platform_c6472.ae64T"/>
+        <file name="lib/release/opencl_platform_c6472.ae64T"/>
+        <file name="lib/debug/opencl_platform_c6472.ae674"/>
+        <file name="lib/release/opencl_platform_c6472.ae674"/>
+        <file name="lib/debug/opencl_platform_c6472.aearp32"/>
+        <file name="lib/release/opencl_platform_c6472.aearp32"/>
+        <file name="lib/debug/opencl_platform_c6472.aem3"/>
+        <file name="lib/release/opencl_platform_c6472.aem3"/>
+        <file name="lib/debug/opencl_platform_c6472.aea8f"/>
+        <file name="lib/release/opencl_platform_c6472.aea8f"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

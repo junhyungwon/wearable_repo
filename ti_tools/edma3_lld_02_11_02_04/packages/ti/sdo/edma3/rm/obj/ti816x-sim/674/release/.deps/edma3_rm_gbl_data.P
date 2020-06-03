@@ -1,0 +1,7 @@
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: src/edma3_rm_gbl_data.c
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: ../../../../ti/sdo/edma3/rm/src/edma3resmgr.h
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: ../../../../ti/sdo/edma3/rm/edma3_rm.h
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: /datalocal/ti_tools/cgt_dsp/cgt6x_7_3_1//include/stdint.h
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: ../../../../ti/sdo/edma3/rm/edma3_common.h
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: ../../../../ti/sdo/edma3/rm/src/edma3_rl_cc.h
+obj/ti816x-sim/674/release/edma3_rm_gbl_data.oe674: ../../../../ti/sdo/edma3/rm/src/edma3_rl_tc.h

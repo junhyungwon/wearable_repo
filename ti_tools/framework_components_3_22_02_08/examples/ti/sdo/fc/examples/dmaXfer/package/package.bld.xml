@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.fc.examples.dmaXfer" version="1, 0, 0" producerId="undefined">
+    <units>
+        <module name="DMAXFER"/>
+    </units>
+    <sources>
+        <srcFile name="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="simpleDma.c"/>
+        <srcFile name="simpleDmacfgInit.c"/>
+    </sources>
+    <configscripts>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/package.cfg.dep" src="package.xdc"/>
+        <srcFile name="lib/release/dmaXfer.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.o64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.o64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.o64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.o64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.o64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.o64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.a64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.o64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.o64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.o674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.o674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.o674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.o674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.o674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.o674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.a674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.o674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.o674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oe64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oe64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oe64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oe64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oe64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oe64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.ae64P.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe64P.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oe64P.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oe64P.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe64T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oe64T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oe64T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe64T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oe64T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oe64T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe64T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oe64T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oe64T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.ae64T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe64T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oe64T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oe64T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oe674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oe674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oe674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oe674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oe674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oe674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.ae674.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe674.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oe674.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oe674.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oearp32.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oearp32.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oearp32.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oearp32.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oearp32.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oearp32.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oearp32.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oearp32.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oearp32.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.aearp32.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oearp32.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oearp32.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oearp32.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o86U.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.o86U.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.o86U.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o86U.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.o86U.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.o86U.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o86U.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.o86U.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.o86U.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.a86U.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o86U.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.o86U.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.o86U.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.ov5T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.ov5T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.ov5T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.ov5T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.ov5T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.ov5T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.ov5T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.ov5T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.ov5T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.av5T.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.ov5T.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.ov5T.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.ov5T.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.obnc.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.obnc.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.obnc.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.obnc.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.obnc.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.obnc.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.obnc.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.obnc.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.obnc.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.abnc.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.obnc.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.obnc.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.obnc.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o470uC.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.o470uC.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.o470uC.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.o470uC.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.o470uC.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.o470uC.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o470uC.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.o470uC.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.o470uC.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.a470uC.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.o470uC.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.o470uC.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.o470uC.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oem3.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oem3.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oem3.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oem3.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oem3.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oem3.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oem3.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oem3.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oem3.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.aem3.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oem3.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oem3.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oem3.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oea8f.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oea8f.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oea8f.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oea8f.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oea8f.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oea8f.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oea8f.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oea8f.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oea8f.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.aea8f.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oea8f.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oea8f.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oea8f.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer.ae66.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe66.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDma.oe66.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer/simpleDmacfgInit.oe66.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer.ae66.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/package/package_ti.sdo.fc.examples.dmaXfer.oe66.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDma.oe66.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer/simpleDmacfgInit.oe66.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/release/dmaXfer_q.ae66.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe66.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDma.oe66.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/release/dmaXfer_q/simpleDmacfgInit.oe66.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="lib/debug/dmaXfer_q.ae66.mak" src="package.bld"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/package/package_ti.sdo.fc.examples.dmaXfer.oe66.dep" src="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDma.oe66.dep" src="simpleDma.c"/>
+        <srcFile name="package/lib/lib/debug/dmaXfer_q/simpleDmacfgInit.oe66.dep" src="simpleDmacfgInit.c"/>
+        <srcFile name="package/rel/ti_sdo_fc_examples_dmaXfer.tar.dep" src="package/rel/ti_sdo_fc_examples_dmaXfer.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.C674"
+            version="ti.targets.C674{1,0,7.0,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64T"
+            version="ti.targets.elf.C64T{1,0,7.2,0"
+            platform="ti.platforms.sdp4430"
+            isa="64T"
+            suffix="e64T"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C674"
+            version="ti.targets.elf.C674{1,0,7.2,0"
+            platform="ti.platforms.evmDA830"
+            isa="674"
+            suffix="e674"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.arp32.ARP32"
+            version="ti.targets.elf.arp32.ARP32{1,0,1.0,0,1"
+            platform="ti.platforms.simArctic"
+            isa="arp32"
+            suffix="earp32"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arp32/1.0.0B1/Linux"
+            os="undefined"
+            rts="ti.targets.elf.arp32.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.Linux86"
+            version="gnu.targets.Linux86{1,0,4.1,0"
+            platform="host.platforms.PC"
+            isa="i686"
+            suffix="86U"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/gcc/4.1.0/Linux/gcc-4.1.0-glibc-2.3.6/i686-unknown-linux-gnu"
+            os="Linux"
+            rts="gnu.targets.rts86U">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.GCArmv5T"
+            version="gnu.targets.arm.GCArmv5T{1,0,4.2,0"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="v5T"
+            rootDir="/db/toolsrc/library/tools/vendors/mvl/arm/mvl5.0/montavista/pro/devkit/arm/v5t_le"
+            os="Linux"
+            rts="gnu.targets.arm.rtsv5T">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="google.targets.arm.Bionic"
+            version="google.targets.arm.Bionic{1,0,4.4,3"
+            platform="host.platforms.arm"
+            isa="v5T"
+            suffix="bnc"
+            rootDir="/db/toolsrc/library/tools/vendors/android/rowboat/ti814x/20111011/arm-eabi-4.4.3"
+            os="Linux"
+            rts="google.targets.arm.rts">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="gnu.targets.arm.UCArm9"
+            version="gnu.targets.arm.UCArm9{1,0,4.2,1"
+            platform="ti.platforms.evmDM6446"
+            isa="v5T"
+            suffix="470uC"
+            rootDir="/db/toolsrc/library/tools/vendors/opensource/buildroot/10122007/build_arm/staging_dir/usr"
+            os="Linux"
+            rts="gnu.targets.arm.rts470uC">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.A8F"
+            version="ti.targets.arm.elf.A8F{1,0,4.9,0"
+            platform="ti.platforms.evmDM8168"
+            isa="v7A"
+            suffix="ea8f"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C66"
+            version="ti.targets.elf.C66{1,0,7.2,0"
+            platform="ti.platforms.simTCI6616"
+            isa="66"
+            suffix="e66"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.a64P"
+        profile="release"
+        target="ti.targets.C64P"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.a64P"
+        profile="debug"
+        target="ti.targets.C64P"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.a674"
+        profile="release"
+        target="ti.targets.C674"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.a674"
+        profile="debug"
+        target="ti.targets.C674"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.ae64P"
+        profile="release"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.ae64P"
+        profile="debug"
+        target="ti.targets.elf.C64P"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.ae64T"
+        profile="release"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.ae64T"
+        profile="debug"
+        target="ti.targets.elf.C64T"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.ae674"
+        profile="release"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.ae674"
+        profile="debug"
+        target="ti.targets.elf.C674"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.aearp32"
+        profile="release"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.aearp32"
+        profile="debug"
+        target="ti.targets.elf.arp32.ARP32"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.a86U"
+        profile="release"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.a86U"
+        profile="debug"
+        target="gnu.targets.Linux86"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.av5T"
+        profile="release"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.av5T"
+        profile="debug"
+        target="gnu.targets.arm.GCArmv5T"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.abnc"
+        profile="release"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.abnc"
+        profile="debug"
+        target="google.targets.arm.Bionic"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.a470uC"
+        profile="release"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.a470uC"
+        profile="debug"
+        target="gnu.targets.arm.UCArm9"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.aem3"
+        profile="release"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.aem3"
+        profile="debug"
+        target="ti.targets.arm.elf.M3"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.aea8f"
+        profile="release"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.aea8f"
+        profile="debug"
+        target="ti.targets.arm.elf.A8F"/>
+    <library name="lib/release/dmaXfer"
+        pname="lib/release/dmaXfer.ae66"
+        profile="release"
+        target="ti.targets.elf.C66"/>
+    <library name="lib/debug/dmaXfer"
+        pname="lib/debug/dmaXfer.ae66"
+        profile="debug"
+        target="ti.targets.elf.C66"/>
+    <library name="lib/release/dmaXfer_q"
+        pname="lib/release/dmaXfer_q.ae66"
+        profile="release"
+        target="ti.targets.elf.C66"/>
+    <library name="lib/debug/dmaXfer_q"
+        pname="lib/debug/dmaXfer_q.ae66"
+        profile="debug"
+        target="ti.targets.elf.C66"/>
+    </libraries>
+    <configurations>
+    </configurations>
+    <executables>
+    </executables>
+    <tests>
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_fc_examples_dmaXfer"
+        pname="ti_sdo_fc_examples_dmaXfer.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="simpleDma.h"/>
+        <file name="package.bld"/>
+        <file name="package/package.cfg.xdc.inc"/>
+        <file name="lib/release/dmaXfer.a64P"/>
+        <file name="package/package_ti.sdo.fc.examples.dmaXfer.c"/>
+        <file name="simpleDma.c"/>
+        <file name="simpleDmacfgInit.c"/>
+        <file name="lib/debug/dmaXfer.a64P"/>
+        <file name="lib/release/dmaXfer_q.a64P"/>
+        <file name="lib/debug/dmaXfer_q.a64P"/>
+        <file name="lib/release/dmaXfer.a674"/>
+        <file name="lib/debug/dmaXfer.a674"/>
+        <file name="lib/release/dmaXfer_q.a674"/>
+        <file name="lib/debug/dmaXfer_q.a674"/>
+        <file name="lib/release/dmaXfer.ae64P"/>
+        <file name="lib/debug/dmaXfer.ae64P"/>
+        <file name="lib/release/dmaXfer_q.ae64P"/>
+        <file name="lib/debug/dmaXfer_q.ae64P"/>
+        <file name="lib/release/dmaXfer.ae64T"/>
+        <file name="lib/debug/dmaXfer.ae64T"/>
+        <file name="lib/release/dmaXfer_q.ae64T"/>
+        <file name="lib/debug/dmaXfer_q.ae64T"/>
+        <file name="lib/release/dmaXfer.ae674"/>
+        <file name="lib/debug/dmaXfer.ae674"/>
+        <file name="lib/release/dmaXfer_q.ae674"/>
+        <file name="lib/debug/dmaXfer_q.ae674"/>
+        <file name="lib/release/dmaXfer.aearp32"/>
+        <file name="lib/debug/dmaXfer.aearp32"/>
+        <file name="lib/release/dmaXfer_q.aearp32"/>
+        <file name="lib/debug/dmaXfer_q.aearp32"/>
+        <file name="lib/release/dmaXfer.a86U"/>
+        <file name="lib/debug/dmaXfer.a86U"/>
+        <file name="lib/release/dmaXfer_q.a86U"/>
+        <file name="lib/debug/dmaXfer_q.a86U"/>
+        <file name="lib/release/dmaXfer.av5T"/>
+        <file name="lib/debug/dmaXfer.av5T"/>
+        <file name="lib/release/dmaXfer_q.av5T"/>
+        <file name="lib/debug/dmaXfer_q.av5T"/>
+        <file name="lib/release/dmaXfer.abnc"/>
+        <file name="lib/debug/dmaXfer.abnc"/>
+        <file name="lib/release/dmaXfer_q.abnc"/>
+        <file name="lib/debug/dmaXfer_q.abnc"/>
+        <file name="lib/release/dmaXfer.a470uC"/>
+        <file name="lib/debug/dmaXfer.a470uC"/>
+        <file name="lib/release/dmaXfer_q.a470uC"/>
+        <file name="lib/debug/dmaXfer_q.a470uC"/>
+        <file name="lib/release/dmaXfer.aem3"/>
+        <file name="lib/debug/dmaXfer.aem3"/>
+        <file name="lib/release/dmaXfer_q.aem3"/>
+        <file name="lib/debug/dmaXfer_q.aem3"/>
+        <file name="lib/release/dmaXfer.aea8f"/>
+        <file name="lib/debug/dmaXfer.aea8f"/>
+        <file name="lib/release/dmaXfer_q.aea8f"/>
+        <file name="lib/debug/dmaXfer_q.aea8f"/>
+        <file name="lib/release/dmaXfer.ae66"/>
+        <file name="lib/debug/dmaXfer.ae66"/>
+        <file name="lib/release/dmaXfer_q.ae66"/>
+        <file name="lib/debug/dmaXfer_q.ae66"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>

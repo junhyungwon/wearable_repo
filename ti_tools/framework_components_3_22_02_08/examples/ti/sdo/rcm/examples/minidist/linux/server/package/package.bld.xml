@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--  This file conforms to the DTD xdc/bld/build.dtd -->
+<package name="ti.sdo.rcm.examples.minidist.linux.server" version="" producerId="undefined">
+    <units>
+    </units>
+    <sources>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.c"/>
+        <srcFile name="main_server_BIOS.c"/>
+        <srcFile name="SystemCfg.c"/>
+        <srcFile name="Server.c"/>
+    </sources>
+    <configscripts>
+        <srcFile name="Server.cfg"/>
+    </configscripts>
+    <makefiles>
+        <srcFile name="package.mak" src="package.bld"/>
+        <srcFile name="package/package.xdc.dep" src="package.xdc"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.dep" src="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.dep" src="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.oem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.dep" src="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.o64P.dep" src="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.dep" src="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.oe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.dep" src="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.cfg"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server/main_server_BIOS.o64P.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server/SystemCfg.o64P.dep" src="SystemCfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server/Server.o64P.dep" src="Server.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server/main_server_BIOS.oe64P.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server/SystemCfg.oe64P.dep" src="SystemCfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server/Server.oe64P.dep" src="Server.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video/main_server_BIOS.oem3.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video/SystemCfg.oem3.dep" src="SystemCfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video/Server.oem3.dep" src="Server.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss.xem3.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss/main_server_BIOS.oem3.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss/SystemCfg.oem3.dep" src="SystemCfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss/Server.oem3.dep" src="Server.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1.x64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1/main_server_BIOS.o64P.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1/SystemCfg.o64P.dep" src="SystemCfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1/Server.o64P.dep" src="Server.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1.xe64P.mak" src="package.bld"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1/main_server_BIOS.oe64P.dep" src="main_server_BIOS.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1/SystemCfg.oe64P.dep" src="SystemCfg.c"/>
+        <srcFile name="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1/Server.oe64P.dep" src="Server.c"/>
+        <srcFile name="package/rel/ti_sdo_rcm_examples_minidist_linux_server.tar.dep" src="package/rel/ti_sdo_rcm_examples_minidist_linux_server.xdc.inc"/>
+    </makefiles>
+    <targets>
+        <target name="ti.targets.C64P"
+            version="ti.targets.C64P{1,0,7.0,0"
+            platform="ti.platforms.sim6xxx:TMS320CDM420"
+            isa="64P"
+            suffix="64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.0.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.elf.C64P"
+            version="ti.targets.elf.C64P{1,0,7.2,0"
+            platform="ti.platforms.evm3530"
+            isa="64P"
+            suffix="e64P"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/c6x/7.2.0/Linux"
+            os="undefined"
+            rts="ti.targets.rts6000">
+            <model endian="little"
+                codeModel="undefined"
+                dataModel="undefined"/>
+        </target>
+        <target name="ti.targets.arm.elf.M3"
+            version="ti.targets.arm.elf.M3{1,0,4.9,0"
+            platform="ti.platforms.simDM8168"
+            isa="v7M"
+            suffix="em3"
+            rootDir="/db/toolsrc/library/tools/vendors/ti/arm/4.9.0/Linux"
+            os="undefined"
+            rts="ti.targets.arm.rtsarm">
+            <model endian="little"
+                codeModel="thumb2"
+                dataModel="undefined"/>
+        </target>
+    </targets>
+    <libraries>
+    </libraries>
+    <configurations>
+    <configuration name="bin/ti_platforms_evm3530/bios/debug/Server"
+        pname="bin/ti_platforms_evm3530/bios/debug/Server.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530:dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <configuration name="bin/ti_platforms_evm3530/bios/debug/Server"
+        pname="bin/ti_platforms_evm3530/bios/debug/Server.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530:dsp"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/bios/debug/Server_video"
+        pname="bin/ti_platforms_evmTI816X/bios/debug/Server_video.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X:video"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22VIDEO-M3%22%2C%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <configuration name="bin/ti_platforms_evmTI816X/bios/debug/Server_vpss"
+        pname="bin/ti_platforms_evmTI816X/bios/debug/Server_vpss.pem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X:vpss"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22VPSS-M3%22%2C%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/bios/debug/Server_core1"
+        pname="bin/ti_platforms_evm6472/bios/debug/Server_core1.p64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472:core1"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22CORE1%22%2C%20hostProcName%3A%20%22CORE0%22%20%7D"
+        />
+    <configuration name="bin/ti_platforms_evm6472/bios/debug/Server_core1"
+        pname="bin/ti_platforms_evm6472/bios/debug/Server_core1.pe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472:core1"
+        profile="debug"
+        isPartial="false"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22CORE1%22%2C%20hostProcName%3A%20%22CORE0%22%20%7D"
+        />
+    </configurations>
+    <executables>
+    <executable name="bin/ti_platforms_evm3530/bios/debug/Server"
+        pname="bin/ti_platforms_evm3530/bios/debug/Server.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm3530:dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_p64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <executable name="bin/ti_platforms_evm3530/bios/debug/Server"
+        pname="bin/ti_platforms_evm3530/bios/debug/Server.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm3530:dsp"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm3530/bios/debug/Server_pe64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/bios/debug/Server_video"
+        pname="bin/ti_platforms_evmTI816X/bios/debug/Server_video.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X:video"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_video_pem3"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22VIDEO-M3%22%2C%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <executable name="bin/ti_platforms_evmTI816X/bios/debug/Server_vpss"
+        pname="bin/ti_platforms_evmTI816X/bios/debug/Server_vpss.xem3"
+        target="ti.targets.arm.elf.M3"
+        platform="ti.platforms.evmTI816X:vpss"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evmTI816X/bios/debug/Server_vpss_pem3"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22VPSS-M3%22%2C%20hostProcName%3A%20%22HOST%22%20%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/bios/debug/Server_core1"
+        pname="bin/ti_platforms_evm6472/bios/debug/Server_core1.x64P"
+        target="ti.targets.C64P"
+        platform="ti.platforms.evm6472:core1"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_p64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22CORE1%22%2C%20hostProcName%3A%20%22CORE0%22%20%7D"
+        />
+    <executable name="bin/ti_platforms_evm6472/bios/debug/Server_core1"
+        pname="bin/ti_platforms_evm6472/bios/debug/Server_core1.xe64P"
+        target="ti.targets.elf.C64P"
+        platform="ti.platforms.evm6472:core1"
+        profile="debug"
+        xCfgScript="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P.cfg"
+        xCfgPrefix="package/cfg/bin/ti_platforms_evm6472/bios/debug/Server_core1_pe64P"
+        cfgScript="Server.cfg"
+        cfgArgs="%7B%20procName%3A%20%22CORE1%22%2C%20hostProcName%3A%20%22CORE0%22%20%7D"
+        />
+    </executables>
+    <tests>
+    <test exeName="bin/ti_platforms_evm3530/bios/debug/Server.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530/bios/debug/Server.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm3530/bios/debug/Server.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm3530/bios/debug/Server.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/bios/debug/Server_video.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/bios/debug/Server_video.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evmTI816X/bios/debug/Server_vpss.xem3"
+        args=""
+        groupName="bin/ti_platforms_evmTI816X/bios/debug/Server_vpss.xem3"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/bios/debug/Server_core1.x64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/bios/debug/Server_core1.x64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    <test exeName="bin/ti_platforms_evm6472/bios/debug/Server_core1.xe64P"
+        args=""
+        groupName="bin/ti_platforms_evm6472/bios/debug/Server_core1.xe64P"
+        refOutput="undefined"
+        refExitCode="0"
+        execArgs=""
+        />
+    </tests>
+    <releases relDir="package/rel/">
+    <release name="ti_sdo_rcm_examples_minidist_linux_server"
+        pname="ti_sdo_rcm_examples_minidist_linux_server.tar"
+        label="default"
+        relScript="tisb/release/filters/copyright.rel">
+        <file name="package/package.bld.xml"/>
+        <file name="package/package.ext.xml"/>
+        <file name="package/package.rel.dot"/>
+        <file name="package/build.cfg"/>
+        <file name="package/package.xdc.inc"/>
+        <file name="makefile"/>
+        <file name="package.bld"/>
+    </release>
+    </releases>
+    <repositories>
+    </repositories>
+</package>
