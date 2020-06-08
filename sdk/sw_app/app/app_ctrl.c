@@ -127,7 +127,7 @@ int ctrl_enc_multislice()
 * @section  [desc]
 *****************************************************************************/
 
-int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_15 0, FPS_10 1, FPS 5 2
+int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, FPS 5 2
 {
     char log[128] = {0, };
     char msg[128] = {0, } ;
@@ -141,21 +141,21 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_15 0, FPS_10 1, F
 
     switch(framerate)
     {
+        case FPS_30 :
+            sprintf(msg, "FPS_30") ; 
+            app_set->ch[ch].framerate = FPS_30 ;
+            break ;
         case FPS_15 :
             sprintf(msg, "FPS_15") ; 
             app_set->ch[ch].framerate = FPS_15 ;
-            break ;
-        case FPS_10 :
-            sprintf(msg, "FPS_10") ; 
-            app_set->ch[ch].framerate = FPS_10 ;
             break ;
         case FPS_5 :
             sprintf(msg, "FPS_5") ; 
             app_set->ch[ch].framerate = FPS_5 ;
             break ;
         default :
-            sprintf(msg, "FPS_15") ;
-            app_set->ch[ch].framerate = FPS_15 ;
+            sprintf(msg, "FPS_30") ;
+            app_set->ch[ch].framerate = FPS_30 ;
             printf("ctrl vid framerate default %s\n",msg) ;
             break ;
     }

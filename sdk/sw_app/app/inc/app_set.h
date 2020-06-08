@@ -21,7 +21,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define DEFAULT_FPS				15 // 20 //24
+#define DEFAULT_FPS				30 // 20 //24
 
 #define FTP_HOUR_MIN            0
 #define FTP_HOUR_MAX            24
@@ -58,8 +58,8 @@ typedef enum {
 } app_quality_e;
 
 typedef enum {
-    FPS_15=0,
-    FPS_10,
+    FPS_30=0,
+    FPS_15,
     FPS_5,
     FPS_MAX
 } app_frate_e;

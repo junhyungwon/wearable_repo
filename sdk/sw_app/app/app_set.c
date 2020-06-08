@@ -58,7 +58,7 @@ static int qbr[MAX_RESOL][MAX_QUALITY] = {
 	{ 8000, 6000, 4000}	//# 1080p
 };
 
-static int FPS_IDX[FPS_MAX]	= {15, 10, 5};
+static int FPS_IDX[FPS_MAX]	= {30, 15, 5};
 static char *cfg_dir[CFG_MAX] = {CFG_DIR_NAND, CFG_DIR_MMC};
 
 static char cMacAddr[18]; // Server's MAC address
@@ -413,8 +413,8 @@ static void cfg_param_check(app_set_t* pset)
 		if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
             pset->ch[ich].gop = DEFAULT_FPS ;
 
-		if(pset->ch[ich].framerate < FPS_15 || pset->ch[ich].framerate >= FPS_MAX)
-		    pset->ch[ich].framerate	= FPS_15;
+		if(pset->ch[ich].framerate < FPS_30 || pset->ch[ich].framerate >= FPS_MAX)
+		    pset->ch[ich].framerate	= FPS_30;
 		if(pset->ch[ich].quality < Q_HIGH || pset->ch[ich].quality	>= MAX_QUALITY)
 		    pset->ch[ich].quality = Q_HIGH;
 		if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
@@ -770,7 +770,7 @@ void app_set_default(int default_type)
 	for(ich = 0; ich < channels; ich++)
     {
 		app_set->ch[ich].resol		= RESOL_720P;
-		app_set->ch[ich].framerate	= FPS_15;
+		app_set->ch[ich].framerate	= FPS_30;
 		app_set->ch[ich].quality	= Q_HIGH;
 		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
 		app_set->ch[ich].motion 	= OFF;

@@ -94,8 +94,8 @@ static void	nsf_link_params_init(NsfLink_CreateParams *nsfPrm)
 	nsfPrm->tilerEnable			= FALSE;
 	nsfPrm->numOutQue			= 1;
 	nsfPrm->numBufsPerCh		= NUM_NSF_BUFFERS;
-	nsfPrm->inputFrameRate		= 15;
-	nsfPrm->outputFrameRate		= 15;
+	nsfPrm->inputFrameRate		= 30;
+	nsfPrm->outputFrameRate		= 30;
 }
 
 static void	null_link_params_init(NullLink_CreateParams *nullPrm, UInt32 prev_id, UInt32 prev_que_id)
@@ -183,7 +183,7 @@ static void	enc_link_params_init(EncLink_CreateParams *encPrm)
 			pLinkDynPrm->interFrameInterval		= 1;
 			pLinkDynPrm->mvAccuracy				= 0;
 //			pLinkDynPrm->inputFrameRate			= pDynPrm->inputFrameRate;
-			pLinkDynPrm->inputFrameRate			= 15;
+			pLinkDynPrm->inputFrameRate			= 30;
 			pLinkDynPrm->qpMin					= 0;
 			pLinkDynPrm->qpMax					= 0;
 			pLinkDynPrm->qpInit					= 0;
@@ -595,18 +595,20 @@ void mcfw_capture_display_init(void)
         }
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
-		//#--- encoder link
+	    //#--- encoder link
+
 		if(gVsysModuleContext.vsysConfig.enableEncode) {
 	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+
 		} else {
 			System_linkCreate(SYSTEM_VPSS_LINK_ID_NULL_0, &nullPrm0, sizeof(nullPrm0));
 		}
-//	    encoder_link_create(SYSTEM_VPSS_LINK_ID_DUP_0, 0);
-        System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_SD], &dispPrm, sizeof(dispPrm));
-//	    display_link_create(SYSTEM_VPSS_LINK_ID_DUP_1, 1, num_ch);
 
+	    //#--- display link
+        System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_SD], &dispPrm, sizeof(dispPrm));
+//	    display_link_create(SYSTEM_VPSS_LINK_ID_DUP_0, 1, num_ch /* or 1 */);
 	    dprintf("%s done!\n", __func__);
-    }
+	}
 }
 
 void mcfw_capture_display_exit(void)

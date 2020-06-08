@@ -173,7 +173,7 @@ static void proc_vid_cap(void)
 
             if(app_cfg->ste.b.rtsptx)
             {
-                if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == 4)
+                if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == 1)
                 {
 					captime += 8 ;
 
@@ -200,7 +200,7 @@ static void proc_vid_cap(void)
                     app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
-                else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == 5)
+                else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == 2)
                 {
 //                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
 
@@ -422,6 +422,8 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 			return EFAIL;
 		}
 
+        printf("channel = %d resolution = %d\n", idx, ch_prm->resol) ;
+
 		app_cfg->ich[idx].wi = wi;
 		app_cfg->ich[idx].he = he;
 		app_cfg->ich[idx].fr = get_fps_val(ch_prm->framerate);
@@ -490,7 +492,7 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 
 	vsysParams.captMode = CAPT_MODE_720P;
-	vsysParams.numChs = 4;
+	vsysParams.numChs = MAX_CH_NUM;
 
 	app_cfg->num_ch = vsysParams.numChs;
 

@@ -445,7 +445,7 @@ static void *THR_rec_evt(void *prm)
 					}
 				
               
-                    if (ifr->ch < 4) 
+                    if (ifr->ch < 1)  // for one eye 
 				    {
 
 				        if(ifr->ch == 1 && !irec->ch2_keyframe)

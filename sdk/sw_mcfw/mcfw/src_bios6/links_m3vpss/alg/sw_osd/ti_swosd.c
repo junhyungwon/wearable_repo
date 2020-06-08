@@ -367,11 +367,11 @@ static int DM81XX_SWOSD_setWinParam(SWOSD_Hndl *osdHndl, int idx, int height, in
 	bmpWinPrm.bmpWinAddrUV = SWOSD_NULL;
 	*/
 
-	xoffset = 96;
-	yoffset = 48;
+//	xoffset = 96;
+//	yoffset = 48;
 
-//	xoffset = 32;
-//	yoffset = 16;
+	xoffset = 32;
+	yoffset = 16;
 
 	//# win0 position - date/time
 	win = OSDWIN_0;
