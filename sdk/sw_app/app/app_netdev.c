@@ -419,7 +419,6 @@ static void *THR_wifi(void *prm)
 			    if(app_cfg->wmode.wifi_mode) // AP MODE
 			    {
 			        app_leds_rf_ctrl(LED_RF_OFF);
-				    app_cfg->wmode.wifi_mode = 0 ;
                	    app_cfg->ste.b.wifi_run = 0;
                 }
 			}
