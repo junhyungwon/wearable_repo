@@ -68,7 +68,6 @@ iwscan: scan_app
 iwscan_clean: scan_clean
 iwscan_all: iwscan_clean iwscan
 
-
 live555:
 	make -fMakefile -C $(LIVE555_DIR)/BasicUsageEnvironment
 	make -fMakefile -C $(LIVE555_DIR)/UsageEnvironment
@@ -76,7 +75,6 @@ live555:
 	make -fMakefile -C $(LIVE555_DIR)/liveMedia
 	make -fMakefile -C $(LIVE555_DIR)/netra_streamer/netra_interface
 	make -fMakefile -C $(LIVE555_DIR)/netra_streamer
-
 
 live555_clean:
 	make -fMakefile -C $(LIVE555_DIR)/BasicUsageEnvironment clean
@@ -96,6 +94,17 @@ p2p_clean:
 	make platform=ti -fMakefile -C $(P2P_DIR)/samples/Linux clean
 p2p_all: p2p_clean p2p
 
+voip:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/re
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/rem
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/baresip
+
+voip_clean:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/re clean
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/rem clean
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/baresip clean
+
+voip_all: voip_clean voip
 
 ##### MCFW BUILD #####
 mcfw: hdvpss m3 app
@@ -319,7 +328,7 @@ fsupdate:
 	-cp -f $(TFTP_HOME)/onvifserver $(EXEC_DIR)/bin/
 	-cp -f $(TFTP_HOME)/onvifconfig.xml $(EXEC_DIR)/bin/
 	-cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/
-	
+
 ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp $(APP_DIR)/module/wifi/8188eu_driver/8188eu.ko $(TARGET_FS)/lib/modules/.
 	sudo /bin/cp $(APP_DIR)/module/wifi/8188cu_driver/8192cu.ko $(TARGET_FS)/lib/modules/.

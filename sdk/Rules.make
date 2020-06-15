@@ -26,7 +26,7 @@ RDK_BOARD_TYPE := DM8107_UBX
 MODEL_NAME := "NEXX360"
 
 #TYPE 1 NETWORK VERSION
-MODEL_TYPE := 1        
+MODEL_TYPE := 1
 #TYPE 0 BASIC VERSION
 #MODEL_TYPE := 0
 #################################
@@ -136,6 +136,11 @@ IWSCAN_DIR        := $(APP_DIR)/module/iw_scan
 
 LIVE555_DIR       := $(APP_DIR)/module/live555
 P2P_DIR           := $(APP_DIR)/module/p2p
+
+# VOIP Client
+SYSROOT			  := $(BUILD_TOOL_DIR)/arm-arago-linux-gnueabi/usr
+VOIP_DIR          := $(APP_DIR)/module/voip
+LIBREM_PATH		  := $(APP_DIR)/module/voip/rem
 
 # IPC
 ipc_INCLUDE 	  := $(ipc_PATH)/packages
@@ -261,3 +266,6 @@ export IWSCAN_DIR
 export LIVE555_DIR
 export MODEL_NAME
 export MODEL_TYPE
+export LIBREM_PATH
+export SYSROOT
+
