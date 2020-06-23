@@ -131,7 +131,7 @@ int sysctl_message(
 				ret = write(cs, wbuf, sizeof wbuf);
 				CGI_DBG("Sent CMD:%s\n", wbuf);
 
-				// wait response and read sizeof T_CGI_NETWORK_CONFIG bytes
+				// wait response and read sizeof T_CGI_SERVERS_CONFIG bytes
 				ret = read(cs, (T_CGI_SERVERS_CONFIG*)data, sizeof(T_CGI_SERVERS_CONFIG));
 				CGI_DBG("Read, size:%d\n", ret);
 
@@ -434,6 +434,30 @@ CGI_DBG("\nw:%d, h:%d, kbps:%d, fps:%d, ei:%d, gov:%d\n", w, h, kbps, fps, ei, g
 				}
 			}
 			break;
+		case UDS_CMD_UPDATE_ONVIF_USER:
+			{
+				// 1.write command
+				sprintf(wbuf, "%s", STR_MSG_CMD_UPDATE_ONVIF_USER);
+				ret = write(cs, wbuf, sizeof(wbuf));
+				CGI_DBG("Sent CMD : cs:(%d), CMD:%s, wrtten len = %d \n", cs, wbuf, ret);
+
+				// 2. check ready
+				ret = read(cs, rbuf, sizeof rbuf);
+				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+
+				// 3. write onvif user info
+				ret = write(cs, data, sizeof(T_CGI_ONVIF_USER));
+				CGI_DBG("Sent T_CGI_ONVIF_USER Data: written len = %d\n", ret);
+
+				// 4. read response
+				ret = read(cs, rbuf, sizeof rbuf);
+				if(ret>0){
+					CGI_DBG("read:%s\n", rbuf);
+					close(cs);
+					return 0;
+				}
+			}
+			break;
 		case UDS_CMD_CHANGE_PASSWORD:
 			{
 				// 1.write command
@@ -468,19 +492,11 @@ CGI_DBG("\nw:%d, h:%d, kbps:%d, fps:%d, ei:%d, gov:%d\n", w, h, kbps, fps, ei, g
 				CGI_DBG("Sent CMD : cs:(%d), CMD:%s, len = %d \n", cs, wbuf, ret);
 
 				// wait response and read 256 bytes
-				ret = read(cs, rbuf, sizeof rbuf);
-				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+				T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
+				ret = read(cs, &p, sizeof p);
+				CGI_DBG("read T_CGI_VIDEO_QUALITY, ret=%d\n", ret);
 				if(ret > 0){
-					T_CGI_VIDEO_QUALITY *q = (T_CGI_VIDEO_QUALITY*)data;
-					sscanf(rbuf, "%d %d %d %d %d %d %d %d", 
-							&q->rec.fps,
-							&q->rec.bps,
-							&q->rec.gop,
-							&q->rec.rc,
-							&q->stm.fps,
-							&q->stm.bps,
-							&q->stm.gop,
-							&q->stm.rc);
+					memcpy(data, &p, sizeof(p));
 					close(cs);
 					return 0;
 				}
@@ -498,19 +514,13 @@ CGI_DBG("\nw:%d, h:%d, kbps:%d, fps:%d, ei:%d, gov:%d\n", w, h, kbps, fps, ei, g
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
 
 				// 3. write id/password info
-				T_CGI_VIDEO_QUALITY vq;
-				memcpy(&vq, data, sizeof(vq));
-				sprintf(wbuf, "%d %d %d %d %d %d %d %d", 
-						vq.rec.fps, vq.rec.bps, vq.rec.gop, vq.rec.rc,
-						vq.stm.fps, vq.stm.bps, vq.stm.gop, vq.stm.rc);
-				ret = write(cs, wbuf, sizeof(wbuf));
-				CGI_DBG("Sent Data:%s, written len = %d\n", wbuf, ret);
+				ret = write(cs, data, sizeof(T_CGI_VIDEO_QUALITY));
+				CGI_DBG("Sent T_CGI_VIDEO_QUALITY, written len = %d\n", ret);
 
-				// 4. wait response and read 256 bytes
+				// 4. wait response and read OK
 				ret = read(cs, rbuf, sizeof rbuf);
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
-
 					// check return value
 					close(cs);
 					return 0;

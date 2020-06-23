@@ -116,7 +116,7 @@ int put_json_all_config()
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj;
-	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj;
+	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj;
 	json_object *system_obj;
 
 	// all, entire...
@@ -142,6 +142,7 @@ int put_json_all_config()
 		//json_object_object_add(recordobj, "desc",  json_object_new_string("Video Quality for Recording"));
 		json_object_object_add(camera_obj, "record", recordobj);
 
+		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
 		json_object_object_add(streamobj, "fps", json_object_new_int(p.stm.fps));
 		json_object_object_add(streamobj, "bps", json_object_new_int(p.stm.bps));
 		json_object_object_add(streamobj, "gop", json_object_new_int(p.stm.gop));
@@ -227,6 +228,7 @@ int put_json_all_config()
 	ddns_obj = json_object_new_object();
 	dns_obj = json_object_new_object();
 	ntp_obj = json_object_new_object();
+	onvif_obj = json_object_new_object();
 	{
 		T_CGI_SERVERS_CONFIG p;memset(&p, 0, sizeof p);
 		if(0>sysctl_message(UDS_GET_SERVERS_CONFIG, (void*)&p, sizeof p )){
@@ -264,7 +266,12 @@ int put_json_all_config()
 		json_object_object_add(servers_obj, "timezone",       json_object_new_int(p.time_zone));
 		json_object_object_add(servers_obj, "timezone_abbr",  json_object_new_string(p.time_zone_abbr));
 		json_object_object_add(servers_obj, "daylightsaving", json_object_new_int(p.daylight_saving));
-		json_object_object_add(servers_obj, "enable_onvif",   json_object_new_int(p.enable_onvif));
+
+		// onvif server settings
+		json_object_object_add(onvif_obj,   "enable",  json_object_new_int(p.onvif.enable));
+		json_object_object_add(onvif_obj,   "id",      json_object_new_string(p.onvif.id));
+		json_object_object_add(onvif_obj,   "pw",      json_object_new_string(p.onvif.pw));
+		json_object_object_add(servers_obj, "onvif", onvif_obj);
 	}
 	json_object_object_add(all_config, "servers_settings", servers_obj);
 
@@ -307,6 +314,7 @@ _FREE_SERVERS_OBJ:
 	json_object_put(ddns_obj);
 	json_object_put(dns_obj);
 	json_object_put(ntp_obj);
+	json_object_put(onvif_obj);
 	json_object_put(servers_obj);
 
 _FREE_NETWORK_OBJ:
@@ -363,7 +371,7 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj;
+	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj;
 
 	myobj   = json_object_new_object();
 	bsobj   = json_object_new_object();
@@ -371,6 +379,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	ddnsobj = json_object_new_object();
 	dnsobj  = json_object_new_object();
 	ntpobj  = json_object_new_object();
+	onvif_obj = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
@@ -407,7 +416,12 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(myobj, "timezone",       json_object_new_int(p->time_zone));
 	json_object_object_add(myobj, "timezone_abbr",  json_object_new_string(p->time_zone_abbr));
 	json_object_object_add(myobj, "daylightsaving", json_object_new_int(p->daylight_saving));
-	json_object_object_add(myobj, "enable_onvif",   json_object_new_int(p->enable_onvif));
+
+	// onvif server settings
+	json_object_object_add(onvif_obj, "enable",  json_object_new_int   (p->onvif.enable));
+	json_object_object_add(onvif_obj, "id",      json_object_new_string(p->onvif.id));
+	json_object_object_add(onvif_obj, "pw",      json_object_new_string(p->onvif.pw));
+	json_object_object_add(myobj, "onvif", onvif_obj);
 
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
@@ -421,6 +435,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(ddnsobj);
 	json_object_put(dnsobj);
 	json_object_put(ntpobj);
+	json_object_put(onvif_obj);
 	json_object_put(myobj);
 }
 
@@ -537,10 +552,11 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 	json_object_object_add(recordobj, "rc",  json_object_new_int(p->rec.rc));
 	json_object_object_add(myobj, "record", recordobj);
 
-	json_object_object_add(streamobj, "fps", json_object_new_int(p->stm.fps));
-	json_object_object_add(streamobj, "bps", json_object_new_int(p->stm.bps));
-	json_object_object_add(streamobj, "gop", json_object_new_int(p->stm.gop));
-	json_object_object_add(streamobj, "rc",  json_object_new_int(p->stm.rc));
+	json_object_object_add(streamobj, "resolution", json_object_new_int(p->stm.res));
+	json_object_object_add(streamobj, "fps",        json_object_new_int(p->stm.fps));
+	json_object_object_add(streamobj, "bps",        json_object_new_int(p->stm.bps));
+	json_object_object_add(streamobj, "gop",        json_object_new_int(p->stm.gop));
+	json_object_object_add(streamobj, "rc",         json_object_new_int(p->stm.rc));
 	json_object_object_add(myobj, "stream", streamobj);
 
 	PUT_CACHE_CONTROL_NOCACHE;

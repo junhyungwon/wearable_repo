@@ -27,6 +27,8 @@
 -----------------------------------------------------------------------------*/
 extern const char* const WEB_DEFAULT_ID;
 extern const char* const WEB_DEFAULT_PW;
+extern const char* const ONVIF_DEFAULT_ID;
+extern const char* const ONVIF_DEFAULT_PW;
 
 int     app_web_boot_passwordfile(); // on boot time
 int     app_web_make_passwordfile(char *id, char *pw, int lv, int authtype);

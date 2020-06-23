@@ -51,6 +51,8 @@ const char* const P2P_DEFAULT_ID  = "linkflow";
 const char* const P2P_DEFAULT_PW  = "12345678";
 const char* const WEB_DEFAULT_ID  = "admin";
 const char* const WEB_DEFAULT_PW  = "admin";
+const char* const ONVIF_DEFAULT_ID  = "admin";
+const char* const ONVIF_DEFAULT_PW  = "admin";
 
 static int qbr[MAX_RESOL][MAX_QUALITY] = {
 	{ 2000, 1000, 512},		//# 480p
@@ -219,7 +221,11 @@ static void char_memset(void)
 	memset(app_set->account_info.webuser.id, CHAR_MEMSET, MAX_CHAR_32) ; 
 	memset(app_set->account_info.webuser.pw, CHAR_MEMSET, MAX_CHAR_32) ;
 
-    memset(app_set->account_info.reserved, CFG_INVALID, 186) ;
+	app_set->account_info.onvif.lv = 0 ;
+	memset(app_set->account_info.onvif.id, CHAR_MEMSET, MAX_CHAR_32) ; 
+	memset(app_set->account_info.onvif.pw, CHAR_MEMSET, MAX_CHAR_32) ;
+
+    memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
 
     memset(app_set->reserved, CFG_INVALID, 474) ;
 
@@ -370,6 +376,10 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.webuser.lv = %d\n", pset->account_info.webuser.lv) ;
     printf("pset->account_info.webuser.id = %s\n", pset->account_info.webuser.id) ;
     printf("pset->account_info.webuser.pw = %s\n", pset->account_info.webuser.pw) ;
+
+    printf("pset->account_info.onvif.lv = %d\n", pset->account_info.onvif.lv) ;
+    printf("pset->account_info.onvif.id = %s\n", pset->account_info.onvif.id) ;
+    printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
 
 	printf("\n");
 
@@ -689,6 +699,24 @@ static void cfg_param_check(app_set_t* pset)
     printf("pset->account_info.webuser.lv		= %d\n", pset->account_info.webuser.lv) ;
     printf("pset->account_info.webuser.authtype = %d\n", pset->account_info.webuser.authtype) ;
 
+	// onvif user
+    if((int)pset->account_info.onvif.id[0] == CHAR_INVALID || (int)pset->account_info.onvif.id[0] == 0){
+		strcpy(pset->account_info.onvif.id, ONVIF_DEFAULT_ID);
+		strcpy(pset->account_info.onvif.pw, ONVIF_DEFAULT_PW);
+		pset->account_info.onvif.lv = 0;       // 0:Administrator default
+	}
+    if((int)pset->account_info.onvif.pw[0] == CHAR_INVALID || (int)pset->account_info.onvif.pw[0] == 0){
+		strcpy(pset->account_info.onvif.pw, ONVIF_DEFAULT_PW);
+		pset->account_info.onvif.lv = 0;
+	}
+    if(pset->account_info.onvif.lv <= CFG_INVALID || pset->account_info.onvif.lv > 4) {
+		pset->account_info.onvif.lv       = 0;
+	}
+    printf("pset->account_info.onvif.lv		= %d\n", pset->account_info.onvif.lv) ;
+    printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
+    printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
+
+
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 
@@ -919,11 +947,15 @@ void app_set_default(int default_type)
         strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
 	}
 
+	app_set->account_info.webuser.lv = 0;			// 0:Administrator, 1:operator?(TBD)
+	app_set->account_info.webuser.authtype = 0;		// 0:basic, 1:digest(TBD)
 	strcpy(app_set->account_info.webuser.id, WEB_DEFAULT_ID);
 	strcpy(app_set->account_info.webuser.pw, WEB_DEFAULT_PW);
 
-	app_set->account_info.webuser.lv = 0;			// 0:Administrator, 1:operator?(TBD)
-	app_set->account_info.webuser.authtype = 0;		// 0:basic, 1:digest(TBD)
+	app_set->account_info.onvif.lv = 0;	// 0:Administrator
+	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
+	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
+
 }
 
 void app_set_delete_cfg(void)
@@ -1108,6 +1140,20 @@ int app_set_web_password(char *id, char *pw, int lv, int authtype)
 		return 0;
 	}
 	aprintf(" Can't set %s's password\n", id);
+
+	return -1;
+}
+
+int app_set_onvif_password(char *id, char *pw, int lv)
+{
+	if(strcmp(id, ONVIF_DEFAULT_ID)==0) {
+		strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID);
+		strcpy(app_set->account_info.onvif.pw, pw);
+		app_set->account_info.onvif.lv = lv;
+
+		return 0;
+	}
+	aprintf("ONVIF Can't set %s's password to %s\n", id, pw);
 
 	return -1;
 }

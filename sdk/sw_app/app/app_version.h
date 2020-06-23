@@ -32,12 +32,12 @@
 
 #if SW_RELEASE
     #if USE_WIRELESS
-        #define FITT360_SW_VER      "2.04.00Nr"
+        #define FITT360_SW_VER      "2.04.00Ns"
     #else
-        #define FITT360_SW_VER	    "2.04.00Br"
+        #define FITT360_SW_VER	    "2.04.00Bs"
     #endif
 #else
-#define FITT360_SW_VER			"2.04.00.Dr"
+#define FITT360_SW_VER			"2.04.00.Ds"
 #endif
 
 #define FITT360_HW_VER			"Rev.0.3"

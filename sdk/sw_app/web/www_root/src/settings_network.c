@@ -39,7 +39,7 @@ int main()
 
 	printf("<wifi_ap>\n");
 	printf("<ssid>%s</ssid>\n", t.wifi_ap.id);
-	printf("<pw>%s</pw>\n", t.wifi_ap.pw);
+	printf("<pw>%s</pw>\n",     t.wifi_ap.pw);
 	printf("</wifi_ap>\n");
 
 	/* live stream account enc type list*/

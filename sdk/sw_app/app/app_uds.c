@@ -194,6 +194,40 @@ static int getNetworkInfo(const char *devName, ONVIF_NET_INFO * out_info)
 	return -1;
 }
 
+void *thdRestartOnvifServer(void *arg)
+{
+	int cnt=0;
+	char buff = 'e';
+	int nCS = *((int *)arg);
+	do {
+		usleep(1000);
+		int n2 = send(nCS, buff, 1, MSG_NOSIGNAL);
+		if(n2 == -1)
+			break;
+		if(cnt++>3)
+			break;
+	}while(1);
+
+	// 바로 호출시 socket이 물려 있어서 정상종료되지 않는 경우가 있다, 그래서 이렇게 하긴 했는데 더 좋은 방법이 있을것 같은데 뭘까나..
+	app_onvifserver_restart();
+}	
+
+static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)
+{
+	if(strcmp(pUser->UserName, "admin")==0) {
+		strcpy(app_set->account_info.onvif.pw, pUser->Password);
+		app_set->account_info.onvif.lv = pUser->UserLevel;
+
+		int nCS = cs;
+		static pthread_t tid_restart_onvif; // restart onvif
+		int status = pthread_create(&tid_restart_onvif, NULL, thdRestartOnvifServer, (void *)&nCS);
+
+		return 0;
+	}
+
+	return -1;
+}
+
 static int setHostname(int fromDHCP, char *hname)
 {
 	DBG_UDS("fromDHCP:%d, hostname:%s\n", fromDHCP, hname);
@@ -378,8 +412,8 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 			if(app_set->account_info.enctype) {//1,  AES
 				char enc_ID[32]={0};
 				char enc_PW[32]={0};
-                encrypt_aes(t->live_stream_account.id, enc_ID, 32) ;
-                encrypt_aes(t->live_stream_account.pw, enc_PW, 32) ;
+                encrypt_aes(t->live_stream_account.id, enc_ID, 32);
+                encrypt_aes(t->live_stream_account.pw, enc_PW, 32);
 				
 				//# if aes output is zero, strncpy can't copy all of data..
 				//strncpy(app_set->account_info.rtsp_userid, enc_ID, 32);
@@ -420,6 +454,21 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 	}
 
 	return isChanged;
+}
+
+int updateOnvifUser(T_CGI_ONVIF_USER *t)
+{
+	if(!strcmp(t->id, ONVIF_DEFAULT_ID)) {
+		strcpy(app_set->account_info.onvif.pw, t->pw);
+		app_set->account_info.onvif.lv = t->lv;
+
+		app_onvifserver_restart();
+
+		return 0;
+	}
+
+	aprintf(" Can't set %s's password to %s\n", t->id, t->pw);
+	return -1;
 }
 
 int updateUser(T_CGI_USER *t)
@@ -478,7 +527,11 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	t->time_zone = app_set->time_info.time_zone-12;				  // return (0 ~ 26) - 12  
 	strcpy(t->time_zone_abbr, app_set->time_info.time_zone_abbr);
 	t->daylight_saving = app_set->time_info.daylight_saving;
-	t->enable_onvif = app_set->net_info.enable_onvif;
+
+	// onvifserver
+	t->onvif.enable = app_set->net_info.enable_onvif;
+	strcpy(t->onvif.id, app_set->account_info.onvif.id); // max 32
+	strcpy(t->onvif.pw, app_set->account_info.onvif.pw); // max 32
 
 	return 0;
 }
@@ -583,15 +636,23 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		isChanged++;
 	}
 
-	if(app_set->net_info.enable_onvif != t->enable_onvif){
-		app_set->net_info.enable_onvif = t->enable_onvif;
-		isChanged++;
-	}
-
 	if(strcmp(app_set->time_info.time_zone_abbr, t->time_zone_abbr)){
 		strcpy(app_set->time_info.time_zone_abbr, t->time_zone_abbr); // 6
 		isChanged++;
 	}
+
+	// onvifserver
+	if(app_set->net_info.enable_onvif != t->onvif.enable){
+		app_set->net_info.enable_onvif = t->onvif.enable;
+		isChanged++;
+	}
+	if(0!=strcmp(app_set->account_info.onvif.pw, t->onvif.pw)){
+		strcpy(app_set->account_info.onvif.pw, t->onvif.pw); // 31
+		isChanged++;
+
+		app_onvifserver_restart();
+	}
+
 
 	return isChanged;
 	// restart 후에 적용됨. 2019년 8월 22일, 웹에서 apply,누르면 restart는 하는걸로...
@@ -673,6 +734,20 @@ static int getResolution(int VideoEncoding, int *w, int *h)
 	}
 
 	return 0;
+}
+
+static int getResolutionIdx(int ch)
+{
+	int res_idx = 0; // 0:1080p, 1:720p, 2:480p
+
+    if(app_set->ch[ch].resol == RESOL_1080P) // FHD
+		res_idx = 0;
+    else if(app_set->ch[ch].resol == RESOL_720P) // HD
+		res_idx = 1;
+    else if(app_set->ch[ch].resol == RESOL_480P) // SD
+		res_idx = 2;
+
+	return res_idx;
 }
 
 // The parameter "ch" means  Recording or Streaming
@@ -796,7 +871,7 @@ static int setP2PServer(int p2p_enable, char *username, char *password)
 }
 
 static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
-                           int stm_fps, int stm_bps, int stm_gop, int stm_rc)
+              int stm_res, int stm_fps, int stm_bps, int stm_gop, int stm_rc)
 {
 	int ch=0;
 	
@@ -816,6 +891,8 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 
 	ch=4;// display
 
+	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		app_set->ch[ch].resol = stm_res ;
 	if(stm_fps < FPS_MAX && stm_fps >= 0 && app_set->ch[ch].framerate != stm_fps)
 		app_set->ch[ch].framerate = stm_fps ;
 	if(stm_bps < MAX_QUALITY && stm_bps >= 0 &&app_set->ch[ch].quality != stm_bps)
@@ -826,7 +903,7 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 		app_set->ch[ch].rate_ctrl = stm_rc;
 	}
 
-	DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_fps, stm_bps, stm_gop, stm_rc);
+	DBG_UDS("ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
 
 	return 0;
 }
@@ -1073,6 +1150,22 @@ void *myFunc(void *arg)
 			else {
 				DBG_UDS("ret:%d, ", ret);
 				perror("failed write:");
+			}
+		}
+		else if (strcmp(rbuf, "SetOnvifUser") == 0){
+			sprintf(wbuf, "[APP_UDS] --- SetOnvifUser ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			T_ONVIF_USER st;
+			memset(&st, 0, sizeof st);
+			ret = read(cs_uds, &st, sizeof st);
+			if(ret > 0){
+				DBG_UDS("SetOnvifUser id:%s, pw:%s\n", st.UserName, st.Password);
+				SetOnvifUser(&st, cs_uds);
+			}
+			else {
+				DBG_UDS("ret:%d, ", ret);
+				perror("failed read:");
 			}
 		}
 		else if (strcmp(rbuf, "SetNetworkInterfaces") == 0){ //subnet -> prefixlen
@@ -1451,7 +1544,6 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "GetNetworkConfiguration") == 0) {
 			sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration ---");
 			//app_log_write(MSG_LOG_WRITE, wbuf);
-			char strOptions[256] = {0}; // write 256
 			{
 				/* start init */
 				T_CGI_NETWORK_CONFIG t;
@@ -1561,30 +1653,39 @@ void *myFunc(void *arg)
 			sprintf(wbuf, "[APP_UDS] --- GetVideoQuality ---");
 			//app_log_write(MSG_LOG_WRITE, wbuf);
 
+			/*
 			char strOptions[256] = {0}; // write 256
 			{
-				int rec_fps=0, rec_kbps=0, rec_gop=0, rec_rc=0;
-				int stm_fps=0, stm_kbps=0, stm_gop=0, stm_rc=0;
-
-				rec_fps  = getFpsIdx (0);
-				rec_kbps = getKbpsIdx(0);
-				rec_gop  = getGop (0);
-				rec_rc   = getRC  (0);
-				stm_fps  = getFpsIdx (4);
-				stm_kbps = getKbpsIdx(4);
-				stm_gop  = getGop (4);
-				stm_rc   = getRC  (4);
-
 				// fps, bps, iframe, rate control by order
 				sprintf(strOptions, "%d %d %d %d %d %d %d %d", 
 						rec_fps, rec_kbps, rec_gop, rec_rc,
 						stm_fps, stm_kbps, stm_gop, stm_rc);
+				int rec_fps=0, rec_kbps=0, rec_gop=0, rec_rc=0;
+				int stm_fps=0, stm_kbps=0, stm_gop=0, stm_rc=0;
 			}
-
 			ret = write(cs_uds, strOptions, sizeof strOptions);
+			*/
+
+				T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
+
+				// get recording inforamtion
+				p.rec.res = getResolutionIdx(0);
+				p.rec.fps = getFpsIdx (0);
+				p.rec.bps = getKbpsIdx(0);
+				p.rec.gop = getGop (0);
+				p.rec.rc  = getRC  (0);
+
+				// get streaming information
+				p.stm.res = getResolutionIdx(4);
+				p.stm.fps = getFpsIdx (4);
+				p.stm.bps = getKbpsIdx(4);
+				p.stm.gop = getGop (4);
+				p.stm.rc  = getRC  (4);
+
+			ret = write(cs_uds, &p, sizeof p);
 			if (ret > 0) {
 				// TODO something...
-				DBG_UDS("sent, ret=%d, strOptions:%s\n", ret, strOptions);
+				DBG_UDS("sent, ret=%d\n", ret);
 			} else {
 				DBG_UDS("ret:%d, ", ret);
 				perror("failed write: ");
@@ -1592,34 +1693,24 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetVideoQuality") == 0){
 			sprintf(wbuf, "[APP_UDS] --- SetVideoQuality ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			//app_log_write(MSG_LOG_WRITE, wbuf);
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
 			ret = write(cs_uds, wbuf, sizeof wbuf);
 
 			if(ret > 0){
-				ret = read(cs_uds, rbuf, sizeof rbuf);
-				DBG_UDS("read:%s, ret=%d\n", rbuf, ret);
+				T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
+				ret = read(cs_uds, &p, sizeof p);
+				DBG_UDS("read T_CGI_VIDEO_QUALITY, ret=%d\n", ret);
 				if(ret > 0){
-					int rec_fps=0, rec_bps=0, rec_gop=0, rec_rc=0;
-					int stm_fps=0, stm_bps=0, stm_gop=0, stm_rc=0;
-					sscanf(rbuf, "%d %d %d %d %d %d %d %d", 
-							&rec_fps,
-							&rec_bps,
-							&rec_gop,
-							&rec_rc,
-							&stm_fps,
-							&stm_bps,
-							&stm_gop,
-							&stm_rc);
-					setVideoQuality(rec_fps, rec_bps, rec_gop, rec_rc,
-							stm_fps, stm_bps, stm_gop, stm_rc);
+					setVideoQuality(p.rec.fps, p.rec.bps, p.rec.gop, p.rec.rc,
+							p.stm.res, p.stm.fps, p.stm.bps, p.stm.gop, p.stm.rc);
 
-					char strOptions[128] = "OK";
+					char strOptions[128] = "OK"; // Send DONE
 					ret = write(cs_uds, strOptions, sizeof strOptions);
 				} else {
-					DBG_UDS("ret:%d, ", ret);
+					DBG_UDS("failed read T_CGI_VIDEO_QUALITY, ret:%d, ", ret);
 					perror("failed read: ");
 				}
 			} else {
@@ -1628,6 +1719,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetVideoEncoderConfiguration") == 0){
+			// Onvifserver uses this command
 			sprintf(wbuf, "[APP_UDS] --- GetVideoEncoderConfiguration---");
 			app_log_write(MSG_LOG_WRITE, wbuf);
 
@@ -1664,7 +1756,7 @@ void *myFunc(void *arg)
 
 		}
 		else if (strcmp(rbuf, "GetOperationConfiguration") == 0){
-			sprintf(wbuf, "[APP_UDS] --- GetVideoEncoderConfiguration---");
+			sprintf(wbuf, "[APP_UDS] --- GetOperationConfiguration---");
 			//					app_log_write(MSG_LOG_WRITE, wbuf);
 
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
@@ -1735,6 +1827,8 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetVideoEncoderConfiguration") == 0)
 		{
+			//OnvifServer uses this command
+			sprintf(wbuf, "[APP_UDS] --- SetVideoEncoderConfiguration---");
 			memset(rbuf, 0, sizeof rbuf);
 			ret = read(cs_uds, rbuf, sizeof rbuf);
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
@@ -1800,10 +1894,10 @@ void *myFunc(void *arg)
 
 					if(rcv_fps != 0) // 
 					{
-						if(rcv_fps > 12)
-							rcv_fps = 0 ;                   // HIGH 0 -> 15fps 
-						else if(rcv_fps <= 12 && rcv_fps > 8)
-							rcv_fps = 1 ;                   // MID 1 -> 10fps
+						if(rcv_fps > 20)
+							rcv_fps = 0 ;                   // HIGH 0 -> 30fps 
+						else if(rcv_fps <= 20 && rcv_fps > 8)
+							rcv_fps = 1 ;                   // MID 1 -> 15fps
 						else if(rcv_fps <= 8)
 							rcv_fps = 2 ;                   // LOW 2 -> 5fps
 						else
@@ -1885,7 +1979,43 @@ void *myFunc(void *arg)
 						// Just save changes, this settings will adjust after system restart.
 					}
 					else {
-						sprintf(strOptions, "%s", "UPDATE ERROR");
+						sprintf(strOptions, "%s", "ERROR UPDATE USER");
+					}
+
+					// 3. send result
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed write: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
+		else if (strcmp(rbuf, "UpdateOnvifUser") == 0)
+		{
+			sprintf(wbuf, "[APP_UDS] --- UpdateOnvifUser ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			// 1. send READY
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+
+			if(ret > 0){
+				T_CGI_ONVIF_USER user;
+
+				// 1. read user info
+				ret = read(cs_uds, &user, sizeof(user));
+				if(ret > 0){
+
+					char strOptions[128] = "OK";
+					// 2. update user info
+					if(0==updateOnvifUser(&user)){
+						// Just save changes, this settings will adjust after system restart.
+					}
+					else {
+						sprintf(strOptions, "%s", "ERROR UPDATE ONVIFUSER");
 					}
 
 					// 3. send result
@@ -1934,11 +2064,6 @@ void *myFunc(void *arg)
 					}
 					// 1. make a password file (basic or digest)
 					// 2. save user info to system_cfg file
-					// 3. change webserver config.
-					// 4. send result to cgi
-					// 5. reboot webserver from cgi
-				} else {
-					DBG_UDS("ret:%d, ", ret);
 					perror("failed read: ");
 				}
 			} else {
@@ -1963,7 +2088,7 @@ void * uds_syscmd_thread(void * arg)
 	int listenfd;
 	int cs_uds;				///< client socket
 	socklen_t cs_len;
-	int s_state, ipaddr;
+	int s_state;
 	struct sockaddr_un cs_addr;
 	struct sockaddr_un servaddr;
 
@@ -1992,8 +2117,6 @@ void * uds_syscmd_thread(void * arg)
 		perror("listen error : ");
 		exit(0);
 	}
-
-	pthread_t tid;
 
 	while (g_thd_running)
 	{

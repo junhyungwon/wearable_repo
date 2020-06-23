@@ -14,6 +14,7 @@
 #ifndef _APP_ONVIFSERVER_H_
 #define _APP_ONVIFSERVER_H_
 
+#include <stdint.h>
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
@@ -58,6 +59,18 @@ typedef struct tagOnvifNetInfo {
     char gateway[16];
 } ONVIF_NET_INFO, T_NETWORK_INFO;
 
+typedef struct tagOnvifUser {
+    uint32_t	PasswordFlag    : 1;		    	        // Indicates whether the field Password is valid
+	uint32_t	Reserved        : 31;
+
+	int 		fixed;										// used by onvif server
+	
+	char    UserName[100];	                            // required, User name
+	char    Password[100];	                            // optional, optional password
+
+	int     UserLevel;
+} ONVIF_USER, T_ONVIF_USER;
+
 //# define enum
 #define FILE_UDS_ONVIF  "/tmp/onvif.socket"
 
@@ -75,6 +88,7 @@ extern "C" {
 int app_onvifserver_start(void);
 int app_onvifserver_stop(void);
 int app_onvifserver_restart(void);
+int app_onvifserver_restart_all(void);
 
 #ifdef __cplusplus
 }
