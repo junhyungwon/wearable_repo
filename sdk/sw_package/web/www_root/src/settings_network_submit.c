@@ -11,6 +11,7 @@
 
 static int submit_settings()
 {
+	int len=0;
     int ret,isPOST = 0;
     T_CGIPRM prm[128];
 
@@ -48,8 +49,8 @@ static int submit_settings()
 		char cradle_gw[32]={0};
 		char cradle_mask[32]={0};
 
-		char wifiap_ssid[32]={0};
-		char wifiap_pw[32]={0};
+		char wifiap_ssid[128]={0};
+		char wifiap_pw[128]={0};
 
 		int  live_stream_account_enable = -1; // if unchecked, it is not delivered
 		int  live_stream_account_enctype = -1; // if unchecked, it is not delivered
@@ -108,17 +109,29 @@ static int submit_settings()
 				wireless_iptype, wireless_ipv4, wireless_gw, wireless_mask);
         CGI_DBG("cradle_iptype:%d, cradle_ipv4:%s, cradle_gw:%s, cradle_mask:%s\n", 
 				cradle_iptype, cradle_ipv4, cradle_gw, cradle_mask);
-        CGI_DBG("wifi_ap, ssid:%s, pw:%s\n", 
-				wifiap_ssid, wifiap_pw);
+        CGI_DBG("wifi_ap, ssid:%s, pw:%s\n", wifiap_ssid, wifiap_pw);
         CGI_DBG("live_stream_account_enable:%d, id:%s, pw:%s\n", 
 				live_stream_account_enable, live_stream_account_id, live_stream_account_pw);
 
 		// check not null
-		if( wireless_iptype == -1 || cradle_iptype == -1 || live_stream_account_enable == -1
-		|| strlen(wifiap_ssid) == 0 
-		//|| strlen(wifiap_pw) == 0 // Allow NULL password. 2020.02.26
-		) {
+		if( wireless_iptype == -1 || cradle_iptype == -1 || live_stream_account_enable == -1) 
+		{
 			CGI_DBG("Invalid Parameter\n");
+			return ERR_INVALID_PARAM;
+		}
+
+
+		len = strlen(wifiap_ssid);
+		if( len == 0 || len > 32)
+		{
+			CGI_DBG("Invalid Parameter, WIFI SSID , len=%d\n", len);
+			return ERR_INVALID_PARAM;
+		}
+
+		len = strlen(wifiap_pw);
+		if ( len != 0 && (len < 8 || len > 63) ) // Allow NULL password. 2020.02.26
+		{
+			CGI_DBG("Invalid Parameter, wifi password, len=%d\n", len);
 			return ERR_INVALID_PARAM;
 		}
 

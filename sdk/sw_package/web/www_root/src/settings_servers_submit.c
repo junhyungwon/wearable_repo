@@ -124,11 +124,19 @@ static int submit_settings_qcgi()
 			CGI_DBG("str:%s\n", str);
             enable_onvif = atoi(str);
         }
+        str= req->getstr(req, "txt_onvif_id", false);
+        if (str != NULL) {
+            sprintf(t.onvif.id, "%s", str);
+        }
+        str= req->getstr(req, "txt_onvif_pw", false);
+        if (str != NULL) {
+            sprintf(t.onvif.pw, "%s", str);
+        }
 
         //req->free(req);
 
-        CGI_DBG("bs_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d\n", 
-				bs_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone);
+        CGI_DBG("bs_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
+				bs_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone, t.onvif.id, t.onvif.pw);
 
 		if( bs_enable == -1 || ms_enable == -1 || ddns_enable == -1 || ntp_enable == -1 || daylight_saving == -1 || (bFitt360 && enable_onvif == -1)
 		|| time_zone == -99) {
@@ -143,9 +151,9 @@ static int submit_settings_qcgi()
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;
 		t.daylight_saving = daylight_saving;
-		t.enable_onvif = enable_onvif;
 		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
 		t.time_zone = time_zone;      // A value of +12 is only device.
+		t.onvif.enable = enable_onvif;
 
         // check parameter values
 
@@ -162,7 +170,9 @@ static int submit_settings_qcgi()
     }
 }
 
-static int submit_settings() // deprecated
+
+#if 0 // deprecated
+static int submit_settings()
 {
 
     int ret, isPOST = 0;
@@ -290,7 +300,7 @@ static int submit_settings() // deprecated
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;
 		t.daylight_saving = daylight_saving;
-		t.enable_onvif = enable_onvif;
+		t.onvif.enable = enable_onvif;
 		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
 		t.time_zone = time_zone;      // A value of +12 is only device.
 
@@ -312,6 +322,7 @@ static int submit_settings() // deprecated
     }
 
 }
+#endif // deprecated
 
 int main(int argc, char *argv[])
 {

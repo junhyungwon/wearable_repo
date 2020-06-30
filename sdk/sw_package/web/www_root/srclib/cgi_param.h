@@ -42,6 +42,13 @@ typedef struct _tagNtpInfo {
 	int  enable;
 	char serveraddr[32];
 }T_CGI_NTP_INFO;
+
+typedef struct _tagCgiOnvifConfig {
+    int  enable; // 1:enable, 0:disable
+    char id[32]; // fixed "admin"
+    char pw[32];
+}T_CGI_ONVIF_CONFIG;
+
 typedef struct _tagCgiServersConfig {
 	T_CGI_BACKUP_SERVER bs;  //ftp
 	T_CGI_MANAGE_SERVER ms;
@@ -51,7 +58,7 @@ typedef struct _tagCgiServersConfig {
 	int					time_zone;
     char 				time_zone_abbr[6] ; // timezone 문자열...
 	int					daylight_saving;
-	int					enable_onvif;
+	T_CGI_ONVIF_CONFIG  onvif;
 }T_CGI_SERVERS_CONFIG;
 /* end of servers settings */
 
@@ -78,6 +85,7 @@ typedef struct _tagCgiOperationConfiguration {
 
 typedef struct _tagCgiEncoderSettings{
     int codec;                  // 264, mjpeg
+    int res;                    // 0:1080p, 1:720p, 2:480p
     int fps;                    // HIGH MEDIUM LOW
     int bps;                    // HIGH MEDIUM LOW
     int gop;        // 1~30
@@ -98,6 +106,12 @@ typedef struct _tagCgiUser {
 
 }T_CGI_USER;
 
+typedef struct _tagCgiOnvifUser {
+    char id[256];         // ID
+    char pw[256];         // PW
+    int  lv;              // 0:adminitrator, 1:operator, 2:viewer
+}T_CGI_ONVIF_USER;
+
 typedef struct _tagCgiNetworkInterface{
     int  addr_type;          // static or dhcp
     char ipv4[32];       // IP
@@ -106,8 +120,8 @@ typedef struct _tagCgiNetworkInterface{
 }T_CGI_NETWORK_INTERFACE;
 
 typedef struct _tagCgiAccount {
-    char id[32];         // ID
-    char pw[32];         // PW
+    char id[128];         // ID
+    char pw[128];         // PW
 }T_CGI_ACCOUNT;
 
 typedef struct _tagCgiNetworkConfiguration {

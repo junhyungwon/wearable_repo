@@ -200,6 +200,12 @@ typedef struct {
 
 
 typedef struct {
+    unsigned char       lv;        // 0:administrator, 1:operator, 2:viewer, 3:guest
+    char                id[MAX_CHAR_32];
+    char                pw[MAX_CHAR_32];
+} app_onvifuser_t; // 65
+
+typedef struct {
     unsigned char       authtype;      // 0:basic, 1:digest
     char                id[MAX_CHAR_32];
     char                pw[MAX_CHAR_32];
@@ -212,9 +218,11 @@ typedef struct {
     char rtsp_userid[MAX_CHAR_32] ;
     char rtsp_passwd[MAX_CHAR_32] ;
 
-    app_webuser_t           webuser; 
+    app_webuser_t           webuser;   //66 
 
-    char reserved[186] ;
+    app_onvifuser_t        onvif; // 65
+
+    char reserved[121] ;
 } app_account_t ; // size:320
 
 typedef struct {
@@ -258,5 +266,6 @@ void app_setting_reset(int type) ; // for onvif
 
 int app_set_web_password(char *id, char *pw, int lv, int authtype);
 void set_ap_value(void);
+int app_set_onvif_password(char *id, char *pw, int lv);
 
 #endif	/* _APP_SET_H_ */

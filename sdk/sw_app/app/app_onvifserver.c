@@ -383,9 +383,11 @@ int app_onvif_init_config()
 
 		// user settings, Set default only, 
 		{
+
 			fputs("	<user>\n", fp);
-			fputs("		<username>admin</username>\n", fp);
-			fputs("		<password>admin</password>\n", fp);
+			fputs("		<username>admin</username>\n", fp); // Fixed admin
+			sprintf(str, "	<password>%s</password>\n", app_set->account_info.onvif.pw);
+			fputs(str, fp);
 			fputs("		<userlevel>Administrator</userlevel>\n", fp);
 			fputs("	</user>\n", fp);
 		}
@@ -717,7 +719,12 @@ int app_onvifserver_stop(void)
     return 0;
 }
 
-int app_onvifserver_restart()
+int app_onvifserver_restart() // just app
+{
+	return init_onvifserver();
+}
+
+int app_onvifserver_restart_all() // app, thread and uds_thread
 {
     app_onvifserver_stop();
 

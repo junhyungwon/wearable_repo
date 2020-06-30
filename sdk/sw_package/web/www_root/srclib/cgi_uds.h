@@ -12,7 +12,8 @@
 #define STR_MSG_CMD_REBOOT           "SystemReboot"
 #define STR_MSG_CMD_RESTART          "SystemReboot"
 #define STR_MSG_CMD_UPDATE_USER      "UpdateUser"
-#define STR_MSG_CMD_CONTRL_TELNETD   "ControlTelnetd"
+#define STR_MSG_CMD_UPDATE_ONVIF_USER "UpdateOnvifUser"
+#define STR_MSG_CMD_CONTRL_TELNETD    "ControlTelnetd"
 
 #define STR_MSG_GET_ENCODER_INFO     "GetVideoEncoderInformation"
 #define STR_MSG_GET_VIDEO_QUALITY    "GetVideoQuality"
@@ -45,6 +46,7 @@ enum _enumUdsCmd {
     UDS_CMD_CHANGE_PASSWORD,        
     UDS_CMD_CHECK_ACCOUNT,         // check current password
     UDS_CMD_UPDATE_USER,
+    UDS_CMD_UPDATE_ONVIF_USER,
 
     UDS_GET_VIDEO_ENCODER_INFORMATION,
     UDS_SET_VIDEO_ENCODER_INFORMATION,

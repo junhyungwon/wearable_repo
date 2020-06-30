@@ -414,6 +414,7 @@ static void *THR_wifi(void *prm)
 		} 
 		else 
 		{
+/*		
 		    if(strcmp(MODEL_NAME, "NEXX360") == 0)  // NEXX360 ONLY
 			{
 			    if(app_cfg->wmode.wifi_mode) // AP MODE
@@ -422,6 +423,7 @@ static void *THR_wifi(void *prm)
                	    app_cfg->ste.b.wifi_run = 0;
                 }
 			}
+*/
 			/* remove process -> wcli */
 #if USE_WIRELESS
             if(!app_cfg->ste.b.dial_run && !app_cfg->ste.b.eth1_run) 

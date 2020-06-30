@@ -38,7 +38,7 @@ static int submit_settings()
 
         int i=0;
 		int rec_fps=-1,rec_bps=-1,rec_gop=-1,rec_rc=-1;
-		int stm_fps=-1,stm_bps=-1,stm_gop=-1,stm_rc=-1;
+		int stm_res=-1,stm_fps=-1,stm_bps=-1,stm_gop=-1,stm_rc=-1;
 
         for(;i<cnt;i++) {
 
@@ -55,6 +55,10 @@ static int submit_settings()
             else if(!strcmp(prm[i].name, "rec_rc")){
                 rec_rc = atoi(prm[i].value);
             }
+            else if(!strcmp(prm[i].name, "stm_resolution")){
+                stm_res= atoi(prm[i].value);
+				stm_res = 2 - stm_res; // 0:1080p, 1:720p, 2:480p
+            } 
             else if(!strcmp(prm[i].name, "stm_fps")){
                 stm_fps= atoi(prm[i].value);
             } 
@@ -70,13 +74,15 @@ static int submit_settings()
         }
 		
 		if( rec_fps == -1 || rec_bps == -1 || rec_gop == -1 || rec_rc==-1
-		||  stm_fps == -1 || stm_bps == -1 || stm_gop == -1 || stm_rc==-1 ){
+		||  stm_res < 0 || stm_res > 2 || stm_fps == -1 || stm_bps == -1 || stm_gop == -1 || stm_rc==-1 ){
 			CGI_DBG("Invalid Parameter\n");
+			CGI_DBG("rec_fps:%d, rec_bps:%d, rec_gop:%d, rec_rc:%d\n", rec_fps, rec_bps, rec_gop, rec_rc);
+			CGI_DBG("stm_res:%d, stm_fps:%d, stm_bps:%d, stm_gop:%d, stm_rc:%d\n", stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
 			return ERR_INVALID_PARAM;
 		}
 
         CGI_DBG("rec_fps:%d, rec_bps:%d, rec_gop:%d, rec_rc:%d\n", rec_fps, rec_bps, rec_gop, rec_rc);
-        CGI_DBG("stm_fps:%d, stm_bps:%d, stm_gop:%d, stm_rc:%d\n", stm_fps, stm_bps, stm_gop, stm_rc);
+        CGI_DBG("stm_res:%d, stm_fps:%d, stm_bps:%d, stm_gop:%d, stm_rc:%d\n", stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
 
         // Must finish parsing before free.
         if(isPOST){ free(contents); }
@@ -88,6 +94,7 @@ static int submit_settings()
 		vq.rec.bps = rec_bps;
 		vq.rec.gop = rec_gop;
 		vq.rec.rc  = rec_rc;
+		vq.stm.res = stm_res; // 0:480p, 1:720p, 2:1080p
 		vq.stm.fps = stm_fps;
 		vq.stm.bps = stm_bps;
 		vq.stm.gop = stm_gop;
