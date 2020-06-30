@@ -1,4 +1,0 @@
-webRules.make
-www_root/**/*.o
-www_root/**/*.so
-www_root/**/*.cgi

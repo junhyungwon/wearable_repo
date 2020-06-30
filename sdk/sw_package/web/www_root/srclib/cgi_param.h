@@ -1,0 +1,131 @@
+#ifndef __CGI_PARAM_H__
+#define __CGI_PARAM_H__
+////////////////////////////////////////////////////////////////////////////////
+
+enum _enumUserLevel{
+    USER_LV_ADMINISTRATOR=0,
+    USER_LV_OPERATOR,
+    USER_LV_VIEWER,
+    USER_LV_MAX
+};
+
+typedef struct _tagCgiParam {
+    char *name;
+    char *value;
+}T_CGIPRM;
+
+/* start of servers settings */
+typedef struct _tagBackupServer {
+	int  enable;
+	char serveraddr[32];
+	char id[32];
+	char pw[32];
+	int  port;
+}T_CGI_BACKUP_SERVER;
+typedef struct _tagManageServer {
+	int  enable;
+	char serveraddr[128];				// ref) SERVER_URL_SIZE on app_set.h
+	int  port;
+}T_CGI_MANAGE_SERVER;
+typedef struct _tagDdnsInfo {
+	int  enable;
+	char serveraddr[64];
+	char hostname[32];
+	char id[32];
+	char pw[32];
+}T_CGI_DDNS_INFO;
+typedef struct _tagDnsInfo{
+	char server1[32];
+	char server2[32];
+}T_CGI_DNS_INFO;
+typedef struct _tagNtpInfo {
+	int  enable;
+	char serveraddr[32];
+}T_CGI_NTP_INFO;
+typedef struct _tagCgiServersConfig {
+	T_CGI_BACKUP_SERVER bs;  //ftp
+	T_CGI_MANAGE_SERVER ms;
+	T_CGI_DDNS_INFO     ddns;
+	T_CGI_DNS_INFO      dns;
+	T_CGI_NTP_INFO      ntp;
+	int					time_zone;
+    char 				time_zone_abbr[6] ; // timezone 문자열...
+	int					daylight_saving;
+	int					enable_onvif;
+}T_CGI_SERVERS_CONFIG;
+/* end of servers settings */
+
+typedef struct _tagCgiP2pServerConfig {
+    int  enable;
+    char uid[32];
+    char username[32];
+    char password[32];
+}T_CGI_P2PSERVER_CONFIG;
+
+typedef struct _tagCgiRecordingConfig {
+    int pre_rec;        // on or off
+    int auto_rec;         // enable on startup
+    int audio_rec;         // on / off
+    int interval;       // rec interval minutes
+    int overwrite;      // on,off;
+}T_CGI_RECORDING_CONFIG;
+
+typedef struct _tagCgiOperationConfiguration {
+    T_CGI_RECORDING_CONFIG rec;
+    int display_datetime;
+    T_CGI_P2PSERVER_CONFIG p2p;
+}T_CGI_OPERATION_CONFIG;
+
+typedef struct _tagCgiEncoderSettings{
+    int codec;                  // 264, mjpeg
+    int fps;                    // HIGH MEDIUM LOW
+    int bps;                    // HIGH MEDIUM LOW
+    int gop;        // 1~30
+    int rc;           // VBR CBR
+}T_CGI_ENCODER_SETTINGS;
+
+typedef struct _tagCgiVideoQuality{
+    T_CGI_ENCODER_SETTINGS rec;         // recording
+    T_CGI_ENCODER_SETTINGS stm;         // streaming
+}T_CGI_VIDEO_QUALITY;
+
+
+typedef struct _tagCgiUser {
+    char id[256];         // ID
+    char pw[256];         // PW
+    int  lv;              // 0:adminitrator, 1:operator, 2:viewer
+    int  authtype;        // 0:basic, 1:digest(default)
+
+}T_CGI_USER;
+
+typedef struct _tagCgiNetworkInterface{
+    int  addr_type;          // static or dhcp
+    char ipv4[32];       // IP
+    char gw[32];         // Gateway
+    char mask[32];       // Net MASK
+}T_CGI_NETWORK_INTERFACE;
+
+typedef struct _tagCgiAccount {
+    char id[32];         // ID
+    char pw[32];         // PW
+}T_CGI_ACCOUNT;
+
+typedef struct _tagCgiNetworkConfiguration {
+    T_CGI_NETWORK_INTERFACE wireless;
+    T_CGI_NETWORK_INTERFACE cradle;
+    T_CGI_ACCOUNT wifi_ap;
+    int       live_stream_account_enable;
+	int		  live_stream_account_enctype;
+    T_CGI_ACCOUNT live_stream_account;
+}T_CGI_NETWORK_CONFIG;
+
+typedef struct _tagCgiSystemConfiguration{
+	char model[32];
+	char fwver[32];
+	char devid[32];
+	char mac[32];
+	char uid[32];
+}T_CGI_SYSTEM_CONFIG;
+
+////////////////////////////////////////////////////////////////////////////////
+#endif//__CGI_PARAM_H__
