@@ -61,9 +61,18 @@ app_web:
 app_web_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
 
+baresip:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip
 
-ubxapp: app app_web fsupdate
-ubxapp_all: app_clean app_web_clean ubxapp
+baresip_clean:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re clean
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem clean
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
+
+ubxapp: app app_web wlan_scan baresip fsupdate
+ubxapp_all: app_clean app_web_clean wlan_scan_clean baresip_clean ubxapp
 
 ##### EXTERNAL OPENSOURCE PACKAGE BUILD #####
 
@@ -110,21 +119,9 @@ p2p_clean:
 
 p2p_all: p2p_clean p2p
 
-voip:
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip
+app_pkg: libavi wlan_scan live555
 
-voip_clean:
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re clean
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem clean
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
-
-voip_all: voip_clean voip
-
-app_pkg: libavi wlan_scan live555 voip
-
-app_pkg_clean: libavi_clean wlan_scan_clean live555_clean voip_clean
+app_pkg_clean: libavi_clean wlan_scan_clean live555_clean
 
 ##### MCFW BUILD #####
 mcfw: hdvpss m3 app

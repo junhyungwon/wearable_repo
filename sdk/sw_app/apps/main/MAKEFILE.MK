@@ -12,6 +12,6 @@ INCLUDE += -I$(EXTERNAL_PACKAGE)/web/www_root/include
 LIBS= $(LIB_DIR)/app_fitt.a $(MCFW_LIBS) $(AUDIO_LIBS) $(CMEM_LIB) $(BLKID_LIBS)
 
 # app addition
-LIBS += -L$(SHLIB_DIR) -lmulti_avi -lfont_db
+LIBS += -L$(SHLIB_DIR) -lmulti_avi -lfont_db -lzmq
 
 include $(MCFW_ROOT_PATH)/makerules/common_footer_a8.mk

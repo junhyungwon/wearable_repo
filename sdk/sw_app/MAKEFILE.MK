@@ -12,8 +12,11 @@ app_fitt:
 	make -fMAKEFILE.MK -C$(APP_DIR)/device MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/graphic MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/rtsptx MODULE=app_fitt $(TARGET)
-	make -fMAKEFILE.MK -C$(APP_DIR)/app MODULE=app_fitt $(TARGET)
+	make -fMAKEFILE.MK -C$(APP_DIR)/apps/main MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/control_sock MODULE=app_fitt $(TARGET)
+
+app_rec:
+	make -fMAKEFILE.MK -C$(APP_DIR)/apps/record MODULE=app_rec $(TARGET)
 
 app_fitt_hw_test:
 	make -fMAKEFILE.MK -C$(APP_DIR)/graphic MODULE=hw_test $(TARGET)
@@ -21,12 +24,13 @@ app_fitt_hw_test:
 	make -fMAKEFILE.MK -C$(APP_DIR)/hw_test MODULE=hw_test $(TARGET)
 
 
-libs: app_fitt
+libs: app_fitt app_rec
 
 libs_test: app_fitt_hw_test
 
 apps:
-	make -fMAKEFILE.MK -C$(APP_DIR)/app MODULE=app_fitt $(TARGET)
+	make -fMAKEFILE.MK -C$(APP_DIR)/apps/main MODULE=app_fitt $(TARGET)
+	make -fMAKEFILE.MK -C$(APP_DIR)/apps/record MODULE=app_rec $(TARGET)
 
 apps_test:
 	make -fMAKEFILE.MK -C$(APP_DIR)/hw_test MODULE=hw_test $(TARGET)
@@ -39,4 +43,4 @@ clean_test:
 
 all: clean apps
 
-.PHONY: hw_test app_fitt app_fitt_hw_test libs libs_test apps apps_test clean clean_test app all
+.PHONY: hw_test app_fitt app_rec app_fitt_hw_test libs libs_test apps apps_test clean clean_test app all

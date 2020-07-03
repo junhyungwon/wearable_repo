@@ -131,7 +131,7 @@ TARGET_FS_DIR     := $(TARGET_FS)/opt/bin
 APP_DIR           := $(RDK_INSTALL_DIR)/sw_app
 MCFW_ROOT_PATH    := $(RDK_INSTALL_DIR)/sw_mcfw
 TFTP_HOME     	  := $(RDK_INSTALL_DIR)/bin
-APP_INC_DIR       := $(APP_DIR)/app
+APP_INC_DIR       := $(APP_DIR)/apps
 
 # The directory that points RDK external package
 EXTERNAL_PACKAGE  := $(RDK_INSTALL_DIR)/sw_package
