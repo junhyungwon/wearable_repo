@@ -807,6 +807,8 @@ sdk/psp/kernel/drivers/input/misc/.built-in.o.cmd
 sdk/psp/kernel/drivers/input/misc/.kxcj9.o.cmd
 sdk/psp/kernel/drivers/input/misc/built-in.o
 sdk/psp/kernel/drivers/input/misc/kxcj9.o
+sdk/psp/kernel/drivers/input/misc/.uinput.o.cmd
+sdk/psp/kernel/drivers/input/misc/uinput.o
 sdk/psp/kernel/drivers/input/misc/modules.builtin
 sdk/psp/kernel/drivers/input/misc/modules.order
 sdk/psp/kernel/drivers/input/modules.builtin
