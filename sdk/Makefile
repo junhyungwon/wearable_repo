@@ -61,18 +61,15 @@ app_web:
 app_web_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
 
-baresip:
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip
+sipc:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip all
 
-baresip_clean:
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re clean
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem clean
+sipc_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
 
-ubxapp: app app_web wlan_scan baresip fsupdate
-ubxapp_all: app_clean app_web_clean wlan_scan_clean baresip_clean ubxapp
+ubxapp: app app_web wlan_scan sipc fsupdate
+ubxapp_clean: app_clean app_web_clean wlan_scan_clean sipc_clean
+ubxapp_all: ubxapp_clean ubxapp
 
 ##### EXTERNAL OPENSOURCE PACKAGE BUILD #####
 

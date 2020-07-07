@@ -9,9 +9,7 @@
 #   USE_TLS           Enable SIP over TLS transport
 #
 
-PROJECT	  := baresip
-VERSION   := 0.6.5
-DESCR     := "Baresip is a modular SIP User-Agent with audio and video support"
+BIN	:= baresip.out
 
 # Verbose and silent build modes
 ifeq ($(V),)
@@ -42,11 +40,9 @@ endif
 include $(LIBRE_MK)
 include mk/modules.mk
 
-LIBREM_PATH := ../rem
 ifndef LIBREM_PATH
 LIBREM_PATH	:= $(shell [ -d ../rem ] && echo "../rem")
 endif
-
 
 CFLAGS    += -I. -Iinclude -I$(LIBRE_INC)
 ifneq ($(LIBREM_PATH),)
@@ -66,7 +62,6 @@ ifneq ($(SYSROOT_LOCAL),)
 CXXFLAGS  += -I$(SYSROOT_LOCAL)/include/rem
 endif
 CXXFLAGS  += $(EXTRA_CXXFLAGS)
-
 
 # XXX: common for C/C++
 CPPFLAGS += -DHAVE_INTTYPES_H
@@ -88,30 +83,20 @@ CFLAGS += -isystem $(SYSROOT)/local/include
 endif
 endif
 
-
 # Optional dependencies
 ifneq ($(STATIC),)
 CFLAGS    += -DSTATIC=1
 CXXFLAGS  += -DSTATIC=1
 endif
 
-INSTALL := install
-ifeq ($(DESTDIR),)
-PREFIX  := /usr/local
-else
-PREFIX  := /usr
-endif
 BINDIR	:= $(PREFIX)/bin
 INCDIR  := $(PREFIX)/include
-BIN	:= $(PROJECT)$(BIN_SUFFIX)
-TEST_BIN	:= selftest$(BIN_SUFFIX)
 SHARED  := lib$(PROJECT)$(LIB_SUFFIX)
 STATICLIB  := libbaresip.a
 ifeq ($(STATIC),)
 MOD_BINS:= $(patsubst %,%$(MOD_SUFFIX),$(MODULES))
 endif
 APP_MK	:= src/srcs.mk
-TEST_MK	:= test/srcs.mk
 MOD_MK	:= $(patsubst %,modules/%/module.mk,$(MODULES))
 MOD_BLD	:= $(patsubst %,$(BUILD)/modules/%,$(MODULES))
 LIBDIR     := $(PREFIX)/lib
@@ -121,14 +106,12 @@ CFLAGS     += -DPREFIX=\"$(PREFIX)\"
 CFLAGS    += -DMOD_PATH=\"$(MOD_PATH)\"
 CFLAGS    += -DSHARE_PATH=\"$(SHARE_PATH)\"
 
-
-all: sanity $(MOD_BINS) $(BIN)
+all: $(MOD_BINS) $(BIN)
 
 .PHONY: modules
 modules:	$(MOD_BINS)
 
 include $(APP_MK)
-include $(TEST_MK)
 include $(MOD_MK)
 
 OBJS      := $(patsubst %.c,$(BUILD)/src/%.o,$(filter %.c,$(SRCS)))
@@ -165,28 +148,9 @@ ifeq ($(OS),win32)
 TEST_LIBS += -static-libgcc
 endif
 
-
 -include $(APP_OBJS:.o=.d)
 
--include $(TEST_OBJS:.o=.d)
-
-
-sanity:
-ifeq ($(LIBRE_MK),)
-	@echo "ERROR: Missing common makefile for libre. Check LIBRE_MK"
-	@exit 2
-endif
-ifeq ($(LIBRE_INC),)
-	@echo "ERROR: Missing header files for libre. Check LIBRE_INC"
-	@exit 2
-endif
-ifeq ($(LIBRE_SO),)
-	@echo "ERROR: Missing library files for libre. Check LIBRE_SO"
-	@exit 2
-endif
-
 Makefile:	mk/*.mk $(MOD_MK) $(LIBRE_MK)
-
 
 $(SHARED): $(LIB_OBJS)
 	@echo "  LD      $@"
@@ -200,34 +164,10 @@ ifneq ($(RANLIB),)
 	$(HIDE)$(RANLIB) $@
 endif
 
-libbaresip.pc:
-	@echo 'prefix='$(PREFIX) > libbaresip.pc
-	@echo 'exec_prefix=$${prefix}' >> libbaresip.pc
-	@echo 'libdir=$${prefix}/lib' >> libbaresip.pc
-	@echo 'includedir=$${prefix}/include' >> libbaresip.pc
-	@echo '' >> libbaresip.pc
-	@echo 'Name: libbaresip' >> libbaresip.pc
-	@echo 'Description: $(DESCR)' >> libbaresip.pc
-	@echo 'Version: '$(VERSION) >> libbaresip.pc
-	@echo 'URL: http://www.creytiv.com/baresip.html' >> libbaresip.pc
-	@echo 'Libs: -L$${libdir} -lbaresip' >> libbaresip.pc
-	@echo 'Cflags: -I$${includedir}' >> libbaresip.pc
-
 $(BIN):	$(APP_OBJS)
 	@echo "  LD      $@"
 	$(HIDE)$(LD) $(LFLAGS) $(APP_LFLAGS) $^ \
 		-L$(LIBRE_SO) -lre $(LIBS) -o $@
-
-
-.PHONY: test
-test:	$(TEST_BIN)
-	./$(TEST_BIN)
-
-$(TEST_BIN):	$(STATICLIB) $(TEST_OBJS)
-	@echo "  LD      $@"
-	$(HIDE)$(LD) $(LFLAGS) $(TEST_OBJS) \
-		-L$(LIBRE_SO) -L. \
-		-l$(PROJECT) -lre $(LIBS) $(TEST_LIBS) -o $@
 
 $(BUILD)/%.o: %.c $(BUILD) Makefile $(APP_MK)
 	@echo "  CC      $@"
@@ -249,70 +189,12 @@ $(BUILD): Makefile
 	@mkdir -p $(BUILD)/src $(MOD_BLD) $(BUILD)/test/mock $(BUILD)/test/sip
 	@touch $@
 
-install: $(BIN) $(MOD_BINS)
-	@mkdir -p $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 $(BIN) $(DESTDIR)$(BINDIR)
-	@mkdir -p $(DESTDIR)$(MOD_PATH)
-	$(INSTALL) -m 0644 $(MOD_BINS) $(DESTDIR)$(MOD_PATH)
-	@mkdir -p $(DESTDIR)$(SHARE_PATH)
-	$(INSTALL) -m 0644 share/* $(DESTDIR)$(SHARE_PATH)
-
-install-dev: install-shared install-static
-
-install-shared: $(SHARED) libbaresip.pc
-	@mkdir -p $(DESTDIR)$(INCDIR)
-	$(INSTALL) -Cm 0644 include/baresip.h $(DESTDIR)$(INCDIR)
-	@mkdir -p $(DESTDIR)$(LIBDIR) $(DESTDIR)$(LIBDIR)/pkgconfig
-	$(INSTALL) -m 0644 $(SHARED) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 libbaresip.pc $(DESTDIR)$(LIBDIR)/pkgconfig
-
-install-static: $(STATICLIB)
-	@mkdir -p $(DESTDIR)$(INCDIR)
-	$(INSTALL) -Cm 0644 include/baresip.h $(DESTDIR)$(INCDIR)
-	@mkdir -p $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 $(STATICLIB) $(DESTDIR)$(LIBDIR)
-
-uninstall:
-	@rm -f $(DESTDIR)$(PREFIX)/bin/$(BIN)
-	@rm -rf $(DESTDIR)$(MOD_PATH)
-	@rm -f $(DESTDIR)$(PREFIX)/lib/$(SHARED)
-	@rm -f $(DESTDIR)$(PREFIX)/lib/$(STATICLIB)
-	@rm -f $(DESTDIR)$(PREFIX)/lib/pkgconfig/libbaresip.pc
-
 .PHONY: clean
 clean:
-	@rm -rf $(BIN) $(MOD_BINS) $(SHARED) $(BUILD) $(TEST_BIN) \
+	@rm -rf $(BIN) $(MOD_BINS) $(SHARED) $(BUILD) \
 		$(STATICLIB) libbaresip.pc
 	@rm -f *stamp \
 	`find . -name "*.[od]"` \
 	`find . -name "*~"` \
 	`find . -name "\.\#*"`
 
-.PHONY: ccheck
-ccheck:
-	@ccheck.pl > /dev/null
-
-version:
-	@perl -pi -e 's/BARESIP_VERSION.*/BARESIP_VERSION \"$(VERSION)"/' \
-		include/baresip.h
-	@perl -pi -e "s/PROJECT_NUMBER         = .*/\
-PROJECT_NUMBER         = $(VERSION)/" \
-		mk/Doxyfile
-	@echo "updating version number to $(VERSION)"
-
-src/static.c: $(BUILD) Makefile $(APP_MK) $(MOD_MK)
-	@echo "  SH      $@"
-	@echo "/* static.c - autogenerated by makefile */"  > $@
-	@echo "#include <re_types.h>"  >> $@
-	@echo "#include <re_mod.h>"  >> $@
-	@echo ""  >> $@
-	@for n in $(MODULES); do \
-		echo "extern const struct mod_export exports_$${n};" >> $@ ; \
-	done
-	@echo ""  >> $@
-	@echo "const struct mod_export *mod_table[] = {"  >> $@
-	@for n in $(MODULES); do \
-		echo "  &exports_$${n},"  >> $@  ; \
-	done
-	@echo "  NULL"  >> $@
-	@echo "};"  >> $@

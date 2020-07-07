@@ -777,19 +777,19 @@ ifeq ($(LIBRE_INC),)
 LIBRE_INC := $(shell [ -f /usr/include/re/re.h ] && echo "/usr/include/re")
 endif
 
-# Library path rupy->comment out
+# Library path
 LIBRE_SO  := $(shell [ -f $(LIBRE_PATH)/libre$(LIB_SUFFIX) ] \
 	&& echo "$(LIBRE_PATH)")
-#ifeq ($(LIBRE_SO),)
-#LIBRE_SO  := $(shell [ -f /usr/local/lib/libre$(LIB_SUFFIX) ] \
-#	&& echo "/usr/local/lib")
-#endif
-#ifeq ($(LIBRE_SO),)
-#LIBRE_SO  := $(shell [ -f /usr/lib/libre$(LIB_SUFFIX) ] && echo "/usr/lib")
-#endif
-#ifeq ($(LIBRE_SO),)
-#LIBRE_SO  := $(shell [ -f /usr/lib64/libre$(LIB_SUFFIX) ] && echo "/usr/lib64")
-#endif
+ifeq ($(LIBRE_SO),)
+LIBRE_SO  := $(shell [ -f /usr/local/lib/libre$(LIB_SUFFIX) ] \
+	&& echo "/usr/local/lib")
+endif
+ifeq ($(LIBRE_SO),)
+LIBRE_SO  := $(shell [ -f /usr/lib/libre$(LIB_SUFFIX) ] && echo "/usr/lib")
+endif
+ifeq ($(LIBRE_SO),)
+LIBRE_SO  := $(shell [ -f /usr/lib64/libre$(LIB_SUFFIX) ] && echo "/usr/lib64")
+endif
 
 
 ###############################################################################
