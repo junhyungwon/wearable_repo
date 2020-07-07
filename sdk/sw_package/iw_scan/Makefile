@@ -4,7 +4,7 @@ INSTALL_DIR :=$(APP_INSTALL_DIR)
 CC = $(BUILD_TOOL_PREFIX)gcc
 
 INCLUDE = -I .
-C_FLAGS += -Wall -Warray-bounds -O3 -lpthread $(INCLUDE)
+C_FLAGS += -Wall -Warray-bounds -O3 -lpthread -lzmq $(INCLUDE)
 
 SOURCES  = $(wildcard *.c)
 OBJFILES = $(SOURCES:%.c=%.o)

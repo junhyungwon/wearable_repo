@@ -233,6 +233,7 @@ lspmodule:
 	cp $(KERNELDIR)/drivers/video/ti81xx/ti81xxfb/ti81xxfb.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/rndis_host.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/ax88179_178a.ko $(TARGET_MCFW_DIR)/kermod/.
+	cp $(KERNELDIR)/sound/drivers/snd-dummy.ko $(TARGET_MCFW_DIR)/kermod/.
 
 lsp:
 	$(MAKE) lspcfg
@@ -246,6 +247,7 @@ lsp:
 	cp $(KERNELDIR)/drivers/video/ti81xx/ti81xxfb/ti81xxfb.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/rndis_host.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/ax88179_178a.ko $(TARGET_MCFW_DIR)/kermod/.
+	cp $(KERNELDIR)/sound/drivers/snd-dummy.ko $(TARGET_MCFW_DIR)/kermod/.
 	@echo -e "\n--- make lsp done! (`date +'%H:%M:%S'`)---\n"
 
 lsp_clean:

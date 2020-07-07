@@ -24,8 +24,8 @@
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
-#include <app_comm.h>
-#include <ipc_common_def.h>
+#include "app_msg.h"
+#include "ipc_common_def.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -46,19 +46,17 @@ typedef	union {
 } app_state_t;
 
 typedef struct {
-	app_thr_obj *mObj; //# main thread
+	app_thr_obj mObj; //# main thread
 	app_state_t ste;
 
 	char link_essid[32]; //# connecting AP essid..
 } app_cfg_t;
 
 extern app_cfg_t *app_cfg;
+extern app_shm_t *app_shm;
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-void THR_waitmsecs(unsigned int msecs);
-int THR_event_wait(app_thr_obj *tObj);
-int THR_event_send(app_thr_obj *tObj, int cmd, int prm0, int prm1);
 
 #endif	/* __APP_MAIN_H__ */

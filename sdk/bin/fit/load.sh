@@ -15,6 +15,7 @@ insmod ./kermod/ti81xxfb.ko
 insmod ./kermod/ti81xxhdmi.ko
 #insmod ./kermod/rndis_host.ko
 insmod ./kermod/ax88179_178a.ko
+insmod ./kermod/snd-dummy.ko
 
 #
 # enable range compression in HDMI 0..255 to 16..235.

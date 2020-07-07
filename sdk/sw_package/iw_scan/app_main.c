@@ -34,143 +34,44 @@
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-app_cfg_t *app_cfg = NULL;
-app_shm_t *app_shm = NULL;
+static app_cfg_t cfg_obj;
+static app_shm_t shm_obj;
+
+app_cfg_t *app_cfg = &cfg_obj;
+app_shm_t *app_shm = &shm_obj;
+
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 
-/*****************************************************************************
-* @brief    THR_waitmsecs
-* @section  [desc]
-*****************************************************************************/
-void THR_waitmsecs(unsigned int msecs)
-{
-	struct timespec delayTime, elaspedTime;
-
-	delayTime.tv_sec  = msecs/1000;
-	delayTime.tv_nsec = (msecs%1000)*1000000;
-
-	nanosleep(&delayTime, &elaspedTime);
-}
-
-/*****************************************************************************
-* @brief    wait for thread event.
-* @section  [desc]
-*****************************************************************************/
-int THR_event_wait(app_thr_obj *tObj)
-{
-	THR_semHndl *pSem;
-	int r = -1;
-
-	if (!tObj->active)
-		return -1;
-
-	pSem = &tObj->sem;
-
-  	pthread_mutex_lock(&pSem->lock);
-	while (1) {
-		if (pSem->count > 0) {
-			pSem->count--;
-			r = 0;
-			break;
-		} else {
-			pthread_cond_wait(&pSem->cond, &pSem->lock);
-		}
-	}
-  	pthread_mutex_unlock(&pSem->lock);
-
-	return tObj->cmd;
-}
-
-/*****************************************************************************
-* @brief    event send to thread.
-* @section  [desc]
-*****************************************************************************/
-int THR_event_send(app_thr_obj *tObj, int cmd, int prm0, int prm1)
-{
-	THR_semHndl *pSem;
-	int r = 0;
-
-	if (tObj == NULL || !tObj->active) {
-		return -1;
-	}
-
-	tObj->cmd = cmd;
-	tObj->param0 = prm0;
-	tObj->param1 = prm1;
-
-	pSem = &tObj->sem;
-  	pthread_mutex_lock(&pSem->lock);
-  	if (pSem->count < pSem->maxCount) {
-    	pSem->count++;
-    	r |= pthread_cond_signal(&pSem->cond);
-  	}
-  	pthread_mutex_unlock(&pSem->lock);
-
-	return 0;
-}
-
 static int main_thr_init(void)
 {
-	THR_semHndl *pSem;
-
-	pthread_mutexattr_t muattr;
-  	pthread_condattr_t cond_attr;
-
-  	int res = 0;
-
+	app_thr_obj *tObj = &app_cfg->mObj;
+	int res = 0;
+	
     memset((void *)app_cfg, 0, sizeof(app_cfg_t));
-	app_cfg->ste.word = 0; /* all clear */
-
-	app_cfg->mObj = (app_thr_obj *)malloc(sizeof(app_thr_obj));
-	if (app_cfg->mObj == NULL) {
-		eprintf("Failed to alloc main thread obj!!\n");
+	
+	//#--- create thread
+	if (thread_create(tObj, NULL, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create thread\n");
 		return -1;
 	}
-
-	pSem = &app_cfg->mObj->sem;
-
-  	res |= pthread_mutexattr_init(&muattr);
-  	res |= pthread_condattr_init(&cond_attr);
-
-  	res |= pthread_mutex_init(&pSem->lock, &muattr);
-  	res |= pthread_cond_init(&pSem->cond, &cond_attr);
-
-  	pSem->count = 0;
-  	pSem->maxCount = MAX_PENDING_SEM_CNT;
-
-  	if (res != 0)
-    	eprintf("Failed to pthread mutext init = %d\n", res);
-
-  	pthread_condattr_destroy(&cond_attr);
-  	pthread_mutexattr_destroy(&muattr);
 
 	return 0;
 }
 
 static void main_thr_exit(void)
 {
-	THR_semHndl *pSem;
+	app_thr_obj *tObj = &app_cfg->mObj;
 
-	if (app_cfg->mObj != NULL) {
-		pSem = &app_cfg->mObj->sem;
-		pthread_cond_destroy(&pSem->cond);
-  		pthread_mutex_destroy(&pSem->lock);
-
-		free(app_cfg->mObj);
-	}
+	//#--- stop thread
+	thread_delete(tObj);
 }
 
 static int scan_shm_init(void)
 {
 	int r = FXN_ERR_SHM_CREATE;
-	app_shm = (app_shm_t *)malloc(sizeof(app_shm_t));
-	if (app_shm == NULL) {
-		dprintf("Shared memory create faild!\n");
-		return r;
-	}
-
+	
 	//# Shared memory create
 	app_shm->shmid = shmget((key_t)SHM_KEY, (size_t)(sizeof(iwscan_list_t)+1), 0777|IPC_CREAT);
 	if (app_shm->shmid == -1) {
@@ -194,7 +95,7 @@ static int scan_shm_init(void)
 *****************************************************************************/
 static void app_main(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_cfg->mObj;
+	app_thr_obj *tObj = &app_cfg->mObj;
 	int exit = 0, cmd;
 
 	printf(" [task] %s start\n", __func__);
@@ -203,7 +104,7 @@ static void app_main(void)
 	while (!exit)
 	{
 		//# wait cmd
-		cmd = THR_event_wait(tObj);
+		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_STOP) {
 			break;
 		}
@@ -222,10 +123,6 @@ int main(int argc, char **argv)
 	int r = 0;
 
 	printf("\n--- IWSCAN start ---\n");
-
-	app_cfg = (app_cfg_t *)malloc(sizeof(app_cfg_t));
-	if (app_cfg == NULL)
-		return -1;
 
 	main_thr_init();
 
@@ -248,17 +145,6 @@ err_exit:
 	app_ipc_exit();
 
 	main_thr_exit();
-
-	if (app_cfg != NULL) {
-		free(app_cfg);
-		app_cfg = NULL;
-	}
-
-	if (app_shm != NULL) {
-		free(app_shm);
-		app_shm = NULL;
-	}
-
 
 	if (r)
 		fprintf(stderr, "Failed to system init(ret = 0x%08x)\n", r);

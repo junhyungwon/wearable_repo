@@ -37,8 +37,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define FXN_NET_MGR_THR_PRI		(FXN_THR_PRI_DEFAULT + 1)
-
 #define IWGETID_CMD				"/sbin/iwgetid wlan0"
 #define IWCONFIG_CMD			"/sbin/iwconfig wlan0"
 
@@ -50,7 +48,7 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 typedef struct {
-	app_thr_obj *nObj;
+	app_thr_obj nObj;
 
 	char essid[32]; /* current net essid */
 
@@ -588,7 +586,7 @@ static void netmgr_cli_stop(void)
 *****************************************************************************/
 static void *app_net_mgr_main(void *prm)
 {
-	app_thr_obj *tObj = (app_thr_obj *)prm;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
 	char cmd;
 
@@ -599,7 +597,7 @@ static void *app_net_mgr_main(void *prm)
 	tObj->active = 1;
 	while (!exit)
 	{
-		cmd = THR_event_wait(tObj);
+		cmd = event_wait(tObj);
 		switch(cmd) {
 		case APP_CMD_STOP:
 			exit = 1;
@@ -645,7 +643,7 @@ static void *app_net_mgr_main(void *prm)
 				r = netmgr_cli_get_auth_status((char *)app_cfg->link_essid);
 				if (r > 0)
 					break;
-				THR_waitmsecs(500);
+				delay_msecs(500);
 				retry--;
 			} while (retry > 0);
 
@@ -714,61 +712,16 @@ static void *app_net_mgr_main(void *prm)
 *****************************************************************************/
 int app_net_mgr_init(void)
 {
-	struct sched_param schedprm;
-	app_thr_obj *tObj;
-
-	pthread_attr_t tattr;
-	pthread_mutexattr_t muattr;
-  	pthread_condattr_t cond_attr;
-
-	THR_semHndl *pSem;
-
-	int r = FXN_ERR_NET_MGR_INIT;
-
-	tObj = (app_thr_obj *)malloc(sizeof(app_thr_obj));
-	if (tObj != NULL) {
-		pSem = &tObj->sem;
-
-		/* mutex and thread create */
-		pthread_mutexattr_init(&muattr);
-  		pthread_condattr_init(&cond_attr);
-
-  		pthread_mutex_init(&pSem->lock, &muattr);
-  		pthread_cond_init(&pSem->cond, &cond_attr);
-
-  		pSem->count = 0;
-  		pSem->maxCount = MAX_PENDING_SEM_CNT;
-
-		pthread_condattr_destroy(&cond_attr);
- 	 	pthread_mutexattr_destroy(&muattr);
-
-		/* initialize thread attributes structure */
-	  	pthread_attr_init(&tattr);
-	  	pthread_attr_setinheritsched(&tattr, PTHREAD_EXPLICIT_SCHED);
-	  	pthread_attr_setschedpolicy(&tattr, SCHED_FIFO);
-
-	  	schedprm.sched_priority = FXN_NET_MGR_THR_PRI;
-	  	pthread_attr_setschedparam(&tattr, &schedprm);
-
-		r = pthread_create(&tObj->thr.hndl, &tattr,
-						app_net_mgr_main, (void *)tObj);
-		pthread_attr_destroy(&tattr);
-
-		if (!r) {
-			//# resgister thread obj
-			app_net_mgr_pdata->nObj = tObj;
-		} else {
-			eprintf("Couldn't Create thread [ret = %d]!\n", r);
-			r = -1;
-		}
-	} else {
-		eprintf("Failed to alloc app net manager obj!!\n");
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
+	
+	if (thread_create(tObj, app_net_mgr_main, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create thread\n");
+		return FXN_ERR_NET_MGR_INIT;
 	}
 
-	if (r < 0)
-		r = FXN_ERR_NET_MGR_INIT;
-
-	return r;
+	aprintf("... done!\n");
+	
+	return 0;
 }
 
 /*****************************************************************************
@@ -777,34 +730,18 @@ int app_net_mgr_init(void)
 *****************************************************************************/
 int app_net_mgr_exit(void)
 {
-	app_thr_obj *tObj;
-	THR_semHndl *pSem;
-  	void *rVal;
-	int r = -1;
-
-  	if (app_net_mgr_pdata == NULL)
-  		return r;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
 	/* delete usb monitor object */
-	tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CMD_STOP, 0, 0);
-		while (tObj->active) {
-			THR_waitmsecs(20);
-		}
+	event_send(tObj, APP_CMD_STOP, 0, 0);
+	while (tObj->active)
+		delay_msecs(20);
 
-		pSem = &tObj->sem;
-		pthread_cond_destroy(&pSem->cond);
-	  	pthread_mutex_destroy(&pSem->lock);
+    thread_delete(tObj);
 
-	  	r |= pthread_cancel(tObj->thr.hndl);
-	  	r |= pthread_join(tObj->thr.hndl, &rVal);
-
-		free(tObj);
-		tObj = NULL;
-	}
-
-	return r;
+    dprintf("... done!\n");
+	
+	return 0;
 }
 
 /*****************************************************************************
@@ -813,12 +750,9 @@ int app_net_mgr_exit(void)
 *****************************************************************************/
 int app_net_mgr_cli_start(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CLI_START, 0, 0);
-	} else
-		eprintf("please run app_net_mgr_init!!\n");
+	event_send(tObj, APP_CLI_START, 0, 0);
 
 	return 0;
 }
@@ -829,12 +763,9 @@ int app_net_mgr_cli_start(void)
 *****************************************************************************/
 int app_net_mgr_cli_stop(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CLI_STOP, 0, 0);
-	} else
-		eprintf("please run app_net_mgr_init!!\n");
+	event_send(tObj, APP_CLI_STOP, 0, 0);
 
 	return 0;
 }
@@ -845,12 +776,9 @@ int app_net_mgr_cli_stop(void)
 *****************************************************************************/
 int app_net_mgr_cli_get_ipaddr(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CLI_GET_IP, 0, 0);
-	} else
-		eprintf("please run app_net_mgr_init!!\n");
+	event_send(tObj, APP_CLI_GET_IP, 0, 0);
 
 	return 0;
 }
@@ -861,12 +789,9 @@ int app_net_mgr_cli_get_ipaddr(void)
 *****************************************************************************/
 int app_net_mgr_cli_wait_for_auth(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CLI_WAIT_FOR_AUTH, 0, 0);
-	} else
-		eprintf("please run app_net_mgr_init!!\n");
+	event_send(tObj, APP_CLI_WAIT_FOR_AUTH, 0, 0);
 
 	return 0;
 }
@@ -877,12 +802,9 @@ int app_net_mgr_cli_wait_for_auth(void)
 *****************************************************************************/
 int app_net_mgr_cli_auth_status(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CLI_GET_AUTH_STATUS, 0, 0);
-	} else
-		eprintf("please run app_net_mgr_init!!\n");
+	event_send(tObj, APP_CLI_GET_AUTH_STATUS, 0, 0);
 
 	return 0;
 }
@@ -893,12 +815,9 @@ int app_net_mgr_cli_auth_status(void)
 *****************************************************************************/
 int app_net_mgr_cli_net_status(void)
 {
-	app_thr_obj *tObj = (app_thr_obj *)app_net_mgr_pdata->nObj;
+	app_thr_obj *tObj = &app_net_mgr_pdata->nObj;
 
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CLI_GET_NET_STATUS, 0, 0);
-	} else
-		eprintf("please run app_net_mgr_init!!\n");
+	event_send(tObj, APP_CLI_GET_NET_STATUS, 0, 0);
 
 	return 0;
 }

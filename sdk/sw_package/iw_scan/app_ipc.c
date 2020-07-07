@@ -39,13 +39,12 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define FXN_IPC_THR_PRI		(FXN_THR_PRI_DEFAULT + 1)
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
 typedef struct {
-	app_thr_obj *iObj;
+	app_thr_obj iObj;
 	int msgid;
 
 } app_ipc_data_t;
@@ -59,9 +58,8 @@ static app_ipc_data_t *app_ipc_pdata = &app_ipc_data;
 *****************************************************************************/
 static void *app_ipc_main(void *prm)
 {
-	app_thr_obj *tObj = (app_thr_obj *)prm;
+	app_thr_obj *tObj = &app_ipc_pdata->iObj;
 	ipc_msg_buf_t msgbuf;
-
 
 	int exit = 0, r;
 	int qid;
@@ -127,76 +125,25 @@ static void *app_ipc_main(void *prm)
 *****************************************************************************/
 int app_ipc_init(void)
 {
-	struct sched_param schedprm;
-	app_thr_obj *tObj;
-
-	pthread_attr_t tattr;
-	pthread_mutexattr_t muattr;
-  	pthread_condattr_t cond_attr;
-
-	THR_semHndl *pSem;
-
-	int r = -1, qid;
-
-	tObj = (app_thr_obj *)malloc(sizeof(app_thr_obj));
-	if (tObj != NULL) {
-		/* message queue init */
-		qid = msgget((key_t)IPC_MSG_KEY, IPC_CREAT | 0666);
-		if (qid < 0) {
-			eprintf("msgget failed with error %d\n", qid);
-			r = -1;
-			goto err_ipc;
-		}
-		dprintf("create queue id: %d\n", qid);
-		app_ipc_pdata->msgid = qid;
-
-		/* mutex and thread create */
-		pSem = &tObj->sem;
-		pthread_mutexattr_init(&muattr);
-  		pthread_condattr_init(&cond_attr);
-
-  		pthread_mutex_init(&pSem->lock, &muattr);
-  		pthread_cond_init(&pSem->cond, &cond_attr);
-
-  		pSem->count = 0;
-  		pSem->maxCount = MAX_PENDING_SEM_CNT;
-
-		pthread_condattr_destroy(&cond_attr);
- 	 	pthread_mutexattr_destroy(&muattr);
-
-		/* initialize thread attributes structure */
-	  	pthread_attr_init(&tattr);
-	  	pthread_attr_setinheritsched(&tattr, PTHREAD_EXPLICIT_SCHED);
-	  	pthread_attr_setschedpolicy(&tattr, SCHED_FIFO);
-
-	  	schedprm.sched_priority = FXN_IPC_THR_PRI;
-	  	pthread_attr_setschedparam(&tattr, &schedprm);
-
-		r = pthread_create(&tObj->thr.hndl, &tattr,
-						app_ipc_main, (void *)tObj);
-		pthread_attr_destroy(&tattr);
-
-		if (!r) {
-			//# resgister thread obj
-			app_ipc_pdata->iObj = tObj;
-		} else {
-			eprintf("Couldn't Create thread [ret = %d]!\n", r);
-			r = -1;
-			goto err_ipc;
-		}
-	} else {
-		eprintf("Failed to alloc app ipc obj!!\n");
+	app_thr_obj *tObj = &app_ipc_pdata->iObj;
+	int qid;
+	
+	/* message queue init */
+	qid = msgget((key_t)IPC_MSG_KEY, IPC_CREAT | 0666);
+	if (qid < 0) {
+		eprintf("msgget failed with error %d\n", qid);
+		return FXN_ERR_IPC_INIT;
 	}
-
+	
+	dprintf("create queue id: %d\n", qid);
+	app_ipc_pdata->msgid = qid;
+	
+	if (thread_create(tObj, app_ipc_main, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create thread\n");
+		return FXN_ERR_IPC_INIT;
+	}
+		
 	return 0;
-
-err_ipc:
-	if (tObj != NULL) {
-		free(tObj);
-		app_ipc_pdata->iObj = NULL;
-	}
-
-	return FXN_ERR_IPC_INIT;
 }
 
 /*****************************************************************************
@@ -205,39 +152,21 @@ err_ipc:
 *****************************************************************************/
 int app_ipc_exit(void)
 {
-	app_thr_obj *tObj;
-	THR_semHndl *pSem;
-  	void *rVal;
-	int r = -1;
+	app_thr_obj *tObj = &app_ipc_pdata->iObj;
 
-  	if (app_ipc_pdata == NULL)
-  		return r;
+	/* delete ipc object */
+	event_send(tObj, APP_CMD_STOP, 0, 0);
+	while (tObj->active)
+		delay_msecs(20);
 
-	/* delete usb monitor object */
-	tObj = (app_thr_obj *)app_ipc_pdata->iObj;
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CMD_STOP, 0, 0);
-		while (tObj->active) {
-			THR_waitmsecs(20);
-		}
-
-		pSem = &tObj->sem;
-		pthread_cond_destroy(&pSem->cond);
-	  	pthread_mutex_destroy(&pSem->lock);
-
-	  	r |= pthread_cancel(tObj->thr.hndl);
-	  	r |= pthread_join(tObj->thr.hndl, &rVal);
-
-		/* delete message key */
-		if (app_ipc_pdata->msgid > 0) {
-			msgctl(app_ipc_pdata->msgid, IPC_RMID, 0);
-		}
-
-		free(tObj);
-		tObj = NULL;
+    thread_delete(tObj);
+	
+	/* delete message key */
+	if (app_ipc_pdata->msgid > 0) {
+		msgctl(app_ipc_pdata->msgid, IPC_RMID, 0);
 	}
-
+		
 	printf("[%s] done!!!\n", __func__);
 
-	return r;
+	return 0;
 }

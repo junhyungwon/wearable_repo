@@ -34,7 +34,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define FXN_ISCAN_THR_PRI		(FXN_THR_PRI_DEFAULT + 1)
 #define CMD_IWLIST				"/sbin/iwlist wlan0 scanning"
 #define NET_IF_NAME				"wlan0"
 #define LINE_BUF_SIZE			512
@@ -43,7 +42,7 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 typedef struct {
-	app_thr_obj *sObj;
+	app_thr_obj sObj;
 
 } app_iwscan_data_t;
 
@@ -230,7 +229,7 @@ static int app_iscan_run(void)
 
 static void *app_iscan_main(void *prm)
 {
-	app_thr_obj *tObj = (app_thr_obj *)prm;
+	app_thr_obj *tObj = &app_iwscan_pdata->sObj;
 	int exit = 0, r;
 
 	char cmd;
@@ -240,7 +239,7 @@ static void *app_iscan_main(void *prm)
 	tObj->active = 1;
 	while (!exit)
 	{
-		cmd = THR_event_wait(tObj);
+		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_STOP)
 			break;
 
@@ -264,66 +263,17 @@ static void *app_iscan_main(void *prm)
 *****************************************************************************/
 int app_iscan_init(void)
 {
-	struct sched_param schedprm;
-	app_thr_obj *tObj;
-
-	pthread_attr_t tattr;
-	pthread_mutexattr_t muattr;
-  	pthread_condattr_t cond_attr;
-
-	THR_semHndl *pSem;
-
-	int r = -1;
+	app_thr_obj *tObj = &app_iwscan_pdata->sObj;
 
 	piwscan_list = app_shm->shm_buf+1;	//# shm_buf[0] is list_up flag.
 
 	//# Start wifi scan proc.
-	tObj = (app_thr_obj *)malloc(sizeof(app_thr_obj));
-	if (tObj != NULL) {
-		pSem = &tObj->sem;
-
-		/* mutex and thread create */
-		pthread_mutexattr_init(&muattr);
-  		pthread_condattr_init(&cond_attr);
-
-  		pthread_mutex_init(&pSem->lock, &muattr);
-  		pthread_cond_init(&pSem->cond, &cond_attr);
-
-  		pSem->count = 0;
-  		pSem->maxCount = MAX_PENDING_SEM_CNT;
-
-		pthread_condattr_destroy(&cond_attr);
- 	 	pthread_mutexattr_destroy(&muattr);
-
-		/* initialize thread attributes structure */
-		pthread_attr_init(&tattr);
-	  	pthread_attr_setinheritsched(&tattr, PTHREAD_EXPLICIT_SCHED);
-	 	/* set schedule FIFO (first input first output) */
-	 	pthread_attr_setschedpolicy(&tattr, SCHED_FIFO);
-
-	  	/* set schedule priority */
-	  	schedprm.sched_priority = FXN_ISCAN_THR_PRI;
-	  	pthread_attr_setschedparam(&tattr, &schedprm);
-
-		r = pthread_create(&tObj->thr.hndl, &tattr,
-						app_iscan_main, (void *)tObj);
-		pthread_attr_destroy(&tattr);
-
-		if (!r) {
-			//# resgister thread obj
-			app_iwscan_pdata->sObj = tObj;
-		} else {
-			eprintf("Couldn't Create thread [ret = %d]!\n", r);
-			r = -1;
-		}
-	} else {
-		eprintf("Failed to alloc app iscan obj!!\n");
+	if (thread_create(tObj, app_iscan_main, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create thread\n");
+		return FXN_ERR_IWSCAN_INIT;
 	}
-
-	if (r < 0)
-		r = FXN_ERR_IWSCAN_INIT;
-
-	return r;
+	
+	return 0;
 }
 
 /*****************************************************************************
@@ -332,45 +282,24 @@ int app_iscan_init(void)
 *****************************************************************************/
 int app_iscan_exit(void)
 {
-	app_thr_obj *tObj;
-	THR_semHndl *pSem;
-  	void *rVal;
-	int r = -1;
-
-  	if (app_iwscan_pdata == NULL)
-  		return r;
+	app_thr_obj *tObj = &app_iwscan_pdata->sObj;
 
 	/* delete iscan object */
-	tObj = (app_thr_obj *)app_iwscan_pdata->sObj;
-	if (tObj != NULL) {
-		THR_event_send(tObj, APP_CMD_STOP, 0, 0);
-		while (tObj->active) {
-			THR_waitmsecs(20);
-		}
+	event_send(tObj, APP_CMD_STOP, 0, 0);
+	while (tObj->active)
+		delay_msecs(20);
 
-		pSem = &tObj->sem;
-		pthread_cond_destroy(&pSem->cond);
-	  	pthread_mutex_destroy(&pSem->lock);
+    thread_delete(tObj);
 
-		r |= pthread_cancel(tObj->thr.hndl);
-  		r |= pthread_join(tObj->thr.hndl, &rVal);
-
-  		free(tObj);
-		tObj = NULL;
-	}
-
-  	return r;
+    dprintf("... done!\n");
+	
+  	return 0;
 }
 
 void app_iscan_start(void)
 {
-	app_thr_obj *tObj;
+	app_thr_obj *tObj = &app_iwscan_pdata->sObj;
 
-  	if (app_iwscan_pdata == NULL)
-  		return;
-
-	tObj = (app_thr_obj *)app_iwscan_pdata->sObj;
-	if (tObj != NULL)
-		THR_event_send(tObj, APP_CMD_NOTY, 0, 0);
+	event_send(tObj, APP_CMD_NOTY, 0, 0);
 }
 
