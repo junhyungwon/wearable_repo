@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <unistd.h>		//# fork...
 #include <sys/types.h>
 #include <sys/wait.h>	//# waitpid
@@ -23,6 +24,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <linux/input.h>
+#include <linux/uinput.h>
 
 #include "dev_common.h"
 #include "app_comm.h"
@@ -81,6 +84,8 @@ static const unsigned int crc32_tab[] = {
          0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
+static int uinput_fd = -1;
+
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -123,7 +128,6 @@ int util_mem_copy(void *pDes, void *pSrc, int size)
 
     return 0;
 }
-
 
 /*****************************************************************************
  *   @brief    util disk info function
@@ -544,4 +548,68 @@ void util_hexdump(char *p, int n)
 		} while (--i);
 		printf("\n");
 	}
+}
+
+/*
+ * linux usermode input. (virtual Key)
+ */
+int uinput_init(void)
+{				
+	struct uinput_user_dev uidev;
+	 
+	uinput_fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+	if (uinput_fd < 0)
+		return -1;
+		
+	ioctl(uinput_fd, UI_SET_EVBIT, EV_KEY); 
+	ioctl(uinput_fd, UI_SET_KEYBIT, KEY_SPACE);
+	
+	memset(&uidev, 0, sizeof(uidev));
+  	snprintf(uidev.name, UINPUT_MAX_NAME_SIZE, "Simple Keypad");  
+	
+	uidev.id.bustype = BUS_USB;
+	uidev.id.vendor  = 0x1234;
+	uidev.id.product = 0x4321;
+	uidev.id.version = 2;
+
+	write(uinput_fd, &uidev, sizeof(uidev));
+	ioctl(uinput_fd, UI_DEV_CREATE);
+	
+	return 0;
+}
+
+/*
+ * usermode input write key
+ */
+int uinput_emit_key(int type, int code, int val)
+{
+	struct input_event ie;
+	
+	if (uinput_fd < 0)
+		return -1;
+		
+	ie.type = type;
+	ie.code = code;
+	ie.value = val; // press
+	/* timestamp values below are ignored */
+	ie.time.tv_sec = 0;
+	ie.time.tv_usec = 0;
+
+   	write(uinput_fd, &ie, sizeof(ie));
+	   
+	return 0;
+}
+
+/*
+ * linux usermode input exit.
+ */
+int uinput_exit(void)
+{			
+	if (uinput_fd < 0)
+		return -1;
+			
+	ioctl(uinput_fd, UI_DEV_DESTROY);
+	close(uinput_fd);
+		
+	return 0;
 }

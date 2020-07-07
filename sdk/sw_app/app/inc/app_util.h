@@ -58,6 +58,8 @@ char menu_get_cmd(void);
 
 void __time_trace(int param);
 unsigned int util_gen_crc32(unsigned int crc, const void *buf, unsigned int size);
-void util_hexdump(char *p, int n);
+int uinput_init(void);
+int uinput_emit_key(int type, int code, int val);
+int uinput_exit(void);
 
 #endif	/* _APP_UTIL_H_ */

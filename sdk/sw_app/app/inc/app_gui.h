@@ -45,5 +45,6 @@ typedef struct {
 -----------------------------------------------------------------------------*/
 int app_gui_init(void);
 void app_gui_exit(void);
+void change_video_fxn(void);
 
 #endif	/* _APP_DEV_H_ */

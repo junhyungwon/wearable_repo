@@ -34,6 +34,7 @@
 #include "app_version.h"
 #include "app_dev.h"
 #include "app_set.h"
+#include "app_ctrl.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
