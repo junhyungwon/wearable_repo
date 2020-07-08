@@ -13,13 +13,13 @@ CFLAGS += -DMODEL_NAME=$(MODEL_NAME)
 ##### APP BUILD #####
 
 app:
-	make -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux
-	make -fMAKEFILE.MK -C$(APP_DIR) app
+	$(MAKE) -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux
+	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) app
 	@echo -e "\n--- make app done! (`date +'%H:%M:%S'`)---\n"
 
 app_clean:
-	make -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux clean
-	make -fMAKEFILE.MK -C$(APP_DIR) clean
+	$(MAKE) -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux clean
+	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) clean
 
 rfs_unzip:
 	sudo tar zxvf $(TARGET_ROOT)/rfs.tar.gz -C $(TARGET_ROOT)/
@@ -42,69 +42,83 @@ ifneq (exist, $(shell [ -e $(linuxdevkit_PATH)/usr/lib/libc.a ] && echo exist))
 	tar zxvf $(linuxdevkit_PATH)/usr/lib/libc.tar.gz -C $(linuxdevkit_PATH)/usr/lib/
 endif
 
-ubxapp: app fsupdate
-ubxapp_all: app_clean ubxapp
-
 app_all: app_clean app
 
 app_test:
-	make -fMAKEFILE.MK -C$(APP_DIR) hw_test
+	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) hw_test
 	@echo -e "\n--- make app done! (`date +'%H:%M:%S'`)---\n"
 
 app_test_clean:
-	make -fMAKEFILE.MK -C$(APP_DIR) clean_test
+	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) clean_test
 
 hw_test: app_test fsupdate
 hw_test_all: app_test_clean hw_test
 
-scan_app:
-	make -fMAKEFILE.MK -C$(IWSCAN_DIR)
+##### www component build #####
+app_web:
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
 
-scan_clean:
-	make -fMAKEFILE.MK -C$(IWSCAN_DIR) clean
+app_web_clean:
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
 
-iwscan: scan_app
+sipc:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip all
 
-iwscan_clean: scan_clean
-iwscan_all: iwscan_clean iwscan
+sipc_clean:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
+
+ubxapp: app app_web wlan_scan sipc fsupdate
+ubxapp_clean: app_clean app_web_clean wlan_scan_clean sipc_clean
+ubxapp_all: ubxapp_clean ubxapp
+
+##### EXTERNAL OPENSOURCE PACKAGE BUILD #####
+
+libavi:
+	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi/src all
+	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi all
+
+libavi_clean:
+	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi/src clean
+	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi clean
+
+wlan_scan:
+	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/iw_scan all
+
+wlan_scan_clean:
+	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/iw_scan clean
 
 live555:
-	make -fMakefile -C $(LIVE555_DIR)/BasicUsageEnvironment
-	make -fMakefile -C $(LIVE555_DIR)/UsageEnvironment
-	make -fMakefile -C $(LIVE555_DIR)/groupsock
-	make -fMakefile -C $(LIVE555_DIR)/liveMedia
-	make -fMakefile -C $(LIVE555_DIR)/netra_streamer/netra_interface
-	make -fMakefile -C $(LIVE555_DIR)/netra_streamer
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/BasicUsageEnvironment
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/UsageEnvironment
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/groupsock
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/liveMedia
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer/netra_interface
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer
 
 live555_clean:
-	make -fMakefile -C $(LIVE555_DIR)/BasicUsageEnvironment clean
-	make -fMakefile -C $(LIVE555_DIR)/liveMedia clean
-	make -fMakefile -C $(LIVE555_DIR)/UsageEnvironment clean
-	make -fMakefile -C $(LIVE555_DIR)/groupsock clean
-	make -fMakefile -C $(LIVE555_DIR)/netra_streamer/netra_interface clean
-	make -fMakefile -C $(LIVE555_DIR)/netra_streamer clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/BasicUsageEnvironment clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/liveMedia clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/UsageEnvironment clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/groupsock clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer/netra_interface clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer clean
 
 live555_all: live555_clean live555
 
 p2p:
-	make platform=ti -fMakefile -C $(P2P_DIR)/samples/Linux
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux
+
 p2p_install:
-	make platform=ti -fMakefile -C $(P2P_DIR)/samples/Linux install
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux install
+
 p2p_clean:
-	make platform=ti -fMakefile -C $(P2P_DIR)/samples/Linux clean
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux clean
+
 p2p_all: p2p_clean p2p
 
-voip:
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/re
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/rem
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/baresip
+app_pkg: libavi wlan_scan live555
 
-voip_clean:
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/re clean
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/rem clean
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(VOIP_DIR)/baresip clean
-
-voip_all: voip_clean voip
+app_pkg_clean: libavi_clean wlan_scan_clean live555_clean
 
 ##### MCFW BUILD #####
 mcfw: hdvpss m3 app
@@ -203,28 +217,29 @@ uboot_all: uboot_clean uboot ubootscr
 ##### LSP BUILD #####
 
 lspbuild:
-	make -j$(CPU_NUM) -C$(KERNELDIR) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) $(MAKE_TARGET)
+	$(MAKE) -j$(CPU_NUM) -C$(KERNELDIR) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) $(MAKE_TARGET)
 
 lspmenu:
-	make lspcfg
-	make lspbuild MAKE_TARGET=menuconfig
+	$(MAKE) lspcfg
+	$(MAKE) lspbuild MAKE_TARGET=menuconfig
 
 lspcfg:
-	make lspbuild MAKE_TARGET=ti8107_$(SYSTEM_CFG)_defconfig
+	$(MAKE) lspbuild MAKE_TARGET=ti8107_$(SYSTEM_CFG)_defconfig
 
 lspmodule:
-	make lspbuild MAKE_TARGET=modules
+	$(MAKE) lspbuild MAKE_TARGET=modules
 	cp $(KERNELDIR)/drivers/video/ti81xx/vpss/vpss.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/video/ti81xx/ti81xxhdmi/ti81xxhdmi.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/video/ti81xx/ti81xxfb/ti81xxfb.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/rndis_host.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/ax88179_178a.ko $(TARGET_MCFW_DIR)/kermod/.
+	cp $(KERNELDIR)/sound/drivers/snd-dummy.ko $(TARGET_MCFW_DIR)/kermod/.
 
 lsp:
-	make lspcfg
-	make lspbuild MAKE_TARGET=uImage
-	make lspbuild MAKE_TARGET=modules
-	make lspbuild MAKE_TARGET=headers_install
+	$(MAKE) lspcfg
+	$(MAKE) lspbuild MAKE_TARGET=uImage
+	$(MAKE) lspbuild MAKE_TARGET=modules
+	$(MAKE) lspbuild MAKE_TARGET=headers_install
 	mv $(KERNELDIR)/arch/arm/boot/uImage $(TFTP_HOME)/uImage_$(SYSTEM_CFG)
 	-mkdir -p $(TARGET_MCFW_DIR)/kermod
 	cp $(KERNELDIR)/drivers/video/ti81xx/vpss/vpss.ko $(TARGET_MCFW_DIR)/kermod/.
@@ -232,76 +247,79 @@ lsp:
 	cp $(KERNELDIR)/drivers/video/ti81xx/ti81xxfb/ti81xxfb.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/rndis_host.ko $(TARGET_MCFW_DIR)/kermod/.
 	cp $(KERNELDIR)/drivers/net/usb/ax88179_178a.ko $(TARGET_MCFW_DIR)/kermod/.
+	cp $(KERNELDIR)/sound/drivers/snd-dummy.ko $(TARGET_MCFW_DIR)/kermod/.
 	@echo -e "\n--- make lsp done! (`date +'%H:%M:%S'`)---\n"
 
 lsp_clean:
-	make lspbuild MAKE_TARGET=distclean
+	$(MAKE) lspbuild MAKE_TARGET=distclean
 	-rm -f $(TARGET_MCFW_DIR)/kermod/*
 
 lsp_all: lsp_clean lsp
 
-wifi_all: wifi_clean wifi
-
-wifi:
+##### Wi-Fi Driver BUILD #####
+wlan:
 ifeq ($(USE_WIFI),YES)
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8188eu_driver modules
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8188cu_driver modules
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8821au_driver modules
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8812au_driver modules
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188eu_driver modules
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188cu_driver modules
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver modules
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver modules
 endif
 
-wifi_clean:
+wlan_clean:
 ifeq ($(USE_WIFI), YES)
 	-rm -f $(TARGET_FS)/lib/modules/8188eu.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8188eu_driver clean
+	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188eu_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/8192cu.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8188cu_driver clean
+	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188cu_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/8821au.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8821au_driver clean
+	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/8812au.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(APP_DIR)/module/wifi/8812au_driver clean
+	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver clean
 endif
+
+wlan_all: wlan_clean wlan
+
+##### PSP (uboot, kernel, wlan) BUILD #####
+psp: uboot lsp wlan
+
+psp_clean: uboot_clean lsp_clean wlan_clean
+
+psp_all: psp_clean psp
+
 ##### SYSLINK BUILD #####
 
 SYSLINK_BUILD_OPT = USE_SYSLINK_NOTIFY=0 SYSLINK_PLATFORM=TI81XX SYSLINK_VARIANT=TI814X
 
 syslinkbuild:
 	cp $(MCFW_ROOT_PATH)/makerules/syslink_products.mak $(syslink_PATH)/products.mak
-	make -C$(syslink_PATH) $(SYSLINK_BUILD_OPT) $(TARGET)
+	$(MAKE) -C$(syslink_PATH) $(SYSLINK_BUILD_OPT) $(TARGET)
 
 syslink:
-	make syslinkbuild DEVICE=TI814X TARGET=syslink
+	$(MAKE) syslinkbuild DEVICE=TI814X TARGET=syslink
 	-mkdir -p $(TARGET_MCFW_DIR)/kermod
 	cp $(syslink_OUT_DIR)/syslink.ko $(TARGET_MCFW_DIR)/kermod/.
 	@echo -e "\n--- make syslink done! (`date +'%H:%M:%S'`)---\n"
 
 syslink_clean:
-	make syslinkbuild DEVICE=TI814X TARGET=clean
+	$(MAKE) syslinkbuild DEVICE=TI814X TARGET=clean
 
 syslink_all: syslink_clean syslink
 
 ##### CMEM MAKE #####
 
 cmem:
-	make -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/interface \
+	$(MAKE) -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/interface \
 	LINUXKERNEL_INSTALL_DIR=$(KERNELDIR) MVTOOL_PREFIX=$(BUILD_TOOL_PREFIX)
-	make -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module \
+	$(MAKE) -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module \
 	LINUXKERNEL_INSTALL_DIR=$(KERNELDIR) MVTOOL_PREFIX=$(BUILD_TOOL_PREFIX)
 	cp $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module/cmemk.ko \
 	$(TARGET_MCFW_DIR)/kermod/.
 	@echo -e "\n--- make cmem done! (`date +'%H:%M:%S'`)---\n"
 
 cmem_clean:
-	make -C$(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module clean
+	$(MAKE) -C$(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module clean
 
 cmemall: cmem_clean cmem
-
-## LIB_AVI
-libavi:
-	make CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(APP_DIR)/module/avi/src clean
-	make CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(APP_DIR)/module/avi/src all
-	make CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(APP_DIR)/module/avi clean
-	make CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(APP_DIR)/module/avi all
 
 ##### FILESYS MAKE #####
 
@@ -320,7 +338,7 @@ fsupdate:
 	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(IWSCAN_DIR)/iw_scan.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/iw_scan/iw_scan.out $(EXEC_DIR)/bin/.
 	-cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
@@ -330,10 +348,10 @@ fsupdate:
 	-cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/
 
 ifeq ($(USE_WIFI),YES)
-	sudo /bin/cp $(APP_DIR)/module/wifi/8188eu_driver/8188eu.ko $(TARGET_FS)/lib/modules/.
-	sudo /bin/cp $(APP_DIR)/module/wifi/8188cu_driver/8192cu.ko $(TARGET_FS)/lib/modules/.
-	sudo /bin/cp $(APP_DIR)/module/wifi/8821au_driver/8821au.ko $(TARGET_FS)/lib/modules/.
-	sudo /bin/cp $(APP_DIR)/module/wifi/8812au_driver/8812au.ko $(TARGET_FS)/lib/modules/.
+	sudo /bin/cp $(KMODDIR)/wlan/8188eu_driver/8188eu.ko $(TARGET_FS)/lib/modules/.
+	sudo /bin/cp $(KMODDIR)/wlan/8188cu_driver/8192cu.ko $(TARGET_FS)/lib/modules/.
+	sudo /bin/cp $(KMODDIR)/wlan/8821au_driver/8821au.ko $(TARGET_FS)/lib/modules/.
+	sudo /bin/cp $(KMODDIR)/wlan/8812au_driver/8812au.ko $(TARGET_FS)/lib/modules/.
 endif
 	@echo -e "\n--- RFS update for $(RDK_BOARD_TYPE) (`date +'%H:%M:%S'`)---\n"
 
@@ -342,9 +360,9 @@ update:
 
 ##### SYSTEM BUILD #####
 
-sys: uboot lsp wifi syslink cmem iss hdvpss m3 iwscan app
+sys: psp syslink cmem iss hdvpss m3 app
 
-sys_clean: bin_clean rfs_clean uboot_clean lsp_clean wifi_clean syslink_clean cmem_clean hdvpss_clean m3_clean iwscan_clean app_clean
+sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean app_clean
 	rm -rf $(MCFW_ROOT_PATH)/build
 	@echo -e "\n--- make sysclean done! (`date +'%H:%M:%S'`)---\n"
 

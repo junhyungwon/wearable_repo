@@ -201,7 +201,7 @@ void *thdRestartOnvifServer(void *arg)
 	int nCS = *((int *)arg);
 	do {
 		usleep(1000);
-		int n2 = send(nCS, buff, 1, MSG_NOSIGNAL);
+		int n2 = send(nCS, &buff, 1, MSG_NOSIGNAL);
 		if(n2 == -1)
 			break;
 		if(cnt++>3)
@@ -210,6 +210,8 @@ void *thdRestartOnvifServer(void *arg)
 
 	// 바로 호출시 socket이 물려 있어서 정상종료되지 않는 경우가 있다, 그래서 이렇게 하긴 했는데 더 좋은 방법이 있을것 같은데 뭘까나..
 	app_onvifserver_restart();
+	
+	return NULL;
 }	
 
 static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)

@@ -120,6 +120,7 @@ jpegdec_PATH      := $(jpegdec_DIR)/500.V.MJPEG.D.IVAHD.01.00/IVAHD_001
 lsp_PATH          := $(RDK_INSTALL_DIR)/psp
 KERNELDIR         := $(lsp_PATH)/kernel
 UBOOTDIR          := $(lsp_PATH)/u-boot
+KMODDIR		  	  := $(lsp_PATH)/kernel_modules
 
 # The directory that points to where filesystem is mounted
 TARGET_ROOT       := $(BASE_INSTALL_DIR)/target
@@ -130,17 +131,10 @@ TARGET_FS_DIR     := $(TARGET_FS)/opt/bin
 APP_DIR           := $(RDK_INSTALL_DIR)/sw_app
 MCFW_ROOT_PATH    := $(RDK_INSTALL_DIR)/sw_mcfw
 TFTP_HOME     	  := $(RDK_INSTALL_DIR)/bin
-
 APP_INC_DIR       := $(APP_DIR)/app
-IWSCAN_DIR        := $(APP_DIR)/module/iw_scan
 
-LIVE555_DIR       := $(APP_DIR)/module/live555
-P2P_DIR           := $(APP_DIR)/module/p2p
-
-# VOIP Client
-SYSROOT			  := $(BUILD_TOOL_DIR)/arm-arago-linux-gnueabi/usr
-VOIP_DIR          := $(APP_DIR)/module/voip
-LIBREM_PATH		  := $(APP_DIR)/module/voip/rem
+# The directory that points RDK external package
+EXTERNAL_PACKAGE  := $(RDK_INSTALL_DIR)/sw_package
 
 # IPC
 ipc_INCLUDE 	  := $(ipc_PATH)/packages
@@ -226,6 +220,7 @@ export XDCPATH
 export KW_BUILD
 export syslink_PATH
 export KERNELDIR
+export KMODDIR
 export TARGET_ROOT
 export TARGET_FS
 export TARGET_MCFW_DIR
@@ -262,10 +257,7 @@ export APP_INC_DIR
 export USE_ISP
 export UBX_TARGET
 export USE_WIFI
-export IWSCAN_DIR
-export LIVE555_DIR
 export MODEL_NAME
 export MODEL_TYPE
-export LIBREM_PATH
+export EXTERNAL_PACKAGE
 export SYSROOT
-

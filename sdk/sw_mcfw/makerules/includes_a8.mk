@@ -27,8 +27,7 @@ MCFW_INC=-I$(MCFW_ROOT_PATH)/mcfw/interfaces -I$(MCFW_ROOT_PATH)/mcfw/interfaces
 
 XDAIS_INC=-I$(xdais_PATH)/packages
 
-COMMON_INC=-I. -I../inc -I../priv -I$(MCFW_ROOT_PATH) -I$(APP_DIR) -I$(APP_INC_DIR) -I$(APP_DIR)/device/inc -I$(APP_DIR)/graphic -I$(APP_DIR)/font -I$(APP_DIR)/module/rtsptx -I$(APP_DIR)/control_sock -I$(APP_DIR)/app/$(APP_DIR_NAME)/inc
-MODULE_INC=-I$(APP_DIR)/module/iw_scan
+COMMON_INC=-I. -I../inc -I../priv -I$(MCFW_ROOT_PATH) -I$(APP_DIR)/graphic -I$(APP_DIR)/font
 
 CMEM_INC=-I$(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/include
 
