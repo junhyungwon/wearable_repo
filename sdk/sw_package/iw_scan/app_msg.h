@@ -77,17 +77,6 @@ typedef unsigned char 			Uint8;      ///< Unsigned  8-bit integer
 
 #define MAX_STR_LEN				128		//# string length
 
-/* for debugging macro */
-//#define __APP_DEBUG__
-#define aprintf(x...) do { printf(" [iwscan ] %s: ", __func__); printf(x); } while(0)
-#define eprintf(x...) do { printf(" [iwscan ERR!] %s: ", __func__); printf(x); } while(0)
-
-#ifdef __APP_DEBUG__
-#define dprintf(x...) do { printf(" [iwscan ] %s: ", __func__); printf(x); } while(0)
-#else
-#define dprintf(x...)
-#endif
-
 typedef void * (*OSA_ThrEntryFunc)(void *);
 
 typedef struct {

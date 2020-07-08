@@ -30,6 +30,24 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define APP_TAG		"IWA"
+
+/* for debugging macro */
+//#define __APP_DEBUG__
+#define DBG_RED		"\x1b[31m"
+#define DBG_GREEN	"\x1b[32m"
+#define DBG_YELLOW	"\x1b[33m"
+#define DBG_BLUE	"\x1b[34m"
+#define DBG_RESET	"\x1b[0m"
+
+#define aprintf(x...) do { printf(DBG_GREEN " [iwscan ] %s: ", __func__); printf(x); printf(DBG_RESET); } while(0)
+#define eprintf(x...) do { printf(DBG_RED " [iwscan ERR!] %s: ", __func__); printf(x); printf(DBG_RESET); } while(0)
+
+#ifdef __APP_DEBUG__
+#define dprintf(x...) do { printf(" [iwscan ] %s: ", __func__); printf(x); } while(0)
+#else
+#define dprintf(x...)
+#endif
 
 /*----------------------------------------------------------------------------
  Declares variables

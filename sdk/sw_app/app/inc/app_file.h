@@ -14,7 +14,6 @@
 #ifndef _APP_FILE_H_
 #define _APP_FILE_H_
 
-
 /*----------------------------------------------------------------------------
  Defines referenced	header files
  -----------------------------------------------------------------------------*/
@@ -31,7 +30,6 @@ typedef struct {
 	unsigned long free ;
 } disk_size_t ;
 
-
 typedef enum {
 	FILE_STATE_NORMAL	= 100, // # NO OVERWRITE
 	FILE_STATE_OVERWRITE,      // # DISK FULL, USE OVERWIRTE MODE
@@ -46,7 +44,6 @@ typedef struct {
     void* next ;
 }file_entry_t ;
 
-
 typedef struct {
 	file_entry_t* head;
 	file_entry_t* tail ;
@@ -54,10 +51,9 @@ typedef struct {
 	unsigned long file_cnt ;
 }file_list_t ;
 
-
 typedef struct {
 	OSA_MutexHndl mutex_file ;
-	app_thr_obj   *fObj;
+	app_thr_obj   fObj;
 	file_list_t   flist;
 
 	int           file_state;
@@ -67,7 +63,6 @@ typedef struct {
 } app_file_t ;
 
 extern app_file_t *ifile ;
-
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype
@@ -85,8 +80,4 @@ void set_display_disk_usage(void) ;
 int get_write_status(void);
 int _get_disk_kb_info(app_file_t *prm, disk_size_t *sz) ;
 
-
 #endif	/* _APP_FILE_H_ */
-
-
-

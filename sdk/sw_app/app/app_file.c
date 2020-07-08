@@ -1,4 +1,3 @@
-
 /*----------------------------------------------------------------------------
  Defines referenced header files
  -----------------------------------------------------------------------------*/
@@ -11,7 +10,6 @@
 #include <sys/time.h>
 #include <glob.h>
 
-
 #include "dev_disk.h"
 #include "dev_common.h"
 
@@ -22,7 +20,6 @@
 #include "app_dev.h"
 #include "app_set.h"
 #include "app_file.h"
-
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -40,7 +37,6 @@
 	#define MIN_THRESHOLD_SIZE 	    (1024*MB)/KB	//# 1GB
 	#define FILE_LIST_CHECK_TIME    (60*1000)   	//1min	
 #endif
-
 
 #ifndef SAFE_FREE
 #define SAFE_FREE(p) if(NULL != p){free(p);p=NULL;}
@@ -63,7 +59,6 @@
 
 #define LTELL(fd) ftell(fd)
 
-
 /*------------------------------------------------------------------*/
 #define FILE_DEBUG (1)
 #if FILE_DEBUG
@@ -75,53 +70,21 @@
 #endif
 /*------------------------------------------------------------------*/
 
-/*
-typedef struct {
-	char fname[MAX_CHAR_64];		//# ufs file name
-    unsigned int size ;
-	void* prev;
-	void* next;
-}file_entry_t;
-
-
-typedef struct {
-	file_entry_t* 	head;
-	file_entry_t* 	tail;
-	unsigned long   tot_size ;
-	unsigned long	file_cnt;					//# count of recorded files
-}file_list_t;
-
-
-typedef struct {
-	OSA_MutexHndl 	mutex_file;
-	app_thr_obj		*fObj;						//# file checking thread
-	file_list_t 	flist;						//# linked-list for recorded files
-
-	int				file_state;					//# ref file_state_e
-	char 			rec_root[MAX_CHAR_32];		//# working root is /mmc/DCIM for example.
-	unsigned long disk_avail ;
-	unsigned long size_max ;
-}app_file_t;
-*/
-
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
+static app_file_t t_file;
+app_file_t *ifile = &t_file;
 
-app_file_t t_file;
-app_file_t* ifile = &t_file;
-
-static file_list_t ilist ;
+static file_list_t ilist;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 
-
 /*----------------------------------------------------------------------------
  Implementation
  -----------------------------------------------------------------------------*/
-
 
 /*****************************************************************************
  * @brief	 compare file name
@@ -135,7 +98,6 @@ static int _cmpold(const void * a, const void * b)
 
 	return (strcmp(a_name->fname, b_name->fname));
 }
-
 
 /*****************************************************************************
  * @brief	 check record path
@@ -153,25 +115,24 @@ static void _check_rec_dir(char* rec_root)
 
 static int get_threshold_size(app_file_t* pInfo)
 {
-   disk_info_t idisk ;
-   int ret = EFAIL ;
+	disk_info_t idisk ;
+	int ret = EFAIL ;
 
-   if(app_cfg->ste.b.mmc_err)
-	   return EFAIL ;
+	if(app_cfg->ste.b.mmc_err)
+		return EFAIL ;
 
-   ret = util_disk_info(&idisk, SD_MOUNT_PATH ) ;
+	ret = util_disk_info(&idisk, SD_MOUNT_PATH ) ;
 
-   printf("idisk.total = %ld\n",idisk.total) ;
-   printf("idisk.avail = %ld\n",idisk.avail) ;
-   if(ret != EFAIL)
-   {
-      pInfo->size_max = ((unsigned long long)idisk.total * 100)/100 ;
-      pInfo->disk_avail = idisk.avail ;
-   }
+	dprintf("idisk.total = %ld\n",idisk.total) ;
+	dprintf("idisk.avail = %ld\n",idisk.avail) ;
+	if(ret != EFAIL)
+	{
+		pInfo->size_max = ((unsigned long long)idisk.total * 100)/100 ;
+		pInfo->disk_avail = idisk.avail ;
+	}
 
-   return ret ;
+	return ret ;
 }
-
 
 /*****************************************************************************
  * @brief	 get file size (KiB)
@@ -189,7 +150,6 @@ static unsigned long _get_file_size(char* fname)
 	return fsize;
 }
 
-
 /*****************************************************************************
  * @brief	 get disk space (KiB)
  * @section  DESC Description
@@ -197,12 +157,6 @@ static unsigned long _get_file_size(char* fname)
  *****************************************************************************/
 int _get_disk_kb_info(app_file_t *prm, disk_size_t *sz)
 {
-/*
-	if( dev_disk_get_size(SD_MOUNT_PATH, &sz->total, &sz->used) == EFAIL ) {
-		aprintf("Get disk size error!!!\n");
-		return EFAIL;
-	}
-*/
     if(prm->flist.tot_size == 0)
 	{
         sz->total = prm->size_max ;
@@ -216,20 +170,9 @@ int _get_disk_kb_info(app_file_t *prm, disk_size_t *sz)
         sz->free = sz->total - prm->flist.tot_size ;
 		sz->used = prm->flist.tot_size ;
 	}
-/*
-    printf("_get_disk_kb_info.. sz->total = %ld\n",sz->total) ;
-    printf("_get_disk_kb_info.. sz->used = %ld\n",sz->used) ;
-    printf("_get_disk_kb_info.. sz->free = %ld\n",sz->free) ;
-*/
-
-//    sz->total = prm->size_max ;
-//    sz->free = prm->disk_avail ;
-//	sz->used = sz->total - sz->free  ;
 
 	return SOK;
 }
-
-
 
 /*****************************************************************************
  * @brief	 search recorded file (*.avi)
@@ -242,7 +185,6 @@ static int _search_files(char* search_path, char* filter, file_entry_t** file_li
 	char globpath[MAX_CHAR_255] = {0,};
 	glob_t globbuf;
 
-
 	//# ufs file search in mmc/DCIM or mmc/DCIM/ufs directory
 	memset(&globbuf, 0, sizeof(glob_t));
 	sprintf(globpath, "%s/*.%s", search_path, filter);
@@ -250,7 +192,7 @@ static int _search_files(char* search_path, char* filter, file_entry_t** file_li
 	if(glob(globpath, GLOB_DOOFFS, NULL, &globbuf) == 0)
    		fcnt = globbuf.gl_pathc;
 	else
-		aprintf("Not found files: %s\n", globpath);
+		eprintf("Not found files: %s\n", globpath);
 
 	if(fcnt) {
 		int fidx = 0;
@@ -264,8 +206,6 @@ static int _search_files(char* search_path, char* filter, file_entry_t** file_li
 
 	return fcnt;
 }
-
-
 
 /*****************************************************************************
  * @brief	 delete header of linked-list
@@ -282,12 +222,6 @@ static int _delete_rec_file_head(file_list_t* plist, char* del_path)
 		if(pTmp->next != NULL) {
 			plist->head			= (file_entry_t*)pTmp->next;
 			plist->head->prev	= NULL;		
-/*	
-			plist->tot_size -= pTmp->size ;
-			plist->file_cnt-- ;
-			
-            FILE_DBG("DELETE FILE :%s(%ld) (%d BK)==\n",del_path, plist->file_cnt, pTmp->size) ;
-*/
 		}
 		else {
 			plist->head = NULL;
@@ -295,8 +229,6 @@ static int _delete_rec_file_head(file_list_t* plist, char* del_path)
 		}
 		
 		sprintf(del_path, "%s", pTmp->fname);
-//		remove(pTmp->fname) ;
-		//# Delete dir.
 		if(pTmp){
 			free(pTmp);
 			pTmp = NULL;
@@ -307,8 +239,6 @@ static int _delete_rec_file_head(file_list_t* plist, char* del_path)
 
 	return ret;
 }
-
-
 
 /*****************************************************************************
  * @brief	 add file name to tail of linked-list
@@ -333,14 +263,12 @@ static int _add_ufs_list_tail(app_file_t* prm, char* ufs_path)
 		eprintf("file entry create failed!!\n");
 		return EFAIL;
 	}
-
 	
 	pNew->prev = NULL;
 	pNew->next = NULL;
 	pNew->size = sb.st_size/KB ;
 
 	sprintf(pNew->fname, "%s", ufs_path);
-
 
 	//#--- link process
 	if(pTail == NULL)		//# first file
@@ -357,14 +285,10 @@ static int _add_ufs_list_tail(app_file_t* prm, char* ufs_path)
 	}
 
 	plist->file_cnt++ ;
-
 	plist->tot_size += pNew->size ;
-
-//    printf("ADD plist->tot_size = %ld\n",plist->tot_size) ;
 
 	return SOK;
 }
-
 
 static int _add_ufs_list_head(app_file_t* prm, char* ufs_path)
 {
@@ -379,11 +303,9 @@ static int _add_ufs_list_head(app_file_t* prm, char* ufs_path)
 		return EFAIL;
 	}
 
-	
 	pNew->prev = NULL;
 	pNew->next = NULL;
 	sprintf(pNew->fname, "%s", ufs_path);
-
 
 	//#--- link process
 	if(pHead == NULL)		//# first file
@@ -402,10 +324,6 @@ static int _add_ufs_list_head(app_file_t* prm, char* ufs_path)
 
 	return SOK;
 }
-
-
-
-
 
 /*****************************************************************************
  * @brief	 make the linked-list with searched files (.avi)
@@ -437,8 +355,6 @@ static int _make_file_list(app_file_t* prm)
 
 	return fcnt;
 }
-
-
 
 /*****************************************************************************
  * @brief	 delete files
@@ -492,13 +408,10 @@ static int _delete_files(app_file_t* prm, unsigned long del_size)
 	}
 
 del_err:
-
 	OSA_mutexUnlock(&ifile->mutex_file);
 
 	return ret;
 }
-
-
 
 /*****************************************************************************
  * @brief	 check the overwrite recording.
@@ -557,9 +470,6 @@ static void _check_overwite_full_led(int file_state)
 	}
 }
 
-
-
-
 /*****************************************************************************
  * @brief	 check the amount of disk usage.
  * @section  DESC Description
@@ -584,7 +494,6 @@ static void _display_disk_usage(disk_size_t* sz)
 
 }
 
-
 /*****************************************************************************
  * @brief	 check the amount of disk usage.
  * @section  DESC Description
@@ -595,9 +504,6 @@ static void _set_disk_full_state(app_file_t* prm)
 	if(prm->file_state == FILE_STATE_NORMAL)
 		prm->file_state = (app_set->rec_info.overwrite)?FILE_STATE_OVERWRITE:FILE_STATE_FULL;
 }
-
-
-
 
 #if FREC_TEST
 static void _frec_test(unsigned long used)
@@ -610,9 +516,6 @@ static void _frec_test(unsigned long used)
 }
 #endif
 
-
-
-
 /*****************************************************************************
 * @brief    file manangement thread function
 * @section  - check rec_dir size & delete old files
@@ -623,9 +526,7 @@ static void *THR_file_mng(void *prm)
 	app_thr_obj *tObj = (app_thr_obj*)prm;
 
 	int cmd, exit=0, first = 0;
-//	unsigned int f_cycle=0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME; // A©øA¨ö ¨öAAU¢¯¢®¨ù¡© CHECK START CI¥ì¥ì¡¤I
-//	unsigned long disk_free = 0;
 	disk_size_t sz_info;
 	char msg[MAX_CHAR_255] = {0,};
 	
@@ -668,12 +569,6 @@ static void *THR_file_mng(void *prm)
 					app_rec_stop(ON);	//buzzer on
 					continue;
 				}
-/*				
-printf("\n");
-				printf("sz_info.total = %ld\n",sz_info.total) ;
-				printf("sz_info.used = %ld\n",sz_info.used) ;
-				printf("sz_info.free = %ld\n",sz_info.free) ;
-*/
 				_display_disk_usage(&sz_info);
 
 #if FREC_TEST
@@ -691,7 +586,7 @@ printf("\n");
 						    app_rec_stop(ON);
 						    continue;
 					    }
-				        printf("MIN_THRESHOLD_SIZE = %d sz_info.free = %ld\n",MIN_THRESHOLD_SIZE,sz_info.free) ;
+				        dprintf("MIN_THRESHOLD_SIZE = %d sz_info.free = %ld\n",MIN_THRESHOLD_SIZE,sz_info.free) ;
                     }
 				}
 				else if(!app_set->rec_info.overwrite)
@@ -720,8 +615,10 @@ printf("\n");
 	return NULL;
 }
 
-
-
+/*****************************************************************************
+* @brief    file manager init/exit function
+* @section  [desc]
+*****************************************************************************/
 int app_file_start(void)
 {
 	int status = SOK;
@@ -739,7 +636,7 @@ int app_file_start(void)
 	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, "DCIM");
 	ifile->file_state = FILE_STATE_NORMAL;
 
-    printf(" [app] %s start...\n", __func__);
+    aprintf(" [app] %s start...\n", __func__);
 
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir(ifile->rec_root);
@@ -749,11 +646,10 @@ int app_file_start(void)
 		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
 		app_log_write(MSG_LOG_WRITE, msg) ;
 		app_cfg->ste.b.mmc_err = 1;
-
 	}
 
-    printf("ifile->size max = %ld\n",ifile->size_max) ;
-    printf("ifile->disk_avail = %ld\n",ifile->disk_avail) ;
+    dprintf("ifile->size max = %ld\n",ifile->size_max) ;
+    dprintf("ifile->disk_avail = %ld\n",ifile->disk_avail) ;
 
 	if(!app_cfg->ste.b.mmc_err)
 	{
@@ -776,62 +672,42 @@ int app_file_start(void)
     OSA_assert(status == OSA_SOK);
 
     //#--- create normal record thread
-    tObj = (app_thr_obj*)malloc(sizeof(app_thr_obj));
-    if(tObj == NULL) {
-        eprintf("thread obj malloc fail\n");
-        return EFAIL;
-    }
-
-    OSA_semCreate(&tObj->sem, MAX_PENDING_SEM_CNT, 0);
-    OSA_thrCreate(&tObj->thr, THR_file_mng, APP_THREAD_PRI, 0, tObj);
-    ifile->fObj = tObj;
-
+	tObj = &ifile->fObj;
+	if(thread_create(tObj, THR_file_mng, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create thread\n");
+		return -1;
+	}
+	
 	OSA_waitMsecs(300);
 	
+	aprintf("... done!\n");
 
 	return status;
 }
 
-
 void app_file_stop(void)
 {
-    aprintf("stop...\n");
-
+	app_thr_obj *tObj = &ifile->fObj;
 	int status = 0;
-    if(ifile != NULL)
-    {
-        app_thr_obj *tObj;
-        tObj = (app_thr_obj *)ifile->fObj;
+	
+	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while(tObj->active)
+		OSA_waitMsecs(20);
 
-        if(tObj != NULL)
-       	{
-			event_send(tObj, APP_CMD_EXIT, 0, 0);
-			while(tObj->active)
-				OSA_waitMsecs(20);
+	thread_delete(tObj);
 
-			OSA_semDelete(&tObj->sem);
-			OSA_thrDelete(&tObj->thr);
+	status = OSA_mutexDelete(&(ifile->mutex_file));
+	OSA_assert(status == OSA_SOK);
 
-			free(tObj);
-			tObj = NULL;
-
-		    status = OSA_mutexDelete(&(ifile->mutex_file));
-		    OSA_assert(status == OSA_SOK);
-       	}
-
-//		_ufs_list_delete_all();
-
-		ifile = NULL;
-    }
+	ifile = NULL;
 
     aprintf("done...\n");
-
 }
-
 
 int app_file_add(char* path)
 {
 	int ret = EFAIL;
+	
 	if(ifile == NULL) 
 		return EFAIL;
 
@@ -845,13 +721,10 @@ int app_file_add(char* path)
 	ret = SOK;
 	
 add_fail:
-	
 	OSA_mutexUnlock(&ifile->mutex_file);
 
 	return SOK;
 }
-
-
 
 /*****************************************************************************
 * @brief    Get file name and size for ftp backup
@@ -874,14 +747,9 @@ unsigned long get_ftp_send_file(char* path)
 	//# get file size
 	fsize =  _get_file_size(path);
 
-
 get_err:
-
 	return fsize;
-
 }
-
-
 
 /*****************************************************************************
 * @brief    resotre file that was failed send on ftp.
@@ -896,7 +764,6 @@ int restore_ftp_file(char* path)
 
 	return _add_ufs_list_head(ifile, path);
 }
-
 
 /*****************************************************************************
 * @brief    Delete file that is backup done with ftp.
@@ -919,7 +786,6 @@ int delete_ftp_send_file(char* path)
 
 	return ret;
 }
-
 
 /*****************************************************************************
 * @brief    check Recorded file exist  .
@@ -949,7 +815,6 @@ void set_display_disk_usage()
 	}
 }
 
-
 /*****************************************************************************
 * @brief    check SD write status  .
 * @section 
@@ -959,10 +824,3 @@ int get_write_status()
 {
 	return ifile->file_state; 
 }
-
-
-
-
-
-
-

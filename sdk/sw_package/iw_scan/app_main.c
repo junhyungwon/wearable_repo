@@ -98,8 +98,6 @@ static void app_main(void)
 	app_thr_obj *tObj = &app_cfg->mObj;
 	int exit = 0, cmd;
 
-	printf(" [task] %s start\n", __func__);
-
 	tObj->active = 1;
 	while (!exit)
 	{
@@ -110,8 +108,6 @@ static void app_main(void)
 		}
 	}
 	tObj->active = 0;
-
-	printf(" [task] %s stop\n", __func__);
 }
 
 /*****************************************************************************
@@ -122,7 +118,7 @@ int main(int argc, char **argv)
 {
 	int r = 0;
 
-	printf("\n--- IWSCAN start ---\n");
+	eprintf("\n--- IWSCAN start ---\n");
 
 	main_thr_init();
 
@@ -146,10 +142,7 @@ err_exit:
 
 	main_thr_exit();
 
-	if (r)
-		fprintf(stderr, "Failed to system init(ret = 0x%08x)\n", r);
-	else
-		printf("\n--- IWSCAN end!! ---\n");
+	eprintf("\n--- IWSCAN end!! ---\n");
 
 	return 0;
 }

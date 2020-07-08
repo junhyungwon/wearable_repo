@@ -619,9 +619,6 @@ static void *THR_dev(void *prm)
                 dev_net_link_down("eth0") ;
             }
             app_cfg->ftp_enable = OFF;
-
-
-
         }
 
         if(dev_ste_ethernet(0))
@@ -632,7 +629,6 @@ static void *THR_dev(void *prm)
 			}
 		}
 
-
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
@@ -641,9 +637,6 @@ static void *THR_dev(void *prm)
 
 	return NULL;
 }
-
-
-
 
 /*****************************************************************************
 * @brief    dev thread function

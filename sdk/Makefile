@@ -360,9 +360,9 @@ update:
 
 ##### SYSTEM BUILD #####
 
-sys: psp syslink cmem iss hdvpss m3 app
+sys: psp syslink cmem iss hdvpss m3 ubxapp
 
-sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean app_clean
+sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean ubxapp_clean
 	rm -rf $(MCFW_ROOT_PATH)/build
 	@echo -e "\n--- make sysclean done! (`date +'%H:%M:%S'`)---\n"
 

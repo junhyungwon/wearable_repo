@@ -3,13 +3,8 @@
 test -f ./load.sh || exit 0
 test -f ./init.sh || exit 0
 
-if [ -x ./init.sh ]; then
-	./init.sh
-fi
-
-if [ -x ./load.sh ]; then
-	./load.sh
-fi
+./init.sh
+./load.sh
 
 if [ -e /mmc/hw_test.out ]; then
 	echo "Running Hardware Test!!"
@@ -21,3 +16,6 @@ if [ -x ./bin/app_fitt.out ]; then
 	./bin/app_fitt.out &
 	./bin/iw_scan.out &
 fi
+
+# For get disk free space
+/bin/df /mmc > /dev/null

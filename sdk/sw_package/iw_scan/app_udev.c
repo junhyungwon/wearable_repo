@@ -273,7 +273,7 @@ static void *app_udev_main(void *prm)
 
 	int exit = 0;
 
-	printf(" [task] %s start\n", __func__);
+	aprintf(" [task] start!\n");
 
 	tObj->active = 1;
 	while (!exit)
@@ -360,7 +360,7 @@ static void *app_udev_main(void *prm)
 
 	tObj->active = 0;
 
-	printf(" [app ] %s exit\n", __func__);
+	aprintf(" [task] exit!\n");
 
 	return NULL;
 }
@@ -374,12 +374,10 @@ int app_udev_init(void)
 	app_thr_obj *tObj = &app_udev_pdata->uObj;
 
 	if (thread_create(tObj, app_udev_main, APP_THREAD_PRI, NULL) < 0) {
-		eprintf("create thread\n");
+		eprintf("Failed to create thread!\n");
 		return FXN_ERR_UDEV_INIT;
 	}
 
-	aprintf("... done!\n");
-	
 	return 0;
 }
 
@@ -397,8 +395,6 @@ int app_udev_exit(void)
 		delay_msecs(20);
 
     thread_delete(tObj);
-
-    dprintf("... done!\n");
 
 	return 0;
 }

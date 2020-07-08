@@ -601,7 +601,6 @@ int app_rec_init(void)
 	
 	imem = (g_mem_info_t *)g_mem_get_virtaddr();
 
-
 	//# set the record period.
 	irec->rec_min = grec_time[app_set->rec_info.period_idx];
 

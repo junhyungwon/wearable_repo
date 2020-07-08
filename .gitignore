@@ -2910,6 +2910,15 @@ sdk/psp/kernel/sound/drivers/vx/.built-in.o.cmd
 sdk/psp/kernel/sound/drivers/vx/built-in.o
 sdk/psp/kernel/sound/drivers/vx/modules.builtin
 sdk/psp/kernel/sound/drivers/vx/modules.order
+sdk/psp/kernel/sound/drivers/.dummy.o.cmd
+sdk/psp/kernel/sound/drivers/.snd-dummy.ko.cmd
+sdk/psp/kernel/sound/drivers/.snd-dummy.mod.o.cmd
+sdk/psp/kernel/sound/drivers/.snd-dummy.o.cmd
+sdk/psp/kernel/sound/drivers/dummy.o
+sdk/psp/kernel/sound/drivers/snd-dummy.ko
+sdk/psp/kernel/sound/drivers/snd-dummy.mod.c
+sdk/psp/kernel/sound/drivers/snd-dummy.mod.o
+sdk/psp/kernel/sound/drivers/snd-dummy.o
 sdk/psp/kernel/sound/i2c/.built-in.o.cmd
 sdk/psp/kernel/sound/i2c/built-in.o
 sdk/psp/kernel/sound/i2c/modules.builtin
@@ -3469,6 +3478,7 @@ sdk/sw_package/iw_scan/app_iwscan.o
 sdk/sw_package/iw_scan/app_main.o
 sdk/sw_package/iw_scan/app_net_manager.o
 sdk/sw_package/iw_scan/app_udev.o
+sdk/sw_package/iw_scan/app_msg.o
 sdk/sw_package/iw_scan/iw_scan.out
 sdk/psp/kernel_modules/wlan/8188cu_driver/.8192cu.ko.cmd
 sdk/psp/kernel_modules/wlan/8188cu_driver/.8192cu.mod.o.cmd
