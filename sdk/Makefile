@@ -59,7 +59,7 @@ app_web:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
 
 app_web_clean:
-	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root clean
 
 sipc:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip all
