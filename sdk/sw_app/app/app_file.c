@@ -523,7 +523,7 @@ static void _frec_test(unsigned long used)
 *****************************************************************************/
 static void *THR_file_mng(void *prm)
 {
-	app_thr_obj *tObj = (app_thr_obj*)prm;
+	app_thr_obj *tObj = &ifile->fObj;
 
 	int cmd, exit=0, first = 0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME; // A©øA¨ö ¨öAAU¢¯¢®¨ù¡© CHECK START CI¥ì¥ì¡¤I
