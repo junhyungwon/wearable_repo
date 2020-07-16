@@ -26,7 +26,7 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 	#if 1
 	pAVIFile->pFile = fopen(pszFileName, "wb");
 	if(!pAVIFile->pFile){
-		DBG2_LOG("fopen() Fail!! \n");
+		DBG2_LOG("fopen() Fail!!(fname is %s)\n", pszFileName);
 		return PROC_ERROR;
 	}
 	#else

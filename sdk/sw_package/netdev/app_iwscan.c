@@ -273,6 +273,8 @@ int app_iscan_init(void)
 		return FXN_ERR_IWSCAN_INIT;
 	}
 	
+	aprintf("... done!\n");
+	
 	return 0;
 }
 
@@ -291,7 +293,7 @@ int app_iscan_exit(void)
 
     thread_delete(tObj);
 
-    dprintf("... done!\n");
+    aprintf("... done!\n");
 	
   	return 0;
 }

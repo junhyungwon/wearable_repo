@@ -1,11 +1,11 @@
-# Makefile for iw_scan
+# Makefile for net_dev
 INSTALL_DIR :=$(APP_INSTALL_DIR)
 CC 		:= $(BUILD_TOOL_PREFIX)gcc
 STRIP 	:= $(BUILD_TOOL_PREFIX)strip
-TARGET = iw_scan.out
+TARGET = netdev.out
 #TARGET_HEADER=ipc_common_def.h
 
-INCLUDE = -I .
+INCLUDE = -I . -I$(APP_DIR)/lib/include
 C_FLAGS += -Wall -Warray-bounds -O3 $(INCLUDE)
 LDFLAGS += -lpthread -lzmq
 
@@ -18,7 +18,7 @@ all: $(TARGET)
 $(TARGET): $(OBJFILES)
 	$(CC) $(C_FLAGS) $(LDFLAGS) -o $@ $(OBJFILES) $(LIBS)
 	$(STRIP) $@
-
+	
 %.o:%.c
 	$(CC) $(C_FLAGS) $(LDFLAGS) -c $^
 

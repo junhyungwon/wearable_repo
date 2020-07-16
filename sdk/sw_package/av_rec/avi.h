@@ -218,4 +218,9 @@ int LIBAVI_closeAvi(void* handlAvi);
 int LIBAVI_recoverFile(char* filePullPath);
 char* LIBAVI_recoverGetErrMsg();
 
+FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on);
+void avi_file_close(FILE *favi, char* fname);
+int avi_file_write(FILE *favi, stream_info_t *ifr);
+int avi_file_init(unsigned int addr);
+
 #endif	/* _APP_AVI_H_ */

@@ -550,8 +550,9 @@ int app_tsync_init(void)
         return EFAIL ;
     }
 
-    aprintf(".done!\n") ;
-    return 0 ;
+    aprintf("... done!\n");
+    
+	return 0 ;
 }
 
 void app_tsync_exit(void)
@@ -565,6 +566,6 @@ void app_tsync_exit(void)
 
     thread_delete(tObj);
 
-    aprintf(".done!\n") ;
+    aprintf("... done!\n");
 }
 

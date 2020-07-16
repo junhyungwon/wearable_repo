@@ -329,7 +329,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->wifiap.en_key = %d\n", pset->wifiap.en_key);
     printf("pset->wifiap.ssid   = %s\n", pset->wifiap.ssid);
     printf("pset->wifiap.pwd    = %s\n", pset->wifiap.pwd);
-    printf("pset->wifiap.stealth    = %s\n", pset->wifiap.stealth);
+    printf("pset->wifiap.stealth    = %d\n", pset->wifiap.stealth);
 	printf("\n");
 
     printf("pset->sys_info.fw_ver   = %s\n", pset->sys_info.fw_ver);

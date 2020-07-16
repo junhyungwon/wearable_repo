@@ -47,6 +47,11 @@
 #include "app_queue.h"
 #include "app_comm.h"
 
+/*----------------------------------------------------------------------------
+ Definitions and macro
+-----------------------------------------------------------------------------*/
+//#define FMS_DEBUG
+
 typedef struct {
     app_thr_obj sockObj ;
     app_thr_obj metaObj ;
@@ -54,6 +59,12 @@ typedef struct {
     int sockfd ;
     OSA_MutexHndl       mutex;
 } app_fms_t ;
+
+#ifdef FMS_DEBUG
+#define DEBUG_PRI(msg, args...) printf("[FMS] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
+#else
+#define DEBUG_PRI(msg, args...) ((void)0)
+#endif
 
 /*----------------------------------------------------------------------------
  Declares variables

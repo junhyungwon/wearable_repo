@@ -70,17 +70,43 @@
 #endif
 /*------------------------------------------------------------------*/
 
+typedef struct {
+	char fname[64];
+	unsigned int size ;
+	void* prev ;
+    void* next ;
+} file_entry_t ;
+
+typedef struct {
+	file_entry_t* head;
+	file_entry_t* tail ;
+	unsigned long tot_size ;
+	unsigned long file_cnt ;
+} file_list_t ;
+
+typedef struct {
+	OSA_MutexHndl mutex_file ;
+	app_thr_obj   fObj;
+	file_list_t   flist;
+
+	int           file_state;
+	char          rec_root[32];
+	unsigned long disk_avail ;
+	unsigned long size_max ;
+} app_file_t ;
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
 static app_file_t t_file;
-app_file_t *ifile = &t_file;
+static app_file_t *ifile = &t_file;
 
 static file_list_t ilist;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+static int _get_disk_kb_info(app_file_t *prm, disk_size_t *sz);
 
 /*----------------------------------------------------------------------------
  Implementation
@@ -155,7 +181,7 @@ static unsigned long _get_file_size(char* fname)
  * @section  DESC Description
  *	 - desc : returnd total, used, free
  *****************************************************************************/
-int _get_disk_kb_info(app_file_t *prm, disk_size_t *sz)
+static int _get_disk_kb_info(app_file_t *prm, disk_size_t *sz)
 {
     if(prm->flist.tot_size == 0)
 	{
@@ -530,20 +556,20 @@ static void *THR_file_mng(void *prm)
 	disk_size_t sz_info;
 	char msg[MAX_CHAR_255] = {0,};
 	
-	aprintf("start...\n");
-
+	aprintf("enter...\n");
 	tObj->active = 1;
+	
 	while(!exit)
 	{
 		app_cfg->wd_flags |= WD_FILE;
-			
+		
 		cmd = tObj->cmd;
 		if(cmd == APP_CMD_EXIT || app_cfg->ste.b.mmc_err) {
 			exit = 1;
 			break;
 		}
-
-		if(app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
+		
+		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
             if(!first)
 			{
 				ifile->flist.tot_size = 0 ;
@@ -602,7 +628,7 @@ static void *THR_file_mng(void *prm)
 				f_cycle = 0 ;
 			}
 		}
-	
+		
 		OSA_waitMsecs(FILE_LIST_CYCLE);
 		f_cycle += FILE_LIST_CYCLE;
 	}
@@ -621,11 +647,10 @@ static void *THR_file_mng(void *prm)
 *****************************************************************************/
 int app_file_start(void)
 {
+	app_thr_obj *tObj;
 	int status = SOK;
 	char msg[MAX_CHAR_128] ;
 	
-    app_thr_obj *tObj;	
-
 	if(app_cfg->ste.b.mmc == 0)
 		return EFAIL;
 	
@@ -635,8 +660,6 @@ int app_file_start(void)
 
 	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, "DCIM");
 	ifile->file_state = FILE_STATE_NORMAL;
-
-    aprintf(" [app] %s start...\n", __func__);
 
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir(ifile->rec_root);
@@ -670,7 +693,7 @@ int app_file_start(void)
 	
     status = OSA_mutexCreate(&(ifile->mutex_file));
     OSA_assert(status == OSA_SOK);
-
+	
     //#--- create normal record thread
 	tObj = &ifile->fObj;
 	if(thread_create(tObj, THR_file_mng, APP_THREAD_PRI, NULL) < 0) {
@@ -724,6 +747,15 @@ add_fail:
 	OSA_mutexUnlock(&ifile->mutex_file);
 
 	return SOK;
+}
+
+unsigned long app_file_get_free_size(void)
+{
+	disk_size_t sz_info;
+	
+	_get_disk_kb_info(ifile, &sz_info);
+	
+	return sz_info.free;
 }
 
 /*****************************************************************************

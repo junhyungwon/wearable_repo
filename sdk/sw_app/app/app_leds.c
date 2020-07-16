@@ -158,7 +158,9 @@ int app_leds_init(void)
 			return -1;
 		}
 	}
-
+	
+	aprintf("... done!\n");
+	
 	return SOK;
 }
 

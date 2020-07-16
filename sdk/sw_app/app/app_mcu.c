@@ -335,13 +335,16 @@ int app_mcu_init(void)
 	mic_send_ready();
 
 //	mic_exit_state(OFF_NONE, 0);	//# for test - no power off
-
+	aprintf("... done!\n");
+	
 	return 0;
 }
 
 int app_mcu_exit(void)
 {
     mic_msg_exit();
-
+	
+	aprintf("... done!\n");
+	
 	return 0;
 }

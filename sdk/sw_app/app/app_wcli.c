@@ -116,7 +116,7 @@ static int iwscan_get_state(void)
 
 	pid_t pid;
 
-	fs = popen("/bin/pidof iw_scan.out", "r");
+	fs = popen("/bin/pidof netdev.out", "r");
 	if (fs == NULL) {
 		eprintf("couldn't execute pidof iw_scan!!\n");
 		return 0;

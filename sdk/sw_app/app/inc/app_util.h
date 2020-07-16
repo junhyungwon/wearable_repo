@@ -62,4 +62,10 @@ int uinput_init(void);
 int uinput_emit_key(int type, int code, int val);
 int uinput_exit(void);
 
+int Msg_Init(int msgKey);
+int Msg_Kill(int qid);
+int Msg_Send(int qid, void *pdata, int size);
+int Msg_Rsv(int qid, int msg_type, void *pdata , int size);
+int Msg_Send_Rsv(int qid, int msg_type, void *pdata , int size);
+
 #endif	/* _APP_UTIL_H_ */

@@ -24,14 +24,6 @@
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-#define NETWORK_DEBUG
-
-#ifdef NETWORK_DEBUG
-#define DEBUG_PRI(msg, args...) printf("[NETWORK] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
-#else
-#define DEBUG_PRI(msg, args...) ((void)0)
-#endif
-
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype

@@ -16,7 +16,7 @@
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
 //# wifi ssid scan module...
-#include <ipc_common_def.h>
+#include <netdev_ipc_def.h>
 
 /*----------------------------------------------------------------------------
  Definitions and macro

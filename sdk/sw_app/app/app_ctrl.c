@@ -1053,7 +1053,6 @@ void ctrl_reset_nand_update(void)
 	}
 }
 
-
 /*****************************************************************************
  * @brief    wifi state function
  * @section  DESC Description
@@ -1121,7 +1120,6 @@ int ctrl_wifi_set(int on)
 	                ret = EFAIL;
         	}
 
-
 			if (!ret) {
 	            if (run_5g) {
 					channel = 44;
@@ -1171,13 +1169,6 @@ int ctrl_wifi_set(int on)
 
 	return ret;
 }
-
-
-
-
-
-
-
 
 /*****************************************************************************
 * @brief    Firmware update

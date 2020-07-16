@@ -59,7 +59,6 @@
 
 #define RECVBUFFSIZE		2048
 //#define MAXUSER                 5
-//#define FMS_DEBUG
 
 #define DIR_JPEG_NAND          "/media/nand/jpeg"
 #define DIR_META_NAND          "/media/nand/meta"
@@ -85,12 +84,6 @@
 
 #define SENDING_CYCLE  100
 #define READY          2
-
-#ifdef FMS_DEBUG
-#define DEBUG_PRI(msg, args...) printf("[FMS] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
-#else
-#define DEBUG_PRI(msg, args...) ((void)0)
-#endif
 
 /*----------------------------------------------------------------------------
  Defines referenced	STRUCTURE

@@ -48,6 +48,13 @@
 #define SOCKWAIT                30000
 #define DDNS_LOOP_INTERVAL           20
 #define SOCK_THRFXN_TSK_PRI     (3)
+#define NETWORK_DEBUG
+
+#ifdef NETWORK_DEBUG
+#define DEBUG_PRI(msg, args...) printf("[NETWORK] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
+#else
+#define DEBUG_PRI(msg, args...) ((void)0)
+#endif
 
 typedef struct {
     app_thr_obj sockObj;     //# csock thread

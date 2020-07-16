@@ -28,7 +28,7 @@
 #include <sys/shm.h>
 #include <sys/wait.h>
 
-#include <ipc_common_def.h>
+#include <netdev_ipc_def.h>
 
 #include <app_main.h>
 #include <app_ipc.h>

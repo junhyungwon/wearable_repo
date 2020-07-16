@@ -26,13 +26,11 @@
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
+int app_rec_init(void);
+int app_rec_exit(void);
+
 int app_rec_start(void);
 int app_rec_stop(int buzz);
 int app_rec_state(void);
-
-int app_rec_init(void);
-int app_rec_exit(void);
-int is_rec_err(void);
-void app_change_file(void);
 
 #endif	/* _APP_REC_H_ */

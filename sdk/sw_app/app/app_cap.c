@@ -31,7 +31,6 @@
 #include "app_dev.h"
 #include "app_rtsptx.h"
 #include "app_set.h"
-#include "app_avi.h"
 #include "app_rec.h"
 #include "app_mcu.h"
 #include "app_web.h"
@@ -101,7 +100,6 @@ void video_status(void)
 -----------------------------------------------------------------------------*/
 int vsys_event(unsigned int eventId, void *pPrm, void *appData)
 {
-
 	if (eventId == VSYS_EVENT_VIDEO_DETECT)
     {
         video_status() ;
@@ -170,9 +168,10 @@ static void proc_vid_cap(void)
 			ifr->t_msec = (Uint32)(captime%1000);
 
 			app_memcpy(ifr->addr, (char*)pFullBuf->bufVirtAddr, ifr->b_size);
-
+			
             if(app_cfg->ste.b.rtsptx)
             {
+				/* ch == 1 --> streaming */
                 if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == 1)
                 {
 					captime += 8 ;
@@ -200,6 +199,7 @@ static void proc_vid_cap(void)
                     app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
+				/* ch == 2 --> JPEG  */
                 else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == 2)
                 {
 //                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
@@ -239,7 +239,7 @@ static void proc_vid_cap(void)
                 ifr = &icap->imem->ifr[idx];
                 memset(ifr, 0, sizeof(stream_info_t));
 
-                ifr->d_type = DATA_TYPE_META;
+                ifr->d_type = 2; //DATA_TYPE_META;
                 ifr->ch = 0;
                 ifr->addr = addr;
 				ifr->offset = (int)addr - g_mem_get_virtaddr();

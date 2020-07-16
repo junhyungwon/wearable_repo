@@ -14,7 +14,7 @@ fi
 
 if [ -x ./bin/app_fitt.out ]; then
 	./bin/app_fitt.out &
-	./bin/iw_scan.out &
+	./bin/netdev.out &
 fi
 
 # For get disk free space

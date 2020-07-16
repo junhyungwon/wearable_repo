@@ -67,8 +67,14 @@ sipc:
 sipc_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
 
-ubxapp: app app_web wlan_scan sipc fsupdate
-ubxapp_clean: app_clean app_web_clean wlan_scan_clean sipc_clean
+av_rec:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/av_rec all
+
+av_rec_clean:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/av_rec clean
+
+ubxapp: app app_web netdev sipc av_rec fsupdate
+ubxapp_clean: app_clean app_web_clean netdev_clean sipc_clean av_rec_clean
 ubxapp_all: ubxapp_clean ubxapp
 
 ##### EXTERNAL OPENSOURCE PACKAGE BUILD #####
@@ -81,11 +87,11 @@ libavi_clean:
 	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi/src clean
 	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi clean
 
-wlan_scan:
-	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/iw_scan all
+netdev:
+	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/netdev all
 
-wlan_scan_clean:
-	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/iw_scan clean
+netdev_clean:
+	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/netdev clean
 
 live555:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/BasicUsageEnvironment
@@ -338,7 +344,8 @@ fsupdate:
 	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/iw_scan/iw_scan.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/netdev/netdev.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
 	-cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh

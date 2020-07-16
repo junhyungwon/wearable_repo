@@ -64,7 +64,6 @@ float SENSITIVITY_TABLE[10] = {1.2, 0.9, 0.6, 0.3, 0.1};                   //# d
 
 typedef struct {
 	app_thr_obj devObj;		//# dev thread
-	app_thr_obj gsnObj;		//# g-sensor thread
     app_thr_obj metaObj;   	//# Meta send thread for FMS
     app_thr_obj gpsObj;		//# gps thread
 
@@ -247,7 +246,6 @@ int dev_ste_ethernet(int devnum)
     }
     return status ;
 }
-
 
 /*****************************************************************************
 * @brief    buzzer control
@@ -639,126 +637,6 @@ static void *THR_dev(void *prm)
 }
 
 /*****************************************************************************
-* @brief    dev thread function
-* @section  [desc]
-*****************************************************************************/
-void *THR_gsn(void *prm)
-{
-	app_thr_obj *tObj = &idev->gsnObj;
-    int cmd, exit = 0;
-    int first=GSENS_FIRST_DELAY_CNT, sensing_time = 0;
-    accel_data_t acc, level;
-    float impact, threshold = 30.0;
-    accel_data_t acc_obj;
-    int ret = 0;
-
-    memset(&acc, 0, sizeof(accel_data_t));
-    gs_meta_reset();
-
-    ret = dev_accel_init();
-    if (ret < 0) {
-        eprintf("Gsensor init\n");
-        app_log_write( MSG_LOG_WRITE, "[APP_DEV] !!! G-Sensor Initialize failed !!!" );
-        goto gsn_exit;
-    }
-    dev_accel_start();
-
-	aprintf("enter...\n");
-	tObj->active = 1;
-
-    while (!exit)
-    {
-        cmd = tObj->cmd;
-        if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
-            break;
-        }
-
-        if (app_cfg->ste.b.cap)
-        {
-            /* get accelerator sensor value*/
-            if(dev_accel_read(&acc_obj, 100) == 0)
-            {
-                if (first > 0) {
-                    acc.x = acc_obj.x;
-                    acc.y = acc_obj.y;
-                    acc.z = acc_obj.z;
-                    first--;
-                }
-                else
-                {
-                    level.x = abs(acc_obj.x - acc.x);
-                    level.y = abs(acc_obj.y - acc.y);
-                    level.z = abs(acc_obj.z - acc.z);
-
-                    fitt_level.gx = (float)acc_obj.x/LSG;
-                    fitt_level.gy = (float)acc_obj.z/LSG;
-                    fitt_level.gz = (float)acc_obj.y/LSG;
-
-                    if (level.x > level.y)
-                        impact = level.x;
-                    else
-                        impact = level.y;
-                    if (level.z > impact)
-                        impact = level.z;
-
-                    if (app_set->wd.gsn < GSN_IDX_OFF) {
-                        //#--- accident!!
-                        threshold = SENSITIVITY_TABLE[app_set->wd.gsn] * LSG;
-                        if(impact > threshold)
-                        {
-                            dprintf("G_Sensor event(%f/%f)===\n", impact, threshold);
-
-                            if (!app_cfg->ste.b.evt)
-                                app_event_set();
-
-                            app_cfg->ste.b.shock = 1;
-                            app_cfg->ste.b.evt = 1;
-
-#if 1
-                            printf("\n***********************************************\n");
-                            printf("Prev Data x[%03d] y[%03d] z[%03d]\n",acc.x, acc.y, acc.z);
-                            printf("Cur  Data x[%03d] y[%03d] z[%03d]\n",acc_obj.x, acc_obj.y, acc_obj.z);
-                            printf("LevelData x[%03d] y[%03d] z[%03d]\n",level.x ,level.y, level.z);
-
-                            printf("impact detect: Impact = %03f, Threshold = %03f\n", impact, threshold);
-                            printf("gsensor_lvl[%d]===\n",app_set->wd.gsn);
-                            printf("***********************************************\n\n");
-#endif
-                            sensing_time = 0;
-                        }
-                    }
-
-                    if (app_cfg->ste.b.mmc && app_rec_state())
-                        gs_meta_add(&level);
-
-                    acc.x = acc_obj.x;
-                    acc.y = acc_obj.y;
-                    acc.z = acc_obj.z;
-                }
-            }
-        }
-
-        if (app_cfg->ste.b.evt) {
-            sensing_time += GSENS_CYCLE_TIME;
-            if (GSENS_CYCLE_TIME * 50 < sensing_time) {
-                app_cfg->ste.b.evt = 0 ;
-            }
-        }
-
-        app_msleep(GSENS_CYCLE_TIME);
-    }
-
-gsn_exit:
-    dev_accel_stop();
-    dev_accel_exit();
-
-    tObj->active = 0;
-	aprintf("...exit\n");
-
-    return NULL;
-}
-
-/*****************************************************************************
 * @brief	gps thread function
 * @section  [desc]
 *****************************************************************************/
@@ -793,7 +671,6 @@ static void *THR_gps(void *prm)
         // GPS Port removed on hw rev1.0, external gps doesn't work   
 //        app_leds_gps_ctrl(LED_GPS_OFF);
 		app_msleep(TIME_GPS_CYCLE);
-
 
 		//# check gps port state
 		#if EN_GPS
@@ -880,9 +757,6 @@ static void *THR_gps(void *prm)
 	return NULL;
 }
 
-
-
-
 /*****************************************************************************
 * @brief	meta data thread function
 * @section  [desc]
@@ -898,7 +772,8 @@ static void *THR_meta(void *prm)
 
 	aprintf("enter...\n");
 	tObj->active = 1;
-    while (!exit)
+    
+	while (!exit)
     {
         cmd = tObj->cmd;
         if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
@@ -938,8 +813,8 @@ int app_dev_init(void)
 
     status = OSA_mutexCreate(&(idev->mutex_gps));
     OSA_assert(status == OSA_SOK);
-#if 0
 
+#if 0
     status = OSA_mutexCreate(&idev->mutex_gsn);
     OSA_assert(status == OSA_SOK);
 #endif
@@ -956,22 +831,12 @@ int app_dev_init(void)
 		return EFAIL;
     }
 
-#if 0
-    //#--- Gsensor
-    tObj = &idev->gsnObj;
-    if (thread_create(tObj, THR_gsn, APP_THREAD_PRI, NULL) < 0) {
-    	eprintf("create gsensor thread\n");
-		return EFAIL;
-    }
-#endif
-
     //#--- gps
     tObj = &idev->gpsObj;
     if (thread_create(tObj, THR_gps, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create gps thread\n");
 		return EFAIL;
     }
-
 
 //    if(app_set->srv_info.ON_OFF)
 	{

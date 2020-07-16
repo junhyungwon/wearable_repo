@@ -1,5 +1,5 @@
 /*
- * File : ipc_common_def.h
+ * File : iw_scan_ipc_def.h
  *
  * Copyright (C) 2015 UDWORKs
  *

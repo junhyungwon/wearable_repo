@@ -31,15 +31,7 @@
 
 #define RECVBUFFSIZE 1024
 #define IPSOCK_ERROR -1
-#define IPINSTALL_DEBUG  
 #define IPINSTALL_PORT 9000
-
-
-#ifdef IPINSTALL_DEBUG
-#define DEBUG_PRI(msg, args...) printf("[IPINSTALL] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
-#else
-#define DEBUG_PRI(msg, args...) ((void)0)
-#endif
 
 /*----------------------------------------------------------------------------
  Defines referenced	STRUCTURE

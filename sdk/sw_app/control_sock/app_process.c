@@ -60,7 +60,6 @@
 #include "app_process.h"
 #include "app_mcu.h"
 #include "app_sockio.h"
-#include "app_avi.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro

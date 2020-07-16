@@ -206,53 +206,64 @@ static int netmgr_cli_get_phrase(const char *ssid,
 					const char *password, char *output)
 {
 	FILE *f = NULL;
-
+	size_t sz;
+	
 	char cmd[256] = {0,};
 	char lbuf[256] = {0,};
-
 	int flag = 0;
+	int hexmode = 0;
 
 	if (output == NULL)
 		return -1;
+	
+	sz = strlen(password);
+	if (sz >= 64)	
+		hexmode = 1;
+	
+	if (!hexmode) {
+		snprintf(cmd, sizeof(cmd), "/usr/sbin/wpa_passphrase \'%s\' \'%s\'", ssid, password);
+		f = popen(cmd, "r");
+		if (f != NULL) {
+			char *start;
+			char *ptr, *s_ptr;
+			/* output format is
+			* network={
+			*     ssid="olleh"
+			*     #psk="info00788"
+			*     psk=3cb4f8415cb139e587529bcbed8a996bf4669ade3646293d4b21dea463b94188
+			* }
+			*/
+			memset(lbuf, 0, sizeof(lbuf));
+			while (fgets(lbuf, sizeof(lbuf), f) != NULL) {
+				if ((start = strstr(lbuf, "#psk=")) != NULL) {
+					flag = 1;
+					continue; /* goto next line */
+				}
 
-	snprintf(cmd, sizeof(cmd), "/usr/sbin/wpa_passphrase \'%s\' \'%s\'", ssid, password);
-	f = popen(cmd, "r");
-	if (f != NULL) {
-		char *start;
-		char *ptr, *s_ptr;
-		/* output format is
-		 * network={
-         *     ssid="olleh"
-         *     #psk="info00788"
-         *     psk=3cb4f8415cb139e587529bcbed8a996bf4669ade3646293d4b21dea463b94188
-		 * }
-		 */
-		 memset(lbuf, 0, sizeof(lbuf));
-		 while (fgets(lbuf, sizeof(lbuf), f) != NULL) {
-		 	if ((start = strstr(lbuf, "#psk=")) != NULL) {
-				flag = 1;
-				continue; /* goto next line */
-			}
+				if (!flag)
+					continue; /* not valid */
 
-			if (!flag)
-				continue; /* not valid */
-
-			/* find strings */
-			if ((start = strstr(lbuf, "psk=")) != NULL) {
-				ptr = strtok_r(start, "psk=", &s_ptr);
-				if (ptr != NULL) {
-					strcpy(output, ptr);
-					pclose(f);
-					return 0;
+				/* find strings */
+				if ((start = strstr(lbuf, "psk=")) != NULL) {
+					ptr = strtok_r(start, "psk=", &s_ptr);
+					if (ptr != NULL) {
+						strcpy(output, ptr);
+						pclose(f);
+						return 0;
+					}
 				}
 			}
 		}
-	}
+		if (f != NULL) {
+			pclose(f);
+		}
+		return -1;
+	} 
+	/* if (!hexmode) */
+	else 
+		memcpy(output, password, sz);
 
-	if (f != NULL)
-		pclose(f);
-
-	return -1;
+	return 0;
 }
 
 /*

@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 //# include mcfw_linux
 #include "ti_vsys.h"
@@ -46,6 +47,9 @@
 #include "app_p2p.h"
 #include "app_web.h"
 #include "app_encrypt.h"
+#include "app_voip.h"
+#include "app_fms.h"
+#include "app_ipinstall.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -135,7 +139,6 @@ int app_main(void)
         app_fms_init() ;
 
 	app_rtsptx_start() ;
-
 
 	//if(app_set->net_info.enable_onvif==1)
 	{
@@ -258,7 +261,6 @@ int app_cfg_init(void)
     app_cfg->tvo_flag |= TVO_BUZZER;
     app_cfg->tvo_flag |= TVO_VERSION;
 
-
 	if (!app_cfg->ste.b.mmc)
 		ret = -1;
 
@@ -300,7 +302,6 @@ void app_setdns()
 
 //   sprintf(buffer, "%s", "nameserver 8.8.8.8") ;
 
-
    fp = fopen("/etc/resolv.conf","w") ;
    if(fp)
    {
@@ -324,21 +325,11 @@ int main(int argc, char **argv)
 	DIR *mnt_dir = NULL ;
 
 	printf("\n--- FITT360 start (v%s) ---\n", FITT360_SW_VER);
-
+	
 	//# check sd over 32GB (64 GB)
 	ret = ctrl_mmc_check_exfat(&part_size);
 	if (ret == 1){
 		ctrl_mmc_exfat_format(part_size);
-	}
-	else
-	{
-		mnt_dir = opendir("/mmc/log") ;
-		if(mnt_dir == NULL)
-		{
-			mkdir("/mmc/log", 0775) ;
-		}
-		else 
-			closedir(mnt_dir) ;
 	}
 
 	/* set leds off state */
@@ -358,6 +349,11 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+		mnt_dir = opendir("/mmc/log");
+		if (mnt_dir == NULL) 
+			mkdir("/mmc/log", 0775);
+		else 
+			closedir(mnt_dir) ;
 	}
 
     FW_distinction() ;
@@ -396,9 +392,11 @@ int main(int argc, char **argv)
 #if USE_WIRELESS
 	app_netdev_init();
 #endif
-
 	ctrl_reset_nand_update();
-
+	
+	/* voip manager */
+//	app_voip_init();
+	
 	//#--- app main ----------
 	app_main();
 	//#-----------------------
@@ -406,7 +404,9 @@ int main(int argc, char **argv)
 	//#--- system de-init
 	app_rec_exit();
 	app_file_stop();
-#ifndef SYS_LOG_ENABLE
+#ifdef SYS_LOG_ENABLE
+	system("/etc/init.d/S30logging stop");
+#else
 	app_log_exit();
 #endif	
 	app_mcu_exit();		//# will power off after 200mS
@@ -425,13 +425,14 @@ int main(int argc, char **argv)
         app_ftp_exit();
 
     app_ipins_exit();
-
+//	app_voip_exit();
+	
 	g_mem_exit();
 	mcfw_linux_exit();
 	main_thread_exit();
 
 //	app_mcu_exit();		//# will power off after 200mS
-
+	
 	printf("--- FITT360 end ---\n\n");
 
 	return 0;

@@ -43,6 +43,17 @@
 #include "app_set.h"
 #include "app_ctrl.h"
 
+/*----------------------------------------------------------------------------
+ Definitions and macro
+-----------------------------------------------------------------------------*/
+#define IPINSTALL_DEBUG 
+
+#ifdef IPINSTALL_DEBUG
+#define DEBUG_PRI(msg, args...) printf("[IPINSTALL] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
+#else
+#define DEBUG_PRI(msg, args...) ((void)0)
+#endif
+
 typedef struct {
     app_thr_obj ipinsObj ;
     int rsock ;
@@ -491,13 +502,15 @@ int app_ipins_init(void)
 
     memset(ipins, 0x0, sizeof(app_ipins_t)) ;
 
-        //# create meta thread ;
+    //# create meta thread ;
     tObj = &ipins->ipinsObj ;
     if(thread_create(tObj, THR_ipinstall, APP_THREAD_PRI, NULL) < 0)
     {
         eprintf("create sock thread\n") ;
         return EFAIL ;
     }
+	
+	aprintf("... done!\n");
 
     return 0;
 }
@@ -516,5 +529,6 @@ void app_ipins_exit(void)
         app_msleep(20);
 
     thread_delete(tObj);
-
+	
+	aprintf("... done!\n");
 }
