@@ -126,7 +126,6 @@ int ctrl_enc_multislice()
 * @brief    set video framerate
 * @section  [desc]
 *****************************************************************************/
-
 int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, FPS 5 2
 {
     char log[128] = {0, };
@@ -161,7 +160,6 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
     }
 
     ch_prm = &app_set->ch[ch];
-
     sprintf(log, "[APP_CTRL] --- ch = %d set vid framerate %s ---",ch, msg);
     app_log_write( MSG_LOG_WRITE, log );
 
@@ -185,13 +183,11 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 * @brief    set video bitrate
 * @section  [desc]
 *****************************************************************************/
-
 int ctrl_vid_bitrate(int ch, int bitrate) 
 {
     char log[128] = {0, };
     char msg[128] = {0, } ;
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-
     int br ;
 
     app_ch_cfg_t *ch_prm;
@@ -276,7 +272,6 @@ int ctrl_vid_resolution(int resol_idx)
     dev_buzz_ctrl(100, 1);
     app_msleep(200);
 
-
     if(resol_idx == RESOL_480P)
     {     
 		app_set->ch[MAX_CH_NUM].resol = RESOL_720P ;
@@ -293,17 +288,17 @@ int ctrl_vid_resolution(int resol_idx)
     Vdis_disp_ctrl_init(app_set->ch[MAX_CH_NUM].resol);
 
     app_cap_start();    
-    if(ret)
+    if (ret)
     {
         app_rec_start();
     }
 
     app_rtsptx_stop_start() ;
 
-    if(!app_set->sys_info.osd_set)
+    if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable
 
-	switch(app_set->ch[MAX_CH_NUM].resol)
+	switch (app_set->ch[MAX_CH_NUM].resol)
     {
         case  0 :
             sprintf(log, "[APP_CTRL] --- change Display Mode to 480P ---");
@@ -396,7 +391,6 @@ int ctrl_set_port(int http_port, int https_port, int rtsp_port)
 * @section  [desc]
 * parameter token is device name(eth0, wlan0, usb1...)
 *****************************************************************************/
-
 int ctrl_set_network(int net_type, char *token, char *ipaddr, char *subnet)
 {
     FILE *f = NULL;
@@ -407,7 +401,7 @@ int ctrl_set_network(int net_type, char *token, char *ipaddr, char *subnet)
     char buff[32] ;
     int ret ;
 
-	if(strcmp(token, "wlan0")==0){
+	if (strcmp(token, "wlan0")==0){
 		if(!net_type)  // STATIC
 		{
 			if(ipaddr)
@@ -421,7 +415,7 @@ int ctrl_set_network(int net_type, char *token, char *ipaddr, char *subnet)
 				sleep(1) ;
 				app_rec_stop(1);
 			}
-	        app_file_stop();
+	        app_file_exit();
 
 			app_set->net_info.type = net_type ;
 
@@ -487,7 +481,6 @@ int ctrl_set_network(int net_type, char *token, char *ipaddr, char *subnet)
 * @brief    set network gateway info(gateway)
 * @section  [desc]
 *****************************************************************************/
-
 int ctrl_set_gateway(char *gw)
 {
     char log[255] ;
@@ -503,7 +496,7 @@ int ctrl_set_gateway(char *gw)
         app_rec_stop(1);
     }
 
-    app_file_stop();
+    app_file_exit();
 
     sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
     app_log_write( MSG_LOG_SHUTDOWN, log );
@@ -839,7 +832,6 @@ typedef struct {
 } fw_version_t;
 
 //------------------------------------------------------//
-
 static int _is_supported_wireless()
 {
 	int ret = TYPE_BASIC;  
@@ -1196,7 +1188,7 @@ int ctrl_sw_update(char *disk)
         sleep(1) ;
         app_rec_stop(1);
     }
-//	app_file_stop();
+//	app_file_exit();
 
     sprintf(fname, "%s/%s", disk, firmware_name);  // FULL UPDATE FILE
 #if 0    
@@ -1271,7 +1263,7 @@ void fitt360_reboot()
         sleep(1) ;
         app_rec_stop(1);
     }
-    app_file_stop();
+    app_file_exit();
 
     app_set_write();
 
@@ -1304,7 +1296,7 @@ int ctrl_update_firmware(char *fwpath, char *disk)
         sleep(1) ;
         app_rec_stop(1);
     }
-//	app_file_stop();
+//	app_file_exit();
 
 	if(type==FW_PACKAGE_FULL)		//# full update
 	{

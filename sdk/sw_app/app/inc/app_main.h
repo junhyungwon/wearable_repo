@@ -41,7 +41,7 @@
 #define SD_MOUNT_PATH   		"/mmc"
 #define NAND_PATH               "/opt"
 #define NAND_ROOT               "/media/nand"
-#define AVI_EXT					"avi"
+#define AVI_EXT					"*.avi"
 
 #define JPEG_QUALITY            80      //# 1~100       100 is max.
 #define JPEG_FPS                1      //# default fps of jpeg.

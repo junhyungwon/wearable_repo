@@ -491,7 +491,6 @@ int app_leds_backup_state_ctrl(int ste)
 	return ret;
 }
 
-
 /*----------------------------------------------------------------------------
   LED system normal 
   *
@@ -532,8 +531,7 @@ int app_leds_sys_normal_ctrl(void)
 		}
 	}
 
-    set_display_disk_usage() ;
-
+    app_file_update_disk_usage() ;
 	if(app_rec_state())
         leds_ctrl(LED_IDX_REC, DEV_LED_BLINK);
 	else
@@ -556,7 +554,6 @@ int app_leds_sys_normal_ctrl(void)
 
 	return 0 ;
 }
-
 
 /*----------------------------------------------------------------------------
  LED system error control

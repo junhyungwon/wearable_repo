@@ -383,7 +383,7 @@ int main(int argc, char **argv)
 
     setting_txtbase() ;
 
-	if (app_file_start() == SOK) {
+	if (app_file_init() == SOK) {
 		app_rec_init();
 	}
 
@@ -403,7 +403,7 @@ int main(int argc, char **argv)
 
 	//#--- system de-init
 	app_rec_exit();
-	app_file_stop();
+	app_file_exit();
 #ifdef SYS_LOG_ENABLE
 	system("/etc/init.d/S30logging stop");
 #else

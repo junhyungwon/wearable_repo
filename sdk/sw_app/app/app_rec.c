@@ -81,7 +81,7 @@ static int recv_msg(void)
 		return -1;
 
 	if (msg.cmd == AV_CMD_REC_FLIST) {
-		app_file_add(msg.fname);
+		app_file_add_list(msg.fname, msg.du);
 	}
 
 	return msg.cmd;
@@ -149,6 +149,7 @@ static void *THR_send_msg(void *prm)
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
+		/* file 쓰레드에서 관리하도록 변경 */
 		//if (cmd == APP_CMD_STOP || app_cfg->ste.b.mmc_err || (app_set->rec_info.overwrite == OFF && app_cfg->ste.b.disk_full)) {
 		//	continue;
 		//}
@@ -183,6 +184,7 @@ static void *THR_send_msg(void *prm)
 	
 	tObj->active = 0;
 	irec->evt_rec = 0;
+	
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
 	aprintf("exit\n");
@@ -224,7 +226,7 @@ int app_rec_start(void)
 		OSA_waitMsecs(50);
 	}
 	
-	dprintf("Record Process Start!!\n");
+	aprintf("Record Process Start!!\n");
 	
 	/* overwrite 모드가 아니면 SD 카드 용량이 1GB 이상 남을 경우에만 시작 */
 	if (!app_set->rec_info.overwrite) {
