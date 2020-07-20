@@ -62,9 +62,13 @@ app_web_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root clean
 
 sipc:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re all
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem all
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip all
 
 sipc_clean:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re clean
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem clean
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
 
 av_rec:
@@ -339,6 +343,8 @@ fsupdate:
 	-sudo /bin/mkdir -p $(EXEC_DIR)
 	-sudo /bin/mkdir -p $(EXEC_DIR)/bin
 	sudo /bin/cp $(APP_DIR)/lib/libfont_db.so $(TARGET_FS)/usr/lib/.
+	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/re/libre.so $(TARGET_FS)/usr/lib/.
+	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/rem/librem.so $(TARGET_FS)/usr/lib/.
 	sudo /bin/cp -Rp $(TARGET_MCFW_DIR)/* $(EXEC_DIR)/.
 	sudo /bin/cp -f $(TFTP_HOME)/wis-streamer $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
