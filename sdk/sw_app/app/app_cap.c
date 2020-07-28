@@ -34,6 +34,7 @@
 #include "app_rec.h"
 #include "app_mcu.h"
 #include "app_web.h"
+#include "app_gps.h"
 
 #define H264_DUMP  0
 #define JPEG_DUMP  0

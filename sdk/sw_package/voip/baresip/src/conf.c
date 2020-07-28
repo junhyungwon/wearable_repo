@@ -165,11 +165,11 @@ int conf_path_get(char *path, size_t sz)
 		return 0;
 	}
 
-#ifdef CONFIG_PATH
+#ifdef CONFIG_PATH /* not defined */
 	str_ncpy(buf, CONFIG_PATH, sizeof(buf));
 	(void)err;
 #else
-	err = fs_gethome(buf, sizeof(buf));
+	err = fs_gethome(buf, sizeof(buf)); //# fs.c 
 	if (err)
 		return err;
 #endif

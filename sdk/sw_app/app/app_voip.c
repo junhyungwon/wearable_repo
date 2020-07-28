@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <baresip_ipc_def.h>
+#include <baresip_ipc_cmd_defs.h>
 
 #include "app_comm.h"
 #include "app_voip.h"
@@ -29,18 +29,19 @@
 -----------------------------------------------------------------------------*/
 
 typedef struct {
-	app_thr_obj sObj; /* sip object */
-	void *handle;
+	app_thr_obj sObj; /* sip send object */
+	app_thr_obj rObj; /* sip receive object */
 	
-} app_voip_t;
+	int init;
+	int qid;
+	
+} app_sip_t;
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-static app_voip_t t_voip;
-static app_voip_t *pVoip = &t_voip;
-
-extern void *gZmqContext;
+static app_sip_t t_sip;
+static app_sip_t *isip = &t_sip;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -49,17 +50,31 @@ extern void *gZmqContext;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
-static int _send_msg(void *skt, char *string)
+static int send_msg(int cmd)
 {
-	zmq_msg_t message;
+	to_sip_msg_t msg;
+	
+	msg.type = SIP_MSG_TYPE_TO_SIP;
+	msg.cmd = cmd;
+
+	//# set param (TODO)
+	
+	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sip_msg_t));
+}
+
+static int recv_msg(void)
+{
+	to_smain_msg_t msg;
 	int size;
 	
-	zmq_msg_init_size(&message, strlen(string));
-	memcpy(zmq_msg_data(&message), string, strlen(string));
-	size = zmq_msg_send(&message, skt, 0);
-	zmq_msg_close(&message);
-	
-	return (size);
+	//# blocking
+	if (Msg_Rsv(isip->qid, SIP_MSG_TYPE_TO_SMAIN, (void *)&msg, sizeof(to_smain_msg_t)) < 0)
+		return -1;
+
+	//if (msg.cmd == AV_CMD_REC_FLIST) {
+	//}
+
+	return msg.cmd;
 }
 
 /*****************************************************************************
@@ -67,43 +82,74 @@ static int _send_msg(void *skt, char *string)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-static void *THR_voip(void *prm)
+static void *THR_voip_recv_msg(void *prm)
 {
-	app_thr_obj *tObj = &pVoip->sObj;
+	app_thr_obj *tObj = &isip->rObj;
 	int exit = 0, cmd;
-	void *handle = NULL;
-	zmq_msg_t message;
+	
+	aprintf("enter...\n");
+	
+	//# message queue
+	isip->qid = Msg_Init(SIP_MSG_KEY);
+	
+	while (!exit) {
+		//# wait cmd
+		cmd = recv_msg();
+		if (cmd < 0) {
+			eprintf("failed to receive voip process msg!\n");
+			continue;
+		}
+		
+		switch (cmd) {
+		case AV_CMD_SIP_READY:
+			isip->init = 1; /* from record process */
+			dprintf("received voip ready!\n");
+			break;
+		case AV_CMD_SIP_EXIT:
+			exit = 1;
+			dprintf("received voip exit!\n");
+			break;
+		default:
+			break;	
+		}
+	}
+	
+	Msg_Kill(isip->qid);
+	
+	aprintf("exit...\n");
+
+	return NULL;
+}
+
+/*****************************************************************************
+* @brief    
+* @section  [prm] active channel
+*****************************************************************************/
+static void *THR_voip_send_msg(void *prm)
+{
+	app_thr_obj *tObj = &isip->sObj;
+	int cmd = 0;
+	int exit = 0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
-	handle = zmq_socket(gZmqContext, ZMQ_REQ);
-	zmq_connect(handle, ZMQ_IPC_STR);
-	zmq_msg_init(&message);
-	
 	while (!exit)
 	{
-		int size;
+		cmd = event_wait(tObj);
 		
-		size = zmq_msg_recv (&message, handle, 0);
-		if (size == -1)
-			// error
+		if (cmd == APP_CMD_EXIT) {
+			/* send exit command to rec process */
+			exit = 1;
+			break;
+		} 
 		
-		//# wait cmd
-		cmd = tObj->cmd;
-        if (cmd == APP_CMD_STOP)
-            break;
-
-        app_msleep(200);
-    }
-
-    tObj->active = 0;
+		/* TODO */
+	}
 	
-	zmq_msg_close(&message);
-	zmq_close(handle);
+	tObj->active = 0;
+	aprintf("exit\n");
 	
-	aprintf("...exit\n");
-
 	return NULL;
 }
 
@@ -114,17 +160,26 @@ static void *THR_voip(void *prm)
 *****************************************************************************/
 int app_voip_init(void)
 {
-	app_thr_obj *tObj = &pVoip->sObj;
+	app_thr_obj *tObj;
 	FILE *f = NULL;
+	
 	/* execute baresip */
 	f = popen("/opt/fitt/bin/baresip &", "r");
 	if (f != NULL) {
 		pclose(f); 
 	}
 	
-	//# create check thread.
-	if (thread_create(tObj, THR_voip, APP_THREAD_PRI, NULL) < 0) {
-    	eprintf("create Voip Check thread\n");
+	//# create recv msg thread.
+	tObj = &isip->rObj;
+	if (thread_create(tObj, THR_voip_recv_msg, APP_THREAD_PRI, NULL) < 0) {
+    	eprintf("create Voip Receive Msg thread\n");
+		return EFAIL;
+    }
+	
+	//# create send msg thread.
+	tObj = &isip->sObj;
+	if (thread_create(tObj, THR_voip_send_msg, APP_THREAD_PRI, NULL) < 0) {
+    	eprintf("create Voip Send Msg thread\n");
 		return EFAIL;
     }
 
@@ -140,13 +195,19 @@ int app_voip_init(void)
 *****************************************************************************/
 void app_voip_exit(void)
 {
-	app_thr_obj *tObj = &pVoip->sObj;
+	app_thr_obj *tObj;
 
-	/* delete Wi-Fi Connect Check object */
-   	event_send(tObj, APP_CMD_STOP, 0, 0);
-	while(tObj->active)
+	/* delete object */
+   	tObj = &isip->sObj;
+	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while (tObj->active)
     	app_msleep(20);
 	thread_delete(tObj);
+	
+	//#--- stop message receive thread. 
+	//# 프로세스에서 이미 종료가 되므로 APP_CMD_EXIT를 하면 안됨.
+//	tObj = &isip->rObj;
+//	thread_delete(tObj);
 
 	dprintf("... done!\n");
 }

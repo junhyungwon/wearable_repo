@@ -55,6 +55,7 @@
 #include "app_ctrl.h"
 #include "app_cap.h"
 #include "app_dev.h"
+#include "app_gps.h"
 
 //#include "app_hls.h"
 #include "app_process.h"
@@ -82,7 +83,6 @@ const int GPSPACKET_SIZE = sizeof(GPSPACKET) ;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
-
 
 void gpsdatareq(int channel, char *data, int len)
 {
@@ -119,7 +119,6 @@ void gpsdata_send(void *data)
     gps_rmc_t *Gpsdata ;
 	Gpsdata = (gps_rmc_t *)data ;
 
-
 	GPSPACKET Gpspacket ;
 
 	Gpspacket.identifier = htons(IDENTIFIER) ;
@@ -127,18 +126,17 @@ void gpsdata_send(void *data)
 	Gpspacket.length = htons(GPSPACKET_SIZE) ;
  
     Gpspacket.gps_Enable = htons(Gpsdata->enable) ;
-    Gpspacket.gps_UTC_Year = htons(Gpsdata->utc_year + 1900);
-    Gpspacket.gps_UTC_Month = htons(Gpsdata->utc_month + 1) ;
-    Gpspacket.gps_UTC_Day = htons(Gpsdata->utc_mday);
-    Gpspacket.gps_UTC_Hour = htons(Gpsdata->utc_hour + timezone) ;
-    Gpspacket.gps_UTC_Min = htons(Gpsdata->utc_min) ;
-    Gpspacket.gps_UTC_Sec = htons(Gpsdata->utc_sec) ;
-    Gpspacket.gps_UTC_Msec = htons(Gpsdata->utc_msec);
+    Gpspacket.gps_UTC_Year = htons(Gpsdata->gtm.tm_year + 1900);
+    Gpspacket.gps_UTC_Month = htons(Gpsdata->gtm.tm_mon + 1) ;
+    Gpspacket.gps_UTC_Day = htons(Gpsdata->gtm.tm_mday);
+    Gpspacket.gps_UTC_Hour = htons(Gpsdata->gtm.tm_hour + timezone) ;
+    Gpspacket.gps_UTC_Min = htons(Gpsdata->gtm.tm_min) ;
+    Gpspacket.gps_UTC_Sec = htons(Gpsdata->gtm.tm_sec) ;
+    Gpspacket.gps_UTC_Msec = htons(0);
     sprintf(Gpspacket.gps_Speed, "%3.0f", Gpsdata->speed) ;
     sprintf(Gpspacket.gps_LAT, "%10.7f", Gpsdata->lat);
     sprintf(Gpspacket.gps_LOT, "%10.7f", Gpsdata->lot);
     sprintf(Gpspacket.gps_Dir, "%3.2f", Gpsdata->dir);
-   
 
 	memcpy(m_SendBuffer, &Gpspacket, GPSPACKET_SIZE) ;
 
@@ -154,5 +152,3 @@ void gpsdata_send(void *data)
     }
 
 }
-
-

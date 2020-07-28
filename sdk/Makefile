@@ -77,8 +77,16 @@ av_rec:
 av_rec_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/av_rec clean
 
-ubxapp: app app_web netdev sipc av_rec fsupdate
-ubxapp_clean: app_clean app_web_clean netdev_clean sipc_clean av_rec_clean
+gnss:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gnss all
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gpsd all
+
+gnss_clean:
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gnss clean
+	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gpsd clean
+
+ubxapp: app app_web netdev sipc av_rec gnss fsupdate
+ubxapp_clean: app_clean app_web_clean netdev_clean sipc_clean av_rec_clean gnss_clean
 ubxapp_all: ubxapp_clean ubxapp
 
 ##### EXTERNAL OPENSOURCE PACKAGE BUILD #####
@@ -352,6 +360,8 @@ fsupdate:
 	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/netdev/netdev.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gpsd/gpsd.out $(EXEC_DIR)/bin/.
 	-cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh

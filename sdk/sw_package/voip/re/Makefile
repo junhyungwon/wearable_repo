@@ -46,8 +46,6 @@ endif
 INCDIR  := $(PREFIX)/include/re
 MKDIR   := $(PREFIX)/share/re
 CFLAGS	+= -Iinclude
-# added for zlib (rupy)
-CFLAGS	+= -I../../common/include
 
 MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
 SHARED  := libre$(LIB_SUFFIX)

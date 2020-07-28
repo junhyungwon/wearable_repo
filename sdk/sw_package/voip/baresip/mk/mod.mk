@@ -4,8 +4,6 @@
 # Copyright (C) 2010 Creytiv.com
 #
 
-SYSROOT=/home/rupy/bin/arago-2011.09/arm-arago-linux-gnueabi/usr
-
 $(MOD)_OBJS     := $(patsubst %.c,$(BUILD)/modules/$(MOD)/%.o,\
 	$(filter %.c,$($(MOD)_SRCS)))
 $(MOD)_OBJS     += $(patsubst %.cpp,$(BUILD)/modules/$(MOD)/%.o,\

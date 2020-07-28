@@ -40,38 +40,11 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define EN_REC_META			1
-#define EN_GSN				0
-#define EN_GPS				1
-
 #define TIME_DEV_CYCLE		100		//# msec
-#define TIME_GSN_CYCLE		250		//# msec
-#define TIME_GPS_CYCLE		500		//# msec
-
-#define GSENS_CYCLE_TIME    100     //# g-sensor
 #define DEV_CYCLE_TIME      500     //# temp
-
-#define GSENS_FIRST_DELAY_TIME  2000
-#define GSENS_FIRST_DELAY_CNT   ( GSENS_FIRST_DELAY_TIME / GSENS_CYCLE_TIME )
-
-#define FITTMETA_CYCLE_TIME  1000
-#define TIME_META_SENDING    60000   //# 1Minute
-#define CNT_FITTMETA        (TIME_META_SENDING/FITTMETA_CYCLE_TIME)
-
-#define LSG                 (255.0) //-128 ~ 127    offset 0.064 (+/- 8G)
-
-float SENSITIVITY_TABLE[10] = {1.2, 0.9, 0.6, 0.3, 0.1};                   //# driving mode
 
 typedef struct {
 	app_thr_obj devObj;		//# dev thread
-    app_thr_obj metaObj;   	//# Meta send thread for FMS
-    app_thr_obj gpsObj;		//# gps thread
-
-    gps_rmc_t gps;
-
-    OSA_MutexHndl mutex_gps;
-    OSA_MutexHndl mutex_gsn;
-    OSA_MutexHndl mutex_meta;
 
     int old_evt_state;
 } app_dev_t;
@@ -82,13 +55,6 @@ typedef struct {
 static app_dev_t t_dev;
 static app_dev_t *idev=&t_dev;
 
-static char fitt_meta_str[META_REC_TOTAL];
-static app_gvalue_t fitt_level;
-static int fitt_cnt = 0;
-
-static app_gs_t gs_meta[GSENSOR_CNT_MAX];
-static int gs_cnt = 0;
-
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -98,8 +64,6 @@ static int gs_cnt = 0;
 -----------------------------------------------------------------------------*/
 static void dev_gpio_init(void)
 {
-	gpio_input_init(GPS_PWR_EN);
-
 	gpio_input_init(REC_KEY);
 	gpio_input_init(BACKUP_DET);
 	gpio_input_init(USB_DET);
@@ -107,8 +71,6 @@ static void dev_gpio_init(void)
 
 static void dev_gpio_exit(void)
 {
-	gpio_exit(GPS_PWR_EN);
-
 	gpio_exit(REC_KEY);
 	gpio_exit(BACKUP_DET);
 	gpio_exit(USB_DET);
@@ -205,16 +167,6 @@ int dev_ste_usbcradle(void)
 	return status;
 }
 
-int dev_ste_gps_port(void)
-{
-	int status;
-
-	gpio_get_value(GPS_PWR_EN, &status);
-	//dprintf("--- [gps port] value %d\n", status);
-
-	return status;
-}
-
 int dev_ste_ethernet(int devnum)
 {
     char netdevice[32] = {0, } ;
@@ -264,32 +216,6 @@ void dev_buzz_ctrl(int time, int cnt)
 		}
 		app_msleep(time);
 	}
-}
-
-static void gs_meta_reset(void)
-{
-    gs_cnt = 0;
-    memset(gs_meta, 0, (sizeof(app_gs_t)*GSENSOR_CNT_MAX));
-}
-
-static void gs_meta_add(accel_data_t* acc)
-{
-    OSA_mutexLock(&idev->mutex_gsn);
-
-    if(gs_cnt >= GSENSOR_CNT_MAX)
-         gs_meta_reset();
-
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    gs_meta[gs_cnt].acc_sec       = tv.tv_sec;
-    gs_meta[gs_cnt].acc_msec      = tv.tv_usec/1000;
-    gs_meta[gs_cnt].acc_level.x   = acc->x;
-    gs_meta[gs_cnt].acc_level.y   = acc->z;
-    gs_meta[gs_cnt].acc_level.z   = acc->y;
-
-    gs_cnt++;
-    OSA_mutexUnlock(&idev->mutex_gsn);
 }
 
 static int cnt_key=0, ste_key=KEY_NONE;
@@ -357,181 +283,6 @@ static int app_sys_time(struct tm *ts)
 	}
 
 	return SOK;
-}
-
-#if 0
-static void fitt_get_gs(app_gvalue_t* plevel)
-{
-    plevel->gx = fitt_level.gx;
-    plevel->gy = fitt_level.gy;
-    plevel->gz = fitt_level.gz;
-}
-#endif
-
-static void fitt_meta_reset(void)
-{
-    fitt_cnt = 0;
-    memset(fitt_meta_str, 0, META_REC_TOTAL);
-}
-
-static void fitt_meta_add(app_extmeta_t *pdata)
-{
-    OSA_mutexLock(&idev->mutex_meta);
-
-    struct timeval tv;
-    struct tm ts;
-    time_t now;
-    char str_buf[30];
-    int cur_idx = 0;
-
-    cur_idx = strlen(fitt_meta_str);
-    //# save add time
-    gettimeofday(&tv, NULL);
-    now = tv.tv_sec;
-    localtime_r(&now, &ts);
-
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = '{';
-
-    strftime(str_buf, sizeof(str_buf), "%Y-%2m-%2d %2H:%2M:%2S", &ts);
-
-    sprintf(&fitt_meta_str[cur_idx], "\"%s\"", "date");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    sprintf(&fitt_meta_str[cur_idx], "\"%s\"", str_buf);
-    cur_idx = strlen(fitt_meta_str);
-
-    sprintf(&fitt_meta_str[cur_idx], ".%ld", tv.tv_usec/100000);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-
-    sprintf(&fitt_meta_str[cur_idx], "\"%s\"", "gps");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = '{';
-
-
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "enabled");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    //# gps data
-    if(pdata->gps.enable)
-    {
-        sprintf(&fitt_meta_str[cur_idx++], "%s", "true");
-        cur_idx = strlen(fitt_meta_str);
-        fitt_meta_str[cur_idx++] = ',';
-
-    }
-    else
-    {
-        sprintf(&fitt_meta_str[cur_idx++], "%s", "false");
-        cur_idx = strlen(fitt_meta_str);
-        fitt_meta_str[cur_idx++] = ',';
-
-    }
-
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "time");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    app_time_t gtime;
-    memset(&gtime, 0, sizeof(gtime));
-
-    if (pdata->gps.enable)//pdata->gps.set & G_TIME_SET)
-    {
-        gtime.year          = (pdata->gps.utc_year + 1900);
-        gtime.mon           = pdata->gps.utc_month;
-        gtime.day           = pdata->gps.utc_mday;
-        gtime.hour          = (pdata->gps.utc_hour + TIME_ZONE);
-        gtime.min           = pdata->gps.utc_min;
-        gtime.sec           = pdata->gps.utc_sec;
-        gtime.subseconds    = 0;
-    }
-
-    sprintf(&fitt_meta_str[cur_idx],"\"%04d-%02d-%02d %02d:%02d:%02.2f\"", gtime.year,
-                                                                gtime.mon+1,
-                                                                gtime.day,
-                                                                gtime.hour,
-                                                                gtime.min,
-                                                                gtime.sec + pdata->gps.subsec);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "lat");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    /* latitude->double number */
-    sprintf(&fitt_meta_str[cur_idx], "%f", pdata->gps.lat);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "lot");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    sprintf(&fitt_meta_str[cur_idx], "%f", pdata->gps.lot);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "dir");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    sprintf(&fitt_meta_str[cur_idx], "%3.2f", pdata->gps.dir);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = '}';
-
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-/*
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "gyro");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ':';
-
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = '[';
-
-    //# G-sensor data
-    sprintf(&fitt_meta_str[cur_idx], "%1.2f", pdata->acc_level.gx);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-
-    sprintf(&fitt_meta_str[cur_idx], "%1.2f", pdata->acc_level.gy);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-
-    sprintf(&fitt_meta_str[cur_idx], "%1.2f", pdata->acc_level.gz);
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ']';
-
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = ',';
-*/
-    sprintf(&fitt_meta_str[cur_idx++], "\"%s\"", "battery");
-    cur_idx = strlen(fitt_meta_str);
-    fitt_meta_str[cur_idx++] = '9';  // exam..
-    fitt_meta_str[cur_idx++] = '0';  // exam..
-
-    OSA_mutexUnlock(&idev->mutex_meta);
-}
-
-/*****************************************************************************
- * @brief    get device data
- * @section  DESC Description
- *   - desc   POWER_HOLD pin to Low(Power OFF)
- *****************************************************************************/
-void dev_get_gps_rmc(gps_rmc_t *gps)
-{
-	OSA_mutexLock(&idev->mutex_gps);
-
-	memcpy((void *)gps, &idev->gps, sizeof(gps_rmc_t));
-
-	OSA_mutexUnlock(&idev->mutex_gps);
 }
 
 /*****************************************************************************
@@ -637,168 +388,6 @@ static void *THR_dev(void *prm)
 }
 
 /*****************************************************************************
-* @brief	gps thread function
-* @section  [desc]
-*****************************************************************************/
-static void *THR_gps(void *prm)
-{
-	app_thr_obj *tObj = &idev->gpsObj;
-	int exit=0, cmd;
-	int state;
-	struct gps_data_t gps_data;
-	gps_nmea_t *gps_nmea;
-	int time_set=1;
-
-	//# gps init
-    app_leds_gps_ctrl(LED_GPS_OFF); //#default LED OFF
-	if (dev_gps_init() != OSA_SOK) {
-		eprintf("failed to gps init\n");
-        app_log_write( MSG_LOG_WRITE, "[APP_DEV] !!! GPS Initialize failed !!!" );
-		return NULL;
-	}
-
-	aprintf("enter...\n");
-	tObj->active = 1;
-	while(!exit)
-	{
-		app_cfg->wd_flags |= WD_DEV;
-
-		cmd = tObj->cmd;
-        if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
-            break;
-        }
-
-        // GPS Port removed on hw rev1.0, external gps doesn't work   
-//        app_leds_gps_ctrl(LED_GPS_OFF);
-		app_msleep(TIME_GPS_CYCLE);
-
-		//# check gps port state
-		#if EN_GPS
-        //# check gps port state
-		state = dev_ste_gps_port();
-		if (!state) {
-			app_leds_gps_ctrl(LED_GPS_OFF);
-		} else {
-			//# get gps value
-			state = dev_gps_get_data(&gps_data);
-			if (state == GPS_ONLINE)
-			{
-				//# check status mask
-				if (gps_data.rmc_status == STATUS_FIX)
-				{
-					app_leds_gps_ctrl(LED_GPS_ON);
-					gps_nmea = &gps_data.nmea;
-
-					#if 0
-					dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
-						gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
-						gps_nmea->date.tm_hour, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
-						gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude
-					);
-
-                    gps_log_interval += TIME_GPS_CYCLE ;
-                    if(gps_log_interval == 20000)
-                    {
-                        sprintf(gps_buff, "GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)",gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
-                        gps_nmea->date.tm_hour, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
-                        gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude) ;
-
-                        app_log_write( MSG_LOG_WRITE, gps_buff);
-                        gps_log_interval = 0 ;
-                    }
-					#endif
-
-					//# set gps data
-					idev->gps.enable = ENA;
-					#if EN_REC_META
-					idev->gps.utc_year = gps_nmea->date.tm_year;
-					idev->gps.utc_month = gps_nmea->date.tm_mon;
-					idev->gps.utc_mday = gps_nmea->date.tm_mday;
-					idev->gps.utc_hour = gps_nmea->date.tm_hour;
-					idev->gps.utc_min = gps_nmea->date.tm_min;
-					idev->gps.utc_sec = gps_nmea->date.tm_sec;
-					idev->gps.subsec = gps_nmea->subseconds;
-					idev->gps.speed = gps_nmea->speed;
-					idev->gps.dir = gps_nmea->track;
-					#endif
-					idev->gps.lat = gps_nmea->latitude;
-					idev->gps.lot = gps_nmea->longitude;
-
-					//# time sync
-					if(time_set)
-					{
-						if (gps_data.set & G_TIME_SET) {
-							app_sys_time(&gps_nmea->date);
-							time_set = 0;
-							dev_buzz_ctrl(100, 3);	//# gps time sync
-						}
-					}
-				}
-				else {
-					app_leds_gps_ctrl(LED_GPS_FAIL);
-				}
-			}
-			else	//# gps position not fixed.
-			{
-				idev->gps.enable = DIS;
-			}
-		}
-        #endif
-
-		app_msleep(TIME_GPS_CYCLE);
-	}
-
-	//# device close
-	dev_gps_close();
-
-	tObj->active = 0;
-	aprintf("...exit\n");
-
-	return NULL;
-}
-
-/*****************************************************************************
-* @brief	meta data thread function
-* @section  [desc]
-*****************************************************************************/
-static void *THR_meta(void *prm)
-{
-	app_thr_obj *tObj = &idev->metaObj;
-    int cmd, exit = 0, evt = 0, state_change = 0;
-    app_extmeta_t fitt_data;
-    gps_rmc_t Gpsdata ;
-
-    fitt_meta_reset();
-
-	aprintf("enter...\n");
-	tObj->active = 1;
-    
-	while (!exit)
-    {
-        cmd = tObj->cmd;
-        if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
-            break;
-        }
-
-        dev_get_gps_rmc((void*)&Gpsdata);
-
-        gpsdata_send((void*)&Gpsdata) ;
-
-        //# get gsensor data
-//        fitt_get_gs(&fitt_data.acc_level);
-
-//        fitt_meta_add(&fitt_data);
-
-        app_msleep(FITTMETA_CYCLE_TIME);
-    }
-
-    tObj->active = 0;
-	aprintf("...exit\n");
-
-    return NULL;
-}
-
-/*****************************************************************************
 * @brief    IO device thread start/stop
 * @section  [desc]
 *****************************************************************************/
@@ -811,40 +400,11 @@ int app_dev_init(void)
 	memset((void *)idev, 0x0, sizeof(app_dev_t));
 	dev_gpio_init();
 
-    status = OSA_mutexCreate(&(idev->mutex_gps));
-    OSA_assert(status == OSA_SOK);
-
-#if 0
-    status = OSA_mutexCreate(&idev->mutex_gsn);
-    OSA_assert(status == OSA_SOK);
-#endif
-
-    if(app_set->srv_info.ON_OFF)
-	{
-        status = OSA_mutexCreate(&idev->mutex_meta);
-        OSA_assert(status == OSA_SOK);
-    }
 	//#--- create thread
     tObj = &idev->devObj;
     if (thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create dev thread\n");
 		return EFAIL;
-    }
-
-    //#--- gps
-    tObj = &idev->gpsObj;
-    if (thread_create(tObj, THR_gps, APP_THREAD_PRI, NULL) < 0) {
-    	eprintf("create gps thread\n");
-		return EFAIL;
-    }
-
-//    if(app_set->srv_info.ON_OFF)
-	{
-        tObj = &idev->metaObj;
-        if (thread_create(tObj, THR_meta, APP_THREAD_PRI, NULL) < 0) {
-    	    eprintf("create meta thread\n");
-		    return EFAIL;
-		}
     }
 
 	aprintf("... done!\n");
@@ -856,47 +416,12 @@ void app_dev_exit(void)
 {
 	app_thr_obj *tObj;
 
-    if(app_set->srv_info.ON_OFF)
-	{
-    //#-- fitt_meta stop
-        tObj = &idev->metaObj;
-        event_send(tObj, APP_CMD_STOP, 0, 0);
-
-        while(tObj->active)
-    	    app_msleep(20);
-        thread_delete(tObj);
-    }
-
-    //#--- gps stop
-    tObj = &idev->gpsObj;
-    event_send(tObj, APP_CMD_STOP, 0, 0);
-    while(tObj->active)
-    	app_msleep(20);
-    thread_delete(tObj);
-
-#if 0
-	//#--- gsensor stop
-    tObj = &idev->gsnObj;
-    event_send(tObj, APP_CMD_STOP, 0, 0);
-    while(tObj->active)
-    	app_msleep(20);
-	thread_delete(tObj);
-#endif
     //#--- dev_stop
     tObj = &idev->devObj;
     event_send(tObj, APP_CMD_STOP, 0, 0);
     while(tObj->active)
     	app_msleep(20);
 	thread_delete(tObj);
-
-	/* mutex delete */
-    OSA_mutexDelete(&idev->mutex_gps);
-#if 0
-    OSA_mutexDelete(&idev->mutex_gsn);
-#endif
-
-    if(app_set->srv_info.ON_OFF)
-        OSA_mutexDelete(&idev->mutex_meta);
 
 	/* gpio free */
 	dev_gpio_exit();

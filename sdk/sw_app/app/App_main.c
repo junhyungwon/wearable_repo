@@ -366,11 +366,6 @@ int main(int argc, char **argv)
 	mcfw_linux_init(0); 
 	g_mem_init();
 
-	/* rtsp tx start */
-//	if (app_rtsptx_start() ==0)
-//        app_cfg->ste.b.rtsptx = 1;
-
-//	app_rtsptx_start() ;
 	//# start log system
     app_ipins_init();
 
@@ -388,6 +383,8 @@ int main(int argc, char **argv)
 	}
 
 	app_hotplug_init();
+	
+	app_gps_init();
 
 #if USE_WIRELESS
 	app_netdev_init();
@@ -426,6 +423,7 @@ int main(int argc, char **argv)
 
     app_ipins_exit();
 //	app_voip_exit();
+	app_gps_exit();
 	
 	g_mem_exit();
 	mcfw_linux_exit();

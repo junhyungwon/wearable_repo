@@ -106,11 +106,6 @@ typedef struct {
 
 } app_thr_obj;
 
-typedef struct {
-	int shmid;
-	unsigned char *shm_buf;
-} app_shm_t;
-
 typedef enum {
 	//# for thread
 	APP_CMD_START = 0x1,
@@ -127,7 +122,6 @@ typedef enum {
 	APP_KEY_DOWN,
 
 	MAX_APP_CMD
-
 } app_cmd_e;
 
 /*----------------------------------------------------------------------------

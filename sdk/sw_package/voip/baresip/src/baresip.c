@@ -92,21 +92,23 @@ int baresip_init(struct config *cfg)
 
 	if (!cfg)
 		return EINVAL;
+	/* libre, re_mem.c
+	 * 공유 참조가 가능한 메모리를 dereference 만약 참조 숫자가 0이면 NULL
+	 */
+	baresip.net = mem_deref(baresip.net); 
 
-	baresip.net = mem_deref(baresip.net);
-
-	list_init(&baresip.mnatl);
-	list_init(&baresip.mencl);
-	list_init(&baresip.aucodecl);
-	list_init(&baresip.ausrcl);
-	list_init(&baresip.auplayl);
-	list_init(&baresip.vidcodecl);
-	list_init(&baresip.vidsrcl);
-	list_init(&baresip.vidispl);
-	list_init(&baresip.vidfiltl);
+	list_init(&baresip.mnatl); //# mnat.c Media-NAT modules
+	list_init(&baresip.mencl); //# menc.c Media-encryption modules
+	list_init(&baresip.aucodecl); //# list of audio codecs
+	list_init(&baresip.ausrcl); //# audio source list
+	list_init(&baresip.auplayl); //# audio player list
+	list_init(&baresip.vidcodecl); //# video codec list
+	list_init(&baresip.vidsrcl); //# video source list
+	list_init(&baresip.vidispl); //# video display list
+	list_init(&baresip.vidfiltl); //# video filter list
 
 	/* Initialise Network */
-	err = net_alloc(&baresip.net, &cfg->net);
+	err = net_alloc(&baresip.net, &cfg->net); //# net.c
 	if (err) {
 		warning("ua: network init failed: %m\n", err);
 		return err;

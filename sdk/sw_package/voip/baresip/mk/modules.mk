@@ -52,8 +52,6 @@
 #   USE_X11           X11 video output
 #
 
-SYSROOT=/home/rupy/bin/arago-2011.09/arm-arago-linux-gnueabi/usr
-
 # Default is enabled
 MOD_AUTODETECT := 1
 

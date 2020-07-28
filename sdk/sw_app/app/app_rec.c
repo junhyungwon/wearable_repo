@@ -12,7 +12,7 @@
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 
-#include "av_rec_ipc_def.h"
+#include "av_rec_ipc_cmd_defs.h"
 #include "app_comm.h"
 #include "app_main.h"
 #include "app_gmem.h"
@@ -91,7 +91,7 @@ static int recv_msg(void)
 * @brief    event record message function
 * @section  [prm] active channel
 *****************************************************************************/
-static void *THR_recv_msg(void *prm)
+static void *THR_rec_recv_msg(void *prm)
 {
 	app_thr_obj *tObj = &irec->rObj;
 	int exit = 0, cmd;
@@ -134,7 +134,7 @@ static void *THR_recv_msg(void *prm)
 * @brief    event record thread function
 * @section  [prm] active channel
 *****************************************************************************/
-static void *THR_send_msg(void *prm)
+static void *THR_rec_send_msg(void *prm)
 {
 	app_thr_obj *tObj = &irec->sObj;
 	int cmd = 0;
@@ -304,14 +304,14 @@ int app_rec_init(void)
 	
 	//#--- create msg receive thread
 	tObj = &irec->rObj;
-	if(thread_create(tObj, THR_recv_msg, APP_THREAD_PRI, tObj) < 0) {
+	if(thread_create(tObj, THR_rec_recv_msg, APP_THREAD_PRI, tObj) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create msg send thread
 	tObj = &irec->sObj;
-	if(thread_create(tObj, THR_send_msg, APP_THREAD_PRI, tObj) < 0) {
+	if(thread_create(tObj, THR_rec_send_msg, APP_THREAD_PRI, tObj) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

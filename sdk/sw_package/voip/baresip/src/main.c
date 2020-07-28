@@ -92,97 +92,15 @@ int main(int argc, char *argv[])
 			 " Alfred E. Heggestad et al.\n",
 			 BARESIP_VERSION);
 
-	(void)sys_coredump_set(true);
+//	(void)sys_coredump_set(true); sys.c
 
 	err = libre_init();
 	if (err)
 		goto out;
-
-#ifdef HAVE_GETOPT
-	for (;;) {
-		const int c = getopt(argc, argv, "46de:f:p:hu:n:vstm:");
-		if (0 > c)
-			break;
-
-		switch (c) {
-
-		case '?':
-		case 'h':
-			usage();
-			return -2;
-
-		case '4':
-			af = AF_INET;
-			break;
-
-#if HAVE_INET6
-		case '6':
-			af = AF_INET6;
-			break;
-#endif
-
-		case 'd':
-			run_daemon = true;
-			break;
-
-		case 'e':
-			if (execmdc >= ARRAY_SIZE(execmdv)) {
-				warning("max %zu commands\n",
-					ARRAY_SIZE(execmdv));
-				err = EINVAL;
-				goto out;
-			}
-			execmdv[execmdc++] = optarg;
-			break;
-
-		case 'f':
-			conf_path_set(optarg);
-			break;
-
-		case 'm':
-			if (modc >= ARRAY_SIZE(modv)) {
-				warning("max %zu modules\n",
-					ARRAY_SIZE(modv));
-				err = EINVAL;
-				goto out;
-			}
-			modv[modc++] = optarg;
-			break;
-
-		case 'p':
-			audio_path = optarg;
-			break;
-
-		case 's':
-			sip_trace = true;
-			break;
-
-		case 't':
-			test = true;
-			break;
-
-		case 'n':
-			net_interface = optarg;
-			break;
-
-		case 'u':
-			ua_eprm = optarg;
-			break;
-
-		case 'v':
-			log_enable_debug(true);
-			break;
-
-		default:
-			break;
-		}
-	}
-#else
-	(void)argc;
-	(void)argv;
-#endif
-
-	err = conf_configure();
+	
+	/* fixed net -> ipv4 */
+	af = AF_INET;
+	err = conf_configure(); //# conf.c
 	if (err) {
 		warning("main: configure failed: %m\n", err);
 		goto out;
@@ -190,6 +108,8 @@ int main(int argc, char *argv[])
 
 	/*
 	 * Set the network interface before initializing the config
+	 * ethX, wlan, ppp등 특정 네트워크 인터페이스를 사용할 경우
+	 * 현재는 사용 안 함.
 	 */
 	if (net_interface) {
 		struct config *theconf = conf_config();
@@ -202,13 +122,13 @@ int main(int argc, char *argv[])
 	 * Set prefer_ipv6 preferring the one given in -6 argument (if any)
 	 */
 	if (af != AF_UNSPEC)
-		conf_config()->net.af = af;
+		conf_config()->net.af = af; //# config.c 파일의 core_config 구조체를 사용함.
 
 	/*
 	 * Initialise the top-level baresip struct, must be
 	 * done AFTER configuration is complete.
 	*/
-	err = baresip_init(conf_config());
+	err = baresip_init(conf_config()); //# baresip.c 
 	if (err) {
 		warning("main: baresip init failed (%m)\n", err);
 		goto out;

@@ -250,7 +250,7 @@ bool net_check(struct network *net)
 
 static int dns_init(struct network *net)
 {
-	struct sa nsv[NET_MAX_NS];
+	struct sa nsv[NET_MAX_NS]; //# NET_MAX_NS->4
 	uint32_t nsn = ARRAY_SIZE(nsv);
 	int err;
 
@@ -306,7 +306,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 	 * if different the size of `struct sa' will not match and the
 	 * application is very likely to crash.
 	 */
-#ifdef HAVE_INET6
+#ifdef HAVE_INET6 /* defined HAVE_INET6 */
 	if (!check_ipv6()) {
 		error_msg("libre was compiled without IPv6-support"
 		      ", but baresip was compiled with\n");
@@ -319,7 +319,8 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 		return EAFNOSUPPORT;
 	}
 #endif
-
+	
+	/* 메모리를 할당 후 0으로 초기화 */
 	net = mem_zalloc(sizeof(*net), net_destructor);
 	if (!net)
 		return ENOMEM;
@@ -327,9 +328,9 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 	net->cfg = *cfg;
 	net->af  = cfg->af == AF_UNSPEC ? AF_INET : cfg->af;
 
-	tmr_init(&net->tmr);
+	tmr_init(&net->tmr); /* libre, tmr.c 파일 */
 
-	if (cfg->nsc) {
+	if (cfg->nsc) { /* number of dns server, 초기값은 0이다 */
 		size_t i;
 
 		for (i=0; i<cfg->nsc; i++) {
@@ -360,14 +361,18 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 		warning("net: dns_init: %m\n", err);
 		goto out;
 	}
-
+	
+	/*
+	 * initialize socket address. libre, sa.c
+	 */
 	sa_init(&net->laddr, AF_INET);
 
 	if (str_isset(cfg->ifname)) {
 
 		struct sa temp_sa;
 		bool got_it = false;
-
+		
+		/* log.c 파일에 정의되어 있으며 default는 LEVEL_INFO */
 		info("Binding to interface or IP address '%s'\n", cfg->ifname);
 
 		/* check for valid IP-address */

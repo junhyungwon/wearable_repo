@@ -23,7 +23,7 @@
 
 #include "main.h"
 #include "avi.h"
-#include "av_rec_ipc_def.h"
+#include "av_rec_ipc_cmd_defs.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
