@@ -1,13 +1,11 @@
 /******************************************************************************
- * UCX Board
- * Copyright by UDWorks, Incoporated. All Rights Reserved.
+ * FITT Board
  *---------------------------------------------------------------------------*/
  /**
- * @file    app_voip.c
- * @brief
- * @author  phoong
+ * @file    app_sipc.c
+ * @brief   sip protocol client proc
+ * @author  
  * @section MODIFY history
- *     - 2015.10.19 : First Created
  */
 /*****************************************************************************/
 
@@ -19,14 +17,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <baresip_ipc_cmd_defs.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
+#include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
-#include "app_voip.h"
+#include "app_sipc.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define SIPC_BIN_STR		"/opt/fit/bin/baresip.out"
+#define SIPC_CMD_STR		"/opt/fit/bin/baresip.out &"
 
 typedef struct {
 	app_thr_obj sObj; /* sip send object */
@@ -35,13 +37,13 @@ typedef struct {
 	int init;
 	int qid;
 	
-} app_sip_t;
+} app_sipc_t;
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-static app_sip_t t_sip;
-static app_sip_t *isip = &t_sip;
+static app_sipc_t t_sip;
+static app_sipc_t *isip = &t_sip;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -52,14 +54,14 @@ static app_sip_t *isip = &t_sip;
 -----------------------------------------------------------------------------*/
 static int send_msg(int cmd)
 {
-	to_sip_msg_t msg;
+	to_sipc_msg_t msg;
 	
-	msg.type = SIP_MSG_TYPE_TO_SIP;
+	msg.type = SIPC_MSG_TYPE_TO_CLIENT;
 	msg.cmd = cmd;
 
 	//# set param (TODO)
 	
-	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sip_msg_t));
+	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
 
 static int recv_msg(void)
@@ -68,7 +70,7 @@ static int recv_msg(void)
 	int size;
 	
 	//# blocking
-	if (Msg_Rsv(isip->qid, SIP_MSG_TYPE_TO_SMAIN, (void *)&msg, sizeof(to_smain_msg_t)) < 0)
+	if (Msg_Rsv(isip->qid, SIPC_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_smain_msg_t)) < 0)
 		return -1;
 
 	//if (msg.cmd == AV_CMD_REC_FLIST) {
@@ -82,7 +84,7 @@ static int recv_msg(void)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-static void *THR_voip_recv_msg(void *prm)
+static void *THR_sipc_recv_msg(void *prm)
 {
 	app_thr_obj *tObj = &isip->rObj;
 	int exit = 0, cmd;
@@ -90,7 +92,7 @@ static void *THR_voip_recv_msg(void *prm)
 	aprintf("enter...\n");
 	
 	//# message queue
-	isip->qid = Msg_Init(SIP_MSG_KEY);
+	isip->qid = Msg_Init(SIPC_MSG_KEY);
 	
 	while (!exit) {
 		//# wait cmd
@@ -101,11 +103,11 @@ static void *THR_voip_recv_msg(void *prm)
 		}
 		
 		switch (cmd) {
-		case AV_CMD_SIP_READY:
+		case SIPC_CMD_SIP_READY:
 			isip->init = 1; /* from record process */
 			dprintf("received voip ready!\n");
 			break;
-		case AV_CMD_SIP_EXIT:
+		case SIPC_CMD_SIP_EXIT:
 			exit = 1;
 			dprintf("received voip exit!\n");
 			break;
@@ -125,7 +127,7 @@ static void *THR_voip_recv_msg(void *prm)
 * @brief    
 * @section  [prm] active channel
 *****************************************************************************/
-static void *THR_voip_send_msg(void *prm)
+static void *THR_sipc_send_msg(void *prm)
 {
 	app_thr_obj *tObj = &isip->sObj;
 	int cmd = 0;
@@ -158,28 +160,30 @@ static void *THR_voip_send_msg(void *prm)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-int app_voip_init(void)
+int app_sipc_init(void)
 {
+	struct stat sb;
 	app_thr_obj *tObj;
 	FILE *f = NULL;
 	
 	/* execute baresip */
-	f = popen("/opt/fitt/bin/baresip &", "r");
-	if (f != NULL) {
-		pclose(f); 
+    if (stat(SIPC_BIN_STR, &sb) != 0) {
+		eprintf("can't access baresip execute file!\n");
+        return -1;
 	}
+	system(SIPC_CMD_STR);
 	
 	//# create recv msg thread.
 	tObj = &isip->rObj;
-	if (thread_create(tObj, THR_voip_recv_msg, APP_THREAD_PRI, NULL) < 0) {
-    	eprintf("create Voip Receive Msg thread\n");
+	if (thread_create(tObj, THR_sipc_recv_msg, APP_THREAD_PRI, NULL) < 0) {
+    	eprintf("create SIP Client Receive Msg thread\n");
 		return EFAIL;
     }
 	
 	//# create send msg thread.
 	tObj = &isip->sObj;
-	if (thread_create(tObj, THR_voip_send_msg, APP_THREAD_PRI, NULL) < 0) {
-    	eprintf("create Voip Send Msg thread\n");
+	if (thread_create(tObj, THR_sipc_send_msg, APP_THREAD_PRI, NULL) < 0) {
+    	eprintf("create SIP Client Send Msg thread\n");
 		return EFAIL;
     }
 
@@ -193,7 +197,7 @@ int app_voip_init(void)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-void app_voip_exit(void)
+void app_sipc_exit(void)
 {
 	app_thr_obj *tObj;
 
@@ -205,7 +209,7 @@ void app_voip_exit(void)
 	thread_delete(tObj);
 	
 	//#--- stop message receive thread. 
-	//# ÇÁ·Î¼¼½º¿¡¼­ ÀÌ¹Ì Á¾·á°¡ µÇ¹Ç·Î APP_CMD_EXIT¸¦ ÇÏ¸é ¾ÈµÊ.
+	//# í”„ë¡œì„¸ìŠ¤ì—ì„œ ì´ë¯¸ ì¢…ë£Œê°€ ë˜ë¯€ë¡œ APP_CMD_EXITë¥¼ í•˜ë©´ ì•ˆë¨.
 //	tObj = &isip->rObj;
 //	thread_delete(tObj);
 

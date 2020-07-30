@@ -47,7 +47,7 @@
 #include "app_p2p.h"
 #include "app_web.h"
 #include "app_encrypt.h"
-#include "app_voip.h"
+#include "app_sipc.h"
 #include "app_fms.h"
 #include "app_ipinstall.h"
 
@@ -392,7 +392,7 @@ int main(int argc, char **argv)
 	ctrl_reset_nand_update();
 	
 	/* voip manager */
-//	app_voip_init();
+	app_sipc_init();
 	
 	//#--- app main ----------
 	app_main();
@@ -422,7 +422,7 @@ int main(int argc, char **argv)
         app_ftp_exit();
 
     app_ipins_exit();
-//	app_voip_exit();
+	app_sipc_exit();
 	app_gps_exit();
 	
 	g_mem_exit();

@@ -22,7 +22,7 @@
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-int app_voip_init(void);
-void app_voip_exit(void);
+int app_sipc_init(void);
+void app_sipc_exit(void);
 
 #endif	/* __APP_VOIP_H__ */

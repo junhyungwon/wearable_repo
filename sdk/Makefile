@@ -56,7 +56,7 @@ hw_test_all: app_test_clean hw_test
 
 ##### www component build #####
 app_web:
-	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root all
 
 app_web_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root clean
@@ -362,6 +362,8 @@ fsupdate:
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gpsd/gpsd.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/baresip.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/*.so $(TARGET_FS)/usr/baresip/modules/.
 	-cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh

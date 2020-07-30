@@ -46,7 +46,6 @@ SRCS	+= vidfilt.c
 SRCS	+= vidisp.c
 SRCS	+= vidsrc.c
 SRCS	+= vidutil.c
-#SRCS	+= virtual_key.c
 
 ifneq ($(STATIC),)
 SRCS	+= static.c

@@ -281,6 +281,8 @@ MODULES   += menu
 #MODULES   += vidinfo
 #MODULES   += vidloop
 #MODULES   += vumeter
+#added by rupy
+MODULES   += virtual_key
 
 #ifneq ($(HAVE_PTHREAD),)
 #MODULES   += aubridge aufile

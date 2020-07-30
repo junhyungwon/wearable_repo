@@ -14,6 +14,8 @@
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "ti_vsys.h"
 
@@ -33,6 +35,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define GNSS_BIN_STR		"/opt/fit/bin/app_gnss.out"
 #define GNSS_CMD_STR		"/opt/fit/bin/app_gnss.out &"
 
 #define GPS_PROC_LENGTH		1000 /*  nmea 데이터 약 1000개 76 *1000 = 760KB 가 필요함 */
@@ -461,6 +464,7 @@ static void *THR_gps_main(void *prm)
 *****************************************************************************/
 int app_gps_init(void)
 {
+	struct stat sb;
 	app_thr_obj *tObj;
 	int status;
 	
@@ -468,6 +472,10 @@ int app_gps_init(void)
 	memset((void *)igps, 0x0, sizeof(app_gps_obj_t));
 	
 	/* start gps process */
+    if (stat(GNSS_BIN_STR, &sb) != 0) {
+		eprintf("can't access gps execute file!\n");
+        return -1;
+	}
 	system(GNSS_CMD_STR);
 	
 	/* Create Mutex Handle */

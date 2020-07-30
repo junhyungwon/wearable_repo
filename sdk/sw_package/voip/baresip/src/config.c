@@ -636,8 +636,11 @@ static uint32_t count_modules(const char *path)
 static const char *detect_module_path(bool *valid)
 {
 	static const char * const pathv[] = {
+	/* Makefile에 MOD_PATH가 정의됨 /usr/local/lib/baresip/modules */
+	/* /usr/baresip/modules 로 변경 */	
 #if defined (MOD_PATH)
-		MOD_PATH,
+		//MOD_PATH,
+		"/usr/baresip/modules",
 #elif defined (PREFIX)
 		"" PREFIX "/lib/baresip/modules",
 #else
@@ -718,7 +721,7 @@ int config_write_template(const char *file, const struct config *cfg)
 #if defined (WIN32)
 	(void)re_fprintf(f, "module\t\t\t" "wincons" MOD_EXT "\n");
 #else
-	(void)re_fprintf(f, "module\t\t\t" "stdio" MOD_EXT "\n");
+	(void)re_fprintf(f, "#module\t\t\t" "stdio" MOD_EXT "\n");
 #endif
 	(void)re_fprintf(f, "#module\t\t\t" "cons" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "evdev" MOD_EXT "\n");
@@ -814,9 +817,9 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "#module\t\t\t" "gst_video" MOD_EXT "\n");
 
 	(void)re_fprintf(f, "\n# Media NAT modules\n");
-	(void)re_fprintf(f, "module\t\t\t" "stun" MOD_EXT "\n");
-	(void)re_fprintf(f, "module\t\t\t" "turn" MOD_EXT "\n");
-	(void)re_fprintf(f, "module\t\t\t" "ice" MOD_EXT "\n");
+	(void)re_fprintf(f, "#module\t\t\t" "stun" MOD_EXT "\n");
+	(void)re_fprintf(f, "#module\t\t\t" "turn" MOD_EXT "\n");
+	(void)re_fprintf(f, "#module\t\t\t" "ice" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "natpmp" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "pcp" MOD_EXT "\n");
 
@@ -830,7 +833,7 @@ int config_write_template(const char *file, const struct config *cfg)
 			 "------------------------------------------\n");
 	(void)re_fprintf(f, "# Temporary Modules (loaded then unloaded)\n");
 	(void)re_fprintf(f, "\n");
-	(void)re_fprintf(f, "module_tmp\t\t" "uuid" MOD_EXT "\n");
+	(void)re_fprintf(f, "#module_tmp\t\t" "uuid" MOD_EXT "\n");
 	(void)re_fprintf(f, "module_tmp\t\t" "account" MOD_EXT "\n");
 	(void)re_fprintf(f, "\n");
 
@@ -838,10 +841,10 @@ int config_write_template(const char *file, const struct config *cfg)
 			 "------------------------------------------\n");
 	(void)re_fprintf(f, "# Application Modules\n");
 	(void)re_fprintf(f, "\n");
-	(void)re_fprintf(f, "module_app\t\t" "auloop"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "auloop"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "b2bua"MOD_EXT"\n");
-	(void)re_fprintf(f, "module_app\t\t"  "contact"MOD_EXT"\n");
-	(void)re_fprintf(f, "module_app\t\t"  "debug_cmd"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t"  "contact"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t"  "debug_cmd"MOD_EXT"\n");
 #ifdef LINUX
 	(void)re_fprintf(f, "#module_app\t\t"  "dtmfio"MOD_EXT"\n");
 #endif
@@ -853,7 +856,8 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "#module_app\t\t" "syslog"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "mqtt" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module_app\t\t" "ctrl_tcp" MOD_EXT "\n");
-	(void)re_fprintf(f, "module_app\t\t" "vidloop"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "vidloop"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "virtual_key"MOD_EXT"\n");
 	(void)re_fprintf(f, "\n");
 
 	(void)re_fprintf(f, "\n#------------------------------------"

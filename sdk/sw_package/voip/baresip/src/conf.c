@@ -169,11 +169,12 @@ int conf_path_get(char *path, size_t sz)
 	str_ncpy(buf, CONFIG_PATH, sizeof(buf));
 	(void)err;
 #else
+	/* CONFIG_PATH가 정의 안됨 */
 	err = fs_gethome(buf, sizeof(buf)); //# fs.c 
 	if (err)
 		return err;
 #endif
-
+	/* /root/.baresip/config 파일이 생성됨 */
 	if (re_snprintf(path, sz, "%s" DIR_SEP ".baresip", buf) < 0)
 		return ENOMEM;
 

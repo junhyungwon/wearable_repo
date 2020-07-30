@@ -82,6 +82,7 @@ int fs_gethome(char *path, size_t sz)
 	return 0;
 
 #elif defined(HAVE_PWD_H)
+	/* PWD_H Á¤ÀÇ µÊ */
 	const char *loginname;
 	struct passwd *pw;
 
@@ -91,11 +92,11 @@ int fs_gethome(char *path, size_t sz)
 	loginname = sys_username();
 	if (!loginname)
 		return ENOENT;
-
+	
 	pw = getpwnam(loginname);
 	if (!pw)
 		return errno;
-
+	
 	str_ncpy(path, pw->pw_dir, sz);
 
 	return 0;
