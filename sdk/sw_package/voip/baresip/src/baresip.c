@@ -93,7 +93,7 @@ int baresip_init(struct config *cfg)
 	if (!cfg)
 		return EINVAL;
 	/* libre, re_mem.c
-	 * °øÀ¯ ÂüÁ¶°¡ °¡´ÉÇÑ ¸Ş¸ğ¸®¸¦ dereference ¸¸¾à ÂüÁ¶ ¼ıÀÚ°¡ 0ÀÌ¸é NULL
+	 * ê³µìœ  ì°¸ì¡°ê°€ ê°€ëŠ¥í•œ ë©”ëª¨ë¦¬ë¥¼ dereference ë§Œì•½ ì°¸ì¡° ìˆ«ìê°€ 0ì´ë©´ NULL
 	 */
 	baresip.net = mem_deref(baresip.net); 
 

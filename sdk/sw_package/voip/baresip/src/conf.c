@@ -382,7 +382,7 @@ int conf_modules(void)
 {
 	int err;
 	
-	/* conf_configre ÇÔ¼ö¿¡ ÀÇÇØ¼­ ÇÒ´çµÊ (struct conf *) */
+	/* conf_configre í•¨ìˆ˜ì— ì˜í•´ì„œ í• ë‹¹ë¨ (struct conf *) */
 	err = module_init(conf_obj);
 	if (err) {
 		warning("conf: configure module parse error (%m)\n", err);

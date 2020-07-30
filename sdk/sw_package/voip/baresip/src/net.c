@@ -320,7 +320,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 	}
 #endif
 	
-	/* ¸Ş¸ğ¸®¸¦ ÇÒ´ç ÈÄ 0À¸·Î ÃÊ±âÈ­ */
+	/* ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹ í›„ 0ìœ¼ë¡œ ì´ˆê¸°í™” */
 	net = mem_zalloc(sizeof(*net), net_destructor);
 	if (!net)
 		return ENOMEM;
@@ -328,9 +328,9 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 	net->cfg = *cfg;
 	net->af  = cfg->af == AF_UNSPEC ? AF_INET : cfg->af;
 
-	tmr_init(&net->tmr); /* libre, tmr.c ÆÄÀÏ */
+	tmr_init(&net->tmr); /* libre, tmr.c íŒŒì¼ */
 
-	if (cfg->nsc) { /* number of dns server, ÃÊ±â°ªÀº 0ÀÌ´Ù */
+	if (cfg->nsc) { /* number of dns server, ì´ˆê¸°ê°’ì€ 0ì´ë‹¤ */
 		size_t i;
 
 		for (i=0; i<cfg->nsc; i++) {
@@ -372,7 +372,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 		struct sa temp_sa;
 		bool got_it = false;
 		
-		/* log.c ÆÄÀÏ¿¡ Á¤ÀÇµÇ¾î ÀÖÀ¸¸ç default´Â LEVEL_INFO */
+		/* log.c íŒŒì¼ì— ì •ì˜ë˜ì–´ ìˆìœ¼ë©° defaultëŠ” LEVEL_INFO */
 		info("Binding to interface or IP address '%s'\n", cfg->ifname);
 
 		/* check for valid IP-address */

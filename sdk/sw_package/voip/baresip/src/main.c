@@ -108,8 +108,8 @@ int main(int argc, char *argv[])
 
 	/*
 	 * Set the network interface before initializing the config
-	 * ethX, wlan, pppµî Æ¯Á¤ ³×Æ®¿öÅ© ÀÎÅÍÆäÀÌ½º¸¦ »ç¿ëÇÒ °æ¿ì
-	 * ÇöÀç´Â »ç¿ë ¾È ÇÔ.
+	 * ethX, wlan, pppë“± íŠ¹ì • ë„¤íŠ¸ì›Œí¬ ì¸í„°í˜ì´ìŠ¤ë¥¼ ì‚¬ìš©í•  ê²½ìš°
+	 * í˜„ì¬ëŠ” ì‚¬ìš© ì•ˆ í•¨.
 	 */
 	if (net_interface) {
 		struct config *theconf = conf_config();
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 	 * Set prefer_ipv6 preferring the one given in -6 argument (if any)
 	 */
 	if (af != AF_UNSPEC)
-		conf_config()->net.af = af; //# config.c ÆÄÀÏÀÇ core_config ±¸Á¶Ã¼¸¦ »ç¿ëÇÔ.
+		conf_config()->net.af = af; //# config.c íŒŒì¼ì˜ core_config êµ¬ì¡°ì²´ë¥¼ ì‚¬ìš©í•¨.
 
 	/*
 	 * Initialise the top-level baresip struct, must be
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 	if (err)
 		goto out;
 
-#if 0 //# µ¥¸ó ½ÇÇà ¾È ÇÔ
+#if 0 //# ë°ëª¬ ì‹¤í–‰ ì•ˆ í•¨
 	if (run_daemon) {
 		err = sys_daemon();
 		if (err)
