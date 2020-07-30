@@ -114,7 +114,7 @@ int baresip_init(struct config *cfg)
 		return err;
 	}
 
-	err = contact_init(&baresip.contacts);
+	err = contact_init(&baresip.contacts); //# contact.c
 	if (err)
 		return err;
 

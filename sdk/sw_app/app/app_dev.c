@@ -254,37 +254,6 @@ static int chk_rec_key(void)
 	return ste_key;
 }
 
-/*----------------------------------------------------------------------------
- gps functions
------------------------------------------------------------------------------*/
-static int app_sys_time(struct tm *ts)
-{
-	time_t now, set;
-
-	int timezone = app_set->time_info.time_zone - 12;
-
-    //# get current time
-	now = time(NULL);
-
-	//# get set time
-	set = mktime(ts) + (timezone*3600);
-
-	//# if difference 1min.
-	if(abs(now-set) > 60)
-	{
-		stime(&set);
-		Vsys_datetime_init();	//# m3 Date/Time init
-    	app_msleep(100);
-		if (dev_rtc_set_time(*ts) < 0) {
-			eprintf("Failed to set system time to rtc\n!!!");
-		}
-
-		aprintf("--- changed time from GPS ---\n");
-	}
-
-	return SOK;
-}
-
 /*****************************************************************************
 * @brief    dev thread function
 * @section  [desc]

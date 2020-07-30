@@ -157,7 +157,6 @@ struct gps_fix_t {
 
 struct gps_data_t {
     gps_mask_t set;
-    timespec_t online;	
 
     struct gps_fix_t fix;
 
@@ -195,8 +194,6 @@ struct gps_device_t {
     struct gps_lexer_t lexer;
 	
 	struct gps_fix_t newdata;
-	struct gps_fix_t lastfix;
-    struct gps_fix_t oldfix;
 	
 	struct {
 		unsigned short sats_used[MAXCHANNELS];
@@ -235,7 +232,7 @@ struct gps_device_t {
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-void nmea_parse_init(void);
-gps_mask_t nmea_parse_poll(gnss_shm_data_t *data);
+void app_nmea_parse_init(void);
+gps_mask_t app_nmea_parse_get_data(void);
 
 #endif	/* __NMEA_H__ */

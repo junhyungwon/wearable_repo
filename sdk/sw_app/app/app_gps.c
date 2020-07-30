@@ -15,7 +15,10 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include "ti_vsys.h"
+
 #include "dev_gpio.h"
+#include "dev_common.h"
 
 #include "app_comm.h"
 #include "app_main.h"
@@ -23,20 +26,38 @@
 #include "app_set.h"
 #include "app_util.h"
 #include "app_gps.h"
+#include "app_process.h"
+
 #include "gnss_ipc_cmd_defs.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define GNSS_CMD_STR		"/opt/fit/bin/app_gnss.out &"
+
+#define GPS_PROC_LENGTH		1000 /*  nmea 데이터 약 1000개 76 *1000 = 760KB 가 필요함 */
+
 #define TIME_GPS_CYCLE		200		//# msec
 #define EN_REC_META			1
 #define EN_GPS				1
 
-#define TIME_META_SENDING    60000   //# 1Minute
+#define TIME_META_SENDING   1000 // 60000   //# 1Minute
 #define CNT_FITTMETA        (TIME_META_SENDING/TIME_GPS_CYCLE)
 
+typedef struct FIFO {
+	unsigned int count;
+	unsigned int readIndex;
+	unsigned int writeIndex;
+	unsigned int len;
+	
+	pthread_mutex_t lock;
+	pthread_cond_t  condRd;
+	pthread_cond_t  condWr;
+  
+	unsigned char *buf;
+} FIFO;
+
 typedef struct {
-	app_thr_obj sObj;		//# gps message send thread
 	app_thr_obj rObj;		//# gps message receive thread
 	app_thr_obj hObj;		//# gps (meta & port detect) receive thread
 	
@@ -46,9 +67,8 @@ typedef struct {
 	int shmid;
 	unsigned char *sbuf;
 	
-	FIFO *pfifo;
-	
-	gps_rmc_t gps;
+	FIFO fifo;
+	gnss_shm_data_t r_data;
 	
 	OSA_MutexHndl mutex_gps;
 	OSA_MutexHndl mutex_meta;
@@ -67,6 +87,109 @@ static int fitt_cnt = 0;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+static int gps_fifo_init(FIFO *fifo, int len)
+{
+	pthread_mutexattr_t mutex_attr;
+	int status = 0;
+	
+	if (fifo == NULL)
+		return -1;
+	
+	fifo->count = 0;
+	fifo->readIndex = 0;
+	fifo->writeIndex = 0;
+	fifo->len = len;
+	fifo->buf = (unsigned char *)malloc(len); 
+	if (fifo->buf == NULL) {
+    	eprintf("failed to init gps fifo!\n");
+    	return -1;
+  	}
+	
+	status |= pthread_mutexattr_init(&mutex_attr);
+	status |= pthread_mutex_init(&fifo->lock, &mutex_attr);
+	if (status != 0)
+    	eprintf("failed to create gps fifo %d!\n", status);
+	
+  	pthread_mutexattr_destroy(&mutex_attr);
+  	
+	return 0;
+}
+
+static int gps_fifo_get(FIFO *fifo, unsigned int addr, int size) 
+{
+	int status = 0;
+	
+	pthread_mutex_lock(&fifo->lock);
+	
+	if ((fifo->len-fifo->readIndex) < size)
+		fifo->readIndex = 0;
+	
+	memcpy((char *)addr, (char *)&fifo->buf[fifo->readIndex], size);
+	fifo->readIndex += size;
+	if (fifo->readIndex >= fifo->len)
+		fifo->readIndex=0;
+	fifo->count--;
+	
+	pthread_mutex_unlock(&fifo->lock);
+	
+	return status;
+}
+
+static int gps_fifo_put(FIFO *fifo, unsigned int addr, unsigned int size) 
+{
+	int status = 0;
+	
+  	pthread_mutex_lock(&fifo->lock);
+  
+	if ((fifo->len-fifo->writeIndex) < size)
+		fifo->writeIndex = 0;
+		
+	memcpy((char *)&fifo->buf[fifo->writeIndex], (char *)addr, size);
+	fifo->writeIndex += size; 
+	
+	if (fifo->writeIndex >= fifo->len)
+		fifo->writeIndex = 0;
+	fifo->count++;
+	
+	pthread_mutex_unlock(&fifo->lock);
+	
+	return status;
+}
+
+static int gps_fifo_isEmpty(FIFO *fifo)
+{
+	if (fifo->count == 0) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+static int gps_fifo_isFull(FIFO *fifo) 
+{
+	if (fifo->count >= fifo->len)
+		return 1;
+	else
+		return 0;
+}
+
+static int gps_fifo_clear(FIFO *fifo) 
+{
+	if (fifo == NULL)
+		return -1;
+	
+	fifo->count		 = 0;
+	fifo->readIndex  = 0;
+	fifo->writeIndex = 0;
+	free(fifo->buf);
+	
+	pthread_cond_destroy(&fifo->condRd);
+  	pthread_cond_destroy(&fifo->condWr);
+  	pthread_mutex_destroy(&fifo->lock);  
+  
+	return 0;
+}
+
 static int dev_ste_gps_port(void)
 {
 	int status;
@@ -94,7 +217,6 @@ static int send_msg(int cmd)
 static int recv_msg(void)
 {
 	to_gnss_main_msg_t msg;
-	int size;
 	
 	//# blocking
 	if (Msg_Rsv(igps->qid, GNSS_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_gnss_main_msg_t)) < 0)
@@ -103,29 +225,37 @@ static int recv_msg(void)
 	return msg.cmd;
 }
 
-static void fitt_meta_reset(void)
+static int __gps_send_cmd(int cmd)
 {
-    fitt_cnt = 0;
-    memset(fitt_meta_str, 0, META_REC_TOTAL);
-}
-
-static int __gps_start(void)
-{
-	/* gps 프로세스가 시작하지 않은 경우... */
-	if (!igps->init) {
-		OSA_waitMsecs(50);
-	}
-	
-	aprintf("GPS Process Start!!\n");
-	event_send(&igps->sObj, APP_CMD_START, 0, 0);
+	send_msg(cmd);
+	//dprintf("send command to GPS process(%x)!!\n", cmd);
 	
 	return SOK;
 }
 
-static int __gps_stop(void)
+static int app_sys_time(struct tm *ts)
 {
-	event_send(&igps->sObj, APP_CMD_STOP, 0, 0);
-	
+	int timezone = app_set->time_info.time_zone - 12;
+	time_t now, set;
+
+    //# get current time
+	now = time(NULL);
+
+	//# get set time
+	set = mktime(ts) + (timezone*3600);
+
+	//# if difference 1min.
+	if(abs(now-set) > 60)
+	{
+		stime(&set);
+		Vsys_datetime_init();	//# m3 Date/Time init
+    	app_msleep(100);
+		if (dev_rtc_set_time(*ts) < 0) {
+			eprintf("Failed to set system time to rtc\n!!!");
+		}
+		aprintf("--- changed time from GPS ---\n");
+	}
+
 	return SOK;
 }
 
@@ -134,13 +264,41 @@ static int __gps_stop(void)
  * @section  DESC Description
  *   - desc   POWER_HOLD pin to Low(Power OFF)
  *****************************************************************************/
-void dev_get_gps_rmc(gps_rmc_t *gps)
+int app_gps_get_rmc_data(app_gps_meta_t *p_meta)
 {
+	gnss_shm_data_t tmp_data;
+	int status = -1;
+	
+	if (p_meta == NULL)
+		return status;
+	
 	OSA_mutexLock(&igps->mutex_gps);
-
-	//memcpy((void *)gps, &idev->gps, sizeof(gps_rmc_t));
-
+	/* FIFO Get */
+	if (!gps_fifo_isEmpty(&igps->fifo)) {
+		/* get data */
+		gps_fifo_get(&igps->fifo, (unsigned int)&tmp_data, sizeof(gnss_shm_data_t));
+		
+		p_meta->enable     = tmp_data.gps_fixed;
+		p_meta->subsec     = tmp_data.subsec;
+		p_meta->speed      = tmp_data.speed;
+		p_meta->lat        = tmp_data.lat; 
+		p_meta->lot        = tmp_data.lot;
+		p_meta->dir        = tmp_data.dir;
+		
+		memcpy(&p_meta->gtm, &tmp_data.gtm, sizeof(struct tm));
+		//p_meta->gtm.tm_year = tmp_data.gtm.tm_year; /* +1900 안됨 */
+		//p_meta->gtm.tm_mon  = tmp_data.gtm.tm_mon; 
+		//p_meta->gtm.tm_mday = tmp_data.gtm.tm_mday; 
+		//p_meta->gtm.tm_hour = tmp_data.gtm.tm_hour; 
+		//p_meta->gtm.tm_min  = tmp_data.gtm.tm_min; 
+		//p_meta->gtm.tm_sec  = tmp_data.gtm.tm_sec;
+		status = 0;
+	} else {
+		status = -1;
+	}
 	OSA_mutexUnlock(&igps->mutex_gps);
+	
+	return status;
 }
 
 /*****************************************************************************
@@ -151,6 +309,7 @@ static void *THR_gps_recv_msg(void *prm)
 {
 	app_thr_obj *tObj = &igps->rObj;
 	int exit = 0, cmd;
+	int sync_time = 1;
 	
 	aprintf("enter...\n");
 	
@@ -170,6 +329,40 @@ static void *THR_gps_recv_msg(void *prm)
 			igps->init = 1; /* from record process */
 			dprintf("received gps ready!\n");
 			break;
+		
+		case GNSS_CMD_GPS_POLL_DATA:
+			memset(&igps->r_data, 0, sizeof(gnss_shm_data_t));
+			/* GPS 프로세스에서 shared 메모리에 저장한 데이터를 가져온다 */
+			memcpy((char *)&igps->r_data, (char *)igps->sbuf, sizeof(gnss_shm_data_t));
+			
+			/* GPS 시간으로 시스템 TIME 동기화 */
+			if (sync_time)
+			{
+				/* 3D fixed */
+				if (igps->r_data.gps_fixed == 2) {
+					app_sys_time(&igps->r_data.gtm);
+					sync_time = 0;
+					dev_buzz_ctrl(100, 3);	//# gps time sync
+				}
+			}
+					
+			//# debugging
+			#if 0	
+			dprintf("GPS POLL- DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
+					igps->r_data.gtm.tm_year+1900, igps->r_data.gtm.tm_mon+1, igps->r_data.gtm.tm_mday,
+					igps->r_data.gtm.tm_hour, igps->r_data.gtm.tm_min, igps->r_data.gtm.tm_sec,
+					igps->r_data.speed, igps->r_data.lat, igps->r_data.lot);
+			#endif	
+					
+			/* FIFO 메모리에 put */
+			if (gps_fifo_isFull(&igps->fifo) == 0) {
+				gps_fifo_put(&igps->fifo, (unsigned int)&igps->r_data, sizeof(gnss_shm_data_t));
+			} else {
+				eprintf("Fifo is full\n");
+				/* TODO */
+			}
+			break;
+		
 		case GNSS_CMD_GPS_EXIT:
 			exit = 1;
 			dprintf("received gps exit!\n");
@@ -183,39 +376,6 @@ static void *THR_gps_recv_msg(void *prm)
 	
 	aprintf("exit...\n");
 		
-	return NULL;
-}
-
-/*****************************************************************************
-* @brief    event record thread function
-* @section  [prm] active channel
-*****************************************************************************/
-static void *THR_gps_send_msg(void *prm)
-{
-	app_thr_obj *tObj = &igps->sObj;
-	int cmd = 0;
-	int exit = 0;
-	
-	aprintf("enter...\n");
-	tObj->active = 1;
-	
-	while (!exit)
-	{
-		cmd = event_wait(tObj);
-		if (cmd == APP_CMD_EXIT) {
-			/* send exit command to rec process */
-			exit = 1;
-			break;
-		} else if (cmd == APP_CMD_START) {
-			send_msg(GNSS_CMD_GPS_START);
-		} else if (cmd == APP_CMD_STOP) {
-			send_msg(GNSS_CMD_GPS_STOP);
-		}
-	}
-	
-	tObj->active = 0;
-	aprintf("...exit\n");
-	
 	return NULL;
 }
 
@@ -236,7 +396,9 @@ static void *THR_gps_main(void *prm)
     gpio_input_init(GPS_PWR_EN);
 	app_leds_gps_ctrl(LED_GPS_OFF); //#default LED OFF
 	
-	fitt_meta_reset();
+	/* meta reset */
+	fitt_cnt = 0;
+    memset(fitt_meta_str, 0, META_REC_TOTAL);
 	
 	while(!exit)
 	{
@@ -252,25 +414,42 @@ static void *THR_gps_main(void *prm)
 			if (!connect_state) {
 				/* GPS를 시작한다. */
 				connect_state = 1;
-				__gps_start();
+				__gps_send_cmd(GNSS_CMD_GPS_START);
+				OSA_waitMsecs(50);
+				__gps_send_cmd(GNSS_CMD_GPS_START);
+				
+			}
+		} else {
+			if (connect_state) {
+				/* GPS 정지 */
+				connect_state = 0;
+				__gps_send_cmd(GNSS_CMD_GPS_STOP);
 			}
 		}
 		
-		#if 0
-		if (meta_timer <= 0) {
-			dev_get_gps_rmc((void*)&Gpsdata);
-			gpsdata_send((void*)&Gpsdata);
-			meta_timer = CNT_FITTMETA;
-		} else {
-			meta_timer--;
+		if (connect_state) {
+			/* META 데이터 전달 */
+			if (meta_timer <= 0) {
+				app_gps_meta_t Gpsdata;
+				
+				if (app_gps_get_rmc_data((app_gps_meta_t *)&Gpsdata) == 0) {
+					gpsdata_send((void*)&Gpsdata);
+				} else {
+					/* GPS 연결은 했지만 수신이 안될 경우 */
+					//dprintf("Failed to get GPRMC Data\n");
+				}
+				meta_timer = CNT_FITTMETA;
+			} else {
+				meta_timer--;
+			}
 		}
-		#endif
+		
 		app_msleep(TIME_GPS_CYCLE);
 	}
 
 	gpio_exit(GPS_PWR_EN);
-	
 	tObj->active = 0;
+	
 	aprintf("...exit\n");
 
 	return NULL;
@@ -283,15 +462,13 @@ static void *THR_gps_main(void *prm)
 int app_gps_init(void)
 {
 	app_thr_obj *tObj;
-	char cmd[128] = {0,};
-	int offset = 0, status;
+	int status;
 	
 	//# static config clear - when Variable declaration
 	memset((void *)igps, 0x0, sizeof(app_gps_obj_t));
 	
 	/* start gps process */
-	snprintf(cmd, sizeof(cmd), "/opt/fit/bin/app_gnss.out &");
-	system(cmd);
+	system(GNSS_CMD_STR);
 	
 	/* Create Mutex Handle */
 	status = OSA_mutexCreate(&(igps->mutex_gps));
@@ -302,6 +479,11 @@ int app_gps_init(void)
         OSA_assert(status == OSA_SOK);
     }
 	
+	/* create gps fifo */
+	status = (sizeof(gnss_shm_data_t)*GPS_PROC_LENGTH);
+//	dprintf("fifo initialized: size %d\n", status);
+	gps_fifo_init(&igps->fifo, status);
+	
 	//#--- create msg receive thread
 	tObj = &igps->rObj;
 	if (thread_create(tObj, THR_gps_recv_msg, APP_THREAD_PRI, tObj) < 0) {
@@ -309,21 +491,23 @@ int app_gps_init(void)
 		return EFAIL;
 	}
 	
-	//#--- create msg send thread
-	tObj = &igps->sObj;
-	if (thread_create(tObj, THR_gps_send_msg, APP_THREAD_PRI, tObj) < 0) {
-		eprintf("create thread\n");
-		return EFAIL;
-	}
+	/* gps 프로세스가 시작할때 까지 wait... */
+	do {
+		status = igps->init;
+		if (status) {
+			//aprintf("couln't start GPS process!\n");
+			break;
+		}
+		OSA_waitMsecs(100);
+	} while (1);
 	
+//	dprintf("GPS process start!\n");
 	tObj = &igps->hObj;
 	if (thread_create(tObj, THR_gps_main, APP_THREAD_PRI, tObj) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
 	
-	/*  gps 프로세서 초기화가 수행될때까지 delay를 준다. */
-	app_msleep(500);
 	igps->shmid = shmget((key_t)GNSS_SHM_KEY, 0, 0);
 	if (igps->shmid == -1) {
 		eprintf("shared memory for gps is not created!!\n");
@@ -334,9 +518,6 @@ int app_gps_init(void)
 	if (igps->sbuf == NULL) {
 		eprintf("shared memory for gps scan is NULL!!!");
 	}
-	
-	igps->pfifo = igps->sbuf;
-	dprintf("shared memory 0x%08x\n", (int)igps->pfifo);
 	
 	aprintf("... done!\n");
 
@@ -359,24 +540,13 @@ int app_gps_exit(void)
 	}
 	thread_delete(tObj);
 	
-	//#--- stop message send thread
-	tObj = &igps->sObj;
-	event_send(tObj, APP_CMD_EXIT, 0, 0);
-	while (tObj->active) {
-		app_msleep(20);
-	}
-	thread_delete(tObj);
-	
-	//#--- stop message receive thread. 
-	//# 프로세스에서 이미 종료가 되므로 APP_CMD_EXIT를 하면 안됨.
-//	tObj = &irec->rObj;
-//	thread_delete(tObj);
-
 	/* mutex delete */
     OSA_mutexDelete(&igps->mutex_gps);
 
     if (app_set->srv_info.ON_OFF)
         OSA_mutexDelete(&igps->mutex_meta);
+	
+	gps_fifo_clear(&igps->fifo);
 	
 	aprintf("done!...\n");
 

@@ -29,22 +29,16 @@
 #include <errno.h>
 
 #include "gnss_ipc_cmd_defs.h"
-#include "nmea.h"
+#include "nmea_parse.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define PACKET_DBG			0
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-
-static struct gps_device_t t_device;
-static struct gps_device_t *session = &t_device;
-
-static struct gps_context_t t_context;
 
 enum {
 	GROUND_STATE,	/* we don't know what packet type to expect */
@@ -778,14 +772,10 @@ static int merge_hhmmss(char *hhmmss, struct gps_device_t *session)
 static void register_fractional_time(const char *tag, const char *fld,
                                      struct gps_device_t *session)
 {
-    char ts_buf[TIMESPEC_LEN];
-
     if (fld[0] != '\0') {
         session->nmea.last_frac_time = session->nmea.this_frac_time;
         DTOTS(&session->nmea.this_frac_time, safe_atof(fld));
         session->nmea.latch_frac_time = true;
-        dprintf("%s: registers fractional time %s\n", tag, 
-				timespec_str(&session->nmea.this_frac_time, ts_buf, sizeof(ts_buf)));
     }
 }
 
@@ -1185,7 +1175,6 @@ static gps_mask_t processGSV(int count, char *field[],
 {
 #define GSV_TALKER      field[0][1]
     int n, fldnum;
-    unsigned char nmea_sigid = 0;
     int nmea_gnssid = 0;
 
     if (count <= 3) {
@@ -1195,8 +1184,8 @@ static gps_mask_t processGSV(int count, char *field[],
         return ONLINE_SET;
     }
 	
-    dprintf( "x%cGSV: part %s of %s, last_gsv_talker '%#x' \n",
-             GSV_TALKER, field[2], field[1], session->nmea.last_gsv_talker);
+    //dprintf( "x%cGSV: part %s of %s, last_gsv_talker '%#x' \n",
+    //         GSV_TALKER, field[2], field[1], session->nmea.last_gsv_talker);
 
     switch (count % 4) {
     case 0:
@@ -1219,10 +1208,8 @@ static gps_mask_t processGSV(int count, char *field[],
     if (session->nmea.part == 1) 
 	{
         if (session->nmea.last_gsv_talker == '\0' ) {
-            dprintf("x%cGSV: new part %d, last_gsv_talker '%#x', zeroing\n",
-                     GSV_TALKER,
-                     session->nmea.part,
-                     session->nmea.last_gsv_talker);
+            //dprintf("x%cGSV: new part %d, last_gsv_talker '%#x', zeroing\n",
+            //         GSV_TALKER, session->nmea.part, session->nmea.last_gsv_talker);
             gps_zero_satellites(&session->gpsdata);
         }
         session->nmea.last_gsv_talker = GSV_TALKER;
@@ -1299,8 +1286,8 @@ static gps_mask_t processGSV(int count, char *field[],
 
     /* not valid data until we've seen a complete set of parts */
     if (session->nmea.part < session->nmea.await) {
-        dprintf("xxGSV: Partial satellite data (%d of %d).\n",
-                 session->nmea.part, session->nmea.await);
+		/* GSV? partial? ???. ??? */
+       // dprintf("xxGSV: Partial satellite data (%d of %d).\n", session->nmea.part, session->nmea.await);
         return ONLINE_SET;
     }
     
@@ -1437,7 +1424,6 @@ static gps_mask_t nmea_parse(char *sentence, struct gps_device_t * session)
     }
 
     strlcpy((char *)session->nmea.fieldcopy, sentence, sizeof(session->nmea.fieldcopy) - 1);
-    
     for (p = (char *)session->nmea.fieldcopy; (*p != '*') && (*p >= ' ');)
         ++p;
     if (*p == '*')
@@ -1545,25 +1531,14 @@ static gps_mask_t nmea_parse(char *sentence, struct gps_device_t * session)
 			{
                 session->nmea.cycle_enders |= lasttag_mask;
                 /* (long long) cast for 32/64 bit compat */
-                //dprintf("tagged %s as a cycle ender. %#llx\n", nmea_phrase[lasttag - 1].name, (unsigned long long)lasttag_mask);
+                dprintf("tagged %s as a cycle ender. %#llx\n", nmea_phrase[lasttag - 1].name, (unsigned long long)lasttag_mask);
             }
         }
-    } else {
-        /* extend the cycle to an un-timestamped sentence? */
-        if (0 != (session->nmea.cycle_enders & lasttag_mask)) {
-            dprintf("%s is just after a cycle ender.\n", session->nmea.field[0]);
-        }
-        if (session->nmea.cycle_continue) {
-            dprintf("%s extends the reporting cycle.\n", session->nmea.field[0]);
-            /* change ender */
-            session->nmea.cycle_enders &= ~lasttag_mask;
-            session->nmea.cycle_enders |= thistag_mask;
-        }
-    }
+    } 
 
     if ((session->nmea.latch_frac_time || session->nmea.cycle_continue)
         && (session->nmea.cycle_enders & thistag_mask)!=0) {
-        dprintf("%s ends a reporting cycle.\n", session->nmea.field[0]);
+       // dprintf("%s ends a reporting cycle.\n", session->nmea.field[0]);
         mask |= REPORT_IS;
     }
     
@@ -1638,9 +1613,9 @@ gps_mask_t nmea_parse_input(struct gps_device_t *session)
 }
 
 //--------------------------------------------------------------------------------------------------
-void nmea_parse_init(void)
+void app_nmea_parse_init(void)
 {
-	struct gps_context_t *context = &t_context;
+	struct gps_context_t *context = &app_cfg->t_context;
 	time_t starttime;
 	struct tm *now;
 	char scr[128];
@@ -1664,7 +1639,7 @@ void nmea_parse_init(void)
 }
 
 //############################################# NMEA DATA POLL ###########################################
-gps_mask_t nmea_parse_poll(gnss_shm_data_t *data)
+gps_mask_t app_nmea_parse_get_data(void)
 {
     ssize_t newlen;
 
@@ -1688,11 +1663,10 @@ gps_mask_t nmea_parse_poll(gnss_shm_data_t *data)
 		}
 		
 		session->gpsdata.set = ONLINE_SET | received;
-
 		if ((session->gpsdata.set & CLEAR_IS) != 0) {
 			gps_clear_fix(&session->gpsdata.fix);
 		}
-
+		
 		gps_merge_fix(&session->gpsdata.fix, session->gpsdata.set, &session->newdata);
 		
 		return session->gpsdata.set;

@@ -381,7 +381,8 @@ int conf_configure(void)
 int conf_modules(void)
 {
 	int err;
-
+	
+	/* conf_configre 함수에 의해서 할당됨 (struct conf *) */
 	err = module_init(conf_obj);
 	if (err) {
 		warning("conf: configure module parse error (%m)\n", err);

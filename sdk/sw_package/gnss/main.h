@@ -18,6 +18,7 @@
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
 #include "msg.h"
+#include "nmea_parse.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -47,7 +48,6 @@
 -----------------------------------------------------------------------------*/
 
 typedef struct {
-	app_thr_obj gObj;		/* GPS thread Handle */
 	int shmid;				/* shared memory id */
 	int qid;
 	
@@ -57,14 +57,18 @@ typedef struct {
 	int rate;				/* gps 데이터 rate */	
 	char dev_name[128];     /* gps 장치명(/dev/ttyOX) */
 	
-	FIFO *pfifo;
-	
+	struct gps_device_t t_device;
+	struct gps_context_t t_context;
+
 } app_gnss_cfg_t;
 
 extern app_gnss_cfg_t *app_cfg;
+extern struct gps_device_t *session;
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
+int send_msg(int cmd);
+int recv_msg(void);
 
 #endif	/* __MAIN_H__ */

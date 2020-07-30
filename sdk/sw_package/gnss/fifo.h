@@ -21,6 +21,18 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+typedef struct FIFO {
+	unsigned int count;
+	unsigned int readIndex;
+	unsigned int writeIndex;
+	unsigned int len;
+	
+	pthread_mutex_t lock;
+	pthread_cond_t  condRd;
+	pthread_cond_t  condWr;
+  
+	unsigned char *buf;
+} FIFO;
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -29,7 +41,7 @@
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-int FIFO_init(FIFO *fifo, int address, int len);
+int FIFO_init(FIFO *fifo, int len);
 int FIFO_get(FIFO *fifo, unsigned int addr, int size); 
 int FIFO_put(FIFO *fifo, unsigned int addr, unsigned int size); 
 int FIFO_isEmpty(FIFO *fifo);

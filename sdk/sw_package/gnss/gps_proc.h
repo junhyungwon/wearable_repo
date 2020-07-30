@@ -1,19 +1,22 @@
 /******************************************************************************
- * Copyright by	UDWorks, Incoporated. All Rights Reserved.
+ * NEXTT360 Board
+ * Copyright by LF, Incoporated. All Rights Reserved.
+ * based on gpsd.
  *---------------------------------------------------------------------------*/
  /**
- * @file	app_gps.h
+ * @file    gps_proc.h
  * @brief
+ * @section MODIFY history
+ *     - 2020.07.21 : First Created
  */
 /*****************************************************************************/
 
-#ifndef _APP_GPS_H_
-#define _APP_GPS_H_
+#ifndef __GPS_PROC_H__
+#define __GPS_PROC_H__
 
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
-#include <time.h>
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -22,28 +25,14 @@
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-typedef struct {
-    int enable;		//# 0: invalid, 1:valid
-
-	struct tm gtm;			//# GPS time 
-	
-	double subsec;
-	double speed;
-	double lat; 				//# latitude : (+)N, (-)S
-	double lot; 				//# longitude: (+)E, (-) W
-	double dir; 				//# forward direction (degree)
-
-} app_gps_meta_t;
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-int app_gps_init(void);
-int app_gps_exit(void);
+int app_gps_proc_init(void);
+void app_gps_proc_exit(void);
 
-int app_gps_start(void);
-int app_gps_stop(void);
+int app_gps_proc_start(void);
+int app_gps_proc_stop(void);
 
-int app_gps_get_rmc_data(app_gps_meta_t *pdata);
-
-#endif	/* _APP_REC_H_ */
+#endif	/* __GPS_PROC_H__ */

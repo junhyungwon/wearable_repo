@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 	uag_set_exit_handler(ua_exit_handler, NULL);
 
 	if (ua_eprm) {
-		err = uag_set_extra_params(ua_eprm);
+		err = uag_set_extra_params(ua_eprm); //# ua.c 
 		if (err)
 			goto out;
 	}
@@ -179,10 +179,11 @@ int main(int argc, char *argv[])
 		goto out;
 
 	/* Load modules */
-	err = conf_modules();
+	err = conf_modules(); //# conf.c
 	if (err)
 		goto out;
 
+#if 0 //# 데몬 실행 안 함
 	if (run_daemon) {
 		err = sys_daemon();
 		if (err)
@@ -190,12 +191,13 @@ int main(int argc, char *argv[])
 
 		log_enable_stdout(false);
 	}
+#endif
 
 	info("baresip is ready.\n");
 
 	/* Execute any commands from input arguments */
 	for (i=0; i<execmdc; i++) {
-		ui_input_str(execmdv[i]);
+		ui_input_str(execmdv[i]); //# ui.c
 	}
 
 	/* Main loop */

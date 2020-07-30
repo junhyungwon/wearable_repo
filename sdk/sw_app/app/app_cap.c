@@ -53,7 +53,7 @@ typedef struct {
 -----------------------------------------------------------------------------*/
 static app_cap_t cap_obj;
 static app_cap_t *icap=&cap_obj;
-static app_meta_t gmeta;
+static app_gps_meta_t gmeta;
 
 int first = 0, cnt = 0;
 FILE *fp, *jfp;
@@ -136,7 +136,7 @@ static void proc_vid_cap(void)
 	char *addr;
 	int meta_size = 0;
 
-	meta_size = sizeof(app_meta_t);
+	meta_size = sizeof(app_gps_meta_t);
 	Venc_getBitstreamBuffer(&fullBufList, 0);
 
 	for (i=0; i<fullBufList.numBufs; i++)
@@ -223,7 +223,6 @@ static void proc_vid_cap(void)
 #endif
                     app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH2, captime);
-
                 } 
 
             }
@@ -250,7 +249,7 @@ static void proc_vid_cap(void)
                 ifr->t_sec = (Uint32)(captime/1000);
                 ifr->t_msec = (Uint32)(captime%1000);
 
-                dev_get_gps_rmc(&gmeta.gps);
+                app_gps_get_rmc_data((void *)&gmeta);
                 app_memcpy(addr, (char*)&gmeta, ifr->b_size);
 			}//# end of META
         }
@@ -315,7 +314,6 @@ static void vid_cap_stop(void)
 {
 	app_thr_obj *tObj;
 
-
     //#--- recording stop
     if(app_rec_state()) 
         app_rec_stop(1);
@@ -331,7 +329,6 @@ static void vid_cap_stop(void)
 
 int app_aud_start(void)
 {
-
 	app_snd_start(icap->imem);
 
     return SOK ;
@@ -467,9 +464,6 @@ int app_cap_start(void)
 	//# static config clear - when Variable declaration
 	memset((void *)icap, 0x0, sizeof(app_cap_t));
 
-
-
-
 	//#--- init params
 	Vsys_params_init(&vsysParams);
 	Vcap_params_init(&vcapParams);
@@ -531,8 +525,6 @@ int app_cap_start(void)
 		else
 		    video_status() ;
 	}
-			
-			
 
     ctrl_enc_multislice() ; 
 

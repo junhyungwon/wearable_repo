@@ -89,7 +89,7 @@ void gpsdatareq(int channel, char *data, int len)
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdatareq packet receive...\n") ;
 #endif
-    int sendlen = 0, retval = 0 ;
+    int sendlen = 0;
 /*
 	GPSDATA Gpsdatares ;
 
@@ -109,16 +109,14 @@ void gpsdatareq(int channel, char *data, int len)
 
 void gpsdata_send(void *data)
 {
-    int sendlen = 0, i, speed ;
+	app_gps_meta_t *Gpsdata = (app_gps_meta_t *)data;
+    int sendlen = 0, i;
     int timezone = 0 ;
 
 	timezone = app_set->time_info.time_zone - 12 ;
 
 //    printf("GPSPACKET_SIZE = %d\n",GPSPACKET_SIZE) ;
 //    printf("GPSDATA_SIZE = %d\n",GPSDATA_SIZE) ;
-    gps_rmc_t *Gpsdata ;
-	Gpsdata = (gps_rmc_t *)data ;
-
 	GPSPACKET Gpspacket ;
 
 	Gpspacket.identifier = htons(IDENTIFIER) ;
@@ -132,7 +130,7 @@ void gpsdata_send(void *data)
     Gpspacket.gps_UTC_Hour = htons(Gpsdata->gtm.tm_hour + timezone) ;
     Gpspacket.gps_UTC_Min = htons(Gpsdata->gtm.tm_min) ;
     Gpspacket.gps_UTC_Sec = htons(Gpsdata->gtm.tm_sec) ;
-    Gpspacket.gps_UTC_Msec = htons(0);
+    Gpspacket.gps_UTC_Msec = htons(Gpsdata->subsec);
     sprintf(Gpspacket.gps_Speed, "%3.0f", Gpsdata->speed) ;
     sprintf(Gpspacket.gps_LAT, "%10.7f", Gpsdata->lat);
     sprintf(Gpspacket.gps_LOT, "%10.7f", Gpsdata->lot);
