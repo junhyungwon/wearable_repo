@@ -34,7 +34,7 @@ typedef struct {
 	int cmd;
 	int param0;
 	int param1;
-        int done ;
+    int done;
 } app_thr_obj;
 
 //# app command

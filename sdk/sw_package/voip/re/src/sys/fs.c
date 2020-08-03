@@ -82,7 +82,7 @@ int fs_gethome(char *path, size_t sz)
 	return 0;
 
 #elif defined(HAVE_PWD_H)
-	/* PWD_H Á¤ÀÇ µÊ */
+	/* PWD_H ?? ? */
 	const char *loginname;
 	struct passwd *pw;
 

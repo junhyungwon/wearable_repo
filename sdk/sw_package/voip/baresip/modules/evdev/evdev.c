@@ -145,8 +145,12 @@ static int code2ascii(uint16_t modifier, uint16_t code)
 #ifdef KEY_KPENTER
 	case KEY_KPENTER:    return '\n';
 #endif
-	//# rupy for gpio keys
-	case KEY_D:			 return 'z';
+#ifdef KEY_A
+	case KEY_A:      	 return 'a'; /* RUPY */
+#endif
+#ifdef KEY_B
+	case KEY_B:    		 return 'b'; /* RUPY */
+#endif
 	default:             return -1;
 	}
 }

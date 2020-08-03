@@ -28,7 +28,7 @@ static struct baresip {
 	struct list vidsrcl;
 	struct list vidispl;
 	struct list vidfiltl;
-	struct ui_sub uis;
+	struct ui_sub uis; /* baresip.h */
 } baresip;
 
 
@@ -131,7 +131,10 @@ int baresip_init(struct config *cfg)
 		warning("baresip: message init failed: %m\n", err);
 		return err;
 	}
-
+	
+	/*
+	 * quit, insmod, rmmod 명령을 등록
+	 */
 	err = cmd_register(baresip.commands, corecmdv, ARRAY_SIZE(corecmdv));
 	if (err)
 		return err;

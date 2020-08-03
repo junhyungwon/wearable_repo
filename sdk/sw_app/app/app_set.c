@@ -161,7 +161,6 @@ static void char_memset(void)
     memset(app_set->net_info.reserved, CFG_INVALID, 73);
     
 	//# Server information
-
     app_set->srv_info.port = CFG_INVALID ;
     memset(app_set->srv_info.ipaddr, CHAR_MEMSET, SERVER_URL_SIZE);
     app_set->srv_info.ON_OFF = CFG_INVALID ;
@@ -366,7 +365,6 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->time_info.time_zone_abbr  = %s\n", pset->time_info.time_zone_abbr);
 	printf("\n");
 
-
     printf("pset->account_info.ON_OFF = %d\n", pset->account_info.ON_OFF) ;
     printf("pset->account_info.enctype = %d\n", pset->account_info.enctype) ;
     printf("pset->account_info.rtsp_userid = %s\n", pset->account_info.rtsp_userid) ;
@@ -386,7 +384,6 @@ int show_all_cfg(app_set_t* pset)
     return 0;
 }
 
-
 void set_ap_value()
 {
 	app_cfg->wmode.wifi_mode = 0 ;
@@ -397,7 +394,6 @@ void set_ap_value()
 	strcpy(app_cfg->wmode.wlan_netmask, "255.255.255.0");
 	strcpy(app_cfg->wmode.wlan_gateway, "192.168.0.1");
 }
-
 
 static void cfg_param_check(app_set_t* pset)
 {
@@ -441,7 +437,6 @@ static void cfg_param_check(app_set_t* pset)
 	//# Watchdog...
 	if(pset->wd.gsn < GSN_IDX_01 || pset->wd.gsn >= GSN_IDX_MAX)
 		pset->wd.gsn = GSN_IDX_03;
-
 
 	//# Network information for device
     if(((int)pset->net_info.wlan_ipaddr[0]) == CHAR_INVALID)
@@ -716,7 +711,6 @@ static void cfg_param_check(app_set_t* pset)
     printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
 
-
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 
@@ -955,7 +949,6 @@ void app_set_default(int default_type)
 	app_set->account_info.onvif.lv = 0;	// 0:Administrator
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
-
 }
 
 void app_set_delete_cfg(void)

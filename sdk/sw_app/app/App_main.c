@@ -125,17 +125,16 @@ int app_main(void)
 	}
 #endif
 
-    if(!app_set->sys_info.osd_set)
+    if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
 
-	if(app_set->rec_info.audio_rec)
+	if (app_set->rec_info.audio_rec)
         app_aud_start() ; 
 
-    if(app_set->rec_info.auto_rec)
+    if (app_set->rec_info.auto_rec)
         app_rec_start() ;  //#--- record start
 
-
-	if(app_set->srv_info.ON_OFF)
+	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
 	app_rtsptx_start() ;
@@ -154,16 +153,20 @@ int app_main(void)
 
     CSock_init() ;
 
-	if(app_set->ftp_info.ON_OFF)
+	if (app_set->ftp_info.ON_OFF)
         app_ftp_init();
 
-    if(app_set->sys_info.P2P_ON_OFF == ON)
-    {
+    if (app_set->sys_info.P2P_ON_OFF == ON) {
         add_p2p_account() ;
         app_p2p_start() ;
         app_p2p_init() ;
     }
-
+	
+	/* 
+	 * baresip가 timer를 이용하는데 앞에서 초기화를 수행하면
+	 * 영향을 받음 가장 나중에 수행해야 함.
+	 */
+	app_sipc_init();
 	dev_buzz_ctrl(80, 2);	//# buzz: power on
 
 	while(!exit)
@@ -391,9 +394,6 @@ int main(int argc, char **argv)
 #endif
 	ctrl_reset_nand_update();
 	
-	/* voip manager */
-	app_sipc_init();
-	
 	//#--- app main ----------
 	app_main();
 	//#-----------------------
@@ -401,6 +401,7 @@ int main(int argc, char **argv)
 	//#--- system de-init
 	app_rec_exit();
 	app_file_exit();
+	
 #ifdef SYS_LOG_ENABLE
 	system("/etc/init.d/S30logging stop");
 #else
@@ -422,7 +423,7 @@ int main(int argc, char **argv)
         app_ftp_exit();
 
     app_ipins_exit();
-	app_sipc_exit();
+	app_sipc_exit(); /* voip exit */
 	app_gps_exit();
 	
 	g_mem_exit();

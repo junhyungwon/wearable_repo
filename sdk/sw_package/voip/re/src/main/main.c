@@ -955,7 +955,8 @@ int re_main(re_signal_h *signalh)
 	err = poll_setup(re);
 	if (err)
 		goto out;
-
+	
+	/* config 파일에 의해서 epoll을 사용함 */
 	DEBUG_INFO("Using async I/O polling method: `%s'\n",
 		   poll_method_name(re->method));
 

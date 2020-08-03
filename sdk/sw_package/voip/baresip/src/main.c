@@ -92,15 +92,97 @@ int main(int argc, char *argv[])
 			 " Alfred E. Heggestad et al.\n",
 			 BARESIP_VERSION);
 
-//	(void)sys_coredump_set(true); sys.c
+	(void)sys_coredump_set(true);
 
 	err = libre_init();
 	if (err)
 		goto out;
-	
-	/* fixed net -> ipv4 */
-	af = AF_INET;
-	err = conf_configure(); //# conf.c
+
+#ifdef HAVE_GETOPT
+	for (;;) {
+		const int c = getopt(argc, argv, "46de:f:p:hu:n:vstm:");
+		if (0 > c)
+			break;
+
+		switch (c) {
+
+		case '?':
+		case 'h':
+			usage();
+			return -2;
+
+		case '4':
+			af = AF_INET;
+			break;
+
+#if HAVE_INET6
+		case '6':
+			af = AF_INET6;
+			break;
+#endif
+
+		case 'd':
+			run_daemon = true;
+			break;
+
+		case 'e':
+			if (execmdc >= ARRAY_SIZE(execmdv)) {
+				warning("max %zu commands\n",
+					ARRAY_SIZE(execmdv));
+				err = EINVAL;
+				goto out;
+			}
+			execmdv[execmdc++] = optarg;
+			break;
+
+		case 'f':
+			conf_path_set(optarg);
+			break;
+
+		case 'm':
+			if (modc >= ARRAY_SIZE(modv)) {
+				warning("max %zu modules\n",
+					ARRAY_SIZE(modv));
+				err = EINVAL;
+				goto out;
+			}
+			modv[modc++] = optarg;
+			break;
+
+		case 'p':
+			audio_path = optarg;
+			break;
+
+		case 's':
+			sip_trace = true;
+			break;
+
+		case 't':
+			test = true;
+			break;
+
+		case 'n':
+			net_interface = optarg;
+			break;
+
+		case 'u':
+			ua_eprm = optarg;
+			break;
+
+		case 'v':
+			log_enable_debug(true);
+			break;
+
+		default:
+			break;
+		}
+	}
+#else
+	(void)argc;
+	(void)argv;
+#endif
+
+	err = conf_configure();
 	if (err) {
 		warning("main: configure failed: %m\n", err);
 		goto out;
@@ -183,7 +265,6 @@ int main(int argc, char *argv[])
 	if (err)
 		goto out;
 
-#if 0 //# 데몬 실행 안 함
 	if (run_daemon) {
 		err = sys_daemon();
 		if (err)
@@ -191,7 +272,6 @@ int main(int argc, char *argv[])
 
 		log_enable_stdout(false);
 	}
-#endif
 
 	info("baresip is ready.\n");
 

@@ -463,28 +463,6 @@ static int about_box(struct re_printf *pf, void *unused)
 }
 
 //----------------------------------------------------------------------------
-static int auto_dialer(struct re_printf *pf, void *unused)
-{
-	int err = 0;
-	char *str_num = "1002";
-
-	(void)unused;
-
-	//ui_input_key(baresip_uis(), KEYCODE_REL, NULL); //# for dtmf
-	mbuf_rewind(menu.dialbuf);
-	(void)mbuf_write_str(menu.dialbuf, str_num);
-
-	err = ua_connect(uag_current(), NULL, NULL,
-				str_num, VIDMODE_ON);
-
-	if (err) {
-		warning("menu: ua_connect failed: %m\n", err);
-	}
-
-	return err;
-}
-
-//----------------------------------------------------------------------------
 
 static const struct cmd cmdv[] = {
 
@@ -506,7 +484,6 @@ static const struct cmd cmdv[] = {
 {"auplay",    0,    CMD_PRM, "Switch audio player",     switch_audio_player  },
 {"about",     0,          0, "About box",               about_box            },
 {"vidsrc",    0,    CMD_PRM, "Switch video source",     switch_video_source  },
-{"adial",	'z',		  0, "auto dial",     			auto_dialer  }, /* for rupy */
 
 };
 
@@ -1342,7 +1319,8 @@ static int module_init(void)
 	err = uag_event_register(ua_event_handler, NULL);
 	if (err)
 		return err;
-
+	
+	/* baresip.c 파일에 정의 baresip.message (문자 메시지 수신) */
 	err = message_listen(baresip_message(),
 			     message_handler, NULL);
 	if (err)

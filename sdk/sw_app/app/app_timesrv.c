@@ -86,7 +86,6 @@ static char *TZfiles[][2] = {
 	{"Etc/GMT-14", "Etc/GMT-14"}
 };
 
-
 typedef struct {
     app_thr_obj tsyncObj;
     int tsync_status;
@@ -177,7 +176,6 @@ int set_time_zone()
 	update_m3_time();
 
 	return 1 ;
-
 }
 
 int set_time_manual(int year, int month, int day, int hour, int minute, int second)
@@ -390,7 +388,6 @@ int gettime_from_ntp(char *server_addr)
     return retval;
 }
 
-
 static int time_sync(void)
 {
     int retval = FALSE, ret = FALSE ;
@@ -400,8 +397,7 @@ static int time_sync(void)
     struct hostent *hp;
 
     ret = dev_ste_ethernet(0) ;
-    if(!ret)
-    {
+    if(!ret) {
         set_time_zone() ;  
         return FALSE  ;
     }
@@ -492,32 +488,25 @@ static void *THR_tsync(void *prm)
     while (!exit)
     {
         cmd = tObj->cmd;
-
-        if (cmd == APP_CMD_STOP)
-        {
+        if (cmd == APP_CMD_STOP)  {
             break;
         }
-        if(app_cfg->ste.b.st_cradle)
-        {
-            if(itsync->tsync_status == TIMESYNC_READY)
+        
+		if(app_cfg->ste.b.st_cradle) {
+            if (itsync->tsync_status == TIMESYNC_READY)
                 retval = time_sync() ;
-        }
-        else
+        } else
             itsync->tsync_status = TIMESYNC_READY ;
 
-        if(retval)
-        {
+        if(retval) {
             itsync->tsync_status = TIMESYNC_DONE ;
             retval = FALSE ;
-        }
-		else
-        {
-			if(retry_cnt == 59) // retry per 5 sec (60 x 5)
+        } else {
+			if (retry_cnt == 59) // retry per 5 sec (60 x 5)
 			{
                 itsync->tsync_status = TIMESYNC_DONE ;
-				retry_cnt = 0 ;
-            }
-			else
+				retry_cnt = 0;
+            } else
 			    retry_cnt++ ;
         }
 

@@ -27,6 +27,7 @@
 #include "app_file.h"
 #include "app_ctrl.h"
 #include "app_gui.h"
+#include "app_sipc.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -227,26 +228,28 @@ static void *THR_micom(void *prm)
 				short key_type = msg.data[0];
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
 
-                if(app_cfg->ste.b.cap)
+                if (app_cfg->ste.b.cap)
                 {
-				    if(key_type==PSW_EVT_LONG) {
-                        sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
+				    if (key_type==PSW_EVT_LONG) {
 	                    dev_buzz_ctrl(80, 2);	//# buzz: pwr off
-                        app_log_write( MSG_LOG_SHUTDOWN, log );
+                        sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
+						printf("%s \n", log);
+						app_log_write( MSG_LOG_SHUTDOWN, log );
 					    app_set_write();
-
-					    printf("%s \n", log);
 					    mcu_pwr_off(OFF_NORMAL);
 					    exit = 1;
-				    } 
-					else if(!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap)
-					{
-					    //# change resolution 720P <----> 480P <-----> 1080P
-						if (!app_cfg->ste.b.nokey)
-					    	change_video_fxn();
-
-				    }
-                }
+				    } else { 
+						/* Short KEY */
+						if (!app_cfg->ste.b.ftp_run)
+						{
+							//# change resolution 720P <----> 480P <-----> 1080P
+							//if (!app_cfg->ste.b.nokey)
+							//	change_video_fxn();
+							//# voip call
+							app_sipc_event_noty();
+						}
+                	}
+				}
 
 				break;
 			}
