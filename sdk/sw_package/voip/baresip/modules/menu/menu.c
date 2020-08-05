@@ -1320,7 +1320,7 @@ static int module_init(void)
 	if (err)
 		return err;
 	
-	/* baresip.c 파일에 정의 baresip.message (문자 메시지 수신) */
+	/* baresip.c ??? ?? baresip.message (?? ??? ??) */
 	err = message_listen(baresip_message(),
 			     message_handler, NULL);
 	if (err)

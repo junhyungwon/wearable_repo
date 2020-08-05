@@ -539,7 +539,7 @@ static int core_config_template(struct re_printf *pf, const struct config *cfg)
 			  "call_max_calls\t\t%u\n"
 			  "\n"
 			  "# Audio\n"
-#if defined (SHARE_PATH)
+#if defined (SHARE_PATH) /* SHARE_PATH 정의됨 PREFIX가 정의되지 않아서 /share/baresip로 됨, Makefile */
 			  "#audio_path\t\t" SHARE_PATH "\n"
 #elif defined (PREFIX)
 			  "#audio_path\t\t" PREFIX "/share/baresip\n"
@@ -850,14 +850,14 @@ int config_write_template(const char *file, const struct config *cfg)
 #endif
 	(void)re_fprintf(f, "#module_app\t\t"  "echo"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "gtk" MOD_EXT "\n");
-	(void)re_fprintf(f, "module_app\t\t"  "menu"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t"  "menu"MOD_EXT"\n");
+	(void)re_fprintf(f, "module_app\t\t" "menu_custom"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t"  "mwi"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "presence"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "syslog"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "mqtt" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module_app\t\t" "ctrl_tcp" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module_app\t\t" "vidloop"MOD_EXT"\n");
-	(void)re_fprintf(f, "module_app\t\t" "virtual_key"MOD_EXT"\n");
 	(void)re_fprintf(f, "\n");
 
 	(void)re_fprintf(f, "\n#------------------------------------"

@@ -805,7 +805,6 @@ int  ui_password_prompt(char **passwordp);
 #define KEYCODE_REL    (0x04)    /* Key was released */
 #define KEYCODE_ESC    (0x1b)    /* Escape key       */
 
-
 /** Command flags */
 enum {
 	CMD_PRM  = (1<<0),              /**< Command with parameter */

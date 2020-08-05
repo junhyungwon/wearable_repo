@@ -185,7 +185,7 @@ static int account_read_file(void)
 	if (re_snprintf(file, sizeof(file), "%s/accounts", path) < 0)
 		return ENOMEM;
 
-#if 0 /* rupy, main 프로그램에서 수행 */
+#if 0 /* rupy, main ?????? ?? */
 	if (!conf_fileexist(file)) {
 
 		(void)fs_mkdir(path, 0700);

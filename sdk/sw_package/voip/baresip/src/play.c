@@ -10,7 +10,6 @@
 #include <baresip.h>
 #include "core.h"
 
-
 enum {PTIME = 40};
 
 /** Audio file player */
@@ -25,21 +24,18 @@ struct play {
 	bool eof;
 };
 
-
+/* PREFIX°¡ /usr·Î Á¤ÀÇµÊ */
 #ifndef PREFIX
 #define PREFIX "/usr"
 #endif
 static const char default_play_path[FS_PATH_MAX] = PREFIX "/share/baresip";
-
 
 struct player {
 	struct list playl;
 	char play_path[FS_PATH_MAX];
 };
 
-
 static void tmr_polling(void *arg);
-
 
 static void tmr_stop(void *arg)
 {
@@ -47,7 +43,6 @@ static void tmr_stop(void *arg)
 	debug("play: player complete.\n");
 	mem_deref(play);
 }
-
 
 static void tmr_polling(void *arg)
 {
@@ -64,7 +59,6 @@ static void tmr_polling(void *arg)
 
 	lock_rel(play->lock);
 }
-
 
 /*
  * NOTE: DSP cannot be destroyed inside handler
@@ -110,7 +104,6 @@ static void write_handler(void *sampv, size_t sampc, void *arg)
 	lock_rel(play->lock);
 }
 
-
 static void destructor(void *arg)
 {
 	struct play *play = arg;
@@ -129,7 +122,6 @@ static void destructor(void *arg)
 	if (play->playp)
 		*play->playp = NULL;
 }
-
 
 static int aufile_load(struct mbuf *mb, const char *filename,
 		       uint32_t *srate, uint8_t *channels)
@@ -195,7 +187,6 @@ static int aufile_load(struct mbuf *mb, const char *filename,
 
 	return err;
 }
-
 
 /**
  * Play a tone from a PCM buffer
@@ -265,7 +256,6 @@ int play_tone(struct play **playp, struct player *player,
 	return err;
 }
 
-
 /**
  * Play an audio file in WAV format
  *
@@ -312,14 +302,12 @@ int play_file(struct play **playp, struct player *player,
 	return err;
 }
 
-
 static void player_destructor(void *data)
 {
 	struct player *player = data;
 
 	list_flush(&player->playl);
 }
-
 
 /**
  * Initialize the audio player
@@ -348,7 +336,6 @@ int play_init(struct player **playerp)
 
 	return 0;
 }
-
 
 /**
  * Set the path to the audio files

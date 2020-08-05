@@ -101,7 +101,9 @@ MOD_MK	:= $(patsubst %,modules/%/module.mk,$(MODULES))
 MOD_BLD	:= $(patsubst %,$(BUILD)/modules/%,$(MODULES))
 LIBDIR     := $(PREFIX)/lib
 MOD_PATH   := $(LIBDIR)/$(PROJECT)/modules
-SHARE_PATH := $(PREFIX)/share/$(PROJECT)
+#SHARE_PATH := $(PREFIX)/share/$(PROJECT)
+# /usr/baresip·Î º¯°æ
+SHARE_PATH := /usr/baresip
 CFLAGS     += -DPREFIX=\"$(PREFIX)\"
 CFLAGS    += -DMOD_PATH=\"$(MOD_PATH)\"
 CFLAGS    += -DSHARE_PATH=\"$(SHARE_PATH)\"

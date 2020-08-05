@@ -41,6 +41,7 @@
 #endif
 
 #define SYS_LOG_ENABLE
+#define SYS_VOIP_ENABLE
 
 /*----------------------------------------------------------------------------
  Declares variables

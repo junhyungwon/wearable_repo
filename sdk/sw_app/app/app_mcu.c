@@ -242,11 +242,7 @@ static void *THR_micom(void *prm)
 						/* Short KEY */
 						if (!app_cfg->ste.b.ftp_run)
 						{
-							//# change resolution 720P <----> 480P <-----> 1080P
-							//if (!app_cfg->ste.b.nokey)
-							//	change_video_fxn();
-							//# voip call
-							app_sipc_event_noty();
+							app_sipc_set_event();
 						}
                 	}
 				}

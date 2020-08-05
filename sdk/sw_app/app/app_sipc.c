@@ -38,7 +38,8 @@ typedef struct {
 	
 	int init;
 	int qid;
-	int status;
+	
+	sipc_status_t ste;
 	
 	OSA_MutexHndl lock;
 	
@@ -77,12 +78,13 @@ static void __sipc_set_default_account(const char *login, const char *domain, co
 		}
 		
 		fprintf(f, "<sip:%s@%s>;auth_pass=%s\n", login, domain, pass);
+		//fprintf(f, "<sip:%s@%s;transport=tcp>;auth_pass=%s\n", login, domain, pass);
 		fclose(f);
 		sync();
 	}	
 }
 
-static int send_msg(int cmd, const char *num)
+static int send_msg(int cmd, const char *uri)
 {
 	to_sipc_msg_t msg;
 	
@@ -90,39 +92,47 @@ static int send_msg(int cmd, const char *num)
 	msg.cmd = cmd;
 	
 	if (cmd == SIPC_CMD_SIP_START) {
-		strcpy(msg.peer, num);
+		strcpy(msg.uri.peer_uri, uri);
 	}
 	
 	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
 
-static int send_ua_msg(const char *info, const char *addr, const char *passwd)
+/* account 파일을 사용할 경우 이 명령을 필요없음 */
+static int send_ua_msg(const char *login, const char *domain, const char *pass)
 {
 	to_sipc_msg_t msg;
 	
 	msg.type = SIPC_MSG_TYPE_TO_CLIENT;
 	msg.cmd = SIPC_CMD_SIP_SET_UA;
 	
-	strcpy(msg.ua, info);
-	strcpy(msg.server, addr);
-	strcpy(msg.password, passwd);
+	strcpy(msg.uri.ua_uri, login);
+	strcpy(msg.uri.pbx_uri, domain);
+	strcpy(msg.uri.passwd, pass);
 	
 	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
 
 static int recv_msg(void)
 {
-	to_smain_msg_t msg;
+	to_sipc_main_msg_t msg;
 	int size;
 	
 	//# blocking
-	if (Msg_Rsv(isip->qid, SIPC_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_smain_msg_t)) < 0)
+	if (Msg_Rsv(isip->qid, SIPC_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_sipc_main_msg_t)) < 0)
 		return -1;
-
-	if (msg.cmd == SIPC_CMD_SIP_STATUS) {
-		isip->status = msg.st;
+	
+	/* baresip로부터 직접 상태정보가 수신되는 경우.
+	 * 단말 등록여부, 상대방에서 전화를 종료했을 경우 등이 수신된다.
+	 */ 
+	if (msg.cmd == SIPC_CMD_SIP_GET_STATUS) {
+		isip->ste.call_ste = msg.ste.call_ste;
+		isip->ste.call_dir = msg.ste.call_dir;
+		isip->ste.call_reg = msg.ste.call_reg;
+		/* error 발생 시 UI에 출력할 방법이 필요함 */
+		isip->ste.call_err = msg.ste.call_err;
 	}
-
+		
 	return msg.cmd;
 }
 
@@ -153,13 +163,11 @@ static void *THR_sipc_recv_msg(void *prm)
 		switch (cmd) {
 		case SIPC_CMD_SIP_READY:
 			isip->init = 1; /* from record process */
-			dprintf("received voip ready!\n");
 			break;
-		
 		case SIPC_CMD_SIP_EXIT:
 			exit = 1;
-			dprintf("received voip exit!\n");
 			break;
+		
 		default:
 			break;	
 		}
@@ -167,6 +175,8 @@ static void *THR_sipc_recv_msg(void *prm)
 	
 	Msg_Kill(isip->qid);
 	tObj->active = 0;
+	
+	/* kill process ?? */
 	
 	aprintf("exit...\n");
 
@@ -201,9 +211,47 @@ static void *THR_sipc_epoll(void *prm)
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT) {
 			break;
+		} 
+		else if (cmd == APP_CMD_NOTY) 
+		{
+			int state = isip->ste.call_ste;
+			dprintf("current baresip state = %d\n", state);
+			
+			if (isip->ste.call_reg) {
+				switch (state) {
+				case SIPC_STATE_CALL_IDLE:
+					/* 전화를 건다 */
+					send_msg(SIPC_CMD_SIP_START, "2001");
+					break;
+				case SIPC_STATE_CALL_INCOMING:
+					/* 전화 수신 중, 전화를 받는다. */
+					send_msg(SIPC_CMD_SIP_ANSWER, NULL);
+					break;
+				case SIPC_STATE_CALL_RINGING:		
+					/* 전화를 거는 중에 버튼을 누르면 전화 취소? 
+					* 시나리오 정의가 필요함.
+					*/
+					send_msg(SIPC_CMD_SIP_STOP, NULL);
+					break;
+				case SIPC_STATE_CALL_ESTABLISHED:
+					/*
+					* 전화가 연결된 상태. (송/수신 포함) 전화 연결 종료
+					*/ 
+					send_msg(SIPC_CMD_SIP_STOP, NULL);
+					break;
+				case SIPC_STATE_CALL_STOP:
+					/*
+					* IDLE 상태와 구분이 필요한지 확인해야 함.
+					* Redial 기능이 필요할 경우 자동으로 재접속 해야 함.
+					*/ 
+					break;		
+				default:
+					break;
+				}
+			} else {
+				/* 등록이 안된 상태..UI 표시가 필요함. */
+			}
 		}
-		
-		send_msg(SIPC_CMD_SIP_START, "2001");
 	}
 	
 	tObj->active = 0;
@@ -283,9 +331,11 @@ void app_sipc_exit(void)
 * @brief    voip manager
 *   - desc
 *****************************************************************************/
-void app_sipc_event_noty(void)
+void app_sipc_set_event(void)
 {
+	OSA_mutexLock(&isip->lock);
 	event_send(&isip->eObj, APP_CMD_NOTY, 0, 0);
+	OSA_mutexUnlock(&isip->lock);
 }
 
 /*****************************************************************************
@@ -323,7 +373,16 @@ void app_sipc_update_account(const char *login, const char *domain, const char *
 	}
 	
 	fprintf(f, "<sip:%s@%s>;auth_pass=%s\n", login, domain, pass);
+	//fprintf(f, "<sip:%s@%s;transport=tcp>;auth_pass=%s\n", login, domain, pass);
 	fclose(f);
 	sync();
 }
 
+/*****************************************************************************
+* @brief    baresip exit
+*   - desc
+*****************************************************************************/
+void app_sipc_client_exit(void)
+{
+	send_msg(SIPC_CMD_SIP_EXIT, NULL);
+}

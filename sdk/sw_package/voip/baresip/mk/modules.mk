@@ -235,7 +235,7 @@ endif
 endif
 ifeq ($(OS),linux)
 USE_EVDEV := $(shell [ -f $(SYSROOT)/include/linux/input.h ] && echo "yes")
-MODULES   += dtmfio
+#MODULES   += dtmfio
 endif
 ifeq ($(OS),win32)
 USE_WINWAVE := yes
@@ -268,7 +268,9 @@ MODULES   += account
 #MODULES   += fakevideo
 #MODULES   += httpd
 #MODULES   += ice
-MODULES   += menu
+#MODULES   += menu
+#added by rupy
+MODULES   += menu_custom
 #MODULES   += mwi
 #MODULES   += natpmp
 #MODULES   += presence
@@ -281,8 +283,6 @@ MODULES   += menu
 #MODULES   += vidinfo
 #MODULES   += vidloop
 #MODULES   += vumeter
-#added by rupy
-MODULES   += virtual_key
 
 #ifneq ($(HAVE_PTHREAD),)
 #MODULES   += aubridge aufile
@@ -339,9 +339,9 @@ endif
 #ifneq ($(USE_ECHO),)
 #MODULES   += echo
 #endif
-ifneq ($(USE_EVDEV),)
-MODULES   += evdev
-endif
+#ifneq ($(USE_EVDEV),)
+#MODULES   += evdev
+#endif
 ifneq ($(USE_G711),)
 MODULES   += g711
 endif

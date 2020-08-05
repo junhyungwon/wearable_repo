@@ -233,12 +233,8 @@ static struct snd_platform_data aic3x_snd_data = {
 	.serial_dir	= aic3x_iis_serializer_direction,
 	.asp_chan_q	= EVENTQ_0, /* don't use Q2 */
 	.version	= MCASP_VERSION_2,
-	/*
-     * Having Max number of channels as mcasp fifo / edma read depth.
-     * For 4ch->32 this granularity is still 16 which is ok
-     */
-	.txnumevt = 32, //# total 256bytes (1 word 4byte)
-	.rxnumevt = 32, //# total 256bytes (1 word 4byte)
+	.txnumevt = 1, //# 32 (1 word 4byte)
+	.rxnumevt = 1, //# 32 (1 word 4byte)
 
 	/* McASP21_AHCLKX out to feed CODEC CLK*/
 	.clk_input_pin	= MCASP_AHCLKX_OUT,

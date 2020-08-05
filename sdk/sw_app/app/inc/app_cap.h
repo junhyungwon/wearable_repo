@@ -6,7 +6,6 @@
  * @brief
  */
 /*****************************************************************************/
-
 #ifndef _APP_CAP_H_
 #define _APP_CAP_H_
 
@@ -18,7 +17,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 typedef enum {
-	CAP_TYPE_VIDEO,
+	CAP_TYPE_VIDEO = 0,
 	CAP_TYPE_AUDIO,
 	CAP_TYPE_META,
 
@@ -35,12 +34,10 @@ typedef enum {
 int app_cap_start(void);
 int app_cap_stop(void);
 
-int aud_cap_start(void) ;
-int aud_cap_stop(void) ;
+int aud_cap_start(void);
+int aud_cap_stop(void);
 
 void app_capt_buff_reset(void);
+void *app_cap_get_gmem(void);
 
-int app_aud_start(void);
-int app_aud_stop(void);
-
-#endif	/* _APP_NULL_H_ */
+#endif	/* _APP_CAP_H_ */

@@ -28,7 +28,7 @@
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-int app_snd_start(g_mem_info_t *imem);
+int app_snd_start(void);
 void app_snd_stop(void);
 
 #endif	/* _APP_SND_H_ */

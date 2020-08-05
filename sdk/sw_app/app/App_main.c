@@ -48,6 +48,7 @@
 #include "app_web.h"
 #include "app_encrypt.h"
 #include "app_sipc.h"
+#include "app_snd.h"
 #include "app_fms.h"
 #include "app_ipinstall.h"
 
@@ -117,6 +118,7 @@ int app_main(void)
     app_log_write(MSG_LOG_WRITE, msg);
 
     app_cap_start();
+
 #if USE_WIRELESS
 	if(app_cfg->wmode.wifi_mode)
 	{
@@ -129,10 +131,10 @@ int app_main(void)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
 
 	if (app_set->rec_info.audio_rec)
-        app_aud_start() ; 
+        app_snd_start(); 
 
     if (app_set->rec_info.auto_rec)
-        app_rec_start() ;  //#--- record start
+        app_rec_start();  //#--- record start
 
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
@@ -195,8 +197,7 @@ int app_main(void)
     }
 
     app_rec_stop(0);
-    app_aud_stop() ; 
-
+    app_snd_stop(); 
     app_cap_stop();
 
     if (app_cfg->ste.b.rtsptx) {

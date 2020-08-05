@@ -55,8 +55,15 @@ static app_cap_t cap_obj;
 static app_cap_t *icap=&cap_obj;
 static app_gps_meta_t gmeta;
 
-int first = 0, cnt = 0;
-FILE *fp, *jfp;
+#if H264_DUMP
+static int first = 0;
+static int cnt = 0;
+static FILE *fp = NULL;
+#endif
+
+#if JPEG_DUMP
+static FILE *jfp = NULL;
+#endif
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -83,15 +90,15 @@ void video_status(void)
     sprintf(msg, " Camera Detected Count: %d", count );
 	app_log_write(MSG_LOG_WRITE, msg);
 
-    if(app_cfg->vid_count == 0)
+    if (app_cfg->vid_count == 0)
     {
         ret = app_rec_state();
-        if(ret)
-        {
+        if (ret) {
             sleep(1) ;
             app_rec_stop(1);
         }
-		if(strcmp(MODEL_NAME, "NEXX360") != 0) 
+		
+		if (strcmp(MODEL_NAME, "NEXX360") != 0) 
             mcu_pwr_off(OFF_NORMAL) ;
     }
 }
@@ -203,14 +210,15 @@ static void proc_vid_cap(void)
 				/* ch == 2 --> JPEG  */
                 else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == 2)
                 {
+					FILE *jpeg_f = NULL;
 //                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
 
-                    fp = fopen("/tmp/fitt360.jpeg","w") ;
-                    if(fp)
+                    jpeg_f = fopen("/tmp/fitt360.jpeg","w") ;
+                    if (jpeg_f != NULL)
                     { 
 //                        lockf(fp, F_LOCK, 1L) ;
-                        fwrite((void *)pFullBuf->bufVirtAddr, ifr->b_size, 1, fp) ;
-                        fclose(fp) ;
+                        fwrite((void *)pFullBuf->bufVirtAddr, ifr->b_size, 1, jpeg_f);
+                        fclose(jpeg_f) ;
                     } 
 #if JPEG_DUMP
                     jfp = fopen("/mmc/DCIM/fitt360.jpeg","w") ;
@@ -325,19 +333,6 @@ static void vid_cap_stop(void)
 		app_msleep(10);
 	}
 	thread_delete(tObj);
-}
-
-int app_aud_start(void)
-{
-	app_snd_start(icap->imem);
-
-    return SOK ;
-}
-
-int app_aud_stop(void)
-{
-    app_snd_stop() ;
-    return SOK ;
 }
 
 /*----------------------------------------------------------------------------
@@ -516,9 +511,9 @@ int app_cap_start(void)
 
 	cap_enc_late_init();
 
-    if(app_cfg->vid_count == 0)
+    if (app_cfg->vid_count == 0)
 	{
-	    if(strcmp(MODEL_NAME, "NEXX360") == 0)
+	    if (strcmp(MODEL_NAME, "NEXX360") == 0)
 		{
             set_ap_value() ;
 		}
@@ -561,4 +556,12 @@ int app_cap_stop(void)
 	aprintf("done!\n");
 
 	return SOK;
+}
+
+/*
+ * sound capture를 위한 GMEM 메모리 주소 반환
+ */
+void *app_cap_get_gmem(void)
+{
+	return (void *)icap->imem;
 }

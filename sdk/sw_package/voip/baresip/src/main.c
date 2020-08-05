@@ -220,6 +220,7 @@ int main(int argc, char *argv[])
 	if (audio_path)
 		play_set_path(baresip_player(), audio_path);
 	else if (str_isset(conf_config()->audio.audio_path)) {
+		/* wav 파일이 저장되는 폴더를 정의  /usr/baresip 로 고정시킴 */
 		play_set_path(baresip_player(),
 			      conf_config()->audio.audio_path);
 	}
