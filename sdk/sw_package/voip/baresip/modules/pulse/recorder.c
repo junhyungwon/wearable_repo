@@ -16,6 +16,7 @@
 struct ausrc_st {
 	const struct ausrc *as;      /* inheritance */
 
+	struct ausrc_prm prm;
 	pa_simple *s;
 	pthread_t thread;
 	bool run;
@@ -23,6 +24,7 @@ struct ausrc_st {
 	size_t sampc;
 	size_t sampsz;
 	uint32_t ptime;
+	enum aufmt fmt;
 	ausrc_read_h *rh;
 	void *arg;
 };
@@ -54,6 +56,7 @@ static void *read_thread(void *arg)
 	uint64_t now, last_read, diff;
 	unsigned dropped = 0;
 	bool init = true;
+	size_t sampc = 0;
 
 	if (pa_simple_flush(st->s, &pa_error)) {
 		warning("pulse: pa_simple_flush error (%s)\n",
@@ -63,6 +66,14 @@ static void *read_thread(void *arg)
 	last_read = tmr_jiffies();
 
 	while (st->run) {
+
+		struct auframe af = {
+			.fmt   = st->fmt,
+			.sampv = st->sampv,
+			.sampc = st->sampc,
+			.timestamp = sampc * AUDIO_TIMEBASE
+			             / (st->prm.srate * st->prm.ch)
+		};
 
 		ret = pa_simple_read(st->s, st->sampv, num_bytes, &pa_error);
 		if (ret < 0) {
@@ -92,7 +103,9 @@ static void *read_thread(void *arg)
 			}
 		}
 
-		st->rh(st->sampv, st->sampc, st->arg);
+		sampc += st->sampc;
+
+		st->rh(&af, st->arg);
 	}
 
 	return NULL;
@@ -142,6 +155,8 @@ int pulse_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	st->sampc = prm->srate * prm->ch * prm->ptime / 1000;
 	st->sampsz = aufmt_sample_size(prm->fmt);
 	st->ptime = prm->ptime;
+	st->fmt = prm->fmt;
+	st->prm = *prm;
 
 	st->sampv = mem_alloc(st->sampsz * st->sampc, NULL);
 	if (!st->sampv) {

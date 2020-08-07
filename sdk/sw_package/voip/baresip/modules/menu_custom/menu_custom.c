@@ -31,7 +31,6 @@ typedef struct {
 	app_thr_obj sObj; /* baresip에서 main으로 메세지를 전달할 경우 */
 	
 	pthread_mutex_t lock;
-	
 	int qid;
 	
 	sipc_uri_t uri;
@@ -114,18 +113,24 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 {
 	struct player *player = baresip_player();
 	uint16_t err_code = 0;
+	struct config *cfg;
 	
 	(void)prm;
 	(void)arg;
 	
 	dprintf("c_menu: [ ua=%s call=%s ] event: %s (%s)\n",
 	      ua_aor(ua), call_id(call), uag_event_str(ev), prm);
-
+	
+	cfg = conf_config();
+		
 	switch (ev) {
 	case UA_EVENT_REGISTERING:
 		/* 최초 프로그램 시작 시 전달되는 메시지 */
 		return;
 	case UA_EVENT_CALL_INCOMING:
+		/* stop any ringtones (auplay_destructor함수가 mem_deref에 의해서 호출됨) */
+		ikey->play = mem_deref(ikey->play);
+		
 		ikey->ste.call_ste = SIPC_STATE_CALL_INCOMING;
 		ikey->ste.call_dir = call_is_outgoing(call);
 		ikey->ste.call_reg = 1;
@@ -133,11 +138,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		
 		/* set the current User-Agent to the one with the call */
 		uag_current_set(ua);
-		info("%s: Incoming call from: %s %s\n",
-		     ua_aor(ua), call_peername(call), call_peeruri(call));
-		
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
+		debug("%s: Incoming call from: %s %s\n",
+			ua_aor(ua), call_peername(call), call_peeruri(call));
 		
 		/* 수신 중일 경우 */
 		if (list_count(ua_calls(ua)) > 1) {
@@ -145,44 +147,45 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			//(void)play_file(&menu.play, player, "callwaiting.wav", 3);
 		} else {
 			/* Alert user struct player; */
-			play_file(&ikey->play, player, "ring.wav", -1);
+			play_file(&ikey->play, player, "ring.wav", -1,
+					cfg->audio.alert_mod, cfg->audio.alert_dev);
 		}
-
 		//if (ikey->bell)
 			//alert_start(0);
 		break;
 	
 	case UA_EVENT_CALL_RINGING:
+		/* stop any ringtones */
+		ikey->play = mem_deref(ikey->play);
+		/* play ringback */
+		(void)play_file(&ikey->play, player, 
+					"ringback.wav", -1, cfg->audio.play_mod, cfg->audio.play_dev);
+		
 		ikey->ste.call_ste = SIPC_STATE_CALL_RINGING;
 		ikey->ste.call_dir = call_is_outgoing(call);
 		ikey->ste.call_reg = 1;
 		ikey->ste.call_err = 0;
-		
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
-		(void)play_file(&ikey->play, player, "ringback.wav",-1);
 		break;
 	
 	case UA_EVENT_CALL_ESTABLISHED:
+		/* stop any ringtones */
+		ikey->play = mem_deref(ikey->play);
+		
 		ikey->ste.call_ste = SIPC_STATE_CALL_ESTABLISHED;
 		ikey->ste.call_dir = call_is_outgoing(call);
 		ikey->ste.call_reg = 1;
 		ikey->ste.call_err = 0;
-		
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
 		break;
 	
 	case UA_EVENT_CALL_CLOSED:
-		err_code = call_scode(call);
+		/* stop any ringtones */
+		ikey->play = mem_deref(ikey->play);
 		
+		err_code = call_scode(call);
 		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
 		ikey->ste.call_dir = 0;
 		ikey->ste.call_reg = 1;
 		ikey->ste.call_err = (int)err_code;
-		
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
 		if (err_code) {
 			const char *tone;
 			tone = translate_errorcode(err_code);
@@ -208,6 +211,15 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		ikey->ste.call_err = 0;
 		break;
 	
+	case UA_EVENT_CALL_REMOTE_SDP:
+		ikey->play = mem_deref(ikey->play);
+		return;
+		
+	//case UA_EVENT_AUDIO_STOP:
+		/* stop any ringtones (auplay_destructor함수가 mem_deref에 의해서 호출됨) */
+	//	ikey->play = mem_deref(ikey->play);
+	//	return;
+		
 	case UA_EVENT_CALL_TRANSFER:
 	case UA_EVENT_CALL_TRANSFER_FAILED:
 		/* 전화 돌려주기 기능 */
@@ -271,12 +283,17 @@ static int __dialer_user(const char *call_num)
 
 static void __call_stop(void)
 {
+	/* Stop any ongoing ring-tones */
+	ikey->play = mem_deref(ikey->play);
 	ua_hangup(uag_current(), NULL, 0, NULL);
 }
 
 static void __call_answer(void)
 {
 	struct ua *ua = uag_current();
+	
+	/* Stop any ongoing ring-tones */
+	ikey->play = mem_deref(ikey->play);
 	ua_hold_answer(ua, NULL);
 }
 

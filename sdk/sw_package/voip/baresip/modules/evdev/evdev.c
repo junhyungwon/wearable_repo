@@ -3,7 +3,6 @@
  *
  * Copyright (C) 2010 Creytiv.com
  */
-#include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -13,6 +12,7 @@
 #include <re.h>
 #include <baresip.h>
 #include "print.h"
+
 
 /**
  * @defgroup evdev evdev
@@ -26,12 +26,15 @@
  \endverbatim
  */
 
+
 struct ui_st {
 	int fd;
 };
 
+
 static struct ui_st *evdev;
 static char evdev_device[64] = "/dev/input/event0";
+
 
 static void evdev_close(struct ui_st *st)
 {
@@ -43,12 +46,14 @@ static void evdev_close(struct ui_st *st)
 	st->fd = -1;
 }
 
+
 static void evdev_destructor(void *arg)
 {
 	struct ui_st *st = arg;
 
 	evdev_close(st);
 }
+
 
 static int code2ascii(uint16_t modifier, uint16_t code)
 {
@@ -303,16 +308,17 @@ static int evdev_output(const char *str)
 	return err;
 }
 
-//####################################################################################################
+
 static struct ui ui_evdev = {
 	.name = "evdev",
 	.outputh = evdev_output
 };
 
+
 static int module_init(void)
 {
 	int err;
-	
+
 	conf_get_str(conf_cur(), "evdev_device",
 		     evdev_device, sizeof(evdev_device));
 

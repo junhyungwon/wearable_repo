@@ -462,7 +462,6 @@ static int about_box(struct re_printf *pf, void *unused)
 	return re_hprintf(pf, about_fmt, BARESIP_VERSION);
 }
 
-//----------------------------------------------------------------------------
 
 static const struct cmd cmdv[] = {
 
@@ -1068,6 +1067,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 {
 	struct player *player = baresip_player();
 	struct call *call2 = NULL;
+	struct config *cfg;
 	int err;
 	(void)prm;
 	(void)arg;
@@ -1076,6 +1076,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	debug("menu: [ ua=%s call=%s ] event: %s (%s)\n",
 	      ua_aor(ua), call_id(call), uag_event_str(ev), prm);
 #endif
+
+	cfg = conf_config();
 
 	switch (ev) {
 
@@ -1098,12 +1100,16 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 
 			if (list_count(ua_calls(ua)) > 1) {
 				(void)play_file(&menu.play, player,
-						"callwaiting.wav", 3);
+						"callwaiting.wav", 3,
+						cfg->audio.play_mod,
+						cfg->audio.play_dev);
 			}
 			else {
 				/* Alert user */
 				(void)play_file(&menu.play, player,
-						"ring.wav", -1);
+						"ring.wav", -1,
+						cfg->audio.alert_mod,
+						cfg->audio.alert_dev);
 			}
 
 			if (menu.bell)
@@ -1120,7 +1126,9 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		}
 		else {
 			(void)play_file(&menu.play, player,
-					"ringback.wav",-1);
+					"ringback.wav", -1,
+					cfg->audio.play_mod,
+					cfg->audio.play_dev);
 		}
 		break;
 
@@ -1144,7 +1152,9 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			tone = translate_errorcode(call_scode(call));
 			if (tone) {
 				(void)play_file(&menu.play, player,
-						tone, 1);
+						tone, 1,
+						cfg->audio.play_mod,
+						cfg->audio.play_dev);
 			}
 		}
 
@@ -1180,7 +1190,6 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 				info("menu: call closed -- not redialing\n");
 			}
 		}
-
 		break;
 
 	case UA_EVENT_CALL_TRANSFER:
@@ -1249,14 +1258,18 @@ static void message_handler(struct ua *ua, const struct pl *peer,
 			    const struct pl *ctype,
 			    struct mbuf *body, void *arg)
 {
+	struct config *cfg;
 	(void)ua;
 	(void)ctype;
 	(void)arg;
 
+	cfg = conf_config();
+
 	ui_output(baresip_uis(), "\r%r: \"%b\"\n",
 		  peer, mbuf_buf(body), mbuf_get_left(body));
 
-	(void)play_file(NULL, baresip_player(), "message.wav", 0);
+	(void)play_file(NULL, baresip_player(), "message.wav", 0,
+	                cfg->audio.alert_mod, cfg->audio.alert_dev);
 }
 
 
@@ -1319,8 +1332,7 @@ static int module_init(void)
 	err = uag_event_register(ua_event_handler, NULL);
 	if (err)
 		return err;
-	
-	/* baresip.c ??? ?? baresip.message (?? ??? ??) */
+
 	err = message_listen(baresip_message(),
 			     message_handler, NULL);
 	if (err)

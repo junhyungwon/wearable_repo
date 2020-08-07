@@ -26,7 +26,6 @@ struct ua {
 	size_t    extensionc;        /**< Number of SIP extensions           */
 	char *cuser;                 /**< SIP Contact username               */
 	char *pub_gruu;              /**< SIP Public GRUU                    */
-	int af;                      /**< Preferred Address Family           */
 	int af_media;                /**< Preferred Address Family for media */
 	enum presence_status my_status; /**< Presence Status                 */
 	bool catchall;               /**< Catch all inbound requests         */
@@ -88,6 +87,30 @@ static struct {
 };
 
 
+static void ua_destructor(void *arg)
+{
+	struct ua *ua = arg;
+
+	list_unlink(&ua->le);
+
+	if (!list_isempty(&ua->regl))
+		ua_event(ua, UA_EVENT_UNREGISTERING, NULL, NULL);
+
+	list_flush(&ua->calls);
+	list_flush(&ua->regl);
+	mem_deref(ua->cuser);
+	mem_deref(ua->pub_gruu);
+	mem_deref(ua->acc);
+
+	if (uag.delayed_close && list_isempty(&uag.ual)) {
+		sip_close(uag.sip, false);
+	}
+
+	list_flush(&ua->custom_hdrs);
+	list_flush(&ua->hdr_filter);
+}
+
+
 /* This function is called when all SIP transactions are done */
 static void exit_handler(void *arg)
 {
@@ -115,6 +138,15 @@ void ua_printf(const struct ua *ua, const char *fmt, ...)
 }
 
 
+/**
+ * Send a User-Agent event to all UA event handlers
+ *
+ * @param ua   User-Agent object (optional)
+ * @param ev   User-agent event
+ * @param call Call object (optional)
+ * @param fmt  Formatted arguments
+ * @param ...  Variable arguments
+ */
 void ua_event(struct ua *ua, enum ua_event ev, struct call *call,
 	      const char *fmt, ...)
 {
@@ -428,6 +460,50 @@ static void call_dtmf_handler(struct call *call, char key, void *arg)
 }
 
 
+static int best_effort_af(struct ua *ua, const struct network *net)
+{
+	struct le *le;
+	const int afv[2] = { AF_INET, AF_INET6 };
+	size_t i;
+
+	for (le = ua->regl.head, i=0; le; le = le->next, i++) {
+		const struct reg *reg = le->data;
+		if (reg_isok(reg))
+			return reg_af(reg);
+	}
+
+	for (i=0; i<ARRAY_SIZE(afv); i++) {
+		int af = afv[i];
+
+		if (net_af_enabled(net, af) &&
+		    sa_isset(net_laddr_af(net, af), SA_ADDR))
+			return af;
+	}
+
+	return AF_UNSPEC;
+}
+
+
+static int sdp_af_hint(struct mbuf *mb)
+{
+	struct pl af;
+	int err;
+
+	err = re_regex((char *)mbuf_buf(mb), mbuf_get_left(mb),
+		       "IN IP[46]+", &af);
+	if (err)
+		return AF_UNSPEC;
+
+	switch (af.p[0]) {
+
+	case '4': return AF_INET;
+	case '6': return AF_INET6;
+	}
+
+	return AF_UNSPEC;
+}
+
+
 /**
  * Create a new call object
  *
@@ -448,20 +524,28 @@ int ua_call_alloc(struct call **callp, struct ua *ua,
 {
 	const struct network *net = baresip_network();
 	struct call_prm cprm;
-	int af = AF_UNSPEC;
+	int af;
+	int af_sdp;
 	int err;
 
 	if (!callp || !ua)
 		return EINVAL;
 
-	/* 1. if AF_MEDIA is set, we prefer it
-	 * 2. otherwise fall back to SIP AF
-	 */
-	if (ua->af_media) {
+	if (msg && (af_sdp = sdp_af_hint(msg->mb))) {
+		info("ua: using AF from sdp offer: af=%s\n",
+		     net_af2name(af_sdp));
+		af = af_sdp;
+	}
+	else if (ua->af_media &&
+		   sa_isset(net_laddr_af(net, ua->af_media), SA_ADDR)) {
+		info("ua: using ua's preferred AF: af=%s\n",
+		     net_af2name(ua->af_media));
 		af = ua->af_media;
 	}
-	else if (ua->af) {
-		af = ua->af;
+	else {
+		af = best_effort_af(ua, net);
+		info("ua: using best effort AF: af=%s\n",
+		     net_af2name(af));
 	}
 
 	memset(&cprm, 0, sizeof(cprm));
@@ -546,30 +630,6 @@ static void handle_options(struct ua *ua, const struct sip_msg *msg)
  out:
 	mem_deref(desc);
 	mem_deref(call);
-}
-
-
-static void ua_destructor(void *arg)
-{
-	struct ua *ua = arg;
-
-	list_unlink(&ua->le);
-
-	if (!list_isempty(&ua->regl))
-		ua_event(ua, UA_EVENT_UNREGISTERING, NULL, NULL);
-
-	list_flush(&ua->calls);
-	list_flush(&ua->regl);
-	mem_deref(ua->cuser);
-	mem_deref(ua->pub_gruu);
-	mem_deref(ua->acc);
-
-	if (uag.delayed_close && list_isempty(&uag.ual)) {
-		sip_close(uag.sip, false);
-	}
-
-	list_flush(&ua->custom_hdrs);
-	list_flush(&ua->hdr_filter);
 }
 
 
@@ -675,7 +735,7 @@ int ua_alloc(struct ua **uap, const char *aor)
 
 	list_init(&ua->calls);
 
-	ua->af   = net_af(baresip_network());
+	ua->af_media = AF_UNSPEC;
 
 	/* Decode SIP address */
 	if (uag.eprm) {
@@ -898,7 +958,7 @@ void ua_hangup(struct ua *ua, struct call *call,
 			return;
 	}
 
-	(void)call_hangup(call, scode, reason);
+	call_hangup(call, scode, reason);
 
 	ua_event(ua, UA_EVENT_CALL_CLOSED, call,
 		 reason ? reason : "Connection reset by user");
@@ -929,29 +989,6 @@ int ua_answer(struct ua *ua, struct call *call)
 	}
 
 	return call_answer(call, 200);
-}
-
-
-/**
- * Answer an incoming call with early media
- *
- * @param ua   User-Agent
- * @param call Call to answer, or NULL for current call
- *
- * @return 0 if success, otherwise errorcode
- */
-int ua_progress(struct ua *ua, struct call *call)
-{
-	if (!ua)
-		return EINVAL;
-
-	if (!call) {
-		call = ua_call(ua);
-		if (!call)
-			return ENOENT;
-	}
-
-	return call_progress(call);
 }
 
 
@@ -1188,7 +1225,7 @@ int ua_debug(struct re_printf *pf, const struct ua *ua)
 	err |= re_hprintf(pf, " nrefs:     %u\n", mem_nrefs(ua));
 	err |= re_hprintf(pf, " cuser:     %s\n", ua->cuser);
 	err |= re_hprintf(pf, " pub-gruu:  %s\n", ua->pub_gruu);
-	err |= re_hprintf(pf, " af:        %s\n", net_af2name(ua->af));
+	err |= re_hprintf(pf, " af_media:  %s\n", net_af2name(ua->af_media));
 	err |= re_hprintf(pf, " %H", ua_print_supported, ua);
 
 	err |= account_debug(pf, ua->acc);
@@ -1294,11 +1331,8 @@ static int ua_add_transp(struct network *net)
 {
 	int err = 0;
 
-	if (net_af(net) == AF_INET) {
-
-		if (sa_isset(net_laddr_af(net, AF_INET), SA_ADDR))
-			err |= add_transp_af(net_laddr_af(net, AF_INET));
-	}
+	if (sa_isset(net_laddr_af(net, AF_INET), SA_ADDR))
+		err |= add_transp_af(net_laddr_af(net, AF_INET));
 
 #if HAVE_INET6
 	if (sa_isset(net_laddr_af(net, AF_INET6), SA_ADDR))
@@ -1333,7 +1367,9 @@ static bool require_handler(const struct sip_hdr *hdr,
 static void sipsess_conn_handler(const struct sip_msg *msg, void *arg)
 {
 	struct config *config = conf_config();
+	const struct network *net = baresip_network();
 	const struct sip_hdr *hdr;
+	int af_sdp;
 	struct ua *ua;
 	struct call *call = NULL;
 	char to_uri[256];
@@ -1377,6 +1413,26 @@ static void sipsess_conn_handler(const struct sip_msg *msg, void *arg)
 				  "Content-Length: 0\r\n\r\n",
 				  &hdr->val);
 		return;
+	}
+
+	/* Check if offered media AF is supported and available */
+	af_sdp = sdp_af_hint(msg->mb);
+	if (af_sdp) {
+		if (!net_af_enabled(net, af_sdp)) {
+			warning("ua: SDP offer AF not supported (%s)\n",
+				net_af2name(af_sdp));
+			af_sdp = 0;
+		}
+		else if (!sa_isset(net_laddr_af(net, af_sdp), SA_ADDR)) {
+			warning("ua: SDP offer AF not available (%s)\n",
+				net_af2name(af_sdp));
+			af_sdp = 0;
+		}
+		if (!af_sdp) {
+			(void)sip_treply(NULL, uag_sip(), msg, 488,
+					 "Not Acceptable Here");
+			return;
+		}
 	}
 
 	(void)pl_strcpy(&msg->to.auri, to_uri, sizeof(to_uri));
@@ -1464,17 +1520,6 @@ int ua_add_xhdr_filter(struct ua *ua, const char *hdr_name)
 }
 
 
-static void net_change_handler(void *arg)
-{
-	(void)arg;
-
-	info("IP-address changed: %j\n",
-	     net_laddr_af(baresip_network(), AF_INET));
-
-	(void)uag_reset_transp(true, true);
-}
-
-
 static bool sub_handler(const struct sip_msg *msg, void *arg)
 {
 	struct ua *ua;
@@ -1500,6 +1545,7 @@ static void sip_trace_handler(bool tx, enum sip_transp tp,
 			      const struct sa *src, const struct sa *dst,
 			      const uint8_t *pkt, size_t len, void *arg)
 {
+	(void)tx;
 	(void)arg;
 
 	re_printf("\x1b[36;1m"
@@ -1568,8 +1614,6 @@ int ua_init(const char *software, bool udp, bool tcp, bool tls)
 			      sub_handler, NULL);
 	if (err)
 		goto out;
-
-	net_change(net, 60, net_change_handler, NULL);
 
  out:
 	if (err) {

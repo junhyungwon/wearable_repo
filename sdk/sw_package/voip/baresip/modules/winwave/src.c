@@ -18,12 +18,14 @@
 
 struct ausrc_st {
 	const struct ausrc *as;      /* inheritance */
+
 	struct dspbuf bufs[READ_BUFFERS];
 	int pos;
 	HWAVEIN wavein;
 	volatile bool rdy;
 	size_t inuse;
 	size_t sampsz;
+	enum aufmt fmt;
 	ausrc_read_h *rh;
 	void *arg;
 };
@@ -59,7 +61,6 @@ static int add_wave_in(struct ausrc_st *st)
 	wh->dwBufferLength  = db->mb->size;
 	wh->dwBytesRecorded = 0;
 	wh->dwFlags         = 0;
-	wh->dwUser          = (DWORD_PTR)db->mb;
 
 	waveInPrepareHeader(st->wavein, wh, sizeof(*wh));
 	res = waveInAddBuffer(st->wavein, wh, sizeof(*wh));
@@ -85,6 +86,8 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 {
 	struct ausrc_st *st = (struct ausrc_st *)dwInstance;
 	WAVEHDR *wh = (WAVEHDR *)dwParam1;
+	struct auframe af;
+	MMTIME mmtime;
 
 	(void)hwo;
 	(void)dwParam2;
@@ -106,8 +109,14 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 		if (st->inuse < (READ_BUFFERS-1))
 			add_wave_in(st);
 
-		st->rh((void *)wh->lpData, wh->dwBytesRecorded/st->sampsz,
-		       st->arg);
+		waveInGetPosition(st->wavein, &mmtime, sizeof(mmtime));
+
+		af.fmt   = st->fmt;
+		af.sampv = (void *)wh->lpData;
+		af.sampc = wh->dwBytesRecorded/st->sampsz;
+		af.timestamp = mmtime.u.ms * 1000;
+
+		st->rh(&af, st->arg);
 
 		waveInUnprepareHeader(st->wavein, wh, sizeof(*wh));
 		st->inuse--;
@@ -141,6 +150,7 @@ static int read_stream_open(struct ausrc_st *st, const struct ausrc_prm *prm,
 	st->wavein = NULL;
 	st->pos = 0;
 	st->rdy = false;
+	st->fmt = prm->fmt;
 
 	sampc = prm->srate * prm->ch * prm->ptime / 1000;
 
@@ -155,7 +165,7 @@ static int read_stream_open(struct ausrc_st *st, const struct ausrc_prm *prm,
 	wfmt.nChannels       = prm->ch;
 	wfmt.nSamplesPerSec  = prm->srate;
 	wfmt.wBitsPerSample  = (WORD)(st->sampsz * 8);
-	wfmt.nBlockAlign     = (prm->ch * wfmt.wBitsPerSample) / 8;
+	wfmt.nBlockAlign     = prm->ch * st->sampsz;
 	wfmt.nAvgBytesPerSec = wfmt.nSamplesPerSec * wfmt.nBlockAlign;
 	wfmt.cbSize          = 0;
 
@@ -224,9 +234,8 @@ int winwave_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		return EINVAL;
 
 	err = find_dev(device, &dev);
-	if (err) {
+	if (err)
 		return err;
-	}
 
 	st = mem_zalloc(sizeof(*st), ausrc_destructor);
 	if (!st)
@@ -257,9 +266,8 @@ static int set_available_devices(struct list *dev_list)
 
 int winwave_src_init(struct ausrc *as)
 {
-	if (!as) {
+	if (!as)
 		return EINVAL;
-	}
 
 	list_init(&as->dev_list);
 

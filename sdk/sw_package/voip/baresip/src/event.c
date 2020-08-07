@@ -130,13 +130,18 @@ int event_encode_dict(struct odict *od, struct ua *ua, enum ua_event ev,
 
 		const char *dir;
 		const char *call_identifier;
+		const char *peerdisplayname;
 
 		dir = call_is_outgoing(call) ? "outgoing" : "incoming";
 
 		err |= odict_entry_add(od, "direction", ODICT_STRING, dir);
 		err |= odict_entry_add(od, "peeruri",
 				       ODICT_STRING, call_peeruri(call));
-
+		peerdisplayname = call_peername(call);
+		if (peerdisplayname){
+				err |= odict_entry_add(od, "peerdisplayname",
+						ODICT_STRING, peerdisplayname);
+		}
 		call_identifier = call_id(call);
 		if (call_identifier) {
 			err |= odict_entry_add(od, "id", ODICT_STRING,
@@ -173,6 +178,23 @@ int event_encode_dict(struct odict *od, struct ua *ua, enum ua_event ev,
 
 
 /**
+ * Add audio buffer status
+ *
+ * @param od_parent  Dictionary to encode into
+ * @param call       Call object
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int event_add_au_jb_stat(struct odict *od_parent, const struct call *call)
+{
+	int err = 0;
+	err = odict_entry_add(od_parent, "audio_jb_ms",ODICT_INT,
+			    (int64_t)audio_jb_current_value(call_audio(call)));
+	return err;
+}
+
+
+/**
  * Get the name of the User-Agent event
  *
  * @param ev User-Agent event
@@ -199,11 +221,14 @@ const char *uag_event_str(enum ua_event ev)
 	case UA_EVENT_CALL_TRANSFER_FAILED: return "TRANSFER_FAILED";
 	case UA_EVENT_CALL_DTMF_START:      return "CALL_DTMF_START";
 	case UA_EVENT_CALL_DTMF_END:        return "CALL_DTMF_END";
+	case UA_EVENT_CALL_RTPESTAB:        return "CALL_RTPESTAB";
 	case UA_EVENT_CALL_RTCP:            return "CALL_RTCP";
 	case UA_EVENT_CALL_MENC:            return "CALL_MENC";
 	case UA_EVENT_VU_TX:                return "VU_TX_REPORT";
 	case UA_EVENT_VU_RX:                return "VU_RX_REPORT";
 	case UA_EVENT_AUDIO_ERROR:          return "AUDIO_ERROR";
+	case UA_EVENT_CALL_LOCAL_SDP:       return "CALL_LOCAL_SDP";
+	case UA_EVENT_CALL_REMOTE_SDP:      return "CALL_REMOTE_SDP";
 	default: return "?";
 	}
 }

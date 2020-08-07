@@ -184,33 +184,33 @@ static int decode_update(struct aufilt_dec_st **stp, void **ctx,
 }
 
 
-static int encode(struct aufilt_enc_st *st, void *sampv, size_t *sampc)
+static int encode(struct aufilt_enc_st *st, struct auframe *af)
 {
 	struct sndfile_enc *sf = (struct sndfile_enc *)st;
 	size_t num_bytes;
 
-	if (!st || !sampv || !sampc)
+	if (!st || !af)
 		return EINVAL;
 
-	num_bytes = *sampc * aufmt_sample_size(sf->fmt);
+	num_bytes = af->sampc * aufmt_sample_size(sf->fmt);
 
-	sf_write_raw(sf->enc, sampv, num_bytes);
+	sf_write_raw(sf->enc, af->sampv, num_bytes);
 
 	return 0;
 }
 
 
-static int decode(struct aufilt_dec_st *st, void *sampv, size_t *sampc)
+static int decode(struct aufilt_dec_st *st, struct auframe *af)
 {
 	struct sndfile_dec *sf = (struct sndfile_dec *)st;
 	size_t num_bytes;
 
-	if (!st || !sampv || !sampc)
+	if (!st || !af)
 		return EINVAL;
 
-	num_bytes = *sampc * aufmt_sample_size(sf->fmt);
+	num_bytes = af->sampc * aufmt_sample_size(sf->fmt);
 
-	sf_write_raw(sf->dec, sampv, num_bytes);
+	sf_write_raw(sf->dec, af->sampv, num_bytes);
 
 	return 0;
 }

@@ -8,7 +8,6 @@
 #include <baresip.h>
 #include "core.h"
 
-
 static void destructor(void *arg)
 {
 	struct auplay *ap = arg;
@@ -51,7 +50,6 @@ int auplay_register(struct auplay **app, struct list *auplayl,
 
 	return 0;
 }
-
 
 /**
  * Find an Audio Player by name
@@ -105,10 +103,10 @@ int auplay_alloc(struct auplay_st **stp, struct list *auplayl,
 
 	if (!prm->srate || !prm->ch)
 		return EINVAL;
-
+	
+	/* alloch에 alsa_alloc_play함수가 등록됨 */
 	return ap->alloch(stp, ap, prm, device, wh, arg);
 }
-
 
 /**
  * Get the audio player module from a audio player state

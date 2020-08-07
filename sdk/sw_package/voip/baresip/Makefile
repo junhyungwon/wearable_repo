@@ -9,6 +9,8 @@
 #   USE_TLS           Enable SIP over TLS transport
 #
 
+VERSION   := 0.6.6
+DESCR     := "Baresip is a modular SIP User-Agent with audio and video support"
 BIN	:= baresip.out
 
 # Verbose and silent build modes
@@ -89,6 +91,7 @@ CFLAGS    += -DSTATIC=1
 CXXFLAGS  += -DSTATIC=1
 endif
 
+#PREFIX  := /usr
 BINDIR	:= $(PREFIX)/bin
 INCDIR  := $(PREFIX)/include
 SHARED  := lib$(PROJECT)$(LIB_SUFFIX)
@@ -102,7 +105,7 @@ MOD_BLD	:= $(patsubst %,$(BUILD)/modules/%,$(MODULES))
 LIBDIR     := $(PREFIX)/lib
 MOD_PATH   := $(LIBDIR)/$(PROJECT)/modules
 #SHARE_PATH := $(PREFIX)/share/$(PROJECT)
-# /usr/baresip·Î º¯°æ
+# /usr/baresip? ??
 SHARE_PATH := /usr/baresip
 CFLAGS     += -DPREFIX=\"$(PREFIX)\"
 CFLAGS    += -DMOD_PATH=\"$(MOD_PATH)\"

@@ -29,8 +29,12 @@ struct ausrc_st {
 static int process_handler(jack_nframes_t nframes, void *arg)
 {
 	struct ausrc_st *st = arg;
+	struct auframe af;
 	size_t sampc = nframes * st->prm.ch;
 	size_t ch, j;
+	uint64_t ts;
+
+	ts = jack_frames_to_time(st->client, jack_last_frame_time(st->client));
 
 	/* 2. convert from 16-bit to float and copy to Jack */
 
@@ -47,8 +51,13 @@ static int process_handler(jack_nframes_t nframes, void *arg)
 		}
 	}
 
+	af.fmt   = st->prm.fmt;
+	af.sampv = st->sampv;
+	af.sampc = sampc;
+	af.timestamp = ts;
+
 	/* 1. read data from app (signed 16-bit) interleaved */
-	st->rh(st->sampv, sampc, st->arg);
+	st->rh(&af, st->arg);
 
 	return 0;
 }
@@ -70,6 +79,7 @@ static void ausrc_destructor(void *arg)
 
 static int start_jack(struct ausrc_st *st)
 {
+	struct conf *conf = conf_cur();
 	const char **ports;
 	const char *client_name = "baresip";
 	const char *server_name = NULL;
@@ -77,6 +87,10 @@ static int start_jack(struct ausrc_st *st)
 	jack_status_t status;
 	unsigned ch;
 	jack_nframes_t engine_srate;
+
+	bool jack_connect_ports = true;
+	(void)conf_get_bool(conf, "jack_connect_ports",
+				  &jack_connect_ports);
 
 	/* open a client connection to the JACK server */
 
@@ -142,22 +156,24 @@ static int start_jack(struct ausrc_st *st)
 		return ENODEV;
 	}
 
-	ports = jack_get_ports (st->client, NULL, NULL,
-				JackPortIsOutput);
-	if (ports == NULL) {
-		warning("jack: no physical playback ports\n");
-		return ENODEV;
-	}
-
-	for (ch=0; ch<st->prm.ch; ch++) {
-
-		if (jack_connect(st->client, ports[ch],
-				 jack_port_name(st->portv[ch]))) {
-			warning("jack: cannot connect output ports\n");
+	if (jack_connect_ports) {
+		info("jack: connecting default output ports\n");
+		ports = jack_get_ports (st->client, NULL, NULL,
+					JackPortIsOutput);
+		if (ports == NULL) {
+			warning("jack: no physical playback ports\n");
+			return ENODEV;
 		}
-	}
 
-	jack_free(ports);
+		for (ch=0; ch<st->prm.ch; ch++) {
+			if (jack_connect(st->client, ports[ch],
+					 jack_port_name(st->portv[ch]))) {
+				warning("jack: cannot connect output ports\n");
+			}
+		}
+
+		jack_free(ports);
+	}
 
 	return 0;
 }

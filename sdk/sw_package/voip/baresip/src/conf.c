@@ -169,12 +169,12 @@ int conf_path_get(char *path, size_t sz)
 	str_ncpy(buf, CONFIG_PATH, sizeof(buf));
 	(void)err;
 #else
-	/* CONFIG_PATHê°€ ì •ì˜ ì•ˆë¨ */
+	/* CONFIG_PATH°¡ Á¤ÀÇ ¾ÈµÊ */
 	err = fs_gethome(buf, sizeof(buf)); //# fs.c 
 	if (err)
 		return err;
 #endif
-	/* /root/.baresip/config íŒŒì¼ì´ ìƒì„±ë¨ */
+	/* /root/.baresip/config ÆÄÀÏÀÌ »ı¼ºµÊ */
 	if (re_snprintf(path, sz, "%s" DIR_SEP ".baresip", buf) < 0)
 		return ENOMEM;
 
@@ -383,7 +383,7 @@ int conf_modules(void)
 {
 	int err;
 	
-	/* conf_configre í•¨ìˆ˜ì— ì˜í•´ì„œ í• ë‹¹ë¨ (struct conf *) */
+	/* conf_configre ÇÔ¼ö¿¡ ÀÇÇØ¼­ ÇÒ´çµÊ (struct conf *) */
 	err = module_init(conf_obj);
 	if (err) {
 		warning("conf: configure module parse error (%m)\n", err);

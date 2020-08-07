@@ -20,7 +20,7 @@
 struct ausrc_st {
 	const struct ausrc *as;  /* pointer to base-class (inheritance) */
 	pthread_t thread;
-	bool run;
+	volatile bool run;
 	snd_pcm_t *read;
 	void *sampv;
 	size_t sampc;
@@ -29,7 +29,6 @@ struct ausrc_st {
 	struct ausrc_prm prm;
 	char *device;
 };
-
 
 static void ausrc_destructor(void *arg)
 {
@@ -49,10 +48,10 @@ static void ausrc_destructor(void *arg)
 	mem_deref(st->device);
 }
 
-
 static void *read_thread(void *arg)
 {
 	struct ausrc_st *st = arg;
+	uint64_t frames = 0;
 	int num_frames;
 	int err;
 
@@ -67,27 +66,33 @@ static void *read_thread(void *arg)
 	}
 
 	while (st->run) {
-		size_t sampc;
+		struct auframe af;
 		long n;
 
 		n = snd_pcm_readi(st->read, st->sampv, num_frames);
 		if (n == -EPIPE) {
 			snd_pcm_prepare(st->read);
+			warning("alsa overrun!!\n");
 			continue;
 		}
 		else if (n <= 0) {
+			warning("pcm_readi err %d\n", n);
 			continue;
 		}
 
-		sampc = n * st->prm.ch;
+		af.fmt   = st->prm.fmt;
+		af.sampv = st->sampv;
+		af.sampc = n * st->prm.ch;
+		af.timestamp = frames * AUDIO_TIMEBASE / st->prm.srate;
 
-		st->rh(st->sampv, sampc, st->arg);
+		frames += n;
+
+		st->rh(&af, st->arg);
 	}
 
  out:
 	return NULL;
 }
-
 
 int alsa_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		   struct media_ctx **ctx,

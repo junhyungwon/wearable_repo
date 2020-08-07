@@ -140,12 +140,13 @@ static int line_handler(const struct pl *addr, void *arg)
 		e = ua_register(ua);
 		if (e) {
 			warning("account: failed to register ua"
-				" '%s' (%m)\n", ua_aor(ua), e);
+				" '%s' (%m)\n", account_aor(acc), e);
 		}
 	}
 
-	/* optional password prompt */
-	if (!str_isset(account_auth_pass(acc))) {
+	/* prompt password if auth_user is set, but auth_pass is not  */
+	if (str_isset(account_auth_user(acc)) &&
+	    !str_isset(account_auth_pass(acc))) {
 		char *pass = NULL;
 
 		(void)re_printf("Please enter password for %s: ",
@@ -185,7 +186,6 @@ static int account_read_file(void)
 	if (re_snprintf(file, sizeof(file), "%s/accounts", path) < 0)
 		return ENOMEM;
 
-#if 0 /* rupy, main ?????? ?? */
 	if (!conf_fileexist(file)) {
 
 		(void)fs_mkdir(path, 0700);
@@ -194,7 +194,7 @@ static int account_read_file(void)
 		if (err)
 			return err;
 	}
-#endif
+
 	err = conf_parse(file, line_handler, NULL);
 	if (err)
 		return err;

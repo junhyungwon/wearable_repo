@@ -32,6 +32,7 @@ struct ausrc_st {
 	void *arg;
 	volatile bool ready;
 	unsigned ch;
+	enum aufmt fmt;
 };
 
 struct auplay_st {
@@ -59,6 +60,7 @@ static int read_callback(const void *inputBuffer, void *outputBuffer,
 			 PaStreamCallbackFlags statusFlags, void *userData)
 {
 	struct ausrc_st *st = userData;
+	struct auframe af;
 	size_t sampc;
 
 	(void)outputBuffer;
@@ -70,7 +72,12 @@ static int read_callback(const void *inputBuffer, void *outputBuffer,
 
 	sampc = frameCount * st->ch;
 
-	st->rh(inputBuffer, sampc, st->arg);
+	af.fmt   = st->fmt;
+	af.sampv = (void *)inputBuffer;
+	af.sampc = sampc;
+	af.timestamp = Pa_GetStreamTime(st->stream_rd) * AUDIO_TIMEBASE;
+
+	st->rh(&af, st->arg);
 
 	return paContinue;
 }
@@ -231,6 +238,7 @@ static int src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	st->rh  = rh;
 	st->arg = arg;
 	st->ch  = prm->ch;
+	st->fmt = prm->fmt;
 
 	st->ready = true;
 

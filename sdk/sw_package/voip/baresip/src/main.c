@@ -10,9 +10,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef HAVE_GETOPT
 #include <getopt.h>
-#endif
 #include <re.h>
 #include <baresip.h>
 
@@ -34,6 +32,17 @@ static void signal_handler(int sig)
 }
 
 
+static void net_change_handler(void *arg)
+{
+	(void)arg;
+
+	info("IP-address changed: %j\n",
+	     net_laddr_af(baresip_network(), AF_INET));
+
+	(void)uag_reset_transp(true, true);
+}
+
+
 static void ua_exit_handler(void *arg)
 {
 	(void)arg;
@@ -41,6 +50,14 @@ static void ua_exit_handler(void *arg)
 
 	/* The main run-loop can be stopped now */
 	re_cancel();
+}
+
+
+static void tmr_quit_handler(void *arg)
+{
+	(void)arg;
+
+	ua_stop_all(false);
 }
 
 
@@ -60,7 +77,7 @@ static void usage(void)
 			 "\t-p <path>        Audio files\n"
 			 "\t-h -?            Help\n"
 			 "\t-s               Enable SIP trace\n"
-			 "\t-t               Test and exit\n"
+			 "\t-t <sec>         Quit after <sec> seconds\n"
 			 "\t-n <net_if>      Specify network interface\n"
 			 "\t-u <parameters>  Extra UA parameters\n"
 			 "\t-v               Verbose debug\n"
@@ -70,16 +87,18 @@ static void usage(void)
 
 int main(int argc, char *argv[])
 {
-	int af = AF_UNSPEC, run_daemon = false, test = false;
+	int af = AF_UNSPEC, run_daemon = false;
 	const char *ua_eprm = NULL;
 	const char *execmdv[16];
 	const char *net_interface = NULL;
 	const char *audio_path = NULL;
 	const char *modv[16];
+	struct tmr tmr_quit;
 	bool sip_trace = false;
 	size_t execmdc = 0;
 	size_t modc = 0;
 	size_t i;
+	uint32_t tmo = 0;
 	int err;
 
 	/*
@@ -88,7 +107,7 @@ int main(int argc, char *argv[])
 	setbuf(stdout, NULL);
 
 	(void)re_fprintf(stdout, "baresip v%s"
-			 " Copyright (C) 2010 - 2019"
+			 " Copyright (C) 2010 - 2020"
 			 " Alfred E. Heggestad et al.\n",
 			 BARESIP_VERSION);
 
@@ -98,9 +117,10 @@ int main(int argc, char *argv[])
 	if (err)
 		goto out;
 
-#ifdef HAVE_GETOPT
+	tmr_init(&tmr_quit);
+
 	for (;;) {
-		const int c = getopt(argc, argv, "46de:f:p:hu:n:vstm:");
+		const int c = getopt(argc, argv, "46de:f:p:hu:n:vst:m:");
 		if (0 > c)
 			break;
 
@@ -158,7 +178,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 't':
-			test = true;
+			tmo = atoi(optarg);
 			break;
 
 		case 'n':
@@ -177,10 +197,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
-#else
-	(void)argc;
-	(void)argv;
-#endif
 
 	err = conf_configure();
 	if (err) {
@@ -190,8 +206,8 @@ int main(int argc, char *argv[])
 
 	/*
 	 * Set the network interface before initializing the config
-	 * ethX, wlan, pppë“± íŠ¹ì • ë„¤íŠ¸ì›Œí¬ ì¸í„°íŽ˜ì´ìŠ¤ë¥¼ ì‚¬ìš©í•  ê²½ìš°
-	 * í˜„ìž¬ëŠ” ì‚¬ìš© ì•ˆ í•¨.
+	 * ethX, wlan, pppµî Æ¯Á¤ ³×Æ®¿öÅ© ÀÎÅÍÆäÀÌ½º¸¦ »ç¿ëÇÒ °æ¿ì
+	 * ÇöÀç´Â »ç¿ë ¾È ÇÔ.
 	 */
 	if (net_interface) {
 		struct config *theconf = conf_config();
@@ -204,7 +220,7 @@ int main(int argc, char *argv[])
 	 * Set prefer_ipv6 preferring the one given in -6 argument (if any)
 	 */
 	if (af != AF_UNSPEC)
-		conf_config()->net.af = af; //# config.c íŒŒì¼ì˜ core_config êµ¬ì¡°ì²´ë¥¼ ì‚¬ìš©í•¨.
+		conf_config()->net.af = af; //# config.c ÆÄÀÏÀÇ core_config ±¸Á¶Ã¼¸¦ »ç¿ëÇÔ.
 
 	/*
 	 * Initialise the top-level baresip struct, must be
@@ -220,7 +236,7 @@ int main(int argc, char *argv[])
 	if (audio_path)
 		play_set_path(baresip_player(), audio_path);
 	else if (str_isset(conf_config()->audio.audio_path)) {
-		/* wav íŒŒì¼ì´ ì €ìž¥ë˜ëŠ” í´ë”ë¥¼ ì •ì˜  /usr/baresip ë¡œ ê³ ì •ì‹œí‚´ */
+		/* wav ÆÄÀÏÀÌ ÀúÀåµÇ´Â Æú´õ¸¦ Á¤ÀÇ  /usr/baresip ·Î °íÁ¤½ÃÅ´ */
 		play_set_path(baresip_player(),
 			      conf_config()->audio.audio_path);
 	}
@@ -247,10 +263,12 @@ int main(int argc, char *argv[])
 	if (err)
 		goto out;
 
+	net_change(baresip_network(), 60, net_change_handler, NULL);
+
 	uag_set_exit_handler(ua_exit_handler, NULL);
 
 	if (ua_eprm) {
-		err = uag_set_extra_params(ua_eprm); //# ua.c 
+		err = uag_set_extra_params(ua_eprm);
 		if (err)
 			goto out;
 	}
@@ -258,11 +276,8 @@ int main(int argc, char *argv[])
 	if (sip_trace)
 		uag_enable_sip_trace(true);
 
-	if (test)
-		goto out;
-
 	/* Load modules */
-	err = conf_modules(); //# conf.c
+	err = conf_modules();
 	if (err)
 		goto out;
 
@@ -278,13 +293,19 @@ int main(int argc, char *argv[])
 
 	/* Execute any commands from input arguments */
 	for (i=0; i<execmdc; i++) {
-		ui_input_str(execmdv[i]); //# ui.c
+		ui_input_str(execmdv[i]);
+	}
+
+	if (tmo) {
+		tmr_start(&tmr_quit, tmo * 1000, tmr_quit_handler, NULL);
 	}
 
 	/* Main loop */
 	err = re_main(signal_handler);
 
  out:
+	tmr_cancel(&tmr_quit);
+
 	if (err)
 		ua_stop_all(true);
 

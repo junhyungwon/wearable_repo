@@ -19,8 +19,10 @@ struct ausrc_st {
 	AudioUnit au_in;
 	AudioUnit au_conv;
 	pthread_mutex_t mutex;
+	struct ausrc_prm prm;
 	int ch;
 	uint32_t sampsz;
+	int fmt;
 	double sampc_ratio;
 	AudioBufferList *abl;
 	ausrc_read_h *rh;
@@ -103,6 +105,9 @@ static OSStatus input_callback(void *inRefCon,
 	}
 
 	while (1) {
+		struct auframe af;
+		uint64_t ts;
+
 		err = get_nb_frames(st->buf, &nb_frames);
 		if (err)
 			return kAudioUnitErr_InvalidParameter;
@@ -129,9 +134,17 @@ static OSStatus input_callback(void *inRefCon,
 			return ret;
 		}
 
-		rh(abl_conv.mBuffers[0].mData,
-		   abl_conv.mBuffers[0].mDataByteSize/st->sampsz, arg);
+		ts  = AUDIO_TIMEBASE*inTimeStamp->mSampleTime / st->prm.srate;
+		ts *= st->sampc_ratio;
+
+		af.fmt   = st->fmt;
+		af.sampv = abl_conv.mBuffers[0].mData;
+		af.sampc = abl_conv.mBuffers[0].mDataByteSize/st->sampsz;
+		af.timestamp = ts;
+
+		rh(&af, arg);
 	}
+
 	return noErr;
 }
 
@@ -146,6 +159,9 @@ static OSStatus convert_callback(void *inRefCon,
 	struct ausrc_st *st = inRefCon;
 	size_t framesz;
 	OSStatus ret = noErr;
+	(void)ioActionFlags;
+	(void)inTimeStamp;
+	(void)inBusNumber;
 
 	framesz = st->sampsz * st->ch;
 	ret = init_data_read(st->buf, &ioData->mBuffers[0].mData,
@@ -214,6 +230,8 @@ int audiounit_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		err = ENOTSUP;
 		goto out;
 	}
+	st->fmt = prm->fmt;
+	st->prm = *prm;
 
 	framesz = st->sampsz * st->ch;
 	err = conv_buf_alloc(&st->buf, framesz);

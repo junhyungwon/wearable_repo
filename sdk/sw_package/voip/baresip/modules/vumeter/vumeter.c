@@ -45,20 +45,7 @@ static bool vumeter_stderr;
 
 static void send_event(const struct audio *au, enum ua_event ev, double value)
 {
-	struct stream *strm;
-	struct call *call;
-	struct ua *ua;
-
-	/* get the stream from the audio object */
-	strm = audio_strm(au);
-
-	/* get the call from the stream object */
-	call = stream_call(strm);
-
-	/* get the useragent from the call object */
-	ua = call_get_ua(call);
-
-	ua_event(ua, ev, call, "%.2f", value);
+	audio_level_put(au, ev == UA_EVENT_VU_TX, value);
 }
 
 
@@ -195,28 +182,28 @@ static int decode_update(struct aufilt_dec_st **stp, void **ctx,
 }
 
 
-static int encode(struct aufilt_enc_st *st, void *sampv, size_t *sampc)
+static int encode(struct aufilt_enc_st *st, struct auframe *af)
 {
 	struct vumeter_enc *vu = (void *)st;
 
-	if (!st || !sampv || !sampc)
+	if (!st || !af)
 		return EINVAL;
 
-	vu->avg_rec = aulevel_calc_dbov(vu->fmt, sampv, *sampc);
+	vu->avg_rec = aulevel_calc_dbov(vu->fmt, af->sampv, af->sampc);
 	vu->started = true;
 
 	return 0;
 }
 
 
-static int decode(struct aufilt_dec_st *st, void *sampv, size_t *sampc)
+static int decode(struct aufilt_dec_st *st, struct auframe *af)
 {
 	struct vumeter_dec *vu = (void *)st;
 
-	if (!st || !sampv || !sampc)
+	if (!st || !af)
 		return EINVAL;
 
-	vu->avg_play = aulevel_calc_dbov(vu->fmt, sampv, *sampc);
+	vu->avg_play = aulevel_calc_dbov(vu->fmt, af->sampv, af->sampc);
 	vu->started = true;
 
 	return 0;

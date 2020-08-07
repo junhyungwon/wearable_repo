@@ -93,7 +93,7 @@ int baresip_init(struct config *cfg)
 	if (!cfg)
 		return EINVAL;
 	/* libre, re_mem.c
-	 * ê³µìœ  ì°¸ì¡°ê°€ ê°€ëŠ¥í•œ ë©”ëª¨ë¦¬ë¥¼ dereference ë§Œì•½ ì°¸ì¡° ìˆ«ìê°€ 0ì´ë©´ NULL
+	 * °øÀ¯ ÂüÁ¶°¡ °¡´ÉÇÑ ¸Ş¸ğ¸®¸¦ dereference ¸¸¾à ÂüÁ¶ ¼ıÀÚ°¡ 0ÀÌ¸é NULL
 	 */
 	baresip.net = mem_deref(baresip.net); 
 
@@ -133,7 +133,7 @@ int baresip_init(struct config *cfg)
 	}
 	
 	/*
-	 * quit, insmod, rmmod ëª…ë ¹ì„ ë“±ë¡
+	 * quit, insmod, rmmod ¸í·ÉÀ» µî·Ï
 	 */
 	err = cmd_register(baresip.commands, corecmdv, ARRAY_SIZE(corecmdv));
 	if (err)

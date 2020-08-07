@@ -152,6 +152,7 @@ static void display_handler(void *arg)
 		vl->vidisp = mem_deref(vl->vidisp);
 		vl->err = err;
 	}
+	++vl->stats.disp_frames;
 
  out:
 	lock_rel(vl->frame_mutex);
@@ -199,7 +200,6 @@ static int display(struct video_loop *vl, struct vidframe *frame,
 	/* save the displayed frame info */
 	vl->disp_size = frame->size;
 	vl->disp_fmt = frame->fmt;
-	++vl->stats.disp_frames;
 
 	lock_write_get(vl->frame_mutex);
 
@@ -647,8 +647,8 @@ static void update_vidsrc(void *arg)
 	    !strcmp(vl->cfg.src_dev, cfg->video.src_dev))
 		return;
 
-	strcpy(vl->cfg.src_mod,cfg->video.src_mod);
-	strcpy(vl->cfg.src_dev, cfg->video.src_dev);
+	str_ncpy(vl->cfg.src_mod, cfg->video.src_mod, sizeof(vl->cfg.src_mod));
+	str_ncpy(vl->cfg.src_dev, cfg->video.src_dev, sizeof(vl->cfg.src_dev));
 
 	size.w = cfg->video.width;
 	size.h = cfg->video.height;
