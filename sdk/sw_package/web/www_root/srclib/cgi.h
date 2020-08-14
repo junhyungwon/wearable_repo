@@ -1,0 +1,65 @@
+#include "cgi_param.h"
+#include "cgi_uds.h"
+#include "cgi_debug.h"
+#include "cgi_error.h"
+
+#ifndef BOOL
+#define BOOL int
+#endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#define POST 0
+#define GET  1
+
+
+// ACTION...
+#define UPDATE 0 
+#define SEARCH 1
+#define SYSMNG 2
+
+
+#define SUPPORT_LANG "en"
+#define MAX_ACCOUNT 16
+#define LANGUAGE_PATH "/var/www/language"
+
+#define PUT_CRLF                printf("\r\n")
+#define PUT_CONTENT_TYPE_PLAIN  printf("Content-type: text/plain\r\n")
+#define PUT_CONTENT_TYPE_XML    printf("Content-type: text/xml\r\n")
+#define PUT_CONTENT_TYPE_HTML   printf("Content-type: text/html\r\n")
+//#define PUT_CACHE_CONTROL_NOCACHE printf("Cache-Control: no-cache, no-store, must-revalidate\r\n")
+#define PUT_CACHE_CONTROL_NOCACHE printf("Cache-Control: no-cache, no-store\r\n")
+
+#define ENABLE_CONTENT_TYPE_JSON 1
+#if ENABLE_CONTENT_TYPE_JSON 
+#define PUT_CONTENT_TYPE_JSON 	printf("Content-type: application/json\r\n")
+#else
+#define PUT_CONTENT_TYPE_JSON 
+#endif
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int send_response(int errnum);
+
+char *      getQueryString();
+int         parseContents(char *buf, T_CGIPRM *prm);
+void        wait_redirect(const char *redirect_page, int nTimeout );
+void        refresh_page(const char *page, int errIndex);
+char *      get_cgi_contents();
+
+void		remove_char_from_string(char subc, char *str);
+void		remove_rn_char_from_string(char *str);
+
+
+#ifdef __cplusplus
+}
+#endif
