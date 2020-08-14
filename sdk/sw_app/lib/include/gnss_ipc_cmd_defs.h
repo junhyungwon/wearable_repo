@@ -38,13 +38,14 @@ extern "C" {
 #define GNSS_CMD_GPS_DONE				(0x603)
 #define GNSS_CMD_GPS_READY				(0x604)
 #define GNSS_CMD_GPS_CONFIG				(0x605)
-#define GNSS_CMD_GPS_POLL_DATA			(0x606) /* reponse gps data */
-#define GNSS_CMD_GPS_DEV_ERR			(0x607) /* device error */
-#define GNSS_CMD_GPS_NOTY				(0x608) /* 최초 실행 시 wait_event를 빠져나오기 위해서 */
+#define GNSS_CMD_GPS_REQ_DATA			(0x606) /* request gps data */
+#define GNSS_CMD_GPS_POLL_DATA			(0x607) /* reponse gps data */
+#define GNSS_CMD_GPS_DEV_ERR			(0x608) /* device error */
+#define GNSS_CMD_GPS_NOTY				(0x609) /* 최초 ?�행 ??wait_event�?빠져?�오�??�해??*/
 
 //# shared memory id
 #define GNSS_SHM_KEY					(0x0A20)
-/* 대략 100개의 데이터를 버퍼링 */
+/* ?�??100개의 ?�이?��? 버퍼�?*/
 #define GNSS_SHM_SIZE					(4096)
 #define GNSS_FIFO_SIZE					(2048)
 
@@ -63,14 +64,14 @@ typedef struct {
 	long type;
 	int cmd;
 	
-	int status;              //# GPS 상태 전달. (-2 error, -1 off line 0 on-line)
+	int status;              //# GPS ?�태 ?�달. (-2 error, -1 off line 0 on-line)
 } to_gnss_main_msg_t;
 
 /* ((double)8*5) + ((int)4*8) = 72 byte. */
 typedef struct {
 	struct tm gtm;			//# GPS time 
 	int gps_fixed;			//# 0: invalid, 1:valid
-	int view_num;			//# GPS 위성 갯수
+	int view_num;			//# GPS ?�성 �?��
 	
 	double subsec;
 	double speed;
