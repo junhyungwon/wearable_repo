@@ -32,6 +32,8 @@
 int app_gps_proc_init(void);
 void app_gps_proc_exit(void);
 
+void app_gps_data_request();
+
 int app_gps_proc_start(void);
 int app_gps_proc_stop(void);
 

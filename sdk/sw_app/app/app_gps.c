@@ -38,7 +38,7 @@
 #define GNSS_BIN_STR		"/opt/fit/bin/app_gnss.out"
 #define GNSS_CMD_STR		"/opt/fit/bin/app_gnss.out &"
 
-#define GPS_PROC_LENGTH		1000 /*  nmea 데이터 약 1000개 76 *1000 = 760KB 가 필요함 */
+#define GPS_PROC_LENGTH		1000 /*  nmea ?�이????1000�?76 *1000 = 760KB 가 ?�요??*/
 
 #define TIME_GPS_CYCLE		200		//# msec
 #define EN_REC_META			1
@@ -66,7 +66,7 @@ typedef struct {
 	
 	int init;
 	int qid;
-	
+	int isPlugIn;
 	int shmid;
 	unsigned char *sbuf;
 	
@@ -275,33 +275,38 @@ int app_gps_get_rmc_data(app_gps_meta_t *p_meta)
 	if (p_meta == NULL)
 		return status;
 	
-	OSA_mutexLock(&igps->mutex_gps);
-	/* FIFO Get */
-	if (!gps_fifo_isEmpty(&igps->fifo)) {
-		/* get data */
-		gps_fifo_get(&igps->fifo, (unsigned int)&tmp_data, sizeof(gnss_shm_data_t));
-		
-		p_meta->enable     = tmp_data.gps_fixed;
-		p_meta->subsec     = tmp_data.subsec;
-		p_meta->speed      = tmp_data.speed;
-		p_meta->lat        = tmp_data.lat; 
-		p_meta->lot        = tmp_data.lot;
-		p_meta->dir        = tmp_data.dir;
-		
-		memcpy(&p_meta->gtm, &tmp_data.gtm, sizeof(struct tm));
-		//p_meta->gtm.tm_year = tmp_data.gtm.tm_year; /* +1900 안됨 */
-		//p_meta->gtm.tm_mon  = tmp_data.gtm.tm_mon; 
-		//p_meta->gtm.tm_mday = tmp_data.gtm.tm_mday; 
-		//p_meta->gtm.tm_hour = tmp_data.gtm.tm_hour; 
-		//p_meta->gtm.tm_min  = tmp_data.gtm.tm_min; 
-		//p_meta->gtm.tm_sec  = tmp_data.gtm.tm_sec;
-		status = 0;
-	} else {
-		status = -1;
-	}
-	OSA_mutexUnlock(&igps->mutex_gps);
+	//OSA_mutexLock(&igps->mutex_gps);
+
+	p_meta->enable     = igps->r_data.gps_fixed;
+	p_meta->subsec     = igps->r_data.subsec;
+	p_meta->speed      = igps->r_data.speed;
+	p_meta->lat        = igps->r_data.lat; 
+	p_meta->lot        = igps->r_data.lot;
+	p_meta->dir        = igps->r_data.dir;
+	
+	memcpy(&p_meta->gtm, &igps->r_data.gtm, sizeof(struct tm));
+	//p_meta->gtm.tm_year = tmp_data.gtm.tm_year; /* +1900 ?�됨 */
+	//p_meta->gtm.tm_mon  = tmp_data.gtm.tm_mon; 
+	//p_meta->gtm.tm_mday = tmp_data.gtm.tm_mday; 
+	//p_meta->gtm.tm_hour = tmp_data.gtm.tm_hour; 
+	//p_meta->gtm.tm_min  = tmp_data.gtm.tm_min; 
+	//p_meta->gtm.tm_sec  = tmp_data.gtm.tm_sec;
+	status = 0;
+
+	//OSA_mutexUnlock(&igps->mutex_gps);
 	
 	return status;
+}
+
+static void send_gps_data()
+{
+	app_gps_meta_t Gpsdata;
+	if (app_gps_get_rmc_data((app_gps_meta_t *)&Gpsdata) == 0) {
+			gpsdata_send((void*)&Gpsdata);
+	} else {
+		/* GPS ?�결?� ?��?�??�신???�될 경우 */
+		//dprintf("Failed to get GPRMC Data\n");
+	}
 }
 
 /*****************************************************************************
@@ -335,35 +340,35 @@ static void *THR_gps_recv_msg(void *prm)
 		
 		case GNSS_CMD_GPS_POLL_DATA:
 			memset(&igps->r_data, 0, sizeof(gnss_shm_data_t));
-			/* GPS 프로세스에서 shared 메모리에 저장한 데이터를 가져온다 */
-			memcpy((char *)&igps->r_data, (char *)igps->sbuf, sizeof(gnss_shm_data_t));
 			
-			/* GPS 시간으로 시스템 TIME 동기화 */
-			if (sync_time)
-			{
-				/* 3D fixed */
-				if (igps->r_data.gps_fixed == 2) {
-					app_sys_time(&igps->r_data.gtm);
-					sync_time = 0;
-					dev_buzz_ctrl(100, 3);	//# gps time sync
-				}
+			/* GPS ?�로?�스?�서 shared 메모리에 ?�?�한 ?�이?��? 가?�온??*/
+			memcpy((char *)&igps->r_data, (char *)igps->sbuf, sizeof(gnss_shm_data_t));
+
+			//GPS LED State
+			if(igps->isPlugIn) {
+				(igps->r_data.gps_fixed == 0) ? app_leds_gps_ctrl(LED_GPS_FAIL) : app_leds_gps_ctrl(LED_GPS_ON);
 			}
-					
+			
+			/* GPS ?�간?�로 ?�스??TIME ?�기??*/
+			/* 3D fixed */
+			if (igps->r_data.gps_fixed == 2 && sync_time)
+			{
+				app_sys_time(&igps->r_data.gtm);
+				sync_time = 0;
+				dev_buzz_ctrl(100, 3);	//# gps time sync
+			}
+
+			//Send to client
+			send_gps_data();
+			
 			//# debugging
-			#if 0	
+			#if 1	
 			dprintf("GPS POLL- DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
 					igps->r_data.gtm.tm_year+1900, igps->r_data.gtm.tm_mon+1, igps->r_data.gtm.tm_mday,
 					igps->r_data.gtm.tm_hour, igps->r_data.gtm.tm_min, igps->r_data.gtm.tm_sec,
 					igps->r_data.speed, igps->r_data.lat, igps->r_data.lot);
 			#endif	
 					
-			/* FIFO 메모리에 put */
-			if (gps_fifo_isFull(&igps->fifo) == 0) {
-				gps_fifo_put(&igps->fifo, (unsigned int)&igps->r_data, sizeof(gnss_shm_data_t));
-			} else {
-				eprintf("Fifo is full\n");
-				/* TODO */
-			}
 			break;
 		
 		case GNSS_CMD_GPS_EXIT:
@@ -412,10 +417,11 @@ static void *THR_gps_main(void *prm)
             break;
         }
 		
-		state = dev_ste_gps_port();
-		if (state) {
+		igps->isPlugIn = dev_ste_gps_port();
+		if (igps->isPlugIn) {
+			app_leds_gps_ctrl(LED_GPS_ON);
 			if (!connect_state) {
-				/* GPS를 시작한다. */
+				/* GPS�??�작?�다. */
 				connect_state = 1;
 				__gps_send_cmd(GNSS_CMD_GPS_START);
 				OSA_waitMsecs(50);
@@ -423,24 +429,19 @@ static void *THR_gps_main(void *prm)
 				
 			}
 		} else {
+			app_leds_gps_ctrl(LED_GPS_OFF);
+			
 			if (connect_state) {
-				/* GPS 정지 */
+				/* GPS ?��? */
 				connect_state = 0;
 				__gps_send_cmd(GNSS_CMD_GPS_STOP);
 			}
 		}
 		
 		if (connect_state) {
-			/* META 데이터 전달 */
+			/* META ?�이???�달 */
 			if (meta_timer <= 0) {
-				app_gps_meta_t Gpsdata;
-				
-				if (app_gps_get_rmc_data((app_gps_meta_t *)&Gpsdata) == 0) {
-					gpsdata_send((void*)&Gpsdata);
-				} else {
-					/* GPS 연결은 했지만 수신이 안될 경우 */
-					//dprintf("Failed to get GPRMC Data\n");
-				}
+				__gps_send_cmd(GNSS_CMD_GPS_REQ_DATA);
 				meta_timer = CNT_FITTMETA;
 			} else {
 				meta_timer--;
@@ -499,7 +500,7 @@ int app_gps_init(void)
 		return EFAIL;
 	}
 	
-	/* gps 프로세스가 시작할때 까지 wait... */
+	/* gps ?�로?�스가 ?�작?�때 까�? wait... */
 	do {
 		status = igps->init;
 		if (status) {

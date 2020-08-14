@@ -129,12 +129,15 @@ static void app_main(void)
 		}
 		
 		switch (cmd) {
-		/* GPS 잭이 연결되었을 때 */	
+		/* GPS ??�� ?�결?�었????*/	
 		case GNSS_CMD_GPS_START:
 			app_gps_proc_start();
 			dprintf("received gps start cmd!\n");
 			break;
-		/* GPS 잭이 분리되었을 때 */
+		case GNSS_CMD_GPS_REQ_DATA:
+			app_gps_data_request();
+			break;
+		/* GPS ??�� 분리?�었????*/
 		case GNSS_CMD_GPS_STOP:
 			app_gps_proc_stop();
 			dprintf("received gps stop cmd!\n");
@@ -165,7 +168,7 @@ int main(int argc, char **argv)
 	printf(" [GPS process] start...\n");
 	session = &app_cfg->t_device;
 	
-	/* GPS 데이터를 공유할 shared memory 초기화 및 MSGQ 초기화 */
+	/* GPS ?�이?��? 공유??shared memory 초기??�?MSGQ 초기??*/
 	rc = app_shared_mem_init();
 	if (rc < 0)
 		goto err_exit;
