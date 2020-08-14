@@ -668,7 +668,7 @@ void dev_snd_set_aic3x_output_path(int path)
 		alsa_mixer_cset(SND_HPCOM_PLAYBACK_SWITCH, 1);     	//# 22 HPLCOM, HPRCOM On
 		alsa_mixer_cset(SND_LEFT_HPCOM_DACL1_SWITCH, 1);   	//# 53 DAC_L1 is routed to HPLCOM
 		alsa_mixer_cset(SND_RIGHT_HPCOM_DACR1_SWITCH, 1);  	//# 61 DAC_R1 is routed to HPRCOM
-		alsa_mixer_cset(SND_LINE_PLAYBACK_SWITCH, 0);     	//# 22 LEFT_LOP/RIGHT_ROP Off
+		alsa_mixer_cset(SND_LINE_PLAYBACK_SWITCH, 0);     	//# 20 LEFT_LOP/RIGHT_ROP Off
 		alsa_mixer_cset(SND_LEFT_DAC_MUX, 2);        		//# 101
 		alsa_mixer_cset(SND_RIGHT_DAC_MUX, 2);       		//# 99
 	} else {

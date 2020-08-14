@@ -110,13 +110,7 @@ int vsys_event(unsigned int eventId, void *pPrm, void *appData)
 {
 	if (eventId == VSYS_EVENT_VIDEO_DETECT)
     {
-        video_status() ;
-		
-		if(strcmp(MODEL_NAME, "NEXX360") == 0)
-		{
-		    if(app_cfg->vid_count == 0)
-			    set_ap_value() ;
-        }
+        video_status();
     }
 
 	return 0;
@@ -511,18 +505,11 @@ int app_cap_start(void)
 
 	cap_enc_late_init();
 
-    if (app_cfg->vid_count == 0)
-	{
-	    if (strcmp(MODEL_NAME, "NEXX360") == 0)
-		{
-            set_ap_value() ;
-		}
-		else
-		    video_status() ;
+    if (app_cfg->vid_count == 0) {
+		video_status();
 	}
-
-    ctrl_enc_multislice() ; 
-
+    
+	ctrl_enc_multislice() ; 
 	app_cfg->ste.b.cap = 1;
 
 	aprintf("done!\n");

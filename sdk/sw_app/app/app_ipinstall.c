@@ -148,9 +148,9 @@ void send_sysinfo(void)
 	Infores.length = htons(sizeof(INFO_RES) - 6);
 	Infores.eth_type = htons(app_set->net_info.type) ;
 
-	if(app_cfg->ste.b.st_cradle && dev_ste_ethernet(0))
-        sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
-	else
+	//if(app_cfg->ste.b.st_cradle && dev_ste_ethernet(0))
+   //     sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
+	//else
         sprintf(Infores.ipaddr, "%s", "NA");
 
 	sprintf(Infores.subnet, "%s", app_set->net_info.eth_netmask) ;

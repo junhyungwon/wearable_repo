@@ -177,21 +177,9 @@ typedef struct {
 } ch_info_t;
 
 typedef struct {
-    char wifi_mode ;
-	char en_key ;
-	char pwd[MAX_CHAR_32] ;
-	char ssid[MAX_CHAR_32] ;
-	int stealth ;
-    char wlan_ipaddr[MAX_CHAR_16] ;
-    char wlan_netmask[MAX_CHAR_16] ;
-    char wlan_gateway[MAX_CHAR_16] ;
-} wifi_apmode ;
-
-typedef struct {
 	app_thr_obj mObj;	//# main thread
 
 	app_state ste;
-    wifi_apmode wmode ;
 
 	int hw_ver;
 	int num_ch;

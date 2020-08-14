@@ -105,6 +105,15 @@ static void update_callstatus(void)
 		tmr_cancel(&ikey->tmr_stat);
 }
 
+#if 0
+static int call_reinvite(struct re_printf *pf, void *unused)
+{
+	(void)pf;
+	(void)unused;
+	return call_modify(ua_call(uag_current()));
+}
+#endif
+
 /*
  * user agent에 의해서 이벤트가 발생되면 callback 함수로 호출됨.
  */ 
@@ -214,11 +223,6 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	case UA_EVENT_CALL_REMOTE_SDP:
 		ikey->play = mem_deref(ikey->play);
 		return;
-		
-	//case UA_EVENT_AUDIO_STOP:
-		/* stop any ringtones (auplay_destructor함수가 mem_deref에 의해서 호출됨) */
-	//	ikey->play = mem_deref(ikey->play);
-	//	return;
 		
 	case UA_EVENT_CALL_TRANSFER:
 	case UA_EVENT_CALL_TRANSFER_FAILED:
@@ -457,12 +461,10 @@ static int module_init(void)
 		return err;
 	
 	/* alsa mixer config */
-	amixer_set_volume(SND_VOLUME_C, 80);
-	amixer_set_volume(SND_VOLUME_P, 0);
-	
 	amixer_set_input_path();
 	amixer_set_output_path();
 	
+	amixer_set_volume(SND_VOLUME_C, 80);
 	amixer_set_volume(SND_VOLUME_P, 90);
 		
 	return 0;

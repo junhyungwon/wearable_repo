@@ -265,7 +265,6 @@ int DefaultGetMac(char *MacAddr) ;
 void app_setting_reset(int type) ; // for onvif 
 
 int app_set_web_password(char *id, char *pw, int lv, int authtype);
-void set_ap_value(void);
 int app_set_onvif_password(char *id, char *pw, int lv);
 
 #endif	/* _APP_SET_H_ */

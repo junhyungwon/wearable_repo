@@ -6,7 +6,6 @@
  * @brief
  */
 /*****************************************************************************/
-
 #ifndef _APP_VERSION_H_
 #define _APP_VERSION_H_
 
@@ -17,29 +16,20 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-
 // USING LTE(LTE + WIFI) => USE_LTE = 1 & USE_WIRELESS = 1
 // USING WIFI(WIFI ONLY) => USE_LTE = 0 & USE_WIRELESS = 1 
 
-#define EN_WIFI_CLIENT         1
-
-//#define USE_LTE                 1       // LTE -> LTE + WIFI
-
-#define USE_WIRELESS            MODEL_TYPE      // LTE + WIFI
+#define EN_WIFI_CLIENT          1
 #define SW_RELEASE				1
 
 #define TCX_MODEL   MODEL_NAME
 
 #if SW_RELEASE
-    #if USE_WIRELESS
-        #define FITT360_SW_VER      "2.04.00Ns"
-    #else
-        #define FITT360_SW_VER	    "2.04.00Bs"
-    #endif
+#define FITT360_SW_VER      "2.04.00Ns"
 #else
-#define FITT360_SW_VER			"2.04.00.Ds"
+#define FITT360_SW_VER		"2.04.00.Ds"
 #endif
 
-#define FITT360_HW_VER			"Rev.0.3"
+#define FITT360_HW_VER		"Rev.0.3"
 
 #endif	/* _APP_VERSION_H_ */

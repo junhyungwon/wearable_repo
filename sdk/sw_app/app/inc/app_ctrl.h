@@ -44,8 +44,6 @@ int ctrl_jpg_quality(int ch, int value);		//# runtime
 int ctrl_vid_resolution(int resol) ;                    //# runtime 
 
 int ctrl_set_port(int http_port, int https_port, int rtsp_port) ; //# runtime
-int ctrl_set_network(int net_type, char *token, char *ipaddr, char *subnet) ;
-int ctrl_set_gateway(char *gw) ;
 int ctrl_set_NTP(char *server_addr) ;
 int ctrl_set_DNS(char *server_addr) ;
 
@@ -66,10 +64,7 @@ int ctrl_enc_multislice(void) ;
 int ctrl_get_resolution(void) ;
 void fitt360_reboot() ;
 
-int ctrl_wifi_set(int on);
-
 int ctrl_update_firmware(char *fwpath, char *disk);
 int ctrl_update_firmware_by_cgi(char *path);
-
 
 #endif	/* _APP_CTRL_H_ */

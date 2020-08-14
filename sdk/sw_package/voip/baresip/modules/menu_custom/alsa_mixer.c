@@ -260,11 +260,11 @@ void amixer_set_input_path(void)
 	amixer_cset(SND_RIGHT_PGA_LINE1L_SWITCH, SW_OFF);  //# 84
 	amixer_cset(SND_RIGHT_PGA_MIC3L_SWITCH, SW_OFF);   //# 86
 	amixer_cset(SND_LEFT_PGA_MIC3L_SWITCH, SW_OFF);    //# 92
-
-	/* MIC2R/LINE2R, MIC2L/LINE2L PGA mixer on */
 	amixer_cset(SND_LEFT_PGA_LINE1L_SWITCH, SW_OFF);   //# 89 (1L->left PGA)
+	
+	/* MIC2R/LINE2R, MIC2L/LINE2L PGA mixer on */
 	amixer_cset(SND_RIGHT_PGA_MIC3R_SWITCH, SW_ON);    //# 87
-	amixer_cset(SND_RIGHT_PGA_LINE1R_SWITCH, SW_ON);   //# 83
+	amixer_cset(SND_LEFT_PGA_MIC3R_SWITCH, SW_ON);     //# 93
 	
 	amixer_cset(SND_LEFT_LINE1L_MUX, 0); 				//# 97 (single ended)
 	amixer_cset(SND_RIGHT_LINE1R_MUX, 0); 				//# 94 (single ended)
@@ -279,6 +279,7 @@ void amixer_set_input_path(void)
 -----------------------------------------------------------------------------*/
 void amixer_set_output_path(void)
 {
+	#if 0
 	/*
 	 * Left L+ / Left L- On
 	 * Right R+ / Right R- Off
@@ -293,7 +294,18 @@ void amixer_set_output_path(void)
 	amixer_cset(SND_LINE_PLAYBACK_SWITCH, 1);       //# 20 LEFT_LOP/RIGHT_ROP On
 	amixer_cset(SND_LEFT_DAC_MUX, 0);        		//# 101
 	amixer_cset(SND_RIGHT_DAC_MUX, 1);       		//# 99
-
+	#else
+	amixer_cset(SND_HPCOM_PLAYBACK_SWITCH, 1);      //# 22 HPLCOM, HPRCOM Off
+	amixer_cset(SND_LEFT_HPCOM_DACL1_SWITCH, 1);    //# 53 DAC_L1 is not routed to HPLCOM
+	amixer_cset(SND_RIGHT_HPCOM_DACR1_SWITCH, 1);   //# 61 DAC_R1 is not routed to HPRCOM
+	
+	amixer_cset(SND_RIGHT_HPMIX_DACL1_SWITCH, 0);   //# 59 DAC_L1 is HPLOUT
+	amixer_cset(SND_LEFT_HPMIX_DACL1_SWITCH, 0);    //# 65 DAC_L1 is HPROUT
+		
+	amixer_cset(SND_LINE_PLAYBACK_SWITCH, 0);       //# 20 LEFT_LOP/RIGHT_ROP On
+	amixer_cset(SND_LEFT_DAC_MUX, 2);        		//# 101
+	amixer_cset(SND_RIGHT_DAC_MUX, 2);       		//# 99
+	#endif
 	amixer_cset(SND_LEFT_HPCOM_MUX, 0);      			//# 100 HPLCOM Differential
 	amixer_cset(SND_OUTPUT_POWERON_TIME, 5); 			//# 34 HPOUT Power On delay(50ms)
 	amixer_cset(SND_OUTPUT_RAMPUP_STEP, 2);  			//# 35 Drvier Ramp-up delay(2ms)

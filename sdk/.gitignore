@@ -12,6 +12,10 @@ sdk/sw_app/module/live555/netra_streamer/wis-streamer
 sdk/sw_app/module/live555/netra_streamer/netra_interface/Netra_interface.a
 sdk/sw_app/module/live555/proxyServer/
 sdk/sw_app/module/live555/testProgs/
+sdk/sw_package/av_rec/*.o
+sdk/sw_package/av_rec/*.out
+sdk/sw_package/gnss/*.o
+sdk/sw_package/gnss/*.out
 sdk/psp/kernel/drivers/net/usb/.ax88179_178a.ko.cmd
 sdk/psp/kernel/drivers/net/usb/.ax88179_178a.mod.o.cmd
 sdk/psp/kernel/drivers/net/usb/.ax88179_178a.o.cmd

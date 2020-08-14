@@ -67,7 +67,8 @@ int app_p2p_start(void)
     int ret = 0 ;
     char p2p_cmd[MAX_CHAR_128] = {0, } ;
 
-    if(app_cfg->ste.b.wifi || app_cfg->ste.b.dial_run || app_cfg->ste.b.eth1_run || dev_ste_ethernet(0))
+    //if(app_cfg->ste.b.wifi || app_cfg->ste.b.dial_run || app_cfg->ste.b.eth1_run || dev_ste_ethernet(0))
+	if(app_cfg->ste.b.wifi || app_cfg->ste.b.dial_run || app_cfg->ste.b.eth1_run)
     {
 //        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.deviceId) ;
         sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.uid) ;

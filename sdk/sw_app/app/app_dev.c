@@ -28,8 +28,6 @@
 #include "app_ctrl.h"
 #include "app_dev.h"
 #include "app_set.h"
-#include "app_hotplug.h"
-#include "app_wcli.h"
 #include "app_ftp.h"
 #include "app_fms.h"
 #include "ti_vcap.h"
@@ -65,15 +63,11 @@ static app_dev_t *idev=&t_dev;
 static void dev_gpio_init(void)
 {
 	gpio_input_init(REC_KEY);
-	gpio_input_init(BACKUP_DET);
-	gpio_input_init(USB_DET);
 }
 
 static void dev_gpio_exit(void)
 {
 	gpio_exit(REC_KEY);
-	gpio_exit(BACKUP_DET);
-	gpio_exit(USB_DET);
 }
 
 /*----------------------------------------------------------------------------
@@ -145,58 +139,6 @@ int dev_ste_key(int gio)
 	//dprintf("--- [key] value %d\n", status);
 
 	return status;
-}
-
-int dev_ste_cradle(void)
-{
-	int status;
-
-	gpio_get_value(BACKUP_DET, &status);
-	//dprintf("--- [cradle] value %d\n", status);
-
-	return status;
-}
-
-int dev_ste_usbcradle(void)
-{
-	int status;
-
-	gpio_get_value(USB_DET, &status);
-	//dprintf("--- [cradle] value %d\n", status);
-
-	return status;
-}
-
-int dev_ste_ethernet(int devnum)
-{
-    char netdevice[32] = {0, } ;
-    int status=0 ;
-
-    unsigned char network ;
-    FILE *fp ;
-
-    if(devnum)
-        sprintf(netdevice, "/sys/class/net/%s/carrier",DEV_NET_NAME_ETH1) ;
-    else
-        sprintf(netdevice, "/sys/class/net/%s/carrier",DEV_NET_NAME_ETH) ;
-
-    fp = fopen(netdevice, "r") ;
-  
-    if(fp != NULL)
-    {   
-        fread(&network, 1, 1, fp) ;
-
-        if(network == '1')
-        {
-            status = 1 ; // connect
-        }
-        else
-        { 
-            status = 0 ; // disconnect
-        } 
-        fclose(fp) ;
-    }
-    return status ;
 }
 
 /*****************************************************************************
@@ -319,6 +261,7 @@ static void *THR_dev(void *prm)
 		    }
         }
 
+#if 0
 		//# check cradle state
         if (!dev_ste_cradle()) 
         {
@@ -338,14 +281,16 @@ static void *THR_dev(void *prm)
             }
             app_cfg->ftp_enable = OFF;
         }
-
-        if(dev_ste_ethernet(0))
-		{
-            if(!strcmp(app_set->net_info.eth_ipaddr, "0.0.0.0") && app_set->net_info.type != NET_TYPE_STATIC) 
-			{
-                util_set_net_info(DEV_NET_NAME_ETH); //# "eth0"
-			}
-		}
+#endif		
+		
+		// 추후 변경이 필요함
+        //if(dev_ste_ethernet(0))
+		//{
+        //    if(!strcmp(app_set->net_info.eth_ipaddr, "0.0.0.0") && app_set->net_info.type != NET_TYPE_STATIC) 
+		//	{
+        //        util_set_net_info(DEV_NET_NAME_ETH); //# "eth0"
+		//	}
+		//}
 
 		app_msleep(TIME_DEV_CYCLE);
 	}

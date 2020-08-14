@@ -396,7 +396,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 
-    ret = dev_ste_ethernet(0) ;
+    ret = 0; //dev_ste_ethernet(0) ;
     if(!ret) {
         set_time_zone() ;  
         return FALSE  ;

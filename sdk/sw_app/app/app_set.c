@@ -384,17 +384,6 @@ int show_all_cfg(app_set_t* pset)
     return 0;
 }
 
-void set_ap_value()
-{
-	app_cfg->wmode.wifi_mode = 0 ;
-	sprintf(app_cfg->wmode.ssid, "%s", app_set->sys_info.deviceId) ;
-	strcpy(app_cfg->wmode.pwd,"12345678");
-    app_cfg->wmode.stealth = OFF ;
-	strcpy(app_cfg->wmode.wlan_ipaddr, "192.168.0.1");
-	strcpy(app_cfg->wmode.wlan_netmask, "255.255.255.0");
-	strcpy(app_cfg->wmode.wlan_gateway, "192.168.0.1");
-}
-
 static void cfg_param_check(app_set_t* pset)
 {
     char enc_ID[32] = {0, } ;

@@ -79,11 +79,9 @@ av_rec_clean:
 
 gnss:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gnss all
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gpsd all
 
 gnss_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gnss clean
-	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gpsd clean
 
 ubxapp: app app_web netdev sipc av_rec gnss fsupdate
 ubxapp_clean: app_clean app_web_clean netdev_clean sipc_clean av_rec_clean gnss_clean
@@ -100,10 +98,10 @@ libavi_clean:
 	$(MAKE) CROSS_COMPILE=$(BUILD_TOOL_PREFIX) -C $(EXTERNAL_PACKAGE)/avi clean
 
 netdev:
-	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/netdev all
+	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/network_manager all
 
 netdev_clean:
-	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/netdev clean
+	$(MAKE) -fMakefile -C$(EXTERNAL_PACKAGE)/network_manager clean
 
 live555:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/BasicUsageEnvironment
@@ -277,10 +275,10 @@ lsp_all: lsp_clean lsp
 ##### Wi-Fi Driver BUILD #####
 wlan:
 ifeq ($(USE_WIFI),YES)
-	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188eu_driver modules
-	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188cu_driver modules
-	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver modules
-	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver modules
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188eu_driver modules
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188cu_driver modules
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver modules
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver modules
 endif
 
 wlan_clean:
@@ -296,6 +294,21 @@ ifeq ($(USE_WIFI), YES)
 endif
 
 wlan_all: wlan_clean wlan
+
+##### Wi-Fi UTILS BUILD #####
+wlan_tools:
+ifeq ($(USE_WIFI),YES)
+	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd all
+	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant all
+endif
+
+wlan_tools_clean:
+ifeq ($(USE_WIFI), YES)
+	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd clean
+	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant clean
+endif
+
+wlan_tools_all: wlan_tools_clean wlan_tools
 
 ##### PSP (uboot, kernel, wlan) BUILD #####
 psp: uboot lsp wlan
@@ -358,12 +371,16 @@ fsupdate:
 	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/netdev/netdev.out $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/network_manager/net_mgr.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gpsd/gpsd.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/baresip.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/*.so $(TARGET_FS)/usr/baresip/modules/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd $(TARGET_FS)/usr/sbin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd_cli $(TARGET_FS)/usr/sbin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_cli $(TARGET_FS)/usr/sbin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_passphrase $(TARGET_FS)/usr/sbin/.
+	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_supplicant $(TARGET_FS)/usr/sbin/.
 	-cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
@@ -385,9 +402,9 @@ update:
 
 ##### SYSTEM BUILD #####
 
-sys: psp syslink cmem iss hdvpss m3 ubxapp
+sys: psp syslink cmem iss hdvpss m3 wlan_tools ubxapp
 
-sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean ubxapp_clean
+sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean wlan_tools_clean ubxapp_clean
 	rm -rf $(MCFW_ROOT_PATH)/build
 	@echo -e "\n--- make sysclean done! (`date +'%H:%M:%S'`)---\n"
 

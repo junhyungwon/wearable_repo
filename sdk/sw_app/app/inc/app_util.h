@@ -52,7 +52,6 @@ void util_mem_free(void *ptr);
 int util_mem_copy(void *pDes, void *pSrc, int size);
 int util_disk_info(disk_info_t *idisk, const char *path);
 int util_sys_exec(char *arg);
-int util_set_net_info(const char *name);
 int menu_get_data(void);
 char menu_get_cmd(void);
 

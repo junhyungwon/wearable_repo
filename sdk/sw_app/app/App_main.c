@@ -34,13 +34,10 @@
 #include "app_ctrl.h"
 #include "app_ftp.h"
 #include "app_set.h"
-#include "app_hotplug.h"
 #include "app_rtsptx.h"
 #include "app_onvifserver.h"
 #include "app_networkcfg.h"
 #include "app_gui.h"
-#include "app_wcli.h"
-#include "app_netdev.h"
 #include "app_timesrv.h"
 #include "app_sockio.h"
 #include "app_file.h"
@@ -50,6 +47,8 @@
 #include "app_sipc.h"
 #include "app_snd.h"
 #include "app_fms.h"
+#include "app_gps.h"
+#include "app_netmgr.h"
 #include "app_ipinstall.h"
 
 /*----------------------------------------------------------------------------
@@ -108,25 +107,16 @@ int app_main(void)
 	tObj->active = 1;
 
 	app_mcu_start();
-
     sprintf(msg, ">>>>> %s_SYSTEM STARTED!! <<<<<", FITT360_SW_VER);
     app_log_write(MSG_LOG_WRITE, msg);
 
-	app_cfg->wmode.wifi_mode = 1 ;
     ctrl_get_mcu_version( micom_ver ) ;
     sprintf(msg, "SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s",FITT360_SW_VER, FITT360_HW_VER, micom_ver);
     app_log_write(MSG_LOG_WRITE, msg);
 
     app_cap_start();
-
-#if USE_WIRELESS
-	if(app_cfg->wmode.wifi_mode)
-	{
-        app_wcli_start(); //# Wi-Fi Client.
-        app_wconn_start();
-	}
-#endif
-
+	app_netmgr_init();
+	
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
 
@@ -139,7 +129,7 @@ int app_main(void)
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
-	app_rtsptx_start() ;
+	app_rtsptx_start();
 
 	//if(app_set->net_info.enable_onvif==1)
 	{
@@ -203,17 +193,9 @@ int app_main(void)
     if (app_cfg->ste.b.rtsptx) {
         app_rtsptx_stop();
     }
-    app_tsync_exit() ;
-
-#if USE_WIRELESS
-//	if(app_set->sys_info.wifi_mode)
-	if(app_cfg->wmode.wifi_mode)
-	{
-	    app_wcli_stop();
-        app_wconn_stop();
-	}
-#endif
-
+    
+	app_tsync_exit() ;
+	app_netmgr_exit();
 	app_mcu_stop();
 	tObj->active = 0;
 
@@ -276,7 +258,6 @@ static int FW_distinction()
 // wireless version
     FILE *fp = NULL;
 
-#if USE_WIRELESS
     if(0 == access("/opt/fit/lte_distinction" ,0))  // remove lte distinction 
     {
         remove("/opt/fit/lte_distinction") ;
@@ -284,17 +265,6 @@ static int FW_distinction()
 
     fp = fopen("/opt/fit/distinction","w") ;
     fclose(fp);
-#else // BASIC mode
-    if(0 == access("/opt/fit/lte_distinction" ,0))  
-    {
-        remove("/opt/fit/lte_distinction") ;
-    }
-    if(0 == access("/opt/fit/distinction" ,0))  
-    {
-        remove("/opt/fit/distinction") ;
-    }
-   
-#endif
 
     return 0;
 }
@@ -386,13 +356,7 @@ int main(int argc, char **argv)
 		app_rec_init();
 	}
 
-	app_hotplug_init();
-	
 	app_gps_init();
-
-#if USE_WIRELESS
-	app_netdev_init();
-#endif
 	ctrl_reset_nand_update();
 	
 	//#--- app main ----------
@@ -411,11 +375,6 @@ int main(int argc, char **argv)
 	app_mcu_exit();		//# will power off after 200mS
 	app_dev_exit();
 	app_gui_exit();
-	app_hotplug_exit();
-
-#ifdef USE_WIRELESS
-	app_netdev_exit();
-#endif
 
 	if(app_set->srv_info.ON_OFF)
         app_fms_exit();

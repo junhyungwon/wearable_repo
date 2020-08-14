@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "sdk\\sw_app"
+		},
+		{
+			"path": "sdk\\sw_package"
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}

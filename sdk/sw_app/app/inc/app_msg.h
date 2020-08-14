@@ -57,6 +57,15 @@ typedef enum {
 
 	//# ctrl
 	APP_UPDATE = 0x30,
+	
+	//# for key
+	APP_KEY_OK = 0x40,
+	APP_KEY_UP,
+	APP_KEY_DOWN,
+	APP_KEY_LEFT,
+	APP_KEY_RIGHT,
+	APP_KEY_MENU,
+	APP_KEY_PWR,
 
 	MAX_APP_CMD
 } app_cmd_e;

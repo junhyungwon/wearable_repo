@@ -162,7 +162,7 @@ static Void *THR_ddns(Void *prm)
     if(app_set->ddns_info.interval)
         interval = app_set->ddns_info.interval * 60 * 1000 ;
 
-    retval = dev_ste_ethernet(0) ;
+    retval = 0; //dev_ste_ethernet(0) ;
     
     if (app_cfg->ste.b.wifi_ready || app_cfg->ste.b.dial_ready || retval)
     {
@@ -180,7 +180,7 @@ static Void *THR_ddns(Void *prm)
  
         if(app_set->ddns_info.ON_OFF)  // change ddns setting in run time 
         {
-            retval = dev_ste_ethernet(0) ;
+            retval = 0; //dev_ste_ethernet(0) ;
 
             if (app_cfg->ste.b.wifi_ready || app_cfg->ste.b.dial_ready || retval)
             {
@@ -198,7 +198,7 @@ static Void *THR_ddns(Void *prm)
                 cmp_interval = 0 ;
         }  
 
-        app_msleep(DDNS_LOOP_INTERVAL);
+        app_msleep(DDNS_LOOP_INTERVAL);//#?????
     }
     system(stop_buffer) ;
 
@@ -207,7 +207,6 @@ static Void *THR_ddns(Void *prm)
  
     return NULL ;
 }
-
 
 int CSock_init()
 {

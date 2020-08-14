@@ -1191,7 +1191,7 @@ void *myFunc(void *arg)
 						st.ipv4_addr,
 						st.ipv4_prefixlen, inet_ntoa(*(struct in_addr *)&ipaddr));
 
-				ctrl_set_network(st.ipv4_dhcp, st.token, st.ipv4_addr, inet_ntoa(*(struct in_addr *)&ipaddr)) ;
+				//ctrl_set_network(st.ipv4_dhcp, st.token, st.ipv4_addr, inet_ntoa(*(struct in_addr *)&ipaddr)) ;
 			}
 			else {
 				DBG_UDS("ret:%d, ", ret);
@@ -1205,7 +1205,7 @@ void *myFunc(void *arg)
 
 			ret = read(cs_uds, gw, sizeof gw);
 			if(ret > 0){
-				ctrl_set_gateway(gw) ;
+				//ctrl_set_gateway(gw) ;
 				// TODO something...
 			}
 			else {

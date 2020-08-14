@@ -29,19 +29,7 @@
 
 //# gpio
 #define REC_KEY					GPIO_N(0, 6)	//# record switch
-#define BACKUP_DET				GPIO_N(1, 13)	//# cradle detect
-#define USB_DET 				GPIO_N(1, 14)	//# usb detect
 #define GPS_PWR_EN 				GPIO_N(2, 4)	//# gps power enable
-
-/* Wi-Fi Module Path */
-#define RTL_8188E_PATH          "/lib/modules/8188eu.ko"
-#define RTL_8188C_PATH          "/lib/modules/8192cu.ko"
-#define RTL_8821A_PATH          "/lib/modules/8821au.ko"
-
-/* Wi-Fi Module name */
-#define RTL_8188E_NAME          "8188eu"
-#define RTL_8188C_NAME          "8192cu"
-#define RTL_8821A_NAME          "8821au"
 
 #define META_REC_SIZE           120
 #define META_MAX_COUNT          60
@@ -70,8 +58,6 @@ void app_dev_exit(void);
 
 int dev_ste_mmc(void);
 int dev_ste_key(int gio);
-int dev_ste_cradle(void);
 void dev_buzz_ctrl(int time, int cnt);
-int dev_ste_ethernet(int devnum) ;
 
 #endif	/* _APP_DEV_H_ */
