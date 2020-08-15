@@ -396,7 +396,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 
-    ret = 0; //dev_ste_ethernet(0) ;
+    ret = app_cfg->ste.b.eth0_run;
     if(!ret) {
         set_time_zone() ;  
         return FALSE  ;

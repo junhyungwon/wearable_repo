@@ -34,8 +34,10 @@ typedef struct {
 	app_thr_obj rObj;		//# rec message send thread
 	
 	int qid;
-	int devType;
-	int devStatus;
+	
+	int device;
+	int insert;
+	int link_status;
 	int wlan_5G_enable;
 	
 	int shmid;  /* shared memory qid */
@@ -73,10 +75,15 @@ static int recv_msg(void)
 	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0)
 		return -1;
 	
-	inetmgr->devType = msg.dev_type;
-	inetmgr->devStatus = msg.dev_status;
-	inetmgr->wlan_5G_enable = msg.wlan_5G_enable;
-	
+	if (msg.cmd == NETMGR_CMD_DEV_DETECT) {
+		inetmgr->device = msg.device;
+		inetmgr->insert = msg.status;
+		inetmgr->wlan_5G_enable = msg.wlan_5G_enable;
+	} 
+	else if (msg.cmd == NETMGR_CMD_DEV_LINK_STATUS) {
+		inetmgr->device      = msg.device;
+		inetmgr->link_status = msg.status;
+	}
 	return msg.cmd;
 }
 
@@ -229,7 +236,8 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
-		/* usb2eth 장치가 연결되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.st_cradle = 1;
+		/* cradle 장치가 연결되었을 때 필요한 루틴을 수행 */
 		if (app_set->net_info.type == NET_TYPE_STATIC) {
 			info->dhcp = 0;
 			strcpy(info->ip_address, app_set->net_info.eth_ipaddr);
@@ -240,8 +248,35 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 		}
 		send_msg(NETMGR_CMD_CRADLE_ETH_START);
 	} else {
-		/* usb2eth 장치가 제거되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.st_cradle = 0;
+		/* cradle 장치가 제거되었을 때 필요한 루틴을 수행 */
 		send_msg(NETMGR_CMD_CRADLE_ETH_STOP);
+	}
+}
+
+static void __netmgr_dev_link_status_handler(void)
+{
+	int device = inetmgr->device;
+	int link   = inetmgr->link_status;
+	
+	if (device == NETMGR_DEV_TYPE_USB2ETHER) {
+		if (link) {
+			app_cfg->ste.b.eth1_run = 1;
+			app_leds_rf_ctrl(LED_RF_OK);
+		} else {
+			app_cfg->ste.b.eth1_run = 0;
+			app_leds_rf_ctrl(LED_RF_OFF);
+		}
+	} else if (device == NETMGR_DEV_TYPE_RNDIS) {
+		
+	} else if (device == NETMGR_DEV_TYPE_CRADLE) {
+		if (link) {
+			app_cfg->ste.b.eth0_run = 1;
+			app_cfg->ftp_enable = ON;
+		} else {
+			app_cfg->ste.b.eth0_run = 0;
+			app_cfg->ftp_enable = OFF;
+		}
 	}
 }
 
@@ -296,8 +331,8 @@ static void *THR_netmgr_send_msg(void *prm)
 			case APP_KEY_UP:
 			{
 				/* 장치가 연결되거나 제거된 경우 관련 루틴을 실행 */
-				int type   = inetmgr->devType;
-				int status = inetmgr->devStatus;
+				int type   = inetmgr->device;
+				int status = inetmgr->insert;
 				
 				if (type == NETMGR_DEV_TYPE_WIFI) 
 				{
@@ -357,9 +392,15 @@ static void *THR_netmgr_recv_msg(void *prm)
 		case NETMGR_CMD_DEV_DETECT:
 			dprintf("received netmgr device detect!\n");
 			__netmgr_hotplug_noty();
-			//dprintf("device type %x, status %x!\n", inetmgr->devType, inetmgr->devStatus);
+			//dprintf("device type %x, status %x!\n", inetmgr->device, inetmgr->insert);
 			break;
-			
+		
+		case NETMGR_CMD_DEV_LINK_STATUS:
+			dprintf("received netmgr device link status!\n");
+			//dprintf("device type %x, link status %x!\n", inetmgr->device, inetmgr->link_status);
+			__netmgr_dev_link_status_handler();
+			break;
+		
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
 			dprintf("received netmgr exit!\n");

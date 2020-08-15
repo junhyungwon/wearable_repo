@@ -25,6 +25,7 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "rndis.h"
 #include "event_hub.h"
+#include "common.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
@@ -45,7 +46,7 @@ typedef struct {
 	app_thr_obj rObj; /* rndis mode */
 	
 	int stage;
-	int status;
+	int running;
 	
 	char ip[16];		//# ip address
 	char hw_addr[32];
@@ -130,7 +131,6 @@ static void *THR_rndis_main(void *prm)
 	int exit = 0, cmd;
 	char tmp_buf[128];
 	FILE *f;
-	int response = 0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -142,19 +142,16 @@ static void *THR_rndis_main(void *prm)
 			break;
 		
 		irndis->stage = STAGE_WAIT_DEV_ACTIVE;
-		irndis->status = 0;
-		
 		//# 루프에 진입하기 위해서는 APP_CMD_START나 APP_CMD_STOP을 수신 해야 함.
-		while(!exit)
+		while (1)
 		{
 			int st = 0;
 			int type = 0;
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
-				if (irndis->status) 
+				if (irndis->running) 
 				{
-					irndis->status = 0;
 					f = popen("/usr/bin/killall udhcpc", "w");
 					if (f != NULL)
 						pclose(f);
@@ -172,18 +169,20 @@ static void *THR_rndis_main(void *prm)
 			case STAGE_WAIT_DHCPC:
 				//# check done pipe(udhcpc...)
 				if (0 == access(UDHCPC_PID_PATH, F_OK)) {
-					irndis->status = 1;
 					//app_leds_rf_ctrl(LED_RF_OK);
 					irndis->stage = STAGE_IDLE;
+					irndis->running = 1;
 					memset(tmp_buf, 0, sizeof(tmp_buf));
 					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", irndis->ip);
 					log_write(tmp_buf);
-					response = 1;
+					
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
 				} else {
 					irndis->stage = STAGE_WAIT_DHCPC;
 					/* 항상 같은 wait 상태일 수 있음..??? */
 				}
 				break;
+				
 			case STAGE_WAIT_DEV_ACTIVE:
 				type = __wait_for_active();
 				if (type > 0) 
@@ -197,28 +196,16 @@ static void *THR_rndis_main(void *prm)
 						pclose(f);
 						/* Device 상황을 mainapp에 전달함. */ 
 						irndis->stage = STAGE_WAIT_DHCPC;
-						irndis->status = NETMGR_RNDIS_STATUS_IDLE;
-						response = 1;
-					} else {
-						irndis->stage = STAGE_IDLE;
-						irndis->status = NETMGR_RNDIS_STATUS_ERR;
-						response = 1;	
-					}
+					} 
 				} else {
 					irndis->stage = STAGE_IDLE;
-					irndis->status = NETMGR_RNDIS_STATUS_ERR;
-					response = 1;
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
 				}
 				break;
 			case STAGE_IDLE:
 			default:
 				/* nothing to do */
 				break;		
-			}
-			
-			if (response) {
-				response = 0;
-				netmgr_event_hub_rndis_status(irndis->status);
 			}
 			
 			delay_msecs(200);
@@ -278,7 +265,8 @@ int netmgr_rndis_exit(void)
 int netmgr_rndis_event_start(void)
 {
 	app_thr_obj *tObj = &irndis->rObj;
-
+	
+	irndis->running = 0;
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
 	return 0;

@@ -535,7 +535,7 @@ void * onvifserver_thread(void * argv)
     wifi_pre_status = app_cfg->ste.b.wifi ;
     lte_pre_status = app_cfg->ste.b.dial_run ;
     usb2eth_pre_status = app_cfg->ste.b.eth1_run ;
-    eth0_pre_status = 0;// dev_ste_ethernet(0);
+    eth0_pre_status = app_cfg->ste.b.eth0_run;
 
 	// 초기화...
 	while(1) {
@@ -656,7 +656,7 @@ void * onvifserver_thread(void * argv)
 		}
 		
 		// changed ethernet status
-		eth0_cur_status = 0; //dev_ste_ethernet(0);
+		eth0_cur_status = app_cfg->ste.b.eth0_run;
 		if(app_cfg->ste.b.st_cradle && eth0_pre_status != eth0_cur_status) {
 		    eth0_pre_status = eth0_cur_status ;
 			init_onvifserver() ;

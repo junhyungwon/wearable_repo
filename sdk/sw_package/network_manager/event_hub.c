@@ -17,6 +17,10 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "event_hub.h"
 #include "rndis.h"
+#include "wlan_softap.h"
+#include "wlan_station.h"
+#include "usb2eth.h"
+#include "cradle_eth.h"
 #include "common.h"
 #include "main.h"
 
@@ -43,18 +47,19 @@ static netmgr_event_hub_t *ievt = &t_proc;
 /*----------------------------------------------------------------------------
  message send/recv function
 -----------------------------------------------------------------------------*/
-static int send_msg(int cmd, int prm1, int prm2)
+static int send_msg(int cmd, int param1, int param2)
 {
 	to_netmgr_main_msg_t msg;
 	
 	msg.type = NETMGR_MSG_TYPE_TO_MAIN;
 	msg.cmd = cmd;
 	
-	msg.dev_type = prm1;
-	msg.dev_status = prm2;
+	msg.device = param1;
+	msg.status = param2;
 	msg.wlan_5G_enable = 0;
 	
-	if (prm1 == NETMGR_DEV_TYPE_WIFI) {
+	if (param1 == NETMGR_DEV_TYPE_WIFI) 
+	{
 		if ((app_cfg->wlan_vid == RTL_8821A_VID) && 
 			(app_cfg->wlan_pid == RTL_8821A_PID))
 		{
@@ -98,8 +103,11 @@ static void *THR_event_hub_main(void *prm)
             break;
 		
 		switch (cmd) {
-		case APP_KEY_UP:
+		case APP_KEY_UP: //# polldev noty
 			send_msg(NETMGR_CMD_DEV_DETECT, tObj->param0, tObj->param1);
+			break;
+		case APP_KEY_DOWN: //# device link status noty
+			send_msg(NETMGR_CMD_DEV_LINK_STATUS, tObj->param0, tObj->param1);
 			break;
 		}
 	} 
@@ -170,6 +178,14 @@ static void *THR_event_hub_poll(void *prm)
 			netmgr_usb2eth_event_stop();
 			break;	
 				
+		case NETMGR_CMD_CRADLE_ETH_START:
+			netmgr_cradle_eth_event_start();
+			break;
+		
+		case NETMGR_CMD_CRADLE_ETH_STOP:
+			netmgr_cradle_eth_event_stop();
+			break;
+						
 		case NETMGR_CMD_PROG_START:
 			/* 각 쓰레드 시작 */
 			event_send(&app_cfg->mObj, APP_CMD_START, 0, 0);
@@ -243,7 +259,7 @@ int netmgr_event_hub_exit(void)
 * @section  DESC Description: 
 *   - desc
 *****************************************************************************/
-int netmgr_event_hub_set_dev_status(int type, int ste)
+int netmgr_event_hub_polldev_noty(int type, int ste)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
@@ -258,12 +274,12 @@ int netmgr_event_hub_set_dev_status(int type, int ste)
 * @section  DESC Description: 
 *   - desc
 *****************************************************************************/
-int netmgr_event_hub_rndis_status(int ste)
+int netmgr_event_hub_dev_link_status(int type, int status)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
 	/* APP_KEY_UP을 이용한다 */
-	event_send(tObj, APP_KEY_DOWN, ste, 0);
+	event_send(tObj, APP_KEY_DOWN, type, status);
 	
 	return 0;
 }

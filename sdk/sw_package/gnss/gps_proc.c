@@ -179,30 +179,22 @@ static void *THR_gps_poll(void *prm)
 		} 
 		else if (cmd == APP_CMD_START) 
 		{
-			/* STOP ??START ??GPS UART ì´ˆê¸°?”ë? ?¤ì‹œ ?˜í–‰?˜ì? ?ŠìŒ */
 			if (app_cfg->gps_fd <= 0) {
 				app_cfg->gps_fd = gps_dev_init((const char *)app_cfg->dev_name, 
 								app_cfg->rate);
 				if (app_cfg->gps_fd < 0) {
 					eprintf("failed to init gps dev(%s, %d)\n", app_cfg->dev_name,	app_cfg->rate);
-					/* TODO ?ëŸ¬ ì²˜ë¦¬ë¥??´ë–»ê²??´ì•¼ ?˜ëŠ” ì§€ ??? */
 					send_msg(GNSS_CMD_GPS_DEV_ERR);
 					return NULL;
 				}
-				/* gps ?°ì´???˜ì‹ ???„í•œ ?ë£Œêµ¬ì¡° ì´ˆê¸°??*/
 				app_nmea_parse_init();
 			}
 		}
 		
-		/* GPS PAUSE ?„í•´??ì¶”ê???*/
 		while (poll_done == 0)
 		{
 			cmd = tObj->cmd;
-			if (cmd == APP_CMD_EXIT) {
-				exit = 1; /* while(exit) ?°ë ˆ??ì¢…ë£Œ */
-				break;
-			} else if (cmd == APP_CMD_STOP) {
-				/* parser ë§??¼ì‹œ ?•ì? */
+			if (cmd == APP_CMD_STOP) {
 				break;
 			}
 			
@@ -212,8 +204,7 @@ static void *THR_gps_poll(void *prm)
 				gps_set_rmc_data(GPS_DISABLED);
 				continue;
 			} else if (changed == NODATA_IS) {
-				/* 9600bps?¼ê²½??1ms???€??1ë°”ì´???˜ì‹ ?? */
-				gps_set_rmc_data(GPS_DISABLED);
+				/* not yet GPRMC data receive!! ignore */
 				delay_msecs(100);
 				continue;
 			} 
@@ -247,8 +238,6 @@ static void *THR_gps_poll(void *prm)
 	return NULL;
 }
 
-
-
 /*****************************************************************************
 * @brief    gnss start thread function
 * @section  [desc]
@@ -257,7 +246,7 @@ int app_gps_proc_init(void)
 {
 	app_thr_obj *tObj;
 	pthread_mutexattr_t mutex_attr;
-	int length = 0, status = 0;
+	int status = 0;
 
 	status |= pthread_mutexattr_init(&mutex_attr);
 	status |= pthread_mutex_init(&iproc->lock, &mutex_attr);
@@ -267,12 +256,7 @@ int app_gps_proc_init(void)
 	}
 	
   	pthread_mutexattr_destroy(&mutex_attr);
-	
 	memset(iproc, 0, sizeof(app_gps_proc_t));
-	
-	/* FIFO ì´ˆê¸°??*/
-	length = (sizeof(gnss_shm_data_t)*GPS_PROC_LENGTH);
-	dprintf("fifo initialized: size %d\n", length);
 	
 	tObj = &iproc->mObj;
 	if (thread_create(tObj, THR_gps_poll, APP_THREAD_PRI, NULL) < 0) {
@@ -284,8 +268,6 @@ int app_gps_proc_init(void)
 	
 	return 0;
 }
-
-
 
 /*****************************************************************************
 * @brief    gnss request gps data
@@ -299,8 +281,6 @@ void app_gps_data_request()
 	send_msg(GNSS_CMD_GPS_POLL_DATA);
 	pthread_mutex_unlock(&iproc->lock);
 }
-
-
 
 /*****************************************************************************
 * @brief    gnss parseë¥??¤í–‰?œí‚¨??
@@ -320,7 +300,6 @@ int app_gps_proc_stop(void)
 {
 	event_send(&iproc->mObj, APP_CMD_STOP, 0, 0);
 	
-	/* ?•ì¸???„ìš”??*/
 	tcflush(app_cfg->gps_fd, TCIFLUSH); //# input flush.
 	
 	aprintf("... done!\n");

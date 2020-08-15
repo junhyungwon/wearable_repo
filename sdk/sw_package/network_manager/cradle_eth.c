@@ -25,6 +25,8 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define NETMGR_CRADLE_ETH_DEVNAME	"eth0"
+
 typedef struct {
 	app_thr_obj cObj;
 	
@@ -33,10 +35,9 @@ typedef struct {
     char gw[NETMGR_NET_STR_MAX_SZ+1];
 	
 	int dhcp;
+	int ip_alloc;
 	
 } netmgr_cradle_eth_t;
-
-#define NETMGR_CRADLE_ETH_DEVNAME	"eth0"
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -88,20 +89,49 @@ static void *THR_cradle_eth_main(void *prm)
 	
 	while (!exit)
 	{
+		int res;
+		
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT)
 			break;
-		else if (cmd == APP_CMD_STOP) {
-			netmgr_net_link_down(NETMGR_CRADLE_ETH_DEVNAME);
-		}
-		else if (cmd == APP_CMD_START) 
+		
+		while (1)
 		{
-			if (icradle->dhcp == 0)  {//
-				netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, icradle->mask, icradle->gw);
-			} else {
-				netmgr_set_ip_dhcp(NETMGR_CRADLE_ETH_DEVNAME);
+			cmd = tObj->cmd;
+			if (cmd == APP_CMD_STOP)
+				break;
+			
+			/* 네트워크 케이블이 연결되면 1 아니면 0 */
+			res = __is_connected_cradle_eth();
+			if ((res == 0) && (icradle->ip_alloc == 0)) 
+			{
+				/* IP 할당이 안된 상태이고 케이블이 연결 안된 경우: 대기 */	
 			}
-		} 
+			else if ((res == 0) && (icradle->ip_alloc == 1))
+			{
+				/* 동작 중에 네트워크 케이블이 분리된 경우: 상태의 변화가 있으므로 전달 */
+				icradle->ip_alloc = 0;
+				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+			}
+			else if ((res == 1) && (icradle->ip_alloc == 0))
+			{
+				/* 케이블이 연결되고 IP 할당이 안된 경우 */
+				if (icradle->dhcp == 0)  {//
+					netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, icradle->mask, icradle->gw);
+				} else {
+					netmgr_set_ip_dhcp(NETMGR_CRADLE_ETH_DEVNAME);
+				}
+				
+				icradle->ip_alloc = 1;
+				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
+			}
+			else if ((res == 1) && (icradle->ip_alloc == 1))
+			{
+				/* IP가 할당된 상태이고 케이블도 연결된 상태 */
+			}
+			
+			delay_msecs(100);	
+		}
 	}
 	
 	tObj->active = 0;
@@ -179,7 +209,8 @@ int netmgr_cradle_eth_event_start(void)
 	} else {
 		dprintf("cradle eth set ip dhcp!\n");
 	}
-	 
+	
+	netmgr_net_link_up(NETMGR_CRADLE_ETH_DEVNAME); 
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
 	return 0;
@@ -195,6 +226,7 @@ int netmgr_cradle_eth_event_stop(void)
 	app_thr_obj *tObj = &icradle->cObj;
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
+	netmgr_net_link_down(NETMGR_CRADLE_ETH_DEVNAME);
 	
 	return 0;
 }
