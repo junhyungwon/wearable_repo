@@ -261,37 +261,6 @@ static void *THR_dev(void *prm)
 		    }
         }
 
-#if 0
-		//# check cradle state
-        if (!dev_ste_cradle()) 
-        {
-            if (app_cfg->ftp_enable == OFF) 
-            {
-                util_set_net_info(DEV_NET_NAME_ETH); //# "eth0"
-                app_cfg->ste.b.st_cradle = 1 ;
-                app_cfg->ftp_enable = ON;
-            } 
-        } 
-        else 
-        {
-            if(app_cfg->ste.b.st_cradle)
-            {
-                app_cfg->ste.b.st_cradle = 0 ;
-                dev_net_link_down("eth0") ;
-            }
-            app_cfg->ftp_enable = OFF;
-        }
-#endif		
-		
-		// 추후 변경이 필요함
-        //if(dev_ste_ethernet(0))
-		//{
-        //    if(!strcmp(app_set->net_info.eth_ipaddr, "0.0.0.0") && app_set->net_info.type != NET_TYPE_STATIC) 
-		//	{
-        //        util_set_net_info(DEV_NET_NAME_ETH); //# "eth0"
-		//	}
-		//}
-
 		app_msleep(TIME_DEV_CYCLE);
 	}
 

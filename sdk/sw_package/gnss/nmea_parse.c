@@ -1381,7 +1381,8 @@ static gps_mask_t processRMC(int count, char *field[], struct gps_device_t *sess
             mask |= MODE_SET;
         } 
 		
-        session->gpsdata.status = newstatus;
+		/* 0 -> no fix, 1-> fix, 2-> differendial fix (not used) */
+        session->gpsdata.status = (newstatus ? 1 : 0);
     }
 
     return mask;

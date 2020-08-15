@@ -59,8 +59,6 @@
 #define WD_FILE					(1<<3)
 #define WD_TOT					(WD_ENC+WD_DEV+WD_MICOM+WD_FILE)
 
-#define WD_FSCAN				(0xDAAF)
-
 #define TVO_REC                 (1<<0)
 #define TVO_TEMP                (1<<1)
 #define TVO_VOLT                (1<<2)
@@ -159,8 +157,9 @@ typedef union {
         unsigned int st_cradle  : 1;    // status of attached or detached cradle
         unsigned int pwr_off	: 1;	// check power off
         unsigned int ftp_run    : 1;    // under running ftp
-        unsigned int onvifserver : 1;   
-        unsigned int eth1_run   : 1;    // USB2ETHERNET running
+        unsigned int onvifserver : 1;
+		unsigned int eth0_run   : 1;    // eth0 running   
+        unsigned int eth1_run   : 1;    // eth1 running
         unsigned int web_server : 1;    // web_server
 		unsigned int prerec_state  : 1; // record state before using FTP
 		unsigned int nokey  	   : 1; // prevent key

@@ -31,6 +31,7 @@
 #include "main.h"
 #include "common.h"
 #include "usb2eth.h"
+#include "cradle_eth.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -104,6 +105,9 @@ static void ___thread_start(void)
 	/* usb2eth */
 	netmgr_usb2eth_init();
 	
+	/* eth0 */
+	netmgr_cradle_eth_init();
+	
 	/* 연결된 USB 장치를 확인 (가장 늦게 실행 해야 함) */
 	netmgr_poll_dev_init();
 }
@@ -168,6 +172,7 @@ int main(int argc, char **argv)
 	netmgr_wlan_hostapd_exit();
 	netmgr_rndis_exit();
 	netmgr_usb2eth_exit();
+	netmgr_cradle_eth_exit();
 	
 	netmgr_poll_dev_exit();
 	netmgr_event_hub_exit();

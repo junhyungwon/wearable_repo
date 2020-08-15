@@ -29,7 +29,6 @@
 
 //# gpio
 #define REC_KEY					GPIO_N(0, 6)	//# record switch
-#define GPS_PWR_EN 				GPIO_N(2, 4)	//# gps power enable
 
 #define META_REC_SIZE           120
 #define META_MAX_COUNT          60

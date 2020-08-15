@@ -190,8 +190,11 @@ static void *THR_gui(void *prm)
 		{
 		    if (app_cfg->num_ch == 0)
                 app_cfg->wd_flags |= WD_ENC;
-
-			if (app_cfg->wd_flags == WD_TOT || app_cfg->wd_flags >= WD_FSCAN)
+			
+			if (!app_cfg->ste.b.gps)
+                app_cfg->wd_flags |= WD_DEV;
+				
+			if (app_cfg->wd_flags == WD_TOT)
 			{
 				app_mcu_wd_keep_alive();
 				app_cfg->wd_flags = 0;
