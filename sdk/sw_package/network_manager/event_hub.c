@@ -109,6 +109,12 @@ static void *THR_event_hub_main(void *prm)
 		case APP_KEY_DOWN: //# device link status noty
 			send_msg(NETMGR_CMD_DEV_LINK_STATUS, tObj->param0, tObj->param1);
 			break;
+		case APP_KEY_LEFT:	
+			send_msg(NETMGR_CMD_DEV_IP_STATUS, 0, 0);
+			break;
+		case APP_KEY_RIGHT:	/* Wi-Fi RSSi */
+			send_msg(NETMGR_CMD_WLAN_CLIENT_RSSI, tObj->param0, tObj->param1);
+			break;	
 		}
 	} 
 	
@@ -143,46 +149,54 @@ static void *THR_event_hub_poll(void *prm)
 			continue;
 		}
 		
-		dprintf("[netmgr process] receive cmd 0x%x\n", cmd);
-		
 		switch (cmd) {
 		case NETMGR_CMD_WLAN_SOFTAP_START:
+			dprintf("NETMGR_CMD_WLAN_SOFTAP_START\n");
 			netmgr_wlan_hostapd_start();
 			break;
 		
 		case NETMGR_CMD_WLAN_SOFTAP_STOP:
+			dprintf("NETMGR_CMD_WLAN_SOFTAP_STOP\n");
 			netmgr_wlan_hostapd_stop();
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_START:
+			dprintf("NETMGR_CMD_WLAN_CLIENT_START\n");
 			netmgr_wlan_cli_start();
 			break;
 		
 		case NETMGR_CMD_WLAN_CLIENT_STOP:
+			dprintf("NETMGR_CMD_WLAN_CLIENT_STOP\n");
 			netmgr_wlan_cli_stop();
 			break;	
 			
 		case NETMGR_CMD_RNDIS_START:
+			dprintf("NETMGR_CMD_RNDIS_START\n");
 			netmgr_rndis_event_start();
 			break;
 		
 		case NETMGR_CMD_RNDIS_STOP:
+			dprintf("NETMGR_CMD_RNDIS_STOP\n");
 			netmgr_rndis_event_stop();
 			break;	
 		
 		case NETMGR_CMD_USB2ETH_START:
+			dprintf("NETMGR_CMD_USB2ETH_START\n");
 			netmgr_usb2eth_event_start();
 			break;
 		
 		case NETMGR_CMD_USB2ETH_STOP:
+			dprintf("NETMGR_CMD_USB2ETH_STOP\n");
 			netmgr_usb2eth_event_stop();
 			break;	
 				
 		case NETMGR_CMD_CRADLE_ETH_START:
+			dprintf("NETMGR_CMD_CRADLE_ETH_START\n");
 			netmgr_cradle_eth_event_start();
 			break;
 		
 		case NETMGR_CMD_CRADLE_ETH_STOP:
+			dprintf("NETMGR_CMD_CRADLE_ETH_STOP\n");
 			netmgr_cradle_eth_event_stop();
 			break;
 						
@@ -194,6 +208,9 @@ static void *THR_event_hub_poll(void *prm)
 		case NETMGR_CMD_PROG_EXIT:
 			event_send(&app_cfg->mObj, APP_CMD_EXIT, 0, 0);
 			exit = 1;
+			break;
+		default:
+			dprintf("unknow command %x\n", cmd);
 			break;
 		}
 	}
@@ -283,3 +300,34 @@ int netmgr_event_hub_dev_link_status(int type, int status)
 	
 	return 0;
 }
+
+/*****************************************************************************
+* @brief    send noty event (device insert / remove)
+* @section  DESC Description: 
+*   - desc
+*****************************************************************************/
+int netmgr_event_hub_dev_ip_status(int type)
+{
+	app_thr_obj *tObj = &ievt->sObj;
+	
+	/* APP_KEY_OK을 이용한다 */
+	event_send(tObj, APP_KEY_LEFT, type, 0);
+	
+	return 0;
+}
+
+/*****************************************************************************
+* @brief    send noty event (device insert / remove)
+* @section  DESC Description: 
+*   - desc
+*****************************************************************************/
+int netmgr_event_hub_dev_rssi_status(int type, int level)
+{
+	app_thr_obj *tObj = &ievt->sObj;
+	
+	/* APP_KEY_OK을 이용한다 */
+	event_send(tObj, APP_KEY_RIGHT, type, level);
+	
+	return 0;
+}
+

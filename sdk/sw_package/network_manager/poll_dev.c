@@ -25,6 +25,7 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "poll_dev.h"
 #include "common.h"
+#include "event_hub.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
@@ -499,8 +500,9 @@ static void *THR_dev_poll(void *prm)
 		int event_device = 0;
 		
 		cmd = tObj->cmd;
-        if (cmd == APP_CMD_EXIT)
-            break;
+        if (cmd == APP_CMD_EXIT) {
+		    break;
+		}
 		
 		//# wait USB Rndis Device
 		ret = __is_connected_rndis();
@@ -630,6 +632,8 @@ static void *THR_dev_poll(void *prm)
 				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_CRADLE, app_cfg->ste.bit.cradle);				
 		}
 		
+		// for next event : wait
+		delay_msecs(50);
 	} 
 	
 	tObj->active = 0;

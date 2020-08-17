@@ -49,31 +49,6 @@ static netmgr_usb2ether_t *iusb2eth = &t_usb2ether;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-/*
- * 이 함수는 ifconfig ethX up을 해야 값을 읽을 수 있다.
- */
-static int __is_connected_usb2eth(void)
-{
-	FILE *fp = NULL;
-    char buf[32] = {0, };
-    int status=0;
-    unsigned char val;
-
-    snprintf(buf, sizeof(buf), "/sys/class/net/eth1/carrier");
-    
-	fp = fopen(buf, "r") ;
-    if (fp != NULL) {   
-        fread(&val, 1, 1, fp);
-        if (val == '1') {
-            status = 1 ; // connect
-        } else { 
-            status = 0 ; // disconnect
-        } 
-        fclose(fp);
-    }
-	
-    return status;
-}
 
 /*****************************************************************************
 * @brief    network proc function!
@@ -102,7 +77,7 @@ static void *THR_usb2eth_main(void *prm)
 				break;
 			
 			/* 네트워크 케이블이 연결되면 1 아니면 0 */
-			res = __is_connected_usb2eth();
+			res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
 			if ((res == 0) && (iusb2eth->ip_alloc == 0)) 
 			{
 				/* IP 할당이 안된 상태이고 케이블이 연결 안된 경우: 대기 */	

@@ -1,12 +1,12 @@
 /*
- * File : wlan_softap.h
+ * File : cradle_eth.h
  *
  * Copyright (C) 2020 LF
  *
  */
 
-#ifndef __USB2ETH_H__
-#define __USB2ETH_H__
+#ifndef __CRADLE_ETH_H__
+#define __CRADLE_ETH_H__
 
 /*----------------------------------------------------------------------------
  Defines referenced	header files
@@ -28,4 +28,4 @@ int netmgr_cradle_eth_exit(void);
 int netmgr_cradle_eth_event_start(void);
 int netmgr_cradle_eth_event_stop(void);
 
-#endif	/* __USB2ETH_H__ */
+#endif	/* __CRADLE_ETH_H__ */

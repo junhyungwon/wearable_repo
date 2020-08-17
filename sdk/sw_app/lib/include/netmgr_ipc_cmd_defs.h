@@ -44,13 +44,14 @@ typedef enum {
 	NETMGR_CMD_PROG_START,     			//# program exit
  	NETMGR_CMD_PROG_EXIT,     			//# program exit
  	NETMGR_CMD_DEV_DETECT,	     		//# usb wi-fi, ethernet, usb2ethernet등이 감지된 경우
-	NETMGR_CMD_DEV_LINK_STATUS,   		//# usb2eth status!
+	NETMGR_CMD_DEV_LINK_STATUS,   		//# netdevice status!
+	NETMGR_CMD_DEV_IP_STATUS,   		//# netdevice ip status!
 	NETMGR_CMD_WLAN_SOFTAP_START,   	//# usb wi-fi AP start!
  	NETMGR_CMD_WLAN_SOFTAP_STOP,		//# usb wi-fi AP stop!
  	NETMGR_CMD_WLAN_CLIENT_START,		//# usb wi-fi Client start!
 	NETMGR_CMD_WLAN_CLIENT_STOP,    	//# usb wi-fi Client stop!
-	NETMGR_CMD_WLAN_CLIENT_RESPONSE,    //# usb wi-fi Client status!
- 	NETMGR_CMD_RNDIS_START,     		//# rndis start!
+ 	NETMGR_CMD_WLAN_CLIENT_RSSI,   		//# Wi-Fi RSSI!
+	NETMGR_CMD_RNDIS_START,     		//# rndis start!
  	NETMGR_CMD_RNDIS_STOP,     			//# rndis stop!
 	NETMGR_CMD_USB2ETH_START,   		//# usb2eth start!
  	NETMGR_CMD_USB2ETH_STOP,     		//# usb2eth stop!
@@ -61,7 +62,7 @@ typedef enum {
 
 //########################################################################################################
 
-#define NETMGR_DEV_TYPE_WIFI			0x10
+#define NETMGR_DEV_TYPE_WIFI			0x10 
 #define NETMGR_DEV_TYPE_USB2ETHER		0x11
 #define NETMGR_DEV_TYPE_RNDIS			0x12
 #define NETMGR_DEV_TYPE_CRADLE			0x13
@@ -75,6 +76,7 @@ typedef enum {
 #define NETMGR_DEV_REMOVE				0   /* Network 장치가 해제된 상태 */
 #define NETMGR_DEV_INSERT				1   /* Network 장치가 연결된 상태 */ 
 
+#define NETMGR_DEV_ERROR				-1   /* Network 장치가 연결되고 동작에 문제가 발생 */ 
 #define NETMGR_DEV_INACTIVE				0   /* Network 장치가 연결되고 IP 할당이 완료 */ 
 #define NETMGR_DEV_ACTIVE				1   /* Network 장치가 연결되고 IP 할당이 완료 */ 
 
@@ -93,8 +95,9 @@ typedef struct {
 	long type;
 	int cmd;
 	
-	int device;          /* 매크로 참조 */
+	int device;           /* 매크로 참조 */
 	int status;			  /* 0->remove, 1->insert */
+	int wlan_rssi;		  /* Wi-Fi RSSI Level return */
 	int wlan_5G_enable;
 	
 } to_netmgr_main_msg_t;

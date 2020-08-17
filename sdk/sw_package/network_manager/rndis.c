@@ -31,22 +31,29 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define STAGE_IDLE					(0x00)
-#define STAGE_WAIT_DEV_ACTIVE		(0x01)
-#define STAGE_WAIT_DHCPC			(0x02)
-#define STAGE_RUN					(0x03)
+#define TIME_RNDIS_CYCLE			200		//# msec
+#define TIME_RNDIS_WAIT_ACTIVE		10000   //# 10sec
+#define CNT_RNDIS_WAIT_ACTIVE  		(TIME_RNDIS_WAIT_ACTIVE/TIME_RNDIS_CYCLE)
+
+#define TIME_RNDIS_WAIT_DHCP		10000   //# 10sec
+#define CNT_RNDIS_WAIT_DHCP  		(TIME_RNDIS_WAIT_DHCP/TIME_RNDIS_CYCLE)
+
+#define __STAGE_RNDIS_WAIT_ACTIVE	(0x00)
+#define __STAGE_RNDIS_WAIT_DHCP		(0x01)
+#define __STAGE_RNDIS_GET_STATUS	(0x02)
  
 #define RNDIS_OPER_PATH		  		"/sys/class/net/usb0/operstate"
 #define USBETHER_OPER_PATH	  		"/sys/class/net/eth1/operstate"
+#define RNDIS_DEVNAME(a)			((a==1)?"usb0":"eth1")
 #define RNDIS_DEV_NAME_USB	  		1
 #define RNDIS_DEV_NAME_ETH	  		2
-#define UDHCPC_PID_PATH		 		"/tmp/udhcpc.pid"
 
 typedef struct {
 	app_thr_obj rObj; /* rndis mode */
 	
 	int stage;
-	int running;
+	int iftype;
+	int tmr_count;
 	
 	char ip[16];		//# ip address
 	char hw_addr[32];
@@ -73,49 +80,46 @@ static netmgr_rndis_t *irndis = &t_rndis;
 static int __wait_for_active(void)
 {
     FILE *f = NULL;
+	char devname[16];
+	char path[128]={0,};
 	int ret = -1, r;
-
-    if (0 == access(RNDIS_OPER_PATH, R_OK)) {
-	    f = fopen(RNDIS_OPER_PATH, "r");
+	
+	memset(devname, 0, sizeof(devname));
+	
+	if (0 == access(RNDIS_OPER_PATH, R_OK)) {
+		strcpy(devname, "usb0");
+		ret = RNDIS_DEV_NAME_USB;
+	} else if (0 == access(USBETHER_OPER_PATH, R_OK)) {
+		strcpy(devname, "eth1");
+		ret = RNDIS_DEV_NAME_ETH;
+	} else {
+		eprintf("unknown rndis device!!\n");
+		return ret;
+	}
+	
+	snprintf(path, sizeof(path), "/sys/class/net/%s/operstate", devname);
+    if (0 == access(RNDIS_OPER_PATH, R_OK)) 
+	{
+	    f = fopen(path, "r");
 	    if (f != NULL) 
 		{
 			fclose(f);
 			//# get hardware address
-			netmgr_get_net_info("usb0", irndis->hw_addr, irndis->ip, irndis->mask, irndis->gw);
+			netmgr_get_net_info(devname, irndis->hw_addr, irndis->ip, irndis->mask, irndis->gw);
 			//# detected rndis usb0 interface.
-			ret = RNDIS_DEV_NAME_USB;
 			if (strncmp(irndis->hw_addr, "00:00:00:00:00:00", 17) == 0) {
 				//# set mac address temporarily
-				f = popen("/sbin/ifconfig usb0 hw ether 00:11:22:33:44:55", "r");
+				memset(path, 0, sizeof(path));
+				snprintf(path, sizeof(path), "/sbin/ifconfig %s hw ether 00:11:22:33:44:55", devname);
+				f = popen(path, "r");
 				if (f != NULL) {
 					pclose(f); 
 				}
 			} else { 
-				dprintf("get tmp_buf mac = %s\n", irndis->hw_addr);
+				dprintf("rndis get mac = %s\n", irndis->hw_addr);
 			}
         }
 	} 
-	//# S10+ device recognized as eth1 
-	else if (0 == access(USBETHER_OPER_PATH, R_OK)) { 
-		f = fopen(USBETHER_OPER_PATH, "r");
-		if (f != NULL) 
-		{
-	        fclose(f);
-			//# get hardware address
-			netmgr_get_net_info("eth1", irndis->hw_addr, irndis->ip, irndis->mask, irndis->gw);
-			//# detected rndis eth1 interface.
-			ret = RNDIS_DEV_NAME_ETH;
-			if (strncmp(irndis->hw_addr, "00:00:00:00:00:00", 17) == 0) {
-				//# set mac address temporarily
-				f = popen("/sbin/ifconfig eth1 hw ether 00:11:22:33:44:55", "r");
-				if (f != NULL) {
-					pclose(f); 
-				}
-			} else {
-				dprintf("get tmp_buf mac = %s\n", irndis->hw_addr);
-			}
-        }
-	}
 
 	return ret;
 }
@@ -128,87 +132,86 @@ static int __wait_for_active(void)
 static void *THR_rndis_main(void *prm)
 {
 	app_thr_obj *tObj = &irndis->rObj;
-	int exit = 0, cmd;
-	char tmp_buf[128];
-	FILE *f;
+	int exit = 0;
+	int quit = 0;
+	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
 	{
+		int cmd = 0;
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT)
 			break;
-		
-		irndis->stage = STAGE_WAIT_DEV_ACTIVE;
+		else if (cmd == APP_CMD_START) {
+			quit = 0; /* for loop */ 
+		}
 		//# 루프에 진입하기 위해서는 APP_CMD_START나 APP_CMD_STOP을 수신 해야 함.
-		while (1)
+		while (!quit)
 		{
 			int st = 0;
 			int type = 0;
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
-				if (irndis->running) 
-				{
-					f = popen("/usr/bin/killall udhcpc", "w");
-					if (f != NULL)
-						pclose(f);
-					
-					//if (!app_cfg->ste.b.wifi_run && !app_cfg->ste.b.eth1_run) {
-					//	app_leds_rf_ctrl(LED_RF_OFF);
-					//}	
-					/* 접속이 종료상태를 mainapp에 알려줘야 함. */	 
-				}
-				break;
+				netmgr_udhcpc_stop(RNDIS_DEVNAME(irndis->iftype));
+				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
+				quit = 1;
+				continue;
 			}
 			
 			st = irndis->stage;
 			switch (st) {
-			case STAGE_WAIT_DHCPC:
+			case __STAGE_RNDIS_GET_STATUS:
+				/* TODO */
+				netmgr_is_netdev_active(RNDIS_DEVNAME(irndis->iftype));
+				break;
+			case __STAGE_RNDIS_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
-				if (0 == access(UDHCPC_PID_PATH, F_OK)) {
-					//app_leds_rf_ctrl(LED_RF_OK);
-					irndis->stage = STAGE_IDLE;
-					irndis->running = 1;
+				if (netmgr_udhcpc_is_run(RNDIS_DEVNAME(irndis->iftype))) {
+					irndis->stage = __STAGE_RNDIS_GET_STATUS;
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
+					
 					memset(tmp_buf, 0, sizeof(tmp_buf));
+					netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
 					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", irndis->ip);
 					log_write(tmp_buf);
-					
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
 				} else {
-					irndis->stage = STAGE_WAIT_DHCPC;
-					/* 항상 같은 wait 상태일 수 있음..??? */
+					if (irndis->tmr_count >= CNT_RNDIS_WAIT_DHCP) {
+						/* error */
+						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
+						quit = 1; /* loop exit */
+					} else {
+						irndis->tmr_count++;
+					}
 				}
 				break;
 				
-			case STAGE_WAIT_DEV_ACTIVE:
-				type = __wait_for_active();
-				if (type > 0) 
+			case __STAGE_RNDIS_WAIT_ACTIVE:
+				irndis->iftype = __wait_for_active();
+				if (irndis->iftype > 0) 
 				{
-					memset(tmp_buf, 0, sizeof(tmp_buf));
-					snprintf(tmp_buf, sizeof(tmp_buf)-1, "/sbin/udhcpc -t 5 -n -i %s -p "UDHCPC_PID_PATH, 
-											(type == RNDIS_DEV_NAME_USB) ? "usb0": "eth1");
-					f = popen(tmp_buf, "w");
-					if (f != NULL) {
-						//app_leds_rf_ctrl(LED_RF_OFF);
-						pclose(f);
-						/* Device 상황을 mainapp에 전달함. */ 
-						irndis->stage = STAGE_WAIT_DHCPC;
-					} 
+					netmgr_set_ip_dhcp(RNDIS_DEVNAME(irndis->iftype));
+					irndis->stage = __STAGE_RNDIS_WAIT_DHCP;
+					irndis->tmr_count = 0;
 				} else {
-					irndis->stage = STAGE_IDLE;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
+					if (irndis->tmr_count >= CNT_RNDIS_WAIT_ACTIVE) {
+						/* error */
+						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
+						quit = 1; /* loop exit */
+					} else {
+						irndis->tmr_count++;
+					}
 				}
 				break;
-			case STAGE_IDLE:
 			default:
 				/* nothing to do */
 				break;		
 			}
 			
-			delay_msecs(200);
+			delay_msecs(TIME_RNDIS_CYCLE);
 		} /* while (!exit) */	
 	}
 	
@@ -266,7 +269,8 @@ int netmgr_rndis_event_start(void)
 {
 	app_thr_obj *tObj = &irndis->rObj;
 	
-	irndis->running = 0;
+	irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
+	irndis->tmr_count = 0;
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
 	return 0;

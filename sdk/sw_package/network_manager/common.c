@@ -11,6 +11,7 @@
 #include <poll.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>	//# waitpid
 #include <sys/socket.h>
 #include <sys/vfs.h>
@@ -22,6 +23,20 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "main.h"
 #include "common.h"
+
+/* Wi-Fi Module Path */
+#define RTL_8188E_PATH			"/lib/modules/8188eu.ko"
+#define RTL_8188C_PATH			"/lib/modules/8192cu.ko"
+#define RTL_8821A_PATH			"/lib/modules/8821au.ko"
+#define RTL_8812A_PATH			"/lib/modules/8812au.ko"
+
+/* Wi-Fi Module name */
+#define RTL_8188E_NAME			"8188eu"
+#define RTL_8188C_NAME			"8192cu"
+#define RTL_8821A_NAME			"8821au"
+#define RTL_8812A_NAME			"8812au"
+
+#define PROC_MODULE_FNAME		"/proc/modules"
 
 #define ARCH_NR_GPIOs		(256)
 #define SZ_BUF				64
@@ -315,6 +330,44 @@ static int __set_static_ip(const char *ifce, const char *ip_str, const char *mas
 	return ret;
 }
 
+static int __wlan_get_module(const char *name)
+{
+    FILE *proc;
+    char line[256] = {};
+
+	if (name == NULL)
+		return 0;
+
+    if ((proc = fopen(PROC_MODULE_FNAME, "r")) == NULL) {
+        eprintf("Could not open /proc/modules!!\n");
+        return 0;
+    }
+
+    while ((fgets(line, sizeof(line), proc)) != NULL) {
+        if (strncmp(line, name, strlen(name)) == 0) {
+            fclose(proc);
+            return 1;
+        }
+    }
+    fclose(proc);
+
+    return 0;
+}
+
+static void __wlan_insmod(const char *module_path)
+{
+	char buf[256];
+	FILE *f = NULL;
+
+	/* load driver */
+	memset(buf, 0, sizeof(buf));
+	snprintf(buf, sizeof(buf), "/sbin/insmod %s", module_path);
+
+	f = popen(buf, "r");
+	if (f != NULL)
+		pclose(f);
+}
+
 int netmgr_net_link_detect(const char *ifce)
 {
 	struct ifreq ifreq;
@@ -381,16 +434,19 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
 	ifreq.ifr_hwaddr.sa_family = AF_INET;
 	strncpy(ifreq.ifr_name, ifce, sizeof(ifreq.ifr_name));
 	
-	/* Get HWAddress --> MAC */
-	memset(hw_buf, 0, 32);
-	ret = ioctl(skfd, SIOCGIFHWADDR, &ifreq);
-	if (ret >= 0) {
-		//# conversion ntoa
-		snprintf(hw_buf, 18, "%02x:%02x:%02x:%02x:%02x:%02x",
-            ifreq.ifr_hwaddr.sa_data[0], ifreq.ifr_hwaddr.sa_data[1],
-            ifreq.ifr_hwaddr.sa_data[2], ifreq.ifr_hwaddr.sa_data[3],
-            ifreq.ifr_hwaddr.sa_data[4], ifreq.ifr_hwaddr.sa_data[5]);
-		//fprintf(stderr, "get rndis mac = %s\n", hw_buf);
+	if (hw_buf != NULL) 
+	{
+		/* Get HWAddress --> MAC */
+		memset(hw_buf, 0, 32);
+		ret = ioctl(skfd, SIOCGIFHWADDR, &ifreq);
+		if (ret >= 0) {
+			//# conversion ntoa
+			snprintf(hw_buf, 18, "%02x:%02x:%02x:%02x:%02x:%02x",
+				ifreq.ifr_hwaddr.sa_data[0], ifreq.ifr_hwaddr.sa_data[1],
+				ifreq.ifr_hwaddr.sa_data[2], ifreq.ifr_hwaddr.sa_data[3],
+				ifreq.ifr_hwaddr.sa_data[4], ifreq.ifr_hwaddr.sa_data[5]);
+			//fprintf(stderr, "get rndis mac = %s\n", hw_buf);
+		}
 	}
 	
 	memset(ip_buf, 0, 16); //# net string 16
@@ -456,10 +512,12 @@ int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mas
     return 0;
 }
 
+//	#define UDHCPC_PID_PATH			"/var/run/udhcpc.wlan0.pid"
 int netmgr_set_ip_dhcp(const char *ifname) 
 {
     FILE *f = NULL;
-    char command[64];
+    char command[128]={0,};
+	char path[128]={0,};
 	int state;
 	
 	state = netmgr_net_link_detect(ifname);
@@ -469,16 +527,103 @@ int netmgr_set_ip_dhcp(const char *ifname)
 		sleep(1); /* wait 1sec */
 	}
 	
+	/* make pid path */
+	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
+	/*
+	 * -A: tryagain after 3sec(def 20sec). wait if lease is not obtained
+	 * -T: timeout 1sec. (default 3)
+	 * -t: retry. (default 3)
+	 * -b: background.
+	 * -p: create pid file
+	 * -n; error exit. if lease cannot be immediately negotiated.
+	 */
 	memset(command, 0, sizeof(command));
-	sprintf(command, "/sbin/udhcpc -t 5 -n -i %s", ifname);
-	
+	snprintf(command, sizeof(command), "/sbin/udhcpc -A 3 -T 1 -t 5 -n -b -p %s -i %s", path, ifname);
 	f = popen(command, "w");
-	if (f != NULL)      
-	{
+	if (f != NULL) {
 		pclose(f);
 	}
 	
 	return 0;
+}
+
+int netmgr_udhcpc_is_run(const char *ifname)
+{
+	struct stat st;
+	char buf[256]={0,};
+	char path[128]={0,};
+	FILE *f;
+
+	int r = 0, pid;
+	
+	/* get udhcpc */
+	memset(&st, 0, sizeof(st));
+	
+	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
+	f = fopen(path, "r");
+	if (f == NULL) {
+		/*  terminated or process done!! */
+		return 0;
+	}
+
+	fscanf(f, "%d", &pid); //# get pid.
+	fclose(f);
+
+	snprintf(buf, sizeof(buf), "/proc/%d/cmdline", pid);
+	r = stat(buf, &st);
+	if (r == -1 && errno == ENOENT) {
+		/* process not exist */
+		r = 0;
+	} else
+		/* process exist */
+		r = 1;
+
+	return r;
+}
+
+void netmgr_udhcpc_stop(const char *ifname)
+{
+	char path[128]={0,};
+	int pid = 0;
+	FILE *f;
+	
+	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
+	f = fopen(path, "r");
+    if (f != NULL) {
+	    fscanf(f, "%d", &pid);
+	    fclose(f);
+	    unlink((const char *)path);
+
+	    kill(pid, SIGKILL);
+	    waitpid(pid, NULL, 0);
+	} else
+		eprintf("couldn't stop udhcpc\n");
+}
+
+/*
+ * 이 함수는 ifconfig ethX up을 해야 값을 읽을 수 있다.
+ */
+int netmgr_is_netdev_active(const char *ifname)
+{
+	FILE *fp = NULL;
+    char buf[32] = {0, };
+    int status=0;
+    unsigned char val;
+
+    snprintf(buf, sizeof(buf), "/sys/class/net/%s/carrier", ifname);
+    
+	fp = fopen(buf, "r") ;
+    if (fp != NULL) {   
+        fread(&val, 1, 1, fp);
+        if (val == '1') {
+            status = 1 ; // connect
+        } else { 
+            status = 0 ; // disconnect
+        } 
+        fclose(fp);
+    }
+	
+    return status;
 }
 
 //################################################################################################################################
@@ -786,3 +931,51 @@ int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid)
 
 	return (-1); //# error
 }
+
+int netmgr_wlan_load_kermod(int vid, int pid)
+{
+	char path[128] = {0,};
+	char name[128] = {0,};
+	
+	/* kernel module 파일명을 확인 */
+	if ((vid == RTL_8188E_VID) && (pid == RTL_8188E_PID)) {
+		strcpy(path, RTL_8188E_PATH);
+		strcpy(name, RTL_8188E_NAME);
+	} else if ((vid == RTL_8188C_VID) && (pid == RTL_8188C_PID)) {
+		strcpy(path, RTL_8188C_PATH);
+		strcpy(name, RTL_8188C_NAME);
+	} else if ((vid == RTL_8192C_VID) && (pid == RTL_8192C_PID)) {
+		strcpy(path, RTL_8188C_PATH);
+		strcpy(name, RTL_8188C_NAME);
+	} else if ((vid == RTL_8821A_VID) && (pid == RTL_8821A_PID)) {
+		strcpy(path, RTL_8821A_PATH);
+		strcpy(name, RTL_8821A_NAME);
+	} else {
+		/* invalid wifi usb module */
+		eprintf("Not Supported WiFi USB Module!!(%x, %x)\n", vid, pid);
+		return -1;
+	}
+				
+	/* 이미 모듈이 loading된 상태이면 insmod 수행 안 함 */
+	if (__wlan_get_module(name) == 0) {
+		__wlan_insmod(path);
+	} else {
+		/* unload driver TODO */
+		//snprintf(buf, sizeof(buf), "/sbin/rmmod %s", module_name);
+	}
+	
+	return 0;
+}
+
+int netmgr_wlan_wait_mod_active(void)
+{
+	int ret;
+	
+	ret = access("/sys/class/net/wlan0/operstate", R_OK);
+	if ((ret == 0) || (errno == EACCES)) {
+		return 0;
+	} 
+	return -1;
+}
+
+//#----------------------------------------------------------------------------------------------

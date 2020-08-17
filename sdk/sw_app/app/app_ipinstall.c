@@ -148,7 +148,7 @@ void send_sysinfo(void)
 	Infores.length = htons(sizeof(INFO_RES) - 6);
 	Infores.eth_type = htons(app_set->net_info.type) ;
 	
-	/* rupy: st_cradle·Î ÅëÇÕ°ü¸® */
+	/* rupy: st_cradleë¡œ í†µí•©ê´€ë¦¬ */
 	if (app_cfg->ste.b.eth0_run)
         sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
 	else
