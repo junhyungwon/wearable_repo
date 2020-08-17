@@ -104,7 +104,7 @@ typedef enum {
 	//# for key
 	APP_KEY_UP,
 	APP_KEY_LEFT,
-	APP_KEY_SEL,
+	APP_KEY_OK,
 	APP_KEY_RIGHT,
 	APP_KEY_DOWN,
 
