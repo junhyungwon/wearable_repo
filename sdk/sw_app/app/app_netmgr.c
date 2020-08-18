@@ -82,7 +82,6 @@ static int send_msg(int cmd)
 static int recv_msg(void)
 {
 	to_netmgr_main_msg_t msg;
-	int size;
 	
 	//# blocking
 	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0)
@@ -132,6 +131,8 @@ static void __netmgr_wlan_event_handler(int ste)
 					
 	if (ste) {
 		/* Wi-Fi 장치가 연결되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.usbnet_ready = 1;
+		
 		dprintf("Wi-Fi %s start.........\n", mode?"AP":"CLIENT");
 		if (mode)
 		{
@@ -192,6 +193,8 @@ static void __netmgr_wlan_event_handler(int ste)
 		}
 		
 	} else {
+		app_cfg->ste.b.usbnet_ready = 0;
+		
 		dprintf("Wi-Fi %s STOP.........\n", mode?"AP":"CLIENT");
 		/* Wi-Fi 장치가 제거되었을 때 필요한 루틴을 수행 */
 		if (mode) {
@@ -217,10 +220,12 @@ static void __netmgr_rndis_event_handler(int ste)
 	
 	if (ste) {
 		/* rndis 장치가 연결되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.usbnet_ready = 1;
 		info->dhcp = 1;
 		send_msg(NETMGR_CMD_RNDIS_START);
 	} else {
 		/* rndis 장치가 제거되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.usbnet_ready = 0;
 		send_msg(NETMGR_CMD_RNDIS_STOP);
 	}
 }
@@ -239,6 +244,7 @@ static void __netmgr_usb2eth_event_handler(int ste)
 	
 	if (ste) {
 		/* usb2eth 장치가 연결되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.usbnet_ready = 1;
 		if (app_set->net_info.type == NET_TYPE_STATIC) {
 			info->dhcp = 0;
 			strcpy(info->ip_address, app_set->net_info.eth_ipaddr);
@@ -250,6 +256,7 @@ static void __netmgr_usb2eth_event_handler(int ste)
 		send_msg(NETMGR_CMD_USB2ETH_START);
 	} else {
 		/* usb2eth 장치가 제거되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.usbnet_ready = 0;
 		send_msg(NETMGR_CMD_USB2ETH_STOP);
 	}
 }
@@ -267,7 +274,7 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
-		app_cfg->ste.b.st_cradle = 1;
+		app_cfg->ste.b.cradle_eth_ready = 1;
 		/* cradle 장치가 연결되었을 때 필요한 루틴을 수행 */
 		if (app_set->net_info.type == NET_TYPE_STATIC) {
 			info->dhcp = 0;
@@ -279,7 +286,7 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 		}
 		send_msg(NETMGR_CMD_CRADLE_ETH_START);
 	} else {
-		app_cfg->ste.b.st_cradle = 0;
+		app_cfg->ste.b.cradle_eth_ready = 0;
 		/* cradle 장치가 제거되었을 때 필요한 루틴을 수행 */
 		send_msg(NETMGR_CMD_CRADLE_ETH_STOP);
 	}
@@ -290,48 +297,72 @@ static void __netmgr_dev_link_status_handler(void)
 	int device = inetmgr->device;
 	int link   = inetmgr->link_status;
 	
-	if (device == NETMGR_DEV_TYPE_WIFI) {
+	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
+		eprintf("invalid netdevice --> %x\n", device);
+		return;
+	}
+	
+	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
+	if (device == NETMGR_DEV_TYPE_CRADLE) {
 		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.wifi = 1;
-			app_leds_rf_ctrl(LED_RF_OK);
-		} else if (link == NETMGR_DEV_ERROR)  {
-			app_cfg->ste.b.wifi = 0;
-			app_leds_rf_ctrl(LED_RF_FAIL);
-		} else {
-			app_cfg->ste.b.wifi = 0;
-			app_leds_rf_ctrl(LED_RF_OFF);
-		} 
-	} else if (device == NETMGR_DEV_TYPE_USB2ETHER) {
-		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.eth1_run = 1;
-			app_leds_rf_ctrl(LED_RF_OK);
-		} else if (link == NETMGR_DEV_ERROR) {
-			app_cfg->ste.b.eth1_run = 0;
-			app_leds_rf_ctrl(LED_RF_FAIL);	
-		} else {
-			app_cfg->ste.b.eth1_run = 0;
-			app_leds_rf_ctrl(LED_RF_OFF);
-		}
-	} else if (device == NETMGR_DEV_TYPE_RNDIS) {
-		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.dial_run = 1;
-			app_leds_rf_ctrl(LED_RF_OK);
-		} else if (link == NETMGR_DEV_ERROR)  {
-			app_cfg->ste.b.dial_run = 0;
-			app_leds_rf_ctrl(LED_RF_FAIL);
-		} else {
-			app_cfg->ste.b.dial_run = 0;
-			app_leds_rf_ctrl(LED_RF_OFF);
-		}
-	} else if (device == NETMGR_DEV_TYPE_CRADLE) {
-		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.eth0_run = 1;
+			app_cfg->ste.b.cradle_eth_run = 1;
 			app_cfg->ftp_enable = ON;
-		} else {
-			app_cfg->ste.b.eth0_run = 0;
+		} 
+		else if (link == NETMGR_DEV_ERROR)  {
+			app_cfg->ste.b.cradle_eth_run = 0;
 			app_cfg->ftp_enable = OFF;
 		}
+		else {
+			app_cfg->ste.b.cradle_eth_run = 0;
+			app_cfg->ftp_enable = OFF;
+		}
+	} else {
+		if (link == NETMGR_DEV_ACTIVE) {
+			app_cfg->ste.b.usbnet_run = 1;
+			app_leds_rf_ctrl(LED_RF_OK);
+		} 
+		else if (link == NETMGR_DEV_ERROR)  {
+			app_cfg->ste.b.usbnet_run = 0;
+			app_leds_rf_ctrl(LED_RF_FAIL);
+		} 
+		else {
+			app_cfg->ste.b.usbnet_run = 0;
+			app_leds_rf_ctrl(LED_RF_OFF);
+		} 
+	}
+}
+
+static void __netmgr_dev_ip_status_handler(void)
+{
+	netmgr_shm_response_info_t *info;
+	char *databuf;
+	int device = inetmgr->device;
+	
+	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
+		eprintf("invalid netdevice --> %x\n", device);
+		return;
+	}
+	
+	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
+	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_RESPONSE_INFO_OFFSET);
+	info = (netmgr_shm_request_info_t *)databuf;
+	
+	//# for debugging
+	dprintf("Get dhcp ip address is %s\n", info->ip_address);
+	dprintf("Get dhcp mask address is %s\n", info->mask_address);
+	dprintf("Get dhcp gateway address is %s\n", info->gw_address);
+	
+	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
+	if (device == NETMGR_DEV_TYPE_CRADLE) {
+		sprintf(app_set->net_info.eth_ipaddr, "%s", info->ip_address);
+        sprintf(app_set->net_info.eth_gateway, "%s", info->gw_address);
+        sprintf(app_set->net_info.eth_netmask, "%s", info->mask_address);
 	} 
+	else {
+		sprintf(app_set->net_info.wlan_ipaddr, "%s", info->ip_address);
+        sprintf(app_set->net_info.wlan_gateway, "%s", info->gw_address);
+        sprintf(app_set->net_info.wlan_netmask, "%s", info->mask_address);
+	}
 }
 
 static void __netmgr_start(void)
@@ -421,11 +452,9 @@ static void *THR_netmgr_send_msg(void *prm)
 *****************************************************************************/
 static void *THR_netmgr_recv_msg(void *prm)
 {
-	app_thr_obj *tObj = &inetmgr->rObj;
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
-	
 	//# message queue
 	inetmgr->qid = Msg_Init(NETMGR_MSG_KEY);
 	
@@ -444,18 +473,21 @@ static void *THR_netmgr_recv_msg(void *prm)
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
-			dprintf("device type %s, state %s!\n", __get_netdev_string(inetmgr->device), inetmgr->insert?"insert":"remove");
+			//dprintf("device type %s, state %s!\n", __get_netdev_string(inetmgr->device), inetmgr->insert?"insert":"remove");
 			__netmgr_hotplug_noty();
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
-			dprintf("received netmgr device link status!\n");
 			//dprintf("device type %x, link status %x!\n", __get_netdev_string(inetmgr->device), inetmgr->link_status);
 			__netmgr_dev_link_status_handler();
 			break;
 		
+		case NETMGR_CMD_DEV_IP_STATUS:
+			dprintf("received netmgr device ip status!\n");
+			__netmgr_dev_ip_status_handler();
+			break;
+			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
-			//dprintf("received netmgr Wi-Fi RSSi!\n");
 			//dprintf("rssi level = %d\n", inetmgr->rssi_level);
 			break;
 			
@@ -469,7 +501,6 @@ static void *THR_netmgr_recv_msg(void *prm)
 	}
 	
 	Msg_Kill(inetmgr->qid);
-	
 	aprintf("exit...\n");
 		
 	return NULL;

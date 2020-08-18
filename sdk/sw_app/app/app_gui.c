@@ -10,7 +10,6 @@
 /*----------------------------------------------------------------------------
  Defines referenced header files
 -----------------------------------------------------------------------------*/
-
 #include "app_comm.h"
 #include "app_main.h"
 #include "app_mcu.h"
@@ -20,12 +19,16 @@
 #include "dev_gfx.h"
 #include "app_ctrl.h"
 #include "app_set.h"
+#include "app_rtsptx.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define UI_CYCLE_TIME			500	//# ms
 #define UI_WATCHDOG_TIME		(UI_CYCLE_TIME*3)
+
+#define UI_STREAMER_TIME		(2000)
+#define CNT_STREAMER_CHECK		(UI_STREAMER_TIME/UI_CYCLE_TIME)
 
 #define WD_LOG_TIMEOUT			((TIME_WATCHDOG-10)*1000) //# watcho dog log wrtite time out (ms)
 #define WD_LOG_CNT				(WD_LOG_TIMEOUT / UI_WATCHDOG_TIME)
@@ -42,10 +45,10 @@
 #define UI_LCD_WI               480
 #define UI_LCD_HE               800
 
-#define UI_DRAW         1
-#define UI_CLEAR        0
+#define UI_DRAW         		1
+#define UI_CLEAR        		0
 
-#define UI_MENU         0       //# 0: lcd, 1:tv-out
+#define UI_MENU         		0       //# 0: lcd, 1:tv-out
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -56,7 +59,8 @@ typedef struct {
 #ifdef OSD_SWVERSION
     app_gfx_t gfx_obj;
 #endif
-    int start ;
+    int start;
+	int tmr_cnt;
 } app_gui_t;
 
 static app_gui_t t_gui;
@@ -177,7 +181,7 @@ static void *THR_gui(void *prm)
 	aprintf("enter...\n");
 	tObj->active = 1;
 
-	while(!exit)
+	while (!exit)
 	{
 		//# wait cmd
 		cmd = tObj->cmd;
@@ -225,7 +229,7 @@ static void *THR_gui(void *prm)
 #ifdef OSD_SWVERSION
         if(!app_set->ch[MAX_CH_NUM].resol)
         {
-            if(app_cfg->ste.b.st_cradle)
+            if(app_cfg->ste.b.cradle_eth_ready)
             {
                 if(!igui->start)
                 {
@@ -245,6 +249,19 @@ static void *THR_gui(void *prm)
             }
         }
 #endif
+		if (app_cfg->ste.b.rtsptx) 
+		{
+			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
+				igui->tmr_cnt = 0;
+				/* check wis-streamer */
+				system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
+				if (!ctrl_is_live_process((const char *)"wis-streamer"))
+					app_rtsptx_start();
+			} else {
+				igui->tmr_cnt++;
+			}
+		}
+		
 		tObj->cmd = 0;
 		wd_cycle += UI_CYCLE_TIME;
 		app_msleep(UI_CYCLE_TIME);
@@ -308,12 +325,13 @@ int app_gui_init(void)
 	app_thr_obj *tObj;
 
 	//#--- create thread
-    tObj = &igui->uObj;
+    igui->tmr_cnt = 0;
+	tObj = &igui->uObj;
     if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create gui thread\n");
 		return EFAIL;
     }
-
+	
     tObj = &igui->hObj;
     if (thread_create(tObj, THR_hdmi, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create chagen video output thread\n");

@@ -1360,7 +1360,7 @@ eapol_test: .config $(OBJS_t)
 	$(Q)$(LDO) $(LDFLAGS) -o eapol_test $(OBJS_t) $(LIBS)
 	@$(E) "  LD " $@
 
-preauth_test: .config $(OBJS_t2) 
+preauth_test: .config $(OBJS_t2)
 	$(Q)$(LDO) $(LDFLAGS) -o preauth_test $(OBJS_t2) $(LIBS)
 	@$(E) "  LD " $@
 
@@ -1429,13 +1429,13 @@ windows-bin: $(WINALL)
 	$(STRIP) $(WINALL)
 
 wpa_gui/Makefile:
-	qmake -o wpa_gui/Makefile wpa_gui/wpa_gui.pro 
+	qmake -o wpa_gui/Makefile wpa_gui/wpa_gui.pro
 
 wpa_gui: wpa_gui/Makefile
 	$(MAKE) -C wpa_gui
 
 wpa_gui-qt4/Makefile:
-	qmake -o wpa_gui-qt4/Makefile wpa_gui-qt4/wpa_gui.pro 
+	qmake -o wpa_gui-qt4/Makefile wpa_gui-qt4/wpa_gui.pro
 
 wpa_gui-qt4/lang/wpa_gui_de.qm: wpa_gui-qt4/lang/wpa_gui_de.ts
 	lrelease wpa_gui-qt4/wpa_gui.pro
@@ -1457,7 +1457,8 @@ tests: test-eap_sim_common
 clean:
 	$(MAKE) -C ../src clean
 	$(MAKE) -C dbus clean
-	rm -f core *~ *.o *.d eap_*.so $(ALL) $(WINALL) eapol_test preauth_test
+#	rm -f core *~ *.o *.d eap_*.so $(ALL) $(WINALL) eapol_test preauth_test
+	rm -f core *~ *.o *.d eap_*.so $(WINALL) eapol_test preauth_test
 	rm -f wpa_priv
 
 -include $(OBJS:%.o=%.d)

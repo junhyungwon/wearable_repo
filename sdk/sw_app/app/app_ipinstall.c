@@ -67,18 +67,18 @@ typedef struct {
 static app_ipins_t t_ipins;
 static app_ipins_t *ipins=&t_ipins;
 
-char ReadBuffer[RECVBUFFSIZE] ;
+static char ReadBuffer[RECVBUFFSIZE] ;
 
-struct sockaddr_in serv_addr, send_addr;
-int addrlen = sizeof(struct sockaddr_in) ;
-int static change = 0 ;
+static struct sockaddr_in serv_addr, send_addr;
+static int addrlen = sizeof(struct sockaddr_in) ;
+static int change = 0 ;
 
 int create_recvsock()
 {
     int recv_sock = IPSOCK_ERROR;
 
     recv_sock = socket(PF_INET, SOCK_DGRAM, 0) ;
-    if(recv_sock != IPSOCK_ERROR)
+    if (recv_sock != IPSOCK_ERROR)
     {
         memset(&serv_addr, 0, sizeof(serv_addr)) ;
         serv_addr.sin_family = AF_INET;
@@ -149,7 +149,7 @@ void send_sysinfo(void)
 	Infores.eth_type = htons(app_set->net_info.type) ;
 	
 	/* rupy: st_cradle로 통합관리 */
-	if (app_cfg->ste.b.eth0_run)
+	if (app_cfg->ste.b.cradle_eth_run)
         sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
 	else
         sprintf(Infores.ipaddr, "%s", "NA");
@@ -158,7 +158,7 @@ void send_sysinfo(void)
 	sprintf(Infores.gateway, "%s", app_set->net_info.eth_gateway) ;
 	Infores.wireless_type = htons(app_set->net_info.wtype) ;
 
-    if(app_cfg->ste.b.wifi)    
+    if (app_cfg->ste.b.usbnet_run)    
         sprintf(Infores.w_ipaddr, "%s", app_set->net_info.wlan_ipaddr);
     else
         sprintf(Infores.w_ipaddr, "%s", "NA");

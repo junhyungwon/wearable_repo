@@ -299,7 +299,9 @@ wlan_all: wlan_clean wlan
 wlan_tools:
 ifeq ($(USE_WIFI),YES)
 	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd all
+	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd clean
 	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant all
+	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant clean
 endif
 
 wlan_tools_clean:

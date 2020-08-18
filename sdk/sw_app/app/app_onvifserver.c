@@ -525,139 +525,77 @@ int app_onvif_init_config()
 void * onvifserver_thread(void * argv)
 {
     int exit = FALSE, onvifserver_status = ONVIFSERVER_READY;
-    int cradle_pre_status, wifi_pre_status, lte_pre_status , usb2eth_pre_status, eth0_pre_status, eth0_cur_status  ;
-
-    cradle_pre_status = app_cfg->ste.b.st_cradle ;
-    wifi_pre_status = app_cfg->ste.b.wifi ;
-    lte_pre_status = app_cfg->ste.b.dial_run ;
-    usb2eth_pre_status = app_cfg->ste.b.eth1_run ;
-    eth0_pre_status = app_cfg->ste.b.eth0_run;
+    int cradle_pre_status,  eth0_pre_status, eth0_cur_status;
+	int usbnet_pre_status;
+	
+    cradle_pre_status = app_cfg->ste.b.cradle_eth_ready;
+    eth0_pre_status   = app_cfg->ste.b.cradle_eth_run;
+	usbnet_pre_status = app_cfg->ste.b.usbnet_run;
 
 	// 초기화...
-	while(1) {
-
-		// LTE  or wifi
-		if( (app_cfg->ste.b.dial_run || app_cfg->ste.b.wifi || app_cfg->ste.b.eth1_run)
-		&& onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()){
-			init_onvifserver() ;
-			onvifserver_status = ONVIFSERVER_LOADED ;
+	while (1) {
+		// USB Network Device (Wi-Fi / LTE / USB2Ether)
+		if ((app_cfg->ste.b.usbnet_run) && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
+			init_onvifserver();
+			onvifserver_status = ONVIFSERVER_LOADED;
 			break;
-		}
+		} 
 		// eth0
-		else if(app_cfg->ste.b.st_cradle && onvifserver_status == ONVIFSERVER_READY) {
-			init_onvifserver() ;
+		else if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+			init_onvifserver();
 			onvifserver_status = ONVIFSERVER_LOADED ;
 			break;
 		}
-
 		sleep(1);
 	}
 
 	// 상태변화에 따른 대응
-    while(!exit)
+    while (!exit)
     {
 		// changed cradle status
-        if(cradle_pre_status != app_cfg->ste.b.st_cradle) {
-
-			cradle_pre_status = app_cfg->ste.b.st_cradle ;
+        if (cradle_pre_status != app_cfg->ste.b.cradle_eth_ready) {
+			cradle_pre_status = app_cfg->ste.b.cradle_eth_ready;
 			onvifserver_status = ONVIFSERVER_READY;
 
-			// LTE run..
-		    if(app_cfg->ste.b.dial_run && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()){
+			// USB Network connected..
+		    if (app_cfg->ste.b.usbnet_run && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
 				init_onvifserver() ;
 				onvifserver_status = ONVIFSERVER_LOADED ;
 			}
 
-			// wifi connected
-			if(app_cfg->ste.b.wifi && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
-				init_onvifserver() ;
-				onvifserver_status = ONVIFSERVER_LOADED ;
-			}
-
-            // usb2ethernet connectd
-			if(app_cfg->ste.b.eth1_run && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
-				init_onvifserver() ;
-				onvifserver_status = ONVIFSERVER_LOADED ;
-			}
-            
 			// eth0
-			if(app_cfg->ste.b.st_cradle && onvifserver_status == ONVIFSERVER_READY) {
+			if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
 				init_onvifserver() ;
 				onvifserver_status = ONVIFSERVER_LOADED ;
 			}
 		}
 
-		// changed wifi status
-        if(wifi_pre_status != app_cfg->ste.b.wifi) {
-			wifi_pre_status = app_cfg->ste.b.wifi ;
+		// changed usb network status
+        if (usbnet_pre_status != app_cfg->ste.b.usbnet_run) {
+			usbnet_pre_status = app_cfg->ste.b.usbnet_run;
 			onvifserver_status = ONVIFSERVER_READY;
 
-			// wifi connected
-			if(app_cfg->ste.b.wifi && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
+			// usb network connected
+			if (app_cfg->ste.b.usbnet_run && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
 				init_onvifserver() ;
 				onvifserver_status = ONVIFSERVER_LOADED ;
 			}
-			else if(!app_cfg->ste.b.wifi){
+			else if (!app_cfg->ste.b.usbnet_run) {
 				// eth0
-				if(app_cfg->ste.b.st_cradle && onvifserver_status == ONVIFSERVER_READY) {
-					init_onvifserver() ;
-					onvifserver_status = ONVIFSERVER_LOADED ;
-				}
-                
-			}
-		}
-
-		// changed LTE status
-        if(lte_pre_status != app_cfg->ste.b.dial_run) {
-
-			lte_pre_status = app_cfg->ste.b.dial_run ;
-			onvifserver_status = ONVIFSERVER_READY;
-
-			// LTE connected
-			if(app_cfg->ste.b.dial_run && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
-				init_onvifserver() ;
-				onvifserver_status = ONVIFSERVER_LOADED ;
-			}
-			else if(!app_cfg->ste.b.dial_run){
-				// eth0
-				if(app_cfg->ste.b.st_cradle && onvifserver_status == ONVIFSERVER_READY) {
+				if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
 					init_onvifserver() ;
 					onvifserver_status = ONVIFSERVER_LOADED ;
 				}
 			}
 		}
 
-		// changed usb2ethernet status
-        if(usb2eth_pre_status != app_cfg->ste.b.eth1_run) {
-			usb2eth_pre_status = app_cfg->ste.b.eth1_run ;
-			onvifserver_status = ONVIFSERVER_READY;
-
-			// USB2ETHERNET connected
-			if(app_cfg->ste.b.eth1_run && onvifserver_status == ONVIFSERVER_READY && onvif_is_wireless_up()) {
-				init_onvifserver() ;
-				onvifserver_status = ONVIFSERVER_LOADED ;
-			}
-			else if(!app_cfg->ste.b.eth1_run){
-				// eth0
-				if(app_cfg->ste.b.st_cradle && onvifserver_status == ONVIFSERVER_READY ) {
-					init_onvifserver() ;
-					onvifserver_status = ONVIFSERVER_LOADED ;
-				}
-			}
-		}
-		
 		// changed ethernet status
-		eth0_cur_status = app_cfg->ste.b.eth0_run;
-		if(app_cfg->ste.b.st_cradle && eth0_pre_status != eth0_cur_status) {
+		eth0_cur_status = app_cfg->ste.b.cradle_eth_run;
+		if (app_cfg->ste.b.cradle_eth_ready && eth0_pre_status != eth0_cur_status) {
 		    eth0_pre_status = eth0_cur_status ;
 			init_onvifserver() ;
 			onvifserver_status = ONVIFSERVER_LOADED ;
 		}
-
-        system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
-
-        if(!check_process("wis-streamer"))
-			app_rtsptx_start();
 
         sleep(1) ;
     }

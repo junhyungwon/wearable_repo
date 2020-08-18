@@ -582,7 +582,7 @@ static void ftp_send(void)
 		if(iftp->sdFtp >= 0)
 			close(iftp->sdFtp);
 
-        if(!app_cfg->ste.b.eth0_run)  // eth0 off in ftp running
+        if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
         	break;
  
 		iftp->sdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
@@ -650,7 +650,7 @@ static void ftp_send(void)
                 if(get_ftp_send_file(FileName) == 0)   // do not exist file
                    continue ;
 
-                if(!app_cfg->ste.b.eth0_run)  // eth0 off in ftp running
+                if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
                     break;
 
                 strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /deviceID/20190823/
@@ -740,7 +740,7 @@ static void *THR_ftp(void *prm)
 			break;
 		}
 		
-        if(app_cfg->ste.b.eth0_run)
+        if(app_cfg->ste.b.cradle_eth_run)
         {
             if(iftp->ftp_state == FTP_STATE_NONE)
             {

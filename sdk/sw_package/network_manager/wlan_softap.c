@@ -51,7 +51,7 @@ typedef struct {
 	int channel;     /* channel number (2.4GH ->6, 5GHz -> 36) */
 	
 	int stage;
-	int tmr_count;
+	int hostap_timer;
 	
 } netmgr_wlan_hostapd_t;
 
@@ -271,8 +271,8 @@ static void *THR_wlan_hostapd_main(void *prm)
 					ihost->stage = __STAGE_SOFTAP_MOD_EXEC;
 				} else {
 					/* timeout 계산 */
-					ihost->tmr_count++;
-					if (ihost->tmr_count >= CNT_SOFTWAP_ACTIVE) {
+					ihost->hostap_timer++;
+					if (ihost->hostap_timer >= CNT_SOFTWAP_ACTIVE) {
 						/* fail */
 						/* error 상태를 mainapp에 알려줘야 함 */
 						quit = 1; /* exit loop */
@@ -362,7 +362,7 @@ int netmgr_wlan_hostapd_start(void)
 	
 	/* START or STOP  명령을 수신하면 실행됨 */
 	ihost->stage = __STAGE_SOFTAP_MOD_LOAD;
-	ihost->tmr_count = 0;
+	ihost->hostap_timer = 0;
 				
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);

@@ -26,7 +26,15 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define NETMGR_CRADLE_ETH_DEVNAME	"eth0"
+#define TIME_CRADLE_ETH_CYCLE			200		//# msec
+#define TIME_CRADLE_ETH_WAIT_DHCP		10000   //# 10sec
+#define CNT_CRADLE_ETH_WAIT_DHCP  		(TIME_CRADLE_ETH_WAIT_DHCP/TIME_CRADLE_ETH_CYCLE)
+
+#define __STAGE_CRADLE_ETH_WAIT_ACTIVE	(0x00)
+#define __STAGE_CRADLE_ETH_WAIT_DHCP	(0x01)
+#define __STAGE_CRADLE_ETH_GET_STATUS	(0x02)
+
+#define NETMGR_CRADLE_ETH_DEVNAME		"eth0"
 
 typedef struct {
 	app_thr_obj cObj;
@@ -36,7 +44,8 @@ typedef struct {
     char gw[NETMGR_NET_STR_MAX_SZ+1];
 	
 	int dhcp;
-	int ip_alloc;
+	int stage;
+	int cradle_eth_timer;
 	
 } netmgr_cradle_eth_t;
 
@@ -59,6 +68,8 @@ static void *THR_cradle_eth_main(void *prm)
 {
 	app_thr_obj *tObj = &icradle->cObj;
 	int exit = 0, cmd;
+	int quit = 0;
+	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -70,43 +81,79 @@ static void *THR_cradle_eth_main(void *prm)
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT)
 			break;
+		else if (cmd == APP_CMD_START) {
+			quit = 0; /* for loop */ 
+		}
 		
-		while (1)
+		while (!quit)
 		{
+			int st;
+			
 			cmd = tObj->cmd;
-			if (cmd == APP_CMD_STOP)
+			if (cmd == APP_CMD_STOP) {
+				if (icradle->dhcp == 1) {
+					netmgr_udhcpc_stop(NETMGR_CRADLE_ETH_DEVNAME);
+				}
+				netmgr_net_link_down(NETMGR_CRADLE_ETH_DEVNAME);
+				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+				quit = 1;
+				continue;
+			}
+			
+			st = icradle->stage;
+			switch (st) {
+			case __STAGE_CRADLE_ETH_GET_STATUS:
+				res = netmgr_is_netdev_active(NETMGR_CRADLE_ETH_DEVNAME);
+				if (!res) {
+					icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+				}
 				break;
 			
-			/* 네트워크 케이블이 연결되면 1 아니면 0 */
-			res = netmgr_is_netdev_active(NETMGR_CRADLE_ETH_DEVNAME);
-			if ((res == 0) && (icradle->ip_alloc == 0)) 
-			{
-				/* IP 할당이 안된 상태이고 케이블이 연결 안된 경우: 대기 */	
-			}
-			else if ((res == 0) && (icradle->ip_alloc == 1))
-			{
-				/* 동작 중에 네트워크 케이블이 분리된 경우: 상태의 변화가 있으므로 전달 */
-				icradle->ip_alloc = 0;
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
-			}
-			else if ((res == 1) && (icradle->ip_alloc == 0))
-			{
-				/* 케이블이 연결되고 IP 할당이 안된 경우 */
-				if (icradle->dhcp == 0)  {//
-					netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, icradle->mask, icradle->gw);
+			case __STAGE_CRADLE_ETH_WAIT_DHCP:
+				//# check done pipe(udhcpc...)
+				if (netmgr_udhcpc_is_run(NETMGR_CRADLE_ETH_DEVNAME)) {
+					icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
+					
+					memset(tmp_buf, 0, sizeof(tmp_buf));
+					netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
+					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", icradle->ip);
+					log_write(tmp_buf);
+					netmgr_set_shm_ip_info(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, icradle->mask, icradle->gw);
 				} else {
-					netmgr_set_ip_dhcp(NETMGR_CRADLE_ETH_DEVNAME);
+					if (icradle->cradle_eth_timer >= CNT_CRADLE_ETH_WAIT_DHCP) {
+						/* error */
+						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ERROR);
+						icradle->cradle_eth_timer = 0;
+						quit = 1; /* loop exit */
+					} else {
+						icradle->cradle_eth_timer++;
+					}
 				}
-				
-				icradle->ip_alloc = 1;
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
-			}
-			else if ((res == 1) && (icradle->ip_alloc == 1))
-			{
-				/* IP가 할당된 상태이고 케이블도 연결된 상태 */
+				break;
+			
+			case __STAGE_CRADLE_ETH_WAIT_ACTIVE:
+				res = netmgr_is_netdev_active(NETMGR_CRADLE_ETH_DEVNAME);
+				if (res) {
+					/* 케이블이 연결되고 IP 할당이 안된 경우 */
+					if (icradle->dhcp == 0) {
+						/* static ip alloc */
+						netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, 
+									icradle->mask, icradle->gw);
+						icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
+					} else {
+						/* dhcp ip alloc */
+						netmgr_set_ip_dhcp(NETMGR_CRADLE_ETH_DEVNAME);
+						icradle->stage = __STAGE_CRADLE_ETH_WAIT_DHCP;
+					}
+				}
+				break;
+			default:
+				break;	
 			}
 			
-			delay_msecs(100);	
+			delay_msecs(TIME_CRADLE_ETH_CYCLE);	
 		}
 	}
 	
@@ -172,6 +219,8 @@ int netmgr_cradle_eth_event_start(void)
 	info = (netmgr_shm_request_info_t *)databuf;
 	
 	icradle->dhcp = info->dhcp;
+	icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
+	icradle->cradle_eth_timer = 0;
 	
 	memset(icradle->ip, 0, NETMGR_NET_STR_MAX_SZ);
 	memset(icradle->mask, 0, NETMGR_NET_STR_MAX_SZ);
@@ -202,7 +251,6 @@ int netmgr_cradle_eth_event_stop(void)
 	app_thr_obj *tObj = &icradle->cObj;
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
-	netmgr_net_link_down(NETMGR_CRADLE_ETH_DEVNAME);
 	
 	return 0;
 }

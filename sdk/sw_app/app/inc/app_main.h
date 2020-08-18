@@ -137,32 +137,28 @@ typedef struct {
 
 typedef union {
 	struct {
-		unsigned int cap		: 1;	//# capturing
-		unsigned int rec		: 1;	//# recording
-		unsigned int mmc		: 1;	//# detect mmc
-		unsigned int busy		: 1;	//# system busy (format, update)
-		unsigned int evt		: 1;    //# event recording
-		unsigned int wifi_ready	: 1;    //# Wi-Fi usb detect
-		unsigned int wifi_run	: 1;    //# Wi-Fi usb driver loading done
-		unsigned int wifi		: 1;
-		unsigned int rtsptx 	: 1;
-	    unsigned int mmc_err    : 1;  	//# mmc error
-	    unsigned int log        : 1;
-	    unsigned int sock       : 1;
-	    unsigned int shock      : 1;
-        unsigned int gps        : 1;
-        unsigned int dial_ready : 1; 	// LTE usb detect
-        unsigned int dial_run 	: 1; 	// LTE running
-        unsigned int disk_full	: 1; 	// disk full because overwrite off.
-        unsigned int st_cradle  : 1;    // status of attached or detached cradle
-        unsigned int pwr_off	: 1;	// check power off
-        unsigned int ftp_run    : 1;    // under running ftp
-        unsigned int onvifserver : 1;
-		unsigned int eth0_run   : 1;    // eth0 running   
-        unsigned int eth1_run   : 1;    // eth1 running
-        unsigned int web_server : 1;    // web_server
-		unsigned int prerec_state  : 1; // record state before using FTP
-		unsigned int nokey  	   : 1; // prevent key
+		unsigned int cap				: 1;	//# capturing
+		unsigned int rec				: 1;	//# recording
+		unsigned int mmc				: 1;	//# detect mmc
+		unsigned int busy				: 1;	//# system busy (format, update)
+		unsigned int evt				: 1;    //# event recording
+		unsigned int usbnet_ready		: 1;    //# usb device detect (Wi-Fi, LTE, USB2Ether)
+		unsigned int usbnet_run			: 1;    //# usb device run (Wi-Fi, LTE, USB2Ether) ip allocation succeed
+		unsigned int rtsptx 			: 1;
+	    unsigned int mmc_err    		: 1;  	//# mmc error
+	    unsigned int log        		: 1;
+	    unsigned int sock       		: 1;
+	    unsigned int shock      		: 1;
+        unsigned int gps        		: 1;
+        unsigned int disk_full			: 1; 	// disk full because overwrite off.
+        unsigned int pwr_off			: 1;	// check power off
+        unsigned int ftp_run    		: 1;    // under running ftp
+        unsigned int onvifserver 		: 1;
+		unsigned int cradle_eth_ready  	: 1;    // status of attached or detached cradle
+		unsigned int cradle_eth_run   	: 1;    // cradle network(eth0) running   
+		unsigned int web_server 		: 1;    // web_server
+		unsigned int prerec_state  		: 1; // record state before using FTP
+		unsigned int nokey  	   		: 1; // prevent key
 	} b;
 	unsigned int w;
 } app_state;

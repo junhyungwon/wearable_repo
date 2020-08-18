@@ -53,7 +53,7 @@ typedef struct {
 	
 	int stage;
 	int iftype;
-	int tmr_count;
+	int rndis_timer;
 	
 	char ip[16];		//# ip address
 	char hw_addr[32];
@@ -168,6 +168,7 @@ static void *THR_rndis_main(void *prm)
 				/* TODO */
 				netmgr_is_netdev_active(RNDIS_DEVNAME(irndis->iftype));
 				break;
+			
 			case __STAGE_RNDIS_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(RNDIS_DEVNAME(irndis->iftype))) {
@@ -178,13 +179,14 @@ static void *THR_rndis_main(void *prm)
 					netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
 					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", irndis->ip);
 					log_write(tmp_buf);
+					netmgr_set_shm_ip_info(RNDIS_DEVNAME(irndis->iftype), irndis->ip, irndis->mask, irndis->gw);
 				} else {
-					if (irndis->tmr_count >= CNT_RNDIS_WAIT_DHCP) {
+					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_DHCP) {
 						/* error */
 						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
 						quit = 1; /* loop exit */
 					} else {
-						irndis->tmr_count++;
+						irndis->rndis_timer++;
 					}
 				}
 				break;
@@ -195,14 +197,14 @@ static void *THR_rndis_main(void *prm)
 				{
 					netmgr_set_ip_dhcp(RNDIS_DEVNAME(irndis->iftype));
 					irndis->stage = __STAGE_RNDIS_WAIT_DHCP;
-					irndis->tmr_count = 0;
+					irndis->rndis_timer = 0;
 				} else {
-					if (irndis->tmr_count >= CNT_RNDIS_WAIT_ACTIVE) {
+					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_ACTIVE) {
 						/* error */
 						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
 						quit = 1; /* loop exit */
 					} else {
-						irndis->tmr_count++;
+						irndis->rndis_timer++;
 					}
 				}
 				break;
@@ -270,7 +272,7 @@ int netmgr_rndis_event_start(void)
 	app_thr_obj *tObj = &irndis->rObj;
 	
 	irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
-	irndis->tmr_count = 0;
+	irndis->rndis_timer = 0;
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
 	return 0;
