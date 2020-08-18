@@ -22,7 +22,7 @@
 
 #include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
-#include "app_sipc.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -43,13 +43,13 @@ typedef struct {
 	
 	OSA_MutexHndl lock;
 	
-} app_sipc_t;
+} app_voip_t;
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-static app_sipc_t t_sip;
-static app_sipc_t *isip = &t_sip;
+static app_voip_t t_voip;
+static app_voip_t *ivoip = &t_voip;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -95,7 +95,7 @@ static int send_msg(int cmd, const char *uri)
 		strcpy(msg.uri.peer_uri, uri);
 	}
 	
-	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
+	return Msg_Send(ivoip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
 
 /* account 파일을 사용할 경우 이 명령을 필요없음 */
@@ -110,7 +110,7 @@ static int send_ua_msg(const char *login, const char *domain, const char *pass)
 	strcpy(msg.uri.pbx_uri, domain);
 	strcpy(msg.uri.passwd, pass);
 	
-	return Msg_Send(isip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
+	return Msg_Send(ivoip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
 
 static int recv_msg(void)
@@ -119,18 +119,18 @@ static int recv_msg(void)
 	int size;
 	
 	//# blocking
-	if (Msg_Rsv(isip->qid, SIPC_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_sipc_main_msg_t)) < 0)
+	if (Msg_Rsv(ivoip->qid, SIPC_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_sipc_main_msg_t)) < 0)
 		return -1;
 	
 	/* baresip로부터 직접 상태정보가 수신되는 경우.
 	 * 단말 등록여부, 상대방에서 전화를 종료했을 경우 등이 수신된다.
 	 */ 
 	if (msg.cmd == SIPC_CMD_SIP_GET_STATUS) {
-		isip->ste.call_ste = msg.ste.call_ste;
-		isip->ste.call_dir = msg.ste.call_dir;
-		isip->ste.call_reg = msg.ste.call_reg;
+		ivoip->ste.call_ste = msg.ste.call_ste;
+		ivoip->ste.call_dir = msg.ste.call_dir;
+		ivoip->ste.call_reg = msg.ste.call_reg;
 		/* error 발생 시 UI에 출력할 방법이 필요함 */
-		isip->ste.call_err = msg.ste.call_err;
+		ivoip->ste.call_err = msg.ste.call_err;
 	}
 		
 	return msg.cmd;
@@ -143,14 +143,14 @@ static int recv_msg(void)
 *****************************************************************************/
 static void *THR_sipc_recv_msg(void *prm)
 {
-	app_thr_obj *tObj = &isip->rObj;
+	app_thr_obj *tObj = &ivoip->rObj;
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	//# message queue
-	isip->qid = Msg_Init(SIPC_MSG_KEY);
+	ivoip->qid = Msg_Init(SIPC_MSG_KEY);
 	
 	while (!exit) {
 		//# wait cmd
@@ -162,7 +162,7 @@ static void *THR_sipc_recv_msg(void *prm)
 		
 		switch (cmd) {
 		case SIPC_CMD_SIP_READY:
-			isip->init = 1; /* from record process */
+			ivoip->init = 1; /* from record process */
 			break;
 		case SIPC_CMD_SIP_EXIT:
 			exit = 1;
@@ -173,11 +173,10 @@ static void *THR_sipc_recv_msg(void *prm)
 		}
 	}
 	
-	Msg_Kill(isip->qid);
+	Msg_Kill(ivoip->qid);
 	tObj->active = 0;
 	
 	/* kill process ?? */
-	
 	aprintf("exit...\n");
 
 	return NULL;
@@ -190,19 +189,11 @@ static void *THR_sipc_recv_msg(void *prm)
 *****************************************************************************/
 static void *THR_sipc_epoll(void *prm)
 {
-	app_thr_obj *tObj = &isip->eObj;
+	app_thr_obj *tObj = &ivoip->eObj;
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
-	
-	do {
-		if (isip->init) {
-			break;
-		}
-		/* baresip가 실행 안된 상태 */
-		OSA_waitMsecs(100);
-	} while(1);
 	
 	while (!exit)
 	{
@@ -214,10 +205,10 @@ static void *THR_sipc_epoll(void *prm)
 		} 
 		else if (cmd == APP_CMD_NOTY) 
 		{
-			int state = isip->ste.call_ste;
+			int state = ivoip->ste.call_ste;
 			dprintf("current baresip state = %d\n", state);
 			
-			if (isip->ste.call_reg) {
+			if (ivoip->ste.call_reg) {
 				switch (state) {
 				case SIPC_STATE_CALL_IDLE:
 					/* 전화를 건다 */
@@ -265,7 +256,7 @@ static void *THR_sipc_epoll(void *prm)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-int app_sipc_init(void)
+int app_voip_init(void)
 {
 	struct stat sb;
 	app_thr_obj *tObj;
@@ -273,7 +264,8 @@ int app_sipc_init(void)
 	int status;
 	
 	/* /root/.baresip/accounts에 default 계정 정보 저장 */
-	__sipc_set_default_account("2003", "52.78.124.88", "2003");
+//	__sipc_set_default_account("2003", "52.78.124.88", "2003");
+	__sipc_set_default_account("2003", "192.168.40.95", "2003");
 	
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
@@ -283,20 +275,20 @@ int app_sipc_init(void)
 	system(SIPC_CMD_STR);
 	
 	//# create recv msg thread.
-	tObj = &isip->rObj;
+	tObj = &ivoip->rObj;
 	if (thread_create(tObj, THR_sipc_recv_msg, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create SIP Client Receive Msg thread\n");
 		return EFAIL;
     }
 	
-	tObj = &isip->eObj;
+	tObj = &ivoip->eObj;
 	if (thread_create(tObj, THR_sipc_epoll, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create SIP Client event poll thread\n");
 		return EFAIL;
     }
 	
 	/* mutex create */
-	status = OSA_mutexCreate(&isip->lock);
+	status = OSA_mutexCreate(&ivoip->lock);
 	OSA_assert(status == OSA_SOK);
 	
     aprintf("... done!\n");
@@ -309,9 +301,9 @@ int app_sipc_init(void)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-void app_sipc_exit(void)
+void app_voip_exit(void)
 {
-	app_thr_obj *tObj = &isip->eObj;
+	app_thr_obj *tObj = &ivoip->eObj;
 	
     event_send(tObj, APP_CMD_EXIT, 0, 0);
     while (tObj->active)
@@ -320,9 +312,9 @@ void app_sipc_exit(void)
 	
 	//#--- stop message receive thread. 
 	//# 프로세스에서 이미 종료가 되므로 APP_CMD_EXIT를 하면 안됨.
-//	tObj = &isip->rObj;
+//	tObj = &ivoip->rObj;
 //	thread_delete(tObj);
-	OSA_mutexDelete(&(isip->lock));
+	OSA_mutexDelete(&(ivoip->lock));
 	
 	dprintf("... done!\n");
 }
@@ -331,18 +323,22 @@ void app_sipc_exit(void)
 * @brief    voip manager
 *   - desc
 *****************************************************************************/
-void app_sipc_set_event(void)
+void app_voip_set_event(void)
 {
-	OSA_mutexLock(&isip->lock);
-	event_send(&isip->eObj, APP_CMD_NOTY, 0, 0);
-	OSA_mutexUnlock(&isip->lock);
+	if (!ivoip->init) {
+		return;
+	}
+	
+	OSA_mutexLock(&ivoip->lock);
+	event_send(&ivoip->eObj, APP_CMD_NOTY, 0, 0);
+	OSA_mutexUnlock(&ivoip->lock);
 }
 
 /*****************************************************************************
 * @brief    create user
 *   - desc
 *****************************************************************************/
-void app_sipc_create_user(const char *info, const char *addr, const char *passwd)
+void app_voip_create_user(const char *info, const char *addr, const char *passwd)
 {
 	send_ua_msg(info, addr, passwd);
 }
@@ -351,7 +347,7 @@ void app_sipc_create_user(const char *info, const char *addr, const char *passwd
 * @brief    create user
 *   - desc
 *****************************************************************************/
-void app_sipc_update_account(const char *login, const char *domain, const char *pass)
+void app_voip_update_account(const char *login, const char *domain, const char *pass)
 {
 	struct stat st;
 	char file[256] = "";
@@ -382,7 +378,7 @@ void app_sipc_update_account(const char *login, const char *domain, const char *
 * @brief    baresip exit
 *   - desc
 *****************************************************************************/
-void app_sipc_client_exit(void)
+void app_voip_client_exit(void)
 {
 	send_msg(SIPC_CMD_SIP_EXIT, NULL);
 }

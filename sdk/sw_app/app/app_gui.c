@@ -192,13 +192,8 @@ static void *THR_gui(void *prm)
 		//# watchdog
 		if ((wd_cycle != 0) && (wd_cycle % UI_WATCHDOG_TIME == 0))
 		{
-		    if (app_cfg->num_ch == 0)
-                app_cfg->wd_flags |= WD_ENC;
-			
-			if (!app_cfg->ste.b.gps)
-                app_cfg->wd_flags |= WD_DEV;
-				
-			if (app_cfg->wd_flags == WD_TOT)
+			//if (app_cfg->wd_flags == WD_TOT)
+			if (app_cfg->wd_flags == app_cfg->wd_tot)
 			{
 				app_mcu_wd_keep_alive();
 				app_cfg->wd_flags = 0;

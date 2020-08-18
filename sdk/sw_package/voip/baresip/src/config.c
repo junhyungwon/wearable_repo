@@ -49,7 +49,7 @@ static struct config core_config = {
 		AUFMT_S16LE,
 		AUFMT_S16LE,
 		AUFMT_S16LE,
-		{20, 160},
+		{20, 160}, /* min 20m ~ 160 */
 	},
 
 	/** Video */

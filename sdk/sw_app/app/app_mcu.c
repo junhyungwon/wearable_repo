@@ -27,7 +27,7 @@
 #include "app_file.h"
 #include "app_ctrl.h"
 #include "app_gui.h"
-#include "app_sipc.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -191,7 +191,7 @@ static void *THR_micom(void *prm)
 	mic_set_watchdog(ENA, TIME_WATCHDOG);
 	mic_data_send(1, TIME_DATA_CYCLE);
 
-	while(!exit)
+	while (!exit)
 	{
 		app_cfg->wd_flags |= WD_MICOM;
 
@@ -242,7 +242,7 @@ static void *THR_micom(void *prm)
 						/* Short KEY */
 						if (!app_cfg->ste.b.ftp_run)
 						{
-							app_sipc_set_event();
+							app_voip_set_event();
 						}
                 	}
 				}
@@ -283,14 +283,15 @@ int app_mcu_start(void)
 {
 	int status = SOK;
 	app_thr_obj *tObj;
-
+	
 	//# static config clear
 	memset((void *)imcu, 0x0, sizeof(app_mcu_t));
 
     status = OSA_mutexCreate(&(imcu->mutex_3delay));
 	OSA_assert(status == OSA_SOK);
-
+	
 	//#--- create dio thread
+	app_cfg->wd_tot |= WD_MICOM;
 	tObj = &imcu->cObj;
 	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL) < 0) {
 		eprintf("create thread\n");

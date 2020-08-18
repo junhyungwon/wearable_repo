@@ -92,6 +92,7 @@ void video_status(void)
 
     if (app_cfg->vid_count == 0)
     {
+		app_cfg->wd_tot &= ~WD_ENC; 
         ret = app_rec_state();
         if (ret) {
             sleep(1) ;
@@ -100,7 +101,11 @@ void video_status(void)
 		
 		if (strcmp(MODEL_NAME, "NEXX360") != 0) 
             mcu_pwr_off(OFF_NORMAL) ;
-    }
+    } else
+	{
+		app_cfg->wd_tot |= WD_ENC; 
+	}
+	
 }
 
 /*----------------------------------------------------------------------------

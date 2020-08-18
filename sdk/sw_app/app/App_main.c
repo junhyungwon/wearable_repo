@@ -44,7 +44,7 @@
 #include "app_p2p.h"
 #include "app_web.h"
 #include "app_encrypt.h"
-#include "app_sipc.h"
+#include "app_voip.h"
 #include "app_snd.h"
 #include "app_fms.h"
 #include "app_gps.h"
@@ -158,7 +158,7 @@ int app_main(void)
 	 * baresip가 timer를 이용하는데 앞에서 초기화를 수행하면
 	 * 영향을 받음 가장 나중에 수행해야 함.
 	 */
-	app_sipc_init();
+	app_voip_init();
 	dev_buzz_ctrl(80, 2);	//# buzz: power on
 
 	while(!exit)
@@ -383,7 +383,7 @@ int main(int argc, char **argv)
         app_ftp_exit();
 
     app_ipins_exit();
-	app_sipc_exit(); /* voip exit */
+	app_voip_exit(); /* voip exit */
 	app_gps_exit();
 	
 	g_mem_exit();
