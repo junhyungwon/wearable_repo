@@ -26,7 +26,9 @@
 int netmgr_event_hub_init(void);
 int netmgr_event_hub_exit(void);
 
-int netmgr_event_hub_set_dev_status(int type, int ste);
-int netmgr_event_hub_rndis_status(int ste);
+int netmgr_event_hub_polldev_noty(int type, int ste);
+int netmgr_event_hub_dev_link_status(int type, int status);
+int netmgr_event_hub_dev_ip_status(int type);
+int netmgr_event_hub_dev_rssi_status(int type, int level);
 
 #endif	/* __EVENT_HUB_H__ */

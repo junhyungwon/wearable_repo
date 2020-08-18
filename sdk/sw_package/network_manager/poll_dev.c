@@ -25,6 +25,7 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "poll_dev.h"
 #include "common.h"
+#include "event_hub.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
@@ -195,7 +196,6 @@ static int netlink_usb_get_attribute(char *buffer, size_t len, const char **sys_
 
 	return 0;
 }
-
 
 /*****************************************************************************
 * @brief    static int netlink_usb_detach_parse(char *buffer, size_t len)
@@ -387,29 +387,6 @@ static int __is_connected_rndis(void)
 	return ret;
 }
 
-static int __is_connected_eth0(void)
-{
-	FILE *fp = NULL;
-    char buf[32] = {0, };
-    int status=0;
-    unsigned char val;
-
-    snprintf(buf, sizeof(buf), "/sys/class/net/eth0/carrier");
-    
-	fp = fopen(buf, "r") ;
-    if (fp != NULL) {   
-        fread(&val, 1, 1, fp);
-        if (val == '1') {
-            status = 1 ; // connect
-        } else { 
-            status = 0 ; // disconnect
-        } 
-        fclose(fp);
-    }
-	
-    return status;
-}
-
 static int __is_connected_usb2eth(void)
 {
     FILE *f = NULL;
@@ -429,11 +406,11 @@ static int __is_connected_usb2eth(void)
 static int __is_connected_cradle(void)
 {
 	int status;
-
+	
+	/* 0-> connect 1-> remove */
 	gpio_get_value(BACKUP_DET, &status);
-	//dprintf("--- [cradle] value %d\n", status);
 
-	return status;
+	return (status?0:1);
 }
 
 /*****************************************************************************
@@ -514,7 +491,7 @@ static void *THR_dev_poll(void *prm)
 	if (!__is_connected_wlan()) 
 	{
 		app_cfg->ste.bit.wlan = 1;
-		netmgr_event_hub_set_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
+		netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_WIFI, 1);
 	}
 	
 	while (!exit)
@@ -523,8 +500,9 @@ static void *THR_dev_poll(void *prm)
 		int event_device = 0;
 		
 		cmd = tObj->cmd;
-        if (cmd == APP_CMD_EXIT)
-            break;
+        if (cmd == APP_CMD_EXIT) {
+		    break;
+		}
 		
 		//# wait USB Rndis Device
 		ret = __is_connected_rndis();
@@ -559,24 +537,6 @@ static void *THR_dev_poll(void *prm)
 				app_cfg->ste.bit.usb2eth = 0;
 				event_noty = 1; /* send remove event */
 				event_device = NETMGR_DEV_TYPE_USB2ETHER;
-			}
-		}
-		
-		//# wait ethernet0 Device
-		ret = __is_connected_eth0();
-		if (ret) {
-			/* set attach event */
-			if (app_cfg->ste.bit.eth0 == 0) {
-				app_cfg->ste.bit.eth0 = 1;
-				event_noty = 1; /* send attach event */
-				event_device = NETMGR_DEV_TYPE_ETHERNET;
-			}
-		} else {
-			/* set remove event */
-			if (app_cfg->ste.bit.eth0 == 1) {
-				app_cfg->ste.bit.eth0 = 0;
-				event_noty = 1; /* send remove event */
-				event_device = NETMGR_DEV_TYPE_ETHERNET;
 			}
 		}
 		
@@ -663,17 +623,17 @@ static void *THR_dev_poll(void *prm)
 		if (event_noty) 
 		{
 			if (event_device == NETMGR_DEV_TYPE_WIFI) 
-				netmgr_event_hub_set_dev_status(NETMGR_DEV_TYPE_WIFI, app_cfg->ste.bit.wlan);
-			else if (event_device == NETMGR_DEV_TYPE_ETHERNET) 
-				netmgr_event_hub_set_dev_status(NETMGR_DEV_TYPE_ETHERNET, app_cfg->ste.bit.eth0);
+				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_WIFI, app_cfg->ste.bit.wlan);
 			else if (event_device == NETMGR_DEV_TYPE_USB2ETHER) 
-				netmgr_event_hub_set_dev_status(NETMGR_DEV_TYPE_USB2ETHER, app_cfg->ste.bit.usb2eth);
+				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_USB2ETHER, app_cfg->ste.bit.usb2eth);
 			else if (event_device == NETMGR_DEV_TYPE_RNDIS) 
-				netmgr_event_hub_set_dev_status(NETMGR_DEV_TYPE_RNDIS, app_cfg->ste.bit.rndis);	
+				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_RNDIS, app_cfg->ste.bit.rndis);	
 			else if (event_device == NETMGR_DEV_TYPE_CRADLE) 
-				netmgr_event_hub_set_dev_status(NETMGR_DEV_TYPE_CRADLE, app_cfg->ste.bit.cradle);				
+				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_CRADLE, app_cfg->ste.bit.cradle);				
 		}
 		
+		// for next event : wait
+		delay_msecs(50);
 	} 
 	
 	tObj->active = 0;

@@ -28,6 +28,18 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define TIME_SOFTAP_CYCLE			200		//# msec
+#define TIME_SOFTAP_ACTIVE    		10000   //# 10sec
+#define CNT_SOFTWAP_ACTIVE        	(TIME_SOFTAP_ACTIVE/TIME_SOFTAP_CYCLE)
+
+#define HOSTAPD_PID_PATH			"/var/run/hostapd.pid"
+#define HOSTAPD_CONFIG				"/etc/hostapd.conf"
+
+#define __STAGE_SOFTAP_MOD_LOAD		(0x00)
+#define __STAGE_SOFTAP_MOD_WAIT		(0x01)
+#define __STAGE_SOFTAP_MOD_EXEC		(0x02)
+#define __STAGE_SOFTAP_GET_STATUS	(0x03)
+
 typedef struct {
 	app_thr_obj hObj; /* wlan client mode */
 	
@@ -42,28 +54,6 @@ typedef struct {
 	int tmr_count;
 	
 } netmgr_wlan_hostapd_t;
-
-#define HOSTAPD_PID_PATH			"/var/run/hostapd.pid"
-#define HOSTAPD_CONFIG				"/etc/hostapd.conf"
-
-/* Wi-Fi Module Path */
-#define RTL_8188E_PATH			"/lib/modules/8188eu.ko"
-#define RTL_8188C_PATH			"/lib/modules/8192cu.ko"
-#define RTL_8821A_PATH			"/lib/modules/8821au.ko"
-#define RTL_8812A_PATH			"/lib/modules/8812au.ko"
-
-/* Wi-Fi Module name */
-#define RTL_8188E_NAME			"8188eu"
-#define RTL_8188C_NAME			"8192cu"
-#define RTL_8821A_NAME			"8821au"
-#define RTL_8812A_NAME			"8812au"
-
-#define PROC_MODULE_FNAME		"/proc/modules"
-
-#define __STAGE_MOD_IDLE		(0x00)
-#define __STAGE_MOD_LOAD		(0x01)
-#define __STAGE_MOD_WAIT		(0x02)
-#define __STAGE_MOD_RUN			(0x03)
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -160,56 +150,6 @@ static int __create_hostapd_conf(const char *usr_id, char *usr_pw, int ch, int i
 	return 0;
 }
 
-static int __wlan_get_module(const char *name)
-{
-    FILE *proc;
-
-    char line[256] = {};
-
-	if (name == NULL)
-		return 0;
-
-    if ((proc = fopen(PROC_MODULE_FNAME, "r")) == NULL) {
-        eprintf("Could not open /proc/modules!!\n");
-        return 0;
-    }
-
-    while ((fgets(line, sizeof(line), proc)) != NULL) {
-        if (strncmp(line, name, strlen(name)) == 0) {
-            fclose(proc);
-            return 1;
-        }
-    }
-    fclose(proc);
-
-    return 0;
-}
-
-static void __wlan_insmod(const char *module_path)
-{
-	char buf[256];
-	FILE *f = NULL;
-
-	/* load driver */
-	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/insmod %s", module_path);
-
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
-}
-
-static int __wlan_wait_mod_active(void)
-{
-	int ret;
-	
-	ret = access("/sys/class/net/wlan0/operstate", R_OK);
-	if ((ret == 0) || (errno == EACCES)) {
-		return 0;
-	} 
-	return -1;
-}
-
 static int __wlan_hostapd_run(void)
 {
 	char buf[256] = {0,};
@@ -287,97 +227,69 @@ static void __wlan_hostapd_stop(void)
 static void *THR_wlan_hostapd_main(void *prm)
 {
 	app_thr_obj *tObj = &ihost->hObj;
-	int exit = 0, cmd;
-	char path[128] = {0,};
-	char name[128] = {0,};
+	int exit = 0;
+	int quit = 0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
 	{
+		int cmd = 0;
+		
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT)
 			break;
+		else if (cmd == APP_CMD_START) {
+			quit = 0; /* for loop */ 
+		}
 		
-		/* START or STOP  명령을 수신하면 실행됨 */
-		ihost->stage = __STAGE_MOD_LOAD;
-		ihost->tmr_count = 0;
-		
-		while (!exit)
+		while (!quit)
 		{
-			int vid = app_cfg->wlan_vid;
-			int pid = app_cfg->wlan_pid;
 			int st = 0;
 			
 			cmd = tObj->cmd;
         	if (cmd == APP_CMD_STOP) {
 				/* TODO */
             	__wlan_hostapd_stop();
-				break;
+				quit = 1;
+				continue;
 			}
 			
 			st = ihost->stage;
 			switch (st) {
-			case __STAGE_MOD_RUN:
+			case __STAGE_SOFTAP_GET_STATUS:
+				break;
+			case __STAGE_SOFTAP_MOD_EXEC:
 				__wlan_hostapd_run();
-				ihost->stage = __STAGE_MOD_IDLE;
+				ihost->stage = __STAGE_SOFTAP_GET_STATUS;
 				/* 현재 상태를 알려줘야 함 */
 				break;
 			
-			case __STAGE_MOD_WAIT:
-				if (__wlan_wait_mod_active() == 0) {
-					ihost->stage = __STAGE_MOD_RUN;
+			case __STAGE_SOFTAP_MOD_WAIT:
+				if (netmgr_wlan_wait_mod_active() == 0) {
+					ihost->stage = __STAGE_SOFTAP_MOD_EXEC;
 				} else {
 					/* timeout 계산 */
 					ihost->tmr_count++;
-					if (ihost->tmr_count >= 10) {
+					if (ihost->tmr_count >= CNT_SOFTWAP_ACTIVE) {
 						/* fail */
-						ihost->stage = __STAGE_MOD_IDLE;
 						/* error 상태를 mainapp에 알려줘야 함 */
+						quit = 1; /* exit loop */
 					} 
 				}
 				break;	
 			
-			case __STAGE_MOD_LOAD:
-				/* kernel module 파일명을 확인 */
-				if ((vid == RTL_8188E_VID) && (pid == RTL_8188E_PID)) {
-					strcpy(path, RTL_8188E_PATH);
-					strcpy(name, RTL_8188E_NAME);
-				} else if ((vid == RTL_8188C_VID) && (pid == RTL_8188C_PID)) {
-					strcpy(path, RTL_8188C_PATH);
-					strcpy(name, RTL_8188C_NAME);
-				} else if ((vid == RTL_8192C_VID) && (pid == RTL_8192C_PID)) {
-					strcpy(path, RTL_8188C_PATH);
-					strcpy(name, RTL_8188C_NAME);
-				} else if ((vid == RTL_8821A_VID) && (pid == RTL_8821A_PID)) {
-					strcpy(path, RTL_8821A_PATH);
-					strcpy(name, RTL_8821A_NAME);
-				} else {
-					/* invalid wifi usb module */
-					dprintf("Not Supported WiFi USB Module!!(%x, %x)\n", vid, pid);
-					/* TODO */
-					ihost->stage = __STAGE_MOD_IDLE;
-					continue;
-				}
-				
-				/* 이미 모듈이 loading된 상태이면 insmod 수행 안 함 */
-				if (__wlan_get_module(name) == 0) 
-				{
-					__wlan_insmod(path);
-				} else {
-					/* unload driver TODO */
-					//snprintf(buf, sizeof(buf), "/sbin/rmmod %s", module_name);
-				}
-				ihost->stage = __STAGE_MOD_WAIT;
+			case __STAGE_SOFTAP_MOD_LOAD:
+				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
+				ihost->stage = __STAGE_SOFTAP_MOD_WAIT;
 				break;
 			
-			case __STAGE_MOD_IDLE:
 			default:
 				break;
 			}
 			
-			delay_msecs(200);	
+			delay_msecs(TIME_SOFTAP_CYCLE);	
 		}
 	}
 	
@@ -447,7 +359,11 @@ int netmgr_wlan_hostapd_start(void)
 	ihost->stealth = info->stealth;
 	ihost->freq = info->freq;
 	ihost->channel = info->channel;
-			
+	
+	/* START or STOP  명령을 수신하면 실행됨 */
+	ihost->stage = __STAGE_SOFTAP_MOD_LOAD;
+	ihost->tmr_count = 0;
+				
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

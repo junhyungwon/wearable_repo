@@ -78,18 +78,15 @@
 #define DBG_ENTER __D_FUNC_ENTER
 /*************************************************************************/
 
-
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
 static unsigned int	g_running;
 static pthread_t  	g_tid;
 
-
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-
 
 /*----------------------------------------------------------------------------
  local function
@@ -122,7 +119,6 @@ pthread_t sys_os_create_thread(void * thread_func, void * argv)
 
 	return tid;
 }
-
 
 /*
  * return if 1, succeed
@@ -535,7 +531,7 @@ void * onvifserver_thread(void * argv)
     wifi_pre_status = app_cfg->ste.b.wifi ;
     lte_pre_status = app_cfg->ste.b.dial_run ;
     usb2eth_pre_status = app_cfg->ste.b.eth1_run ;
-    eth0_pre_status = 0;// dev_ste_ethernet(0);
+    eth0_pre_status = app_cfg->ste.b.eth0_run;
 
 	// 초기화...
 	while(1) {
@@ -560,7 +556,6 @@ void * onvifserver_thread(void * argv)
 	// 상태변화에 따른 대응
     while(!exit)
     {
-
 		// changed cradle status
         if(cradle_pre_status != app_cfg->ste.b.st_cradle) {
 
@@ -590,13 +585,10 @@ void * onvifserver_thread(void * argv)
 				init_onvifserver() ;
 				onvifserver_status = ONVIFSERVER_LOADED ;
 			}
-
-	 
 		}
 
 		// changed wifi status
         if(wifi_pre_status != app_cfg->ste.b.wifi) {
-
 			wifi_pre_status = app_cfg->ste.b.wifi ;
 			onvifserver_status = ONVIFSERVER_READY;
 
@@ -637,7 +629,6 @@ void * onvifserver_thread(void * argv)
 
 		// changed usb2ethernet status
         if(usb2eth_pre_status != app_cfg->ste.b.eth1_run) {
-
 			usb2eth_pre_status = app_cfg->ste.b.eth1_run ;
 			onvifserver_status = ONVIFSERVER_READY;
 
@@ -656,7 +647,7 @@ void * onvifserver_thread(void * argv)
 		}
 		
 		// changed ethernet status
-		eth0_cur_status = 0; //dev_ste_ethernet(0);
+		eth0_cur_status = app_cfg->ste.b.eth0_run;
 		if(app_cfg->ste.b.st_cradle && eth0_pre_status != eth0_cur_status) {
 		    eth0_pre_status = eth0_cur_status ;
 			init_onvifserver() ;
@@ -667,13 +658,11 @@ void * onvifserver_thread(void * argv)
 
         if(!check_process("wis-streamer"))
 			app_rtsptx_start();
-			
 
         sleep(1) ;
     }
 	return (void*)NULL;
 }
-
 
 /*****************************************************************************
 * @brief    onvifserver start/stop function
@@ -735,7 +724,6 @@ int app_onvifserver_restart_all() // app, thread and uds_thread
     return 0 ;
 }
 
-
 int init_onvifserver()
 {
     char cmd[255];
@@ -767,7 +755,5 @@ int init_onvifserver()
 
 	return ret;
 }
-
-
 
 //EOF

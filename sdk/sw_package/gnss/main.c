@@ -129,22 +129,21 @@ static void app_main(void)
 		}
 		
 		switch (cmd) {
-		/* GPS ??´ ?°ê²°?˜ì—ˆ????*/	
 		case GNSS_CMD_GPS_START:
+			dprintf("GNSS_CMD_GPS_START command!!\n");
 			app_gps_proc_start();
-			dprintf("received gps start cmd!\n");
 			break;
 		case GNSS_CMD_GPS_REQ_DATA:
+			dprintf("GNSS_CMD_GPS_REQ_DATA command!\n");
 			app_gps_data_request();
 			break;
-		/* GPS ??´ ë¶„ë¦¬?˜ì—ˆ????*/
 		case GNSS_CMD_GPS_STOP:
+			dprintf("GNSS_CMD_GPS_STOP command!\n");
 			app_gps_proc_stop();
-			dprintf("received gps stop cmd!\n");
 			break;
 		case GNSS_CMD_GPS_EXIT:
-			exit = 1;
 			dprintf("received gps exit!\n");
+			exit = 1;
 			break;
 		
 		default:
@@ -165,10 +164,9 @@ int main(int argc, char **argv)
 {
 	int rc = 0, offset;
 
-	printf(" [GPS process] start...\n");
-	session = &app_cfg->t_device;
+	dprintf(" [GPS process] start...\n");
 	
-	/* GPS ?°ì´?°ë? ê³µìœ ??shared memory ì´ˆê¸°??ë°?MSGQ ì´ˆê¸°??*/
+	session = &app_cfg->t_device;
 	rc = app_shared_mem_init();
 	if (rc < 0)
 		goto err_exit;

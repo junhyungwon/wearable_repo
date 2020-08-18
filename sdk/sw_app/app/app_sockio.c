@@ -162,7 +162,7 @@ static Void *THR_ddns(Void *prm)
     if(app_set->ddns_info.interval)
         interval = app_set->ddns_info.interval * 60 * 1000 ;
 
-    retval = 0; //dev_ste_ethernet(0) ;
+    retval = app_cfg->ste.b.eth0_run;
     
     if (app_cfg->ste.b.wifi_ready || app_cfg->ste.b.dial_ready || retval)
     {
@@ -180,7 +180,7 @@ static Void *THR_ddns(Void *prm)
  
         if(app_set->ddns_info.ON_OFF)  // change ddns setting in run time 
         {
-            retval = 0; //dev_ste_ethernet(0) ;
+            retval = app_cfg->ste.b.eth0_run;
 
             if (app_cfg->ste.b.wifi_ready || app_cfg->ste.b.dial_ready || retval)
             {

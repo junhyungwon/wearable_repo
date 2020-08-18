@@ -147,10 +147,11 @@ void send_sysinfo(void)
     Infores.cmd = htons(CMD_INFO_RES) ;
 	Infores.length = htons(sizeof(INFO_RES) - 6);
 	Infores.eth_type = htons(app_set->net_info.type) ;
-
-	//if(app_cfg->ste.b.st_cradle && dev_ste_ethernet(0))
-   //     sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
-	//else
+	
+	/* rupy: st_cradle로 통합관리 */
+	if (app_cfg->ste.b.eth0_run)
+        sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
+	else
         sprintf(Infores.ipaddr, "%s", "NA");
 
 	sprintf(Infores.subnet, "%s", app_set->net_info.eth_netmask) ;

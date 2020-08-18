@@ -61,16 +61,21 @@ int gpio_exit(int num);
 int gpio_set_value(int num, int value);
 int gpio_get_value(int num, int *val);
 
-int netmgr_usb_is_exist(int usb_v, int usb_p);
-int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid);
-int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mask, const char *gateway);
-int netmgr_set_ip_dhcp(const char *name);
 int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask, char *gw);
 void netmgr_net_link_down(const char *ifce);
 int netmgr_net_link_up(const char *ifce);
 int netmgr_net_link_detect(const char *ifce);
+int netmgr_is_netdev_active(const char *ifname);
 
 int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mask, const char *gateway);
 int netmgr_set_ip_dhcp(const char *ifname);
+
+int netmgr_udhcpc_is_run(const char *ifname);
+void netmgr_udhcpc_stop(const char *ifname);
+
+int netmgr_usb_is_exist(int usb_v, int usb_p);
+int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid);
+int netmgr_wlan_load_kermod(int vid, int pid);
+int netmgr_wlan_wait_mod_active(void);
 
 #endif /* __DEV_GPIO_H__ */

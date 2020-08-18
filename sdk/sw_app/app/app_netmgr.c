@@ -34,9 +34,12 @@ typedef struct {
 	app_thr_obj rObj;		//# rec message send thread
 	
 	int qid;
-	int devType;
-	int devStatus;
+	
+	int device;
+	int insert;
+	int link_status;
 	int wlan_5G_enable;
+	int rssi_level;
 	
 	int shmid;  /* shared memory qid */
 	unsigned char *sbuf;  /* shared memory address */
@@ -53,6 +56,18 @@ static app_netmgr_t *inetmgr=&netmgr_obj;
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 static void *THR_netmgr_send_msg(void *prm);
+
+static char *__get_netdev_string(int type)
+{
+	switch (type) {
+	case NETMGR_DEV_TYPE_WIFI: return "wlan";
+	case NETMGR_DEV_TYPE_USB2ETHER: return "usb2ether";
+	case NETMGR_DEV_TYPE_RNDIS: return "rndis";
+	case NETMGR_DEV_TYPE_CRADLE: return "eth0";
+	}
+	
+	return "unknown";
+}
 
 static int send_msg(int cmd)
 {
@@ -73,9 +88,18 @@ static int recv_msg(void)
 	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0)
 		return -1;
 	
-	inetmgr->devType = msg.dev_type;
-	inetmgr->devStatus = msg.dev_status;
-	inetmgr->wlan_5G_enable = msg.wlan_5G_enable;
+	if (msg.cmd == NETMGR_CMD_DEV_DETECT) {
+		inetmgr->device = msg.device;
+		inetmgr->insert = msg.status;
+		inetmgr->wlan_5G_enable = msg.wlan_5G_enable;
+	} 
+	else if (msg.cmd == NETMGR_CMD_DEV_LINK_STATUS) {
+		inetmgr->device      = msg.device;
+		inetmgr->link_status = msg.status;
+	}
+	else if (msg.cmd == NETMGR_CMD_WLAN_CLIENT_RSSI) {
+		inetmgr->rssi_level = msg.wlan_rssi;
+	}
 	
 	return msg.cmd;
 }
@@ -94,20 +118,22 @@ static void __netmgr_wlan_event_handler(int ste)
 {
 	netmgr_shm_request_info_t *info;
 	char *databuf;
+	int mode = 0; /* set default client mode */
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
 	info = (netmgr_shm_request_info_t *)databuf;
 	
+	if ((strcmp(MODEL_NAME, "NEXX360") == 0) && (app_cfg->vid_count == 0)) {
+		mode = 1; /* AP Mode */			
+	} 
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 					
 	if (ste) {
 		/* Wi-Fi 장치가 연결되었을 때 필요한 루틴을 수행 */
-		dprintf("current mode name %s\n", MODEL_NAME);
-		
-		if ((strcmp(MODEL_NAME, "NEXX360") == 0) && 
-			(app_cfg->vid_count == 0))
+		dprintf("Wi-Fi %s start.........\n", mode?"AP":"CLIENT");
+		if (mode)
 		{
 		    /* AP MODE */
 			int enable = inetmgr->wlan_5G_enable;
@@ -148,8 +174,9 @@ static void __netmgr_wlan_event_handler(int ste)
 			} else {
 				strcpy(info->passwd, app_set->wifiap.pwd);
 			}
-			
-			if (app_set->net_info.type == NET_TYPE_STATIC) {
+#if 0			
+			if (app_set->net_info.type == NET_TYPE_STATIC) 
+			{
 				info->dhcp = 0;
 				strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
 				strcpy(info->mask_address, app_set->net_info.wlan_netmask);
@@ -157,12 +184,22 @@ static void __netmgr_wlan_event_handler(int ste)
 			} else {
 				info->dhcp = 1;
 			}
-			
+#else
+			/* static ip not supported??*/
+			info->dhcp = 1;
+#endif			
 			send_msg(NETMGR_CMD_WLAN_CLIENT_START);
 		}
 		
 	} else {
+		dprintf("Wi-Fi %s STOP.........\n", mode?"AP":"CLIENT");
 		/* Wi-Fi 장치가 제거되었을 때 필요한 루틴을 수행 */
+		if (mode) {
+			/* AP mode stop */
+			send_msg(NETMGR_CMD_WLAN_SOFTAP_STOP);
+		} else {
+			send_msg(NETMGR_CMD_WLAN_CLIENT_STOP);
+		}
 	}
 }
 
@@ -180,6 +217,7 @@ static void __netmgr_rndis_event_handler(int ste)
 	
 	if (ste) {
 		/* rndis 장치가 연결되었을 때 필요한 루틴을 수행 */
+		info->dhcp = 1;
 		send_msg(NETMGR_CMD_RNDIS_START);
 	} else {
 		/* rndis 장치가 제거되었을 때 필요한 루틴을 수행 */
@@ -229,7 +267,8 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
-		/* usb2eth 장치가 연결되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.st_cradle = 1;
+		/* cradle 장치가 연결되었을 때 필요한 루틴을 수행 */
 		if (app_set->net_info.type == NET_TYPE_STATIC) {
 			info->dhcp = 0;
 			strcpy(info->ip_address, app_set->net_info.eth_ipaddr);
@@ -240,9 +279,59 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 		}
 		send_msg(NETMGR_CMD_CRADLE_ETH_START);
 	} else {
-		/* usb2eth 장치가 제거되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.st_cradle = 0;
+		/* cradle 장치가 제거되었을 때 필요한 루틴을 수행 */
 		send_msg(NETMGR_CMD_CRADLE_ETH_STOP);
 	}
+}
+
+static void __netmgr_dev_link_status_handler(void)
+{
+	int device = inetmgr->device;
+	int link   = inetmgr->link_status;
+	
+	if (device == NETMGR_DEV_TYPE_WIFI) {
+		if (link == NETMGR_DEV_ACTIVE) {
+			app_cfg->ste.b.wifi = 1;
+			app_leds_rf_ctrl(LED_RF_OK);
+		} else if (link == NETMGR_DEV_ERROR)  {
+			app_cfg->ste.b.wifi = 0;
+			app_leds_rf_ctrl(LED_RF_FAIL);
+		} else {
+			app_cfg->ste.b.wifi = 0;
+			app_leds_rf_ctrl(LED_RF_OFF);
+		} 
+	} else if (device == NETMGR_DEV_TYPE_USB2ETHER) {
+		if (link == NETMGR_DEV_ACTIVE) {
+			app_cfg->ste.b.eth1_run = 1;
+			app_leds_rf_ctrl(LED_RF_OK);
+		} else if (link == NETMGR_DEV_ERROR) {
+			app_cfg->ste.b.eth1_run = 0;
+			app_leds_rf_ctrl(LED_RF_FAIL);	
+		} else {
+			app_cfg->ste.b.eth1_run = 0;
+			app_leds_rf_ctrl(LED_RF_OFF);
+		}
+	} else if (device == NETMGR_DEV_TYPE_RNDIS) {
+		if (link == NETMGR_DEV_ACTIVE) {
+			app_cfg->ste.b.dial_run = 1;
+			app_leds_rf_ctrl(LED_RF_OK);
+		} else if (link == NETMGR_DEV_ERROR)  {
+			app_cfg->ste.b.dial_run = 0;
+			app_leds_rf_ctrl(LED_RF_FAIL);
+		} else {
+			app_cfg->ste.b.dial_run = 0;
+			app_leds_rf_ctrl(LED_RF_OFF);
+		}
+	} else if (device == NETMGR_DEV_TYPE_CRADLE) {
+		if (link == NETMGR_DEV_ACTIVE) {
+			app_cfg->ste.b.eth0_run = 1;
+			app_cfg->ftp_enable = ON;
+		} else {
+			app_cfg->ste.b.eth0_run = 0;
+			app_cfg->ftp_enable = OFF;
+		}
+	} 
 }
 
 static void __netmgr_start(void)
@@ -296,8 +385,8 @@ static void *THR_netmgr_send_msg(void *prm)
 			case APP_KEY_UP:
 			{
 				/* 장치가 연결되거나 제거된 경우 관련 루틴을 실행 */
-				int type   = inetmgr->devType;
-				int status = inetmgr->devStatus;
+				int type   = inetmgr->device;
+				int status = inetmgr->insert;
 				
 				if (type == NETMGR_DEV_TYPE_WIFI) 
 				{
@@ -350,14 +439,24 @@ static void *THR_netmgr_recv_msg(void *prm)
 		
 		switch (cmd) {
 		case NETMGR_CMD_READY:
-			dprintf("received netmgr ready!\n");
+			//dprintf("received netmgr ready!\n");
 			__netmgr_start();
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
-			dprintf("received netmgr device detect!\n");
+			dprintf("device type %s, state %s!\n", __get_netdev_string(inetmgr->device), inetmgr->insert?"insert":"remove");
 			__netmgr_hotplug_noty();
-			//dprintf("device type %x, status %x!\n", inetmgr->devType, inetmgr->devStatus);
+			break;
+		
+		case NETMGR_CMD_DEV_LINK_STATUS:
+			dprintf("received netmgr device link status!\n");
+			//dprintf("device type %x, link status %x!\n", __get_netdev_string(inetmgr->device), inetmgr->link_status);
+			__netmgr_dev_link_status_handler();
+			break;
+		
+		case NETMGR_CMD_WLAN_CLIENT_RSSI:
+			//dprintf("received netmgr Wi-Fi RSSi!\n");
+			//dprintf("rssi level = %d\n", inetmgr->rssi_level);
 			break;
 			
 		case NETMGR_CMD_PROG_EXIT:

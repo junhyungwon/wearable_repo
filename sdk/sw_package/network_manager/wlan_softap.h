@@ -25,5 +25,7 @@
 -----------------------------------------------------------------------------*/
 int netmgr_wlan_hostapd_init(void);
 int netmgr_wlan_hostapd_exit(void);
+int netmgr_wlan_hostapd_start(void);
+int netmgr_wlan_hostapd_stop(void);
 
 #endif	/* __WLAN_SOFT_AP_H__ */
