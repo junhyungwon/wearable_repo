@@ -661,8 +661,6 @@ int app_file_init(void)
 		goto err_ret;	
 	}
 
-	app_cfg->wd_flags = WD_FILE;
-	/* ????? ?? */
 	ret = _create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, &ifile->disk_used);
 	if (ret == EFAIL) 	{
 		eprintf("make file list fail!! \n");
@@ -677,8 +675,9 @@ int app_file_init(void)
 		eprintf("create thread\n");
 		return -1;
 	}
-	//OSA_waitMsecs(300);
 	
+	//# ??? ?? ? watchdog ???
+	app_cfg->wd_tot |= WD_FILE;
 	aprintf("... done!\n");
 	
 	return 0;

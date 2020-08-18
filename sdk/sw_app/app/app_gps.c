@@ -126,11 +126,14 @@ static void *THR_gps_jack_detect(void *prm)
 	gpio_irq_init(GPS_PWR_EN, GPIO_IRQ_BOTH);
 	
 	if (!gpio_get_value(GPS_PWR_EN, &val)) {
-		if (val == 1) 
-		{
+		if (val == 1) {
 			app_cfg->ste.b.gps = 1;
+            app_cfg->wd_tot |= WD_DEV;
 			event_send(&igps->hObj, APP_CMD_START, 0, 0);
-		} 
+		} else {
+			app_cfg->wd_tot &= ~WD_DEV;
+		}
+		
 	}
 	while (!exit) 
 	{
@@ -144,11 +147,13 @@ static void *THR_gps_jack_detect(void *prm)
 			dprintf("GPS Jack GPIO value %d\n", val);
 			if (app_cfg->ste.b.gps == 0 && val == 1) {
 				app_cfg->ste.b.gps = 1;
+				app_cfg->wd_tot |= WD_DEV;
 				event_send(&igps->hObj, APP_CMD_START, 0, 0);
 			} 
 			else if (app_cfg->ste.b.gps == 1 && val == 0)
 			{
 				app_cfg->ste.b.gps = 0;
+				app_cfg->wd_tot &= ~WD_DEV;
 				app_leds_gps_ctrl(LED_GPS_OFF);
 				event_send(&igps->hObj, APP_CMD_STOP, 0, 0);
 			}
