@@ -20,25 +20,34 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "usb2eth.h"
 #include "common.h"
+#include "event_hub.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define TIME_USB2ETH_CYCLE				200		//# msec
+#define TIME_USB2ETH_WAIT_DHCP			10000   //# 10sec
+#define CNT_USB2ETH_WAIT_DHCP  			(TIME_USB2ETH_WAIT_DHCP/TIME_USB2ETH_CYCLE)
+
+#define __STAGE_USB2ETH_WAIT_ACTIVE		(0x00)
+#define __STAGE_USB2ETH_WAIT_DHCP		(0x01)
+#define __STAGE_USB2ETH_GET_STATUS		(0x02)
+
+#define NETMGR_USB2ETH_DEVNAME			"eth1"
+
 typedef struct {
 	app_thr_obj uObj;
-	app_thr_obj pObj;
 	
 	char ip[NETMGR_NET_STR_MAX_SZ+1];
     char mask[NETMGR_NET_STR_MAX_SZ+1];
     char gw[NETMGR_NET_STR_MAX_SZ+1];
 	
 	int dhcp;
-	int ip_alloc;
+	int stage;
+	int usb2eth_timer;
 	
 } netmgr_usb2ether_t;
-
-#define NETMGR_USB2ETH_DEVNAME	"eth1"
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -59,7 +68,8 @@ static void *THR_usb2eth_main(void *prm)
 {
 	app_thr_obj *tObj = &iusb2eth->uObj;
 	int exit = 0, cmd;
-	int res;
+	int quit = 0;
+	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -69,43 +79,81 @@ static void *THR_usb2eth_main(void *prm)
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT)
 			break;
+		else if (cmd == APP_CMD_START) {
+			quit = 0; /* for loop */ 
+		}
 		
-		while (1)
+		while (quit == 0)
 		{
+			int st;
+			int res;
+			
 			cmd = tObj->cmd;
-			if (cmd == APP_CMD_STOP)
+			if (cmd == APP_CMD_STOP) {
+				if (iusb2eth->dhcp == 1) 
+					netmgr_udhcpc_stop(NETMGR_USB2ETH_DEVNAME);
+				
+				netmgr_net_link_down(NETMGR_USB2ETH_DEVNAME);
+				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
+				quit = 1;
+				continue;
+			}
+			
+			st = iusb2eth->stage;
+			switch (st) {
+			case __STAGE_USB2ETH_GET_STATUS:
+				res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
+				if (!res) {
+					iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
+				}
 				break;
 			
-			/* 네트워크 케이블이 연결되면 1 아니면 0 */
-			res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
-			if ((res == 0) && (iusb2eth->ip_alloc == 0)) 
-			{
-				/* IP 할당이 안된 상태이고 케이블이 연결 안된 경우: 대기 */	
-			}
-			else if ((res == 0) && (iusb2eth->ip_alloc == 1))
-			{
-				/* 동작 중에 네트워크 케이블이 분리된 경우: 상태의 변화가 있으므로 전달 */
-				iusb2eth->ip_alloc = 0;
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
-			}
-			else if ((res == 1) && (iusb2eth->ip_alloc == 0))
-			{
-				/* 케이블이 연결되고 IP 할당이 안된 경우 */
-				if (iusb2eth->dhcp == 0)  {//
-					netmgr_set_ip_static(NETMGR_USB2ETH_DEVNAME, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
+			case __STAGE_USB2ETH_WAIT_DHCP:
+				//# check done pipe(udhcpc...)
+				if (netmgr_udhcpc_is_run(NETMGR_USB2ETH_DEVNAME)) {
+					iusb2eth->stage = __STAGE_USB2ETH_GET_STATUS;
+					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
+					
+					memset(tmp_buf, 0, sizeof(tmp_buf));
+					netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
+					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", iusb2eth->ip);
+					log_write(tmp_buf);
+					netmgr_set_shm_ip_info(NETMGR_USB2ETH_DEVNAME, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
 				} else {
-					netmgr_set_ip_dhcp(NETMGR_USB2ETH_DEVNAME);
+					if (iusb2eth->usb2eth_timer >= CNT_USB2ETH_WAIT_DHCP) {
+						/* error */
+						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ERROR);
+						iusb2eth->usb2eth_timer = 0;
+						quit = 1; /* loop exit */
+					} else {
+						iusb2eth->usb2eth_timer++;
+					}
 				}
-				
-				iusb2eth->ip_alloc = 1;
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
-			}
-			else if ((res == 1) && (iusb2eth->ip_alloc == 1))
-			{
-				/* IP가 할당된 상태이고 케이블도 연결된 상태 */
+				break;
+			
+			case __STAGE_USB2ETH_WAIT_ACTIVE:
+				res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
+				if (res) {
+					/* 케이블이 연결되고 IP 할당이 안된 경우 */
+					if (iusb2eth->dhcp == 0) {
+						/* static ip alloc */
+						netmgr_set_ip_static(NETMGR_USB2ETH_DEVNAME, iusb2eth->ip, 
+									iusb2eth->mask, iusb2eth->gw);
+						iusb2eth->stage = __STAGE_USB2ETH_GET_STATUS;
+					} else {
+						/* dhcp ip alloc */
+						iusb2eth->usb2eth_timer = 0;
+						netmgr_set_ip_dhcp(NETMGR_USB2ETH_DEVNAME);
+						iusb2eth->stage = __STAGE_USB2ETH_WAIT_DHCP;
+					}
+				}
+				break;
+			default:
+				break;	
 			}
 			
-			delay_msecs(100);	
+			delay_msecs(TIME_USB2ETH_CYCLE);	
 		} 
 	}
 	
@@ -170,7 +218,8 @@ int netmgr_usb2eth_event_start(void)
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
 	info = (netmgr_shm_request_info_t *)databuf;
 	
-	iusb2eth->ip_alloc = 0;
+	iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
+	iusb2eth->usb2eth_timer = 0;
 	iusb2eth->dhcp = info->dhcp;
 	memset(iusb2eth->ip, 0, NETMGR_NET_STR_MAX_SZ);
 	memset(iusb2eth->mask, 0, NETMGR_NET_STR_MAX_SZ);
@@ -201,7 +250,6 @@ int netmgr_usb2eth_event_stop(void)
 	app_thr_obj *tObj = &iusb2eth->uObj;
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
-	netmgr_net_link_down(NETMGR_USB2ETH_DEVNAME);
 	
 	return 0;
 }

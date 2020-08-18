@@ -537,7 +537,7 @@ int app_leds_sys_normal_ctrl(void)
 	else
         leds_ctrl(LED_IDX_REC, DEV_LED_OFF);
 
-	if(app_cfg->ste.b.wifi_run || app_cfg->ste.b.dial_run || app_cfg->ste.b.eth1_run)
+	if (app_cfg->ste.b.usbnet_run)
 	{
         g_val = DEV_LED_ON;
 		r_val = DEV_LED_OFF ;

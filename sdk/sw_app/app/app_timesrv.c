@@ -396,7 +396,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 
-    ret = app_cfg->ste.b.eth0_run;
+    ret = app_cfg->ste.b.cradle_eth_run;
     if(!ret) {
         set_time_zone() ;  
         return FALSE  ;
@@ -492,7 +492,7 @@ static void *THR_tsync(void *prm)
             break;
         }
         
-		if(app_cfg->ste.b.st_cradle) {
+		if(app_cfg->ste.b.cradle_eth_ready) {
             if (itsync->tsync_status == TIMESYNC_READY)
                 retval = time_sync() ;
         } else

@@ -72,6 +72,7 @@ int netmgr_set_ip_dhcp(const char *ifname);
 
 int netmgr_udhcpc_is_run(const char *ifname);
 void netmgr_udhcpc_stop(const char *ifname);
+int netmgr_set_shm_ip_info(int dev, const char *ip, const char *mask, const char *gw);
 
 int netmgr_usb_is_exist(int usb_v, int usb_p);
 int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid);

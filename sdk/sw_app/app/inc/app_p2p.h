@@ -30,5 +30,4 @@ int app_p2p_stop(void);
 int app_p2p_init(void);
 int app_p2p_exit(void) ;
 int add_p2p_account(void);
-int check_process(char *process_name);
 #endif	/* _APP_P2P_H_ */

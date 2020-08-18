@@ -1163,3 +1163,55 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 	}
     return 0 ;     
 }
+
+int ctrl_is_live_process(const char *process_name)
+{   
+    DIR* pdir;
+    struct dirent *pinfo;
+    int is_live = 0;
+
+    pdir = opendir("/proc");
+    if (pdir == NULL)
+    {
+        printf("err: NO_DIR\n");
+        return 0;
+    }
+
+    while (1)
+    {
+		FILE* fp = NULL;
+        char buff[128]={0,};
+        char path[128]={0,};
+		
+        pinfo = readdir(pdir);
+        if (pinfo == NULL)
+            break;
+ 
+        if (pinfo->d_type != 4 || pinfo->d_name[0] == '.' || pinfo->d_name[0] > 57)
+            continue;
+
+        sprintf(path, "/proc/%s/status", pinfo->d_name);
+
+        fp = fopen(path, "rt");
+        if(fp)
+        {
+            fgets(buff, 128, fp);
+            fclose(fp);
+        
+//            if(strstr(buff, P2P_NAME))   
+            if(strstr(buff, process_name))   
+            {
+                is_live = 1;
+                break;
+            }
+        }
+        else
+        {
+            printf("Can't read file [%s]\n", path);
+        }
+    }
+
+    closedir(pdir);
+
+    return is_live;
+}

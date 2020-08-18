@@ -310,7 +310,7 @@ int netmgr_event_hub_dev_ip_status(int type)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
-	/* APP_KEY_OK을 이용한다 */
+	/* APP_KEY_LEFT을 이용한다 */
 	event_send(tObj, APP_KEY_LEFT, type, 0);
 	
 	return 0;
@@ -325,7 +325,7 @@ int netmgr_event_hub_dev_rssi_status(int type, int level)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
-	/* APP_KEY_OK을 이용한다 */
+	/* APP_KEY_RIGHT을 이용한다 */
 	event_send(tObj, APP_KEY_RIGHT, type, level);
 	
 	return 0;

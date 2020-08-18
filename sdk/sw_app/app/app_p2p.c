@@ -22,6 +22,7 @@
 #include <sys/types.h>
 
 #include "app_main.h"
+#include "app_ctrl.h"
 #include "app_set.h"
 #include "app_comm.h"
 
@@ -47,7 +48,6 @@ static app_p2p_t *ip2p=&t_p2p;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-
 int add_p2p_account()
 {
     FILE *fp = NULL ;
@@ -67,7 +67,7 @@ int app_p2p_start(void)
     int ret = 0 ;
     char p2p_cmd[MAX_CHAR_128] = {0, } ;
 
-    if(app_cfg->ste.b.wifi || app_cfg->ste.b.dial_run || app_cfg->ste.b.eth1_run || app_cfg->ste.b.eth0_run)
+    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_eth_run)
     {
 //        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.deviceId) ;
         sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.uid) ;
@@ -81,63 +81,11 @@ int app_p2p_stop(void)
 {
     int ret = 0 ;
     char p2p_cmd[MAX_CHAR_128] = {0, } ;
+	
     sprintf(p2p_cmd, "killall P2PTunnelServer_ti") ;
-
     ret = system(p2p_cmd) ;
 
     return 0;
-}
-
-int check_process(char *process_name)
-{   
-    DIR* pdir;
-    struct dirent *pinfo;
-    int is_live = 0;
-
-    pdir = opendir("/proc");
-    if(pdir == NULL)
-    {
-        printf("err: NO_DIR\n");
-        return 0;
-    }
-
-    while(1)
-    {
-        pinfo = readdir(pdir);
-        if(pinfo == NULL)
-            break;
- 
-        if(pinfo->d_type != 4 || pinfo->d_name[0] == '.' || pinfo->d_name[0] > 57)
-            continue;
-
-        FILE* fp;
-        char buff[128];
-        char path[128];
-
-        sprintf(path, "/proc/%s/status", pinfo->d_name);
-
-        fp = fopen(path, "rt");
-        if(fp)
-        {
-            fgets(buff, 128, fp);
-            fclose(fp);
-        
-//            if(strstr(buff, P2P_NAME))   
-            if(strstr(buff, process_name))   
-            {
-                is_live = 1;
-                break;
-            }
-        }
-        else
-        {
-            printf("Can't read file [%s]\n", path);
-        }
-    }
-
-    closedir(pdir);
-
-    return is_live;
 }
 
 /*****************************************************************************
@@ -145,7 +93,6 @@ int check_process(char *process_name)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-
 static void *THR_p2p(void *prm)
 {
     app_thr_obj *tObj = &ip2p->p2pObj;
@@ -163,13 +110,14 @@ static void *THR_p2p(void *prm)
         if (cmd == APP_CMD_STOP) {
             break;
         }
-        ret = check_process(P2P_NAME) ;
 
-        if(!ret)
+        ret = ctrl_is_live_process((const char *)P2P_NAME);
+        if (!ret)
         {
-            app_p2p_start() ;
+            app_p2p_start();
         } 
-        app_msleep(CHECK_MSEC) ;
+		
+        app_msleep(CHECK_MSEC);
     }
 
     tObj->active = 0;
@@ -177,7 +125,6 @@ static void *THR_p2p(void *prm)
     aprintf("...exit\n");
 
     return NULL;    
-
 }
 
 /*****************************************************************************
@@ -185,13 +132,11 @@ static void *THR_p2p(void *prm)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-
 int app_p2p_init(void)
 {
     app_thr_obj *tObj;
 
     memset(ip2p, 0, sizeof(app_p2p_t));
-
 
     tObj = &ip2p->p2pObj;
     if (thread_create(tObj, THR_p2p, APP_THREAD_PRI, NULL) < 0) {

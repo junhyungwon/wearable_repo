@@ -139,7 +139,6 @@ static Void THR_csock(Void *prm)
 
 }
 
-
 static Void *THR_ddns(Void *prm)
 {
     int exit =0, retval = 0, interval = 0, cmp_interval = 0, cmd ;
@@ -162,27 +161,25 @@ static Void *THR_ddns(Void *prm)
     if(app_set->ddns_info.interval)
         interval = app_set->ddns_info.interval * 60 * 1000 ;
 
-    retval = app_cfg->ste.b.eth0_run;
+    retval = app_cfg->ste.b.cradle_eth_run;
     
-    if (app_cfg->ste.b.wifi_ready || app_cfg->ste.b.dial_ready || retval)
+    if (app_cfg->ste.b.usbnet_ready || retval)
     {
         system(start_buffer) ;
-
     }
 
     while(!exit)
     {
         cmd = tObj->cmd ;
         if (cmd == APP_CMD_STOP) {
-
             break;
         } 
  
         if(app_set->ddns_info.ON_OFF)  // change ddns setting in run time 
         {
-            retval = app_cfg->ste.b.eth0_run;
+            retval = app_cfg->ste.b.cradle_eth_run;
 
-            if (app_cfg->ste.b.wifi_ready || app_cfg->ste.b.dial_ready || retval)
+            if (app_cfg->ste.b.usbnet_ready || retval)
             {
                 if(interval <= cmp_interval )
                 {   

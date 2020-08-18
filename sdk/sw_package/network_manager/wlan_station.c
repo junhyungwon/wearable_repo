@@ -39,8 +39,6 @@
 #define TIME_CLI_DHCP    		10000   //# 10sec
 #define CNT_CLI_DHCP        	(TIME_CLI_DHCP/TIME_CLI_CYCLE)
 
-#define NETMGR_WLAN_CLI_DEVNAME		"wlan0"
-
 #define IWGETID_CMD				"/sbin/iwgetid wlan0"
 #define IWCONFIG_CMD			"/sbin/iwconfig wlan0"
 
@@ -69,13 +67,15 @@ typedef struct {
 	int en_key;
 	int stage;
 	int level;
-	int tmr_count;
+	int cli_timer;
 	
 } netmgr_wlan_cli_t;
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
+static const char *cli_dev_name = "wlan0";
+
 static netmgr_wlan_cli_t t_cli;
 static netmgr_wlan_cli_t *i_cli = &t_cli;
 
@@ -308,7 +308,7 @@ static int __cli_start(const char *ssid, const char *password, int encrypt)
 	return 0;
 }
 
-static void __cli_stop(void)
+static void __cli_stop(const char *ifce)
 {
 	FILE *f;
 	int pid = 0;
@@ -326,8 +326,8 @@ static void __cli_stop(void)
 		eprintf("couldn't stop wpa_supplicant\n");
 
 	/* stop udhcpc */
-	if (netmgr_udhcpc_is_run("wlan0"))
-		netmgr_udhcpc_stop("wlan0");
+	if (netmgr_udhcpc_is_run(ifce))
+		netmgr_udhcpc_stop(ifce);
 #if 0
 	/* kill udhcpc daemon */
 //	kill -9 $(cat $WPA_PID)
@@ -501,8 +501,8 @@ static void *THR_wlan_cli_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
-				dprintf("wlan station stopping!!!!\n");
-				__cli_stop();
+				//dprintf("wlan station stopping!!!!\n");
+				__cli_stop(cli_dev_name);
 				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
 				quit = 1;
 				continue;
@@ -511,43 +511,44 @@ static void *THR_wlan_cli_main(void *prm)
 			st = i_cli->stage;
 			switch (st) {
 			case __STAGE_CLI_GET_RSSI_LEVEL:
-				if (i_cli->tmr_count >= CNT_RSSI_SEND) {
+				if (i_cli->cli_timer >= CNT_RSSI_SEND) {
 					__cli_get_link_status(i_cli->ssid, &i_cli->level);
 					netmgr_event_hub_dev_rssi_status(NETMGR_DEV_TYPE_WIFI, i_cli->level);
-					i_cli->tmr_count = 0;
+					i_cli->cli_timer = 0;
 				} else 
-					i_cli->tmr_count++;
+					i_cli->cli_timer++;
 				break;
 				
 			case __STAGE_CLI_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(NETMGR_WLAN_CLI_DEVNAME)) {
+				if (netmgr_udhcpc_is_run(cli_dev_name)) {
 					i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
-					i_cli->tmr_count = 0;
+					i_cli->cli_timer = 0;
 					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					
-					//memset(tmp_buf, 0, sizeof(tmp_buf));
-					//netmgr_get_net_info(NETMGR_DEV_TYPE_WIFI, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-					//snprintf(tmp_buf, sizeof(tmp_buf), "wi-fi client ipaddress %s", i_cli->ip);
-					//log_write(tmp_buf);
+					memset(tmp_buf, 0, sizeof(tmp_buf));
+					netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
+					snprintf(tmp_buf, sizeof(tmp_buf), "wi-fi client ipaddress %s", i_cli->ip);
+					log_write(tmp_buf);
+					netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
 				} else {
-					if (i_cli->tmr_count >= CNT_CLI_DHCP) {
+					if (i_cli->cli_timer >= CNT_CLI_DHCP) {
 						/* error */
 						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
 						quit = 1; /* loop exit */
 					} else {
-						i_cli->tmr_count++;
+						i_cli->cli_timer++;
 					}
 				}
 				break;
 					
 			case __STAGE_CLI_SET_IP:
 				if (i_cli->dhcp == 0) { //# set static ip
-					netmgr_set_ip_static(NETMGR_WLAN_CLI_DEVNAME, i_cli->ip, i_cli->mask, i_cli->gw);
+					netmgr_set_ip_static(cli_dev_name, i_cli->ip, i_cli->mask, i_cli->gw);
 					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
 				} else {
-					netmgr_set_ip_dhcp(NETMGR_WLAN_CLI_DEVNAME);
+					netmgr_set_ip_dhcp(cli_dev_name);
 					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
 				}
 				break;
@@ -556,11 +557,11 @@ static void *THR_wlan_cli_main(void *prm)
 				if (__cli_get_auth_status(i_cli->ssid)) {
 					/* auth succeed! */
 					i_cli->stage = __STAGE_CLI_SET_IP;
-					i_cli->tmr_count = 0;
+					i_cli->cli_timer = 0;
 				} else {
 					i_cli->stage = __STAGE_CLI_WAIT_AUTH;
-					i_cli->tmr_count++;
-					if (i_cli->tmr_count >= CNT_CLI_AUTH) {
+					i_cli->cli_timer++;
+					if (i_cli->cli_timer >= CNT_CLI_AUTH) {
 						/* fail */
 						/* error 상태를 mainapp에 알려줘야 함 */
 						quit = 1;
@@ -573,17 +574,17 @@ static void *THR_wlan_cli_main(void *prm)
 				/* create wpa_supplicant.conf and execute wpa_supplicant */
 				__cli_start(i_cli->ssid, i_cli->passwd, i_cli->en_key);
 				i_cli->stage = __STAGE_CLI_WAIT_AUTH;
-				i_cli->tmr_count = 0;
+				i_cli->cli_timer = 0;
 				break;
 			
 			case __STAGE_CLI_MOD_WAIT:
 				if (netmgr_wlan_wait_mod_active() == 0) {
-					i_cli->tmr_count = 0;
+					i_cli->cli_timer = 0;
 					i_cli->stage = __STAGE_CLI_AUTH_START;
 				} else {
 					/* timeout 계산 */
-					i_cli->tmr_count++;
-					if (i_cli->tmr_count >= CNT_CLI_ACTIVE) {
+					i_cli->cli_timer++;
+					if (i_cli->cli_timer >= CNT_CLI_ACTIVE) {
 						/* fail */
 						/* error 상태를 mainapp에 알려줘야 함 */
 						quit = 1;
@@ -672,7 +673,7 @@ int netmgr_wlan_cli_start(void)
 	
 	/* set default to idle */
 	i_cli->stage = __STAGE_CLI_MOD_LOAD;
-	i_cli->tmr_count = 0;
+	i_cli->cli_timer = 0;
 	i_cli->dhcp = info->dhcp;
 	
 	memset(i_cli->ip, 0, NETMGR_NET_STR_MAX_SZ);
@@ -689,7 +690,7 @@ int netmgr_wlan_cli_start(void)
 	}
 	
 	//# insmod 후에 wlan0가 생성됨.	
-	//netmgr_net_link_up(NETMGR_WLAN_CLI_DEVNAME); 
+	//netmgr_net_link_up(cli_dev_name); 
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

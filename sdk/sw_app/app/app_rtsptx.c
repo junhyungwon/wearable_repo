@@ -183,18 +183,16 @@ int app_rtsptx_stop_start()
          msg_resol(RESOL_480P) ;
 
     fd = popen("killall wis-streamer", "r");
-    if(fd == NULL)
+    if (fd == NULL)
         return -1;
 
     pclose(fd);
-
-    sleep(1) ;
+    sleep(1);
 
     sprintf(rtsp_cmd, "%s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port) ;
 
     fd = popen(rtsp_cmd, "r");
-
-    if(fd == NULL) {
+    if (fd == NULL) {
         return -1;
     }
     pclose(fd);

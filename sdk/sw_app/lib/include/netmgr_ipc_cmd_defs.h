@@ -23,6 +23,7 @@ extern "C" {
 #define NETMGR_SHM_KEY					0x0A18		//# shared memory id
 #define NETMGR_SHM_SIZE					2048		//# wi-fi ssid, passwd, 등을 공유
 #define NETMGR_SHM_REQUEST_INFO_SZ		1024
+#define NETMGR_SHM_RESPONSE_INFO_SZ		1024
 
 #define NETMGR_SHM_REQUEST_INFO_OFFSET			0
 #define NETMGR_SHM_RESPONSE_INFO_OFFSET			1024
@@ -129,8 +130,6 @@ typedef struct {
 	char ip_address[NETMGR_NET_STR_MAX_SZ+1];
     char mask_address[NETMGR_NET_STR_MAX_SZ+1];
     char gw_address[NETMGR_NET_STR_MAX_SZ+1];
-	
-	int level;	/* signal level (ap mode에서는 사용 안 함) */
 	
 } netmgr_shm_response_info_t;
 

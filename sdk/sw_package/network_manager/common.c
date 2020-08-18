@@ -22,6 +22,7 @@
 
 #include "netmgr_ipc_cmd_defs.h"
 #include "main.h"
+#include "event_hub.h"
 #include "common.h"
 
 /* Wi-Fi Module Path */
@@ -115,7 +116,7 @@ static char *__INET_rresolve(struct sockaddr_in *s_in, int numeric,
     	char name[1];
   	};
 	uint32_t ad;
-
+	
   	if (s_in->sin_family != AF_INET) {
     	eprintf("rresolve: unsupported address family %d!", s_in->sin_family);
     	errno = EAFNOSUPPORT;
@@ -126,15 +127,16 @@ static char *__INET_rresolve(struct sockaddr_in *s_in, int numeric,
 //  	dprintf("rresolve: %08x, mask %08x, num %08x\n", (unsigned)ad, netmask, numeric);
   	if (ad == INADDR_ANY) {
     	if ((numeric & 0x0FFF) == 0) {
-      		if (numeric & 0x8000)
-        		return strdup("default");
+      		if (numeric & 0x8000) {
+				return strdup("default");
+			}
       		return strdup("*");
     	}
   	}
 
-  	if (numeric & 0x0FFF)
-    	return strdup(inet_ntoa(s_in->sin_addr));
-
+  	if (numeric & 0x0FFF) {
+		return strdup(inet_ntoa(s_in->sin_addr));
+	}
 	return 0;
 }
 
@@ -161,12 +163,12 @@ static int __net_if_get_gate(const char *ifce, char *gate)
 	struct sockaddr_in s_addr;
 	struct in_addr mask;
 	FILE *fp;
-
+	
 	if (!gate) {
 		eprintf("invalid argument(NULL)\n");
 		return -1;
 	}
-
+	
 	fp = fopen("/proc/net/route", "r");
 	if (!fp) {
 		return -1;
@@ -182,7 +184,7 @@ static int __net_if_get_gate(const char *ifce, char *gate)
 	while (1) 
 	{
 		int r;
-
+		
 		r = fscanf(fp, "%63s%lx%lx%X%d%d%d%lx%d%d%d\n",
 				devname, &dst, &gw, &flgs, &ref, &use, &metric, &m,
 				&mtu, &win, &ir);
@@ -195,10 +197,11 @@ static int __net_if_get_gate(const char *ifce, char *gate)
 			fclose(fp);
       		return -1;
 		}
-
+		
 		/* Skip interfaces that are down. */
-		if (!(flgs & RTF_UP) || strcmp(devname, ifce))
+		if (!(flgs & RTF_UP) || strcmp(devname, ifce)) {
 			continue;
+		}
 
 		__set_flags(flags, (flgs & IPV4_MASK));
 
@@ -239,7 +242,7 @@ static int __net_if_get_gate(const char *ifce, char *gate)
 	//# not founded.
 	fclose(fp);
 	strcpy(gate, "0.0.0.0");
-
+	
 	return 1;
 }
 
@@ -422,7 +425,7 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
 {
 	struct ifreq ifreq;
 	int ret, skfd;
-
+	
 	memset(&ifreq, 0, sizeof(struct ifreq));
 	skfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (skfd < 0) {
@@ -434,9 +437,8 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
 	ifreq.ifr_hwaddr.sa_family = AF_INET;
 	strncpy(ifreq.ifr_name, ifce, sizeof(ifreq.ifr_name));
 	
-	if (hw_buf != NULL) 
-	{
-		/* Get HWAddress --> MAC */
+	/* Get HWAddress --> MAC */
+	if (hw_buf != NULL) {
 		memset(hw_buf, 0, 32);
 		ret = ioctl(skfd, SIOCGIFHWADDR, &ifreq);
 		if (ret >= 0) {
@@ -456,7 +458,7 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
 		sprintf(ip_buf, "%s", inet_ntoa(((struct sockaddr_in *)&ifreq.ifr_addr)->sin_addr));
 	} else
 		strcpy(ip_buf, "0.0.0.0");
-
+	
 	memset(mask, 0, 16);
 	strncpy(ifreq.ifr_name, ifce, sizeof(ifreq.ifr_name));
 	ret = ioctl(skfd, SIOCGIFNETMASK, &ifreq);
@@ -464,7 +466,7 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
 		sprintf(mask, "%s",	inet_ntoa(((struct sockaddr_in *)&ifreq.ifr_addr)->sin_addr));
 	} else
 		strcpy(mask, "255.255.255.0");
-
+	
 	close(skfd);
 
 	return __net_if_get_gate(ifce, gw);
@@ -624,6 +626,31 @@ int netmgr_is_netdev_active(const char *ifname)
     }
 	
     return status;
+}
+
+/*
+ * set shared memory response
+ */
+
+int netmgr_set_shm_ip_info(int dev, const char *ip, const char *mask, const char *gw)
+{
+	netmgr_shm_response_info_t *info;
+	char *databuf;
+	
+	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
+	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_RESPONSE_INFO_OFFSET);
+	info = (netmgr_shm_response_info_t *)databuf;
+	
+	/* memory clear */
+	memset(databuf, 0, NETMGR_SHM_RESPONSE_INFO_SZ);
+	
+	strcpy(info->ip_address, ip);
+	strcpy(info->mask_address, mask);
+	strcpy(info->gw_address, gw);
+	
+	netmgr_event_hub_dev_ip_status(dev);
+	
+	return 0;
 }
 
 //################################################################################################################################
