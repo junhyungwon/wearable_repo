@@ -75,6 +75,55 @@ int sysctl_message(
 	CGI_DBG("cmd=%d\n", cmd);
 
 	switch(cmd) {
+		case UDS_GET_USER_CONFIG:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_GET_USER_CONFIG);
+				ret = write(cs, wbuf, sizeof wbuf);
+				CGI_DBG("Sent CMD : %s\n", wbuf);
+
+				// 2. wait response and read sizeof T_CGI_USER_CONFIG bytes
+				ret = read(cs, (T_CGI_USER_CONFIG*)data, sizeof(T_CGI_USER_CONFIG));
+				CGI_DBG("Read, size:%d\n", ret);
+
+				if(ret > 0){
+					close(cs);
+					return 0;
+				}
+			}
+			break;
+		case UDS_SET_USER_CONFIG:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_SET_USER_CONFIG);
+				ret = write(cs, wbuf, sizeof wbuf);
+				CGI_DBG("Sent CMD : %s\n", wbuf);
+
+				// 2. check ready
+				ret = read(cs, rbuf, sizeof rbuf);
+				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+
+				ret = write(cs, data, sizeof(T_CGI_USER_CONFIG));
+				CGI_DBG("Sent Data, written len = %d\n", ret);
+
+				// 3. wait response and read 256 bytes
+				ret = read(cs, rbuf, sizeof rbuf);
+				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+				if(ret > 0){
+
+					// check return value
+					if(strcmp(rbuf, "OK") == 0){
+						ret = ERR_NO_ERROR;
+					}
+					else if(strcmp(rbuf, "NO CHANGE") == 0){
+						ret = ERR_NO_CHANGE;
+					}
+
+					close(cs);
+					return ret;
+				}
+			}
+			break;
 		case UDS_GET_SYSTEM_CONFIG:
 			{
 				// 1. write command
@@ -256,16 +305,13 @@ int sysctl_message(
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
 					T_CGI_OPERATION_CONFIG *t = (T_CGI_OPERATION_CONFIG*)data;
-					sscanf(rbuf, "%d %d %d %d %d %d %d %s %s", 
+					sscanf(rbuf, "%d %d %d %d %d %d", 
 							&t->rec.pre_rec,
 							&t->rec.auto_rec,
 							&t->rec.audio_rec,
 							&t->rec.interval,
 							&t->rec.overwrite,
-							&t->display_datetime,
-							&t->p2p.enable,
-							t->p2p.username,
-							t->p2p.password);
+							&t->display_datetime);
 					close(cs);
 					return 0;
 				}
@@ -285,16 +331,14 @@ int sysctl_message(
 				// 3. write id/password info
 				T_CGI_OPERATION_CONFIG t;
 				memcpy(&t, data, sizeof(t));
-				sprintf(wbuf, "%d %d %d %d %d %d %d %s %s", 
+				sprintf(wbuf, "%d %d %d %d %d %d", 
 						t.rec.pre_rec, 
 						t.rec.auto_rec, 
 						t.rec.audio_rec, 
 						t.rec.interval, 
 						t.rec.overwrite, 
-						t.display_datetime,
-					   	t.p2p.enable,
-						t.p2p.username,
-						t.p2p.password);
+						t.display_datetime);
+					   	//t.p2p.enable, t.p2p.username, t.p2p.password);
 				ret = write(cs, wbuf, sizeof(wbuf));
 				CGI_DBG("Sent Data:%s, written len = %d\n", wbuf, ret);
 

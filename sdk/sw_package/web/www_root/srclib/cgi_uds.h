@@ -26,6 +26,8 @@
 #define STR_MSG_SET_SERVERS_CONFIG   "SetServersConfiguration"
 #define STR_MSG_GET_SYSTEM_CONFIG    "GetSystemConfiguration"
 #define STR_MSG_SET_SYSTEM_CONFIG    "SetSystemConfiguration"
+#define STR_MSG_GET_USER_CONFIG      "GetUserConfiguration"
+#define STR_MSG_SET_USER_CONFIG      "SetUserConfiguration"
 
 enum _enumUdsCmd {
     UDS_CMD_FWUPDATE,
@@ -61,6 +63,8 @@ enum _enumUdsCmd {
     UDS_SET_SERVERS_CONFIG,
     UDS_GET_SYSTEM_CONFIG,
     UDS_SET_SYSTEM_CONFIG,
+    UDS_GET_USER_CONFIG,
+    UDS_SET_USER_CONFIG,
 };
 
 enum _tagUdsErrs{

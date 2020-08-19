@@ -91,6 +91,7 @@ static int submit_settings()
             else if(!strcmp(prm[i].name, "txt_wifi_ap_pw")){
                 sprintf(wifiap_pw, "%s", prm[i].value);
             }
+#if 0
             else if(!strcmp(prm[i].name, "live_stream_account_enable")){
                 live_stream_account_enable = atoi(prm[i].value);
             }
@@ -103,6 +104,7 @@ static int submit_settings()
             else if(!strcmp(prm[i].name, "txt_live_stream_account_pw")){
                 sprintf(live_stream_account_pw, "%s", prm[i].value);
             }
+#endif
         }
 		
         CGI_DBG("wireless_iptype:%d, wireless_ipv4:%s, wireless_gw:%s, wireless_mask:%s\n", 
@@ -110,11 +112,14 @@ static int submit_settings()
         CGI_DBG("cradle_iptype:%d, cradle_ipv4:%s, cradle_gw:%s, cradle_mask:%s\n", 
 				cradle_iptype, cradle_ipv4, cradle_gw, cradle_mask);
         CGI_DBG("wifi_ap, ssid:%s, pw:%s\n", wifiap_ssid, wifiap_pw);
+
+#if 0
         CGI_DBG("live_stream_account_enable:%d, id:%s, pw:%s\n", 
 				live_stream_account_enable, live_stream_account_id, live_stream_account_pw);
+#endif
 
 		// check not null
-		if( wireless_iptype == -1 || cradle_iptype == -1 || live_stream_account_enable == -1) 
+		if( wireless_iptype == -1 || cradle_iptype == -1 )//|| live_stream_account_enable == -1) 
 		{
 			CGI_DBG("Invalid Parameter\n");
 			return ERR_INVALID_PARAM;
@@ -129,7 +134,7 @@ static int submit_settings()
 		}
 
 		len = strlen(wifiap_pw);
-		if ( len != 0 && (len < 8 || len > 63) ) // Allow NULL password. 2020.02.26
+		if ( len != 0 && (len < 8 || len > 64) ) // Allow NULL password. 2020.02.26
 		{
 			CGI_DBG("Invalid Parameter, wifi password, len=%d\n", len);
 			return ERR_INVALID_PARAM;
@@ -151,6 +156,8 @@ static int submit_settings()
 			CGI_DBG("Invalid Parameter, cradle\n");
 			return ERR_INVALID_PARAM;
 		}
+
+#if 0
 		if( live_stream_account_enable == 1
 		&& (live_stream_account_enctype  == -1
 		||  strlen(live_stream_account_id) == 0
@@ -161,6 +168,7 @@ static int submit_settings()
 			CGI_DBG("Invalid Parameter, live stream account\n");
 			return ERR_INVALID_PARAM;
 		}
+#endif
 
 
         // Must finish parsing before free.
@@ -188,12 +196,14 @@ static int submit_settings()
 		strncpy(t.wifi_ap.id, wifiap_ssid, strlen(wifiap_ssid));
 		strncpy(t.wifi_ap.pw, wifiap_pw,   strlen(wifiap_pw));
 
+#if 0
 		t.live_stream_account_enable  = live_stream_account_enable;
 		t.live_stream_account_enctype = live_stream_account_enctype;
 		if(live_stream_account_enable){
 			strcpy(t.live_stream_account.id, live_stream_account_id);
 			strcpy(t.live_stream_account.pw, live_stream_account_pw);
 		}
+#endif
 
         ret = sysctl_message(UDS_SET_NETWORK_CONFIG, (void*)&t, sizeof(T_CGI_NETWORK_CONFIG));
         if(0 > ret) {
