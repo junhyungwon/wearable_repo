@@ -135,9 +135,6 @@ static int submit_settings_nexx360()
 		int  rec_interval=-1;
 		int  rec_overwrite=-1;
 		int  display_datetime=-1;
-		int  p2p_enable=-1;
-		char username[32]={0};
-		char password[32]={0};
 
 		for(;i<cnt;i++) {
 
@@ -160,26 +157,16 @@ static int submit_settings_nexx360()
 			else if(!strcmp(prm[i].name, "display_datetime")){
 				display_datetime = atoi(prm[i].value);
 			}
-			else if(!strcmp(prm[i].name, "p2p_enable")){
-				p2p_enable = atoi(prm[i].value);
-			}
-			else if(!strcmp(prm[i].name, "p2p_username")){
-				sprintf(username, "%s", prm[i].value);
-			} 
-			else if(!strcmp(prm[i].name, "p2p_password")){
-				sprintf(password, "%s", prm[i].value);
-			}
 		}
 
 		if( pre_rec == -1 || audio_rec == -1 || auto_rec == -1 || rec_interval == -1 || rec_overwrite == -1 
-				|| display_datetime == -1 || p2p_enable ==-1 ||  strlen(username) < 1 || strlen(password) < 1){
+				|| display_datetime == -1 ){
 			CGI_DBG("Invalid Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
 
 		CGI_DBG("pre_rec:%d, auto_rec:%d, audio_rec:%d, rec_interval:%d, rec_overwrite:%d, display_datetime:%d\n", 
 				pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite, display_datetime);
-		CGI_DBG("p2p_enable:%d, username:%s, password:%s\n", p2p_enable, username, password);
 
 		// Must finish parsing before free.
 		if(isPOST){ free(contents); }
@@ -192,9 +179,6 @@ static int submit_settings_nexx360()
 		t.rec.interval      = rec_interval;
 		t.rec.overwrite     = rec_overwrite;
 		t.display_datetime = display_datetime;
-		t.p2p.enable       = p2p_enable;
-		sprintf(t.p2p.username, "%s", username);
-		sprintf(t.p2p.password, "%s", password);
 
 		if(0 != sysctl_message(UDS_SET_OPERATION_CONFIG, (void*)&t, sizeof t )) {
 			return SUBMIT_ERR;

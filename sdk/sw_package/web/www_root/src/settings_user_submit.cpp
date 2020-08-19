@@ -14,6 +14,10 @@ static int submit_settings()
     int isPOST = 0;
     T_CGIPRM prm[128];
 
+	int bFitt360 = 1;
+	if( strcmp(MODEL_NAME, "NEXX360") == 0)
+		bFitt360 = 0;
+
     char *method = getenv("REQUEST_METHOD");
 	if(method == NULL) return ERR_INVALID_METHOD;
     CGI_DBG("method : %s\n", method);
@@ -36,14 +40,29 @@ static int submit_settings()
 
     if(cnt>0){
 
+		// admin password
+		int  chk_change_web_passwd = -1;
 		char curpw[128]={0};
 		char newpw1[128]={0};
 		char newpw2[128]={0};
 
+		int  live_stream_account_enable = -1; // if unchecked, it is not delivered
+		int  live_stream_account_enctype = -1; // if unchecked, it is not delivered
+		char live_stream_account_id[32] ={0};
+		char live_stream_account_pw[32] ={0};
+
+		char onvif_id[32] ={0};
+		char onvif_pw[32] ={0};
+
+		T_CGI_USER_CONFIG t; memset(&t, 0, sizeof t);
+
         for(int i=0;i<cnt;i++) {
 
             CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
-            if(!strcmp(prm[i].name, "txt_cur_pw")){
+            if(!strcmp(prm[i].name, "chk_change_web_passwd")){
+				chk_change_web_passwd = atoi(prm[i].value);
+			}
+            else if(!strcmp(prm[i].name, "txt_cur_pw")){
                 sprintf(curpw, "%s", prm[i].value);
             }
             else if(!strcmp(prm[i].name, "txt_new_pw1")){
@@ -52,37 +71,122 @@ static int submit_settings()
             else if(!strcmp(prm[i].name, "txt_new_pw2")){
                 sprintf(newpw2, "%s", prm[i].value);
             }
+            else if(!strcmp(prm[i].name, "txt_onvif_id")){
+                sprintf(onvif_id, "%s", prm[i].value);
+            }
+            else if(!strcmp(prm[i].name, "txt_onvif_pw")){
+                sprintf(onvif_pw, "%s", prm[i].value);
+            }
+            else if(!strcmp(prm[i].name, "live_stream_account_enable")){
+                live_stream_account_enable = atoi(prm[i].value);
+            }
+            else if(!strcmp(prm[i].name, "cbo_live_stream_account_enc_type")){
+                live_stream_account_enctype = atoi(prm[i].value);
+            }
+            else if(!strcmp(prm[i].name, "txt_live_stream_account_id")){
+                sprintf(live_stream_account_id, "%s", prm[i].value);
+            }
+            else if(!strcmp(prm[i].name, "txt_live_stream_account_pw")){
+                sprintf(live_stream_account_pw, "%s", prm[i].value);
+            }
         }
-		
-		if( strlen(curpw) < 1 || strlen(newpw1) < 1 || strlen(newpw2) < 1 ) {
-			CGI_DBG("Password is null\n");
+
+		// verify to change web password
+		if(chk_change_web_passwd == -1) {
+			CGI_DBG("Not received chk_change_web_passwd:-1\n");
 			return ERR_INVALID_PARAM;
 		}
-		if( strlen(newpw1) < 1) {
-			CGI_DBG("Invalid Parameter\n");
+		else if(chk_change_web_passwd == 1) {
+
+			if( strlen(curpw) < 1) {
+				CGI_DBG("Current Web Password's length < 1\n");
+				return ERR_INVALID_PARAM;
+			}
+
+			//  confirm current password 
+			T_CGI_ACCOUNT acc;
+			sprintf(acc.id, "%s", "admin");
+			sprintf(acc.pw, "%s", curpw);
+			if(0 != sysctl_message(UDS_CMD_CHECK_ACCOUNT, (void*)&acc, sizeof(acc))) {
+				return ERR_INVALID_ACCOUNT;
+			}
+			
+			if( strlen(newpw1) < 1) {
+				CGI_DBG("New Password1's length < 1\n");
+				return ERR_INVALID_PARAM;
+			}
+
+			if( strcmp(newpw1, newpw2) != 0) {
+				CGI_DBG("Password1 are different, pw1:%s, pw2:%s\n", newpw1, newpw2);
+				return ERR_INVALID_PARAM;
+			}
+
+			sprintf(t.web.id, "%s", "admin"); // if this is "admin", update password with newpw1, on app_uds
+			sprintf(t.web.pw, "%s", newpw1);
+		}
+	
+		//	check onvif
+		if(strcmp(onvif_id, "admin")!=0){
+			CGI_DBG("Invalid onvif id:%s\n", onvif_id);
 			return ERR_INVALID_PARAM;
+		}
+		if(strlen(onvif_pw) < 1 || strlen(onvif_pw) >16){
+			CGI_DBG("Invalid onvif pw:%s\n", onvif_pw);
+			return ERR_INVALID_PARAM;
+		}
+		sprintf(t.onvif.id, "%s", onvif_id);
+		sprintf(t.onvif.pw, "%s", onvif_pw);
+
+		// check not null
+		if(bFitt360){
+			if( live_stream_account_enable == -1)
+			{
+				CGI_DBG("Not received RTSP Account Enable\n");
+				return ERR_INVALID_PARAM;
+			}
+			else if( live_stream_account_enable == 1)
+			{
+				if(live_stream_account_enctype  == -1) {
+					CGI_DBG("Not received RTSP Account Enctype\n");
+					return ERR_INVALID_PARAM;
+				}
+				if(strlen(live_stream_account_id) < 1){
+					CGI_DBG("RTSP ID len < 1\n");
+					return ERR_INVALID_PARAM;
+				}
+				if(strlen(live_stream_account_pw) < 1){
+					CGI_DBG("RTSP PW len < 1\n");
+					return ERR_INVALID_PARAM;
+				}
+			}
+		}
+		else {
+			live_stream_account_enable=1;
+			if(live_stream_account_enctype  == -1) {
+				CGI_DBG("Not received RTSP Account Enctype\n");
+				return ERR_INVALID_PARAM;
+			}
+			if(strlen(live_stream_account_id) < 1){
+				CGI_DBG("RTSP ID len < 1\n");
+				return ERR_INVALID_PARAM;
+			}
+			if(strlen(live_stream_account_pw) < 1){
+				CGI_DBG("RTSP PW len < 1\n");
+				return ERR_INVALID_PARAM;
+			}
 		}
 
-        CGI_DBG("curpw:%s, newpw1:%s, newpw2:%s\n", curpw, newpw1, newpw2);
+		t.rtsp.enable = live_stream_account_enable;
+		t.rtsp.enctype = live_stream_account_enctype;
+		sprintf(t.rtsp.id, "%s", live_stream_account_id);
+		sprintf(t.rtsp.pw, "%s", live_stream_account_pw);
+
 
         // Must finish parsing before free.
         if(isPOST){ free(contents); }
 
-		T_CGI_ACCOUNT acc;
-        sprintf(acc.id, "%s", "admin");
-        sprintf(acc.pw, "%s", curpw);
 
-        if(0 != sysctl_message(UDS_CMD_CHECK_ACCOUNT, (void*)&acc, sizeof(acc))) {
-            return ERR_INVALID_ACCOUNT;
-        }
-
-        T_CGI_USER user;
-        sprintf(user.id, "%s", "admin");
-        sprintf(user.pw, "%s", newpw1);
-        user.lv = USER_LV_ADMINISTRATOR;
-        user.authtype = 0;
-
-        if(0!=sysctl_message(UDS_CMD_UPDATE_USER, (void*)&user, sizeof(user))) {
+        if(0>sysctl_message(UDS_SET_USER_CONFIG, (void*)&t, sizeof t)) {
             return SUBMIT_ERR;
         }
         return SUBMIT_OK;

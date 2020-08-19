@@ -45,9 +45,17 @@ typedef struct _tagNtpInfo {
 
 typedef struct _tagCgiOnvifConfig {
     int  enable; // 1:enable, 0:disable
+	int  lv;
     char id[32]; // fixed "admin"
     char pw[32];
 }T_CGI_ONVIF_CONFIG;
+
+typedef struct _tagCgiP2pServerConfig {
+    int  enable;
+    char uid[32];
+    char username[32];
+    char password[32];
+}T_CGI_P2PSERVER_CONFIG;
 
 typedef struct _tagCgiServersConfig {
 	T_CGI_BACKUP_SERVER bs;  //ftp
@@ -59,15 +67,10 @@ typedef struct _tagCgiServersConfig {
     char 				time_zone_abbr[6] ; // timezone 문자열...
 	int					daylight_saving;
 	T_CGI_ONVIF_CONFIG  onvif;
+    T_CGI_P2PSERVER_CONFIG p2p;
+	
 }T_CGI_SERVERS_CONFIG;
 /* end of servers settings */
-
-typedef struct _tagCgiP2pServerConfig {
-    int  enable;
-    char uid[32];
-    char username[32];
-    char password[32];
-}T_CGI_P2PSERVER_CONFIG;
 
 typedef struct _tagCgiRecordingConfig {
     int pre_rec;        // on or off
@@ -80,7 +83,7 @@ typedef struct _tagCgiRecordingConfig {
 typedef struct _tagCgiOperationConfiguration {
     T_CGI_RECORDING_CONFIG rec;
     int display_datetime;
-    T_CGI_P2PSERVER_CONFIG p2p;
+    //T_CGI_P2PSERVER_CONFIG p2p;
 }T_CGI_OPERATION_CONFIG;
 
 typedef struct _tagCgiEncoderSettings{
@@ -124,6 +127,13 @@ typedef struct _tagCgiAccount {
     char pw[128];         // PW
 }T_CGI_ACCOUNT;
 
+typedef struct _tagCgiRtspConfig{
+    int  enable;
+	int	 enctype;
+    char id[128];         // ID
+    char pw[128];         // PW
+}T_CGI_RTSP_CONFIG;
+
 typedef struct _tagCgiNetworkConfiguration {
     T_CGI_NETWORK_INTERFACE wireless;
     T_CGI_NETWORK_INTERFACE cradle;
@@ -140,6 +150,12 @@ typedef struct _tagCgiSystemConfiguration{
 	char mac[32];
 	char uid[32];
 }T_CGI_SYSTEM_CONFIG;
+
+typedef struct _tagCgiUserConfig {
+	T_CGI_ACCOUNT      web;
+	T_CGI_ONVIF_CONFIG onvif;
+	T_CGI_RTSP_CONFIG  rtsp;
+}T_CGI_USER_CONFIG;
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif//__CGI_PARAM_H__

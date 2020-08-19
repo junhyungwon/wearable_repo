@@ -33,9 +33,6 @@ int main()
 	printf("<rec_interval>%d</rec_interval>\n", t.rec.interval);
 	printf("<rec_overwrite>%d</rec_overwrite>\n", t.rec.overwrite);
 	printf("<display_datetime>%d</display_datetime>\n", t.display_datetime);
-	printf("<p2p_enable>%d</p2p_enable>\n",       t.p2p.enable);
-	printf("<p2p_username>%s</p2p_username>\n",   t.p2p.username);
-	printf("<p2p_password>%s</p2p_password>\n",   t.p2p.password);
 
 	printf("<model_name>%s</model_name>\n", MODEL_NAME);
 

@@ -118,11 +118,11 @@ int put_json_all_config()
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj;
 	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj;
 	json_object *system_obj;
+	json_object *user_obj;
 
 	// all, entire...
 	all_config = json_object_new_object();
 	json_object_object_add(all_config, "model", json_object_new_string(MODEL_NAME));
-
 
 	// Camera Settings
 	camera_obj = json_object_new_object();
@@ -135,16 +135,91 @@ int put_json_all_config()
 			goto _FREE_CAMERA_OBJ;
 		}
 
-		json_object_object_add(recordobj, "fps", json_object_new_int(p.rec.fps));
-		json_object_object_add(recordobj, "bps", json_object_new_int(p.rec.bps));
+		// record info
+		if( strcmp(MODEL_NAME, "NEXX360") == 0){
+
+			int fpsIdx = p.rec.fps-1;
+			if(fpsIdx < 0 ) fpsIdx = 0;
+			if(fpsIdx > 14) fpsIdx = 14;
+
+			int bpsIdx = 0;
+			int kbps = p.rec.bps; // kbps
+			switch (kbps) {
+				case 512:
+					bpsIdx = 0;
+					break;
+				case 1000:
+					bpsIdx = 1;
+					break;
+				case 2000:
+					bpsIdx = 2;
+					break;
+				case 3000:
+					bpsIdx = 3;
+					break;
+				case 4000:
+					bpsIdx = 4;
+					break;
+			}
+
+			json_object_object_add(recordobj, "fps", json_object_new_int(fpsIdx));
+			json_object_object_add(recordobj, "bps", json_object_new_int(bpsIdx)); // kbps
+		}
+		else{
+			json_object_object_add(recordobj, "fps", json_object_new_int(p.rec.fps));
+			json_object_object_add(recordobj, "bps", json_object_new_int(p.rec.bps));
+		}
 		json_object_object_add(recordobj, "gop", json_object_new_int(p.rec.gop));
 		json_object_object_add(recordobj, "rc",  json_object_new_int(p.rec.rc));
 		//json_object_object_add(recordobj, "desc",  json_object_new_string("Video Quality for Recording"));
 		json_object_object_add(camera_obj, "record", recordobj);
 
+		// streaming info
 		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
-		json_object_object_add(streamobj, "fps", json_object_new_int(p.stm.fps));
-		json_object_object_add(streamobj, "bps", json_object_new_int(p.stm.bps));
+		if( strcmp(MODEL_NAME, "NEXX360") == 0){
+
+			int fpsIdx = p.stm.fps-1;
+			if(fpsIdx < 0 ) fpsIdx = 0;
+			if(fpsIdx > 14) fpsIdx = 14;
+
+			int bpsIdx = 0;
+			int kbps = p.stm.bps; // kbps
+			switch (kbps) {
+				case 512:
+					bpsIdx = 0;
+					break;
+				case 1000:
+					bpsIdx = 1;
+					break;
+				case 2000:
+					bpsIdx = 2;
+					break;
+				case 3000:
+					bpsIdx = 3;
+					break;
+				case 4000:
+					bpsIdx = 4;
+					break;
+				case 5000:
+					bpsIdx = 5;
+					break;
+				case 6000:
+					bpsIdx = 6;
+					break;
+				case 7000:
+					bpsIdx = 7;
+					break;
+				case 8000:
+					bpsIdx = 8;
+					break;
+			}
+			json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
+			json_object_object_add(streamobj, "bps", json_object_new_int(bpsIdx)); // kbps
+		}
+		else{
+			json_object_object_add(streamobj, "fps", json_object_new_int(p.stm.fps));
+			json_object_object_add(streamobj, "bps", json_object_new_int(p.stm.bps));
+		}
 		json_object_object_add(streamobj, "gop", json_object_new_int(p.stm.gop));
 		json_object_object_add(streamobj, "rc",  json_object_new_int(p.stm.rc));
 		//json_object_object_add(recordobj, "desc",  json_object_new_string("Video Quality for Streaming"));
@@ -152,12 +227,10 @@ int put_json_all_config()
 	}
 	json_object_object_add(all_config, "camera_settings", camera_obj);
 
-
 	// Operation Settings
 	operation_obj = json_object_new_object();
 	rec_obj  = json_object_new_object();
 	misc_obj = json_object_new_object();
-	p2p_obj  = json_object_new_object();
 	{
 		T_CGI_OPERATION_CONFIG p;memset(&p,0, sizeof p);
 		if(0>sysctl_message(UDS_GET_OPERATION_CONFIG, (void*)&p, sizeof p )){
@@ -175,12 +248,6 @@ int put_json_all_config()
 		json_object_object_add(misc_obj, "display_datetime", json_object_new_int(p.display_datetime));
 		json_object_object_add(operation_obj, "misc", misc_obj);
 
-		if( strcmp(MODEL_NAME, "NEXX360") == 0){
-			json_object_object_add(p2p_obj, "p2p_enable",   json_object_new_int(p.p2p.enable));
-			json_object_object_add(p2p_obj, "p2p_username", json_object_new_string(p.p2p.username));
-			json_object_object_add(p2p_obj, "p2p_password", json_object_new_string(p.p2p.password));
-			json_object_object_add(operation_obj, "p2p", p2p_obj);
-		}
 	}
 	json_object_object_add(all_config, "operation_settings", operation_obj);
 
@@ -223,12 +290,13 @@ int put_json_all_config()
 
 	// servers
 	servers_obj = json_object_new_object();
-	bs_obj = json_object_new_object();
-	ms_obj = json_object_new_object();
-	ddns_obj = json_object_new_object();
-	dns_obj = json_object_new_object();
-	ntp_obj = json_object_new_object();
-	onvif_obj = json_object_new_object();
+	bs_obj      = json_object_new_object();
+	ms_obj      = json_object_new_object();
+	ddns_obj    = json_object_new_object();
+	dns_obj     = json_object_new_object();
+	ntp_obj     = json_object_new_object();
+	onvif_obj   = json_object_new_object();
+	p2p_obj     = json_object_new_object();
 	{
 		T_CGI_SERVERS_CONFIG p;memset(&p, 0, sizeof p);
 		if(0>sysctl_message(UDS_GET_SERVERS_CONFIG, (void*)&p, sizeof p )){
@@ -272,6 +340,14 @@ int put_json_all_config()
 		json_object_object_add(onvif_obj,   "id",      json_object_new_string(p.onvif.id));
 		json_object_object_add(onvif_obj,   "pw",      json_object_new_string(p.onvif.pw));
 		json_object_object_add(servers_obj, "onvif", onvif_obj);
+		
+		if( strcmp(MODEL_NAME, "NEXX360") == 0){
+			json_object_object_add(p2p_obj, "p2p_enable",   json_object_new_int(p.p2p.enable));
+			//json_object_object_add(p2p_obj, "p2p_username", json_object_new_string(p.p2p.username));
+			//json_object_object_add(p2p_obj, "p2p_password", json_object_new_string(p.p2p.password));
+			//json_object_object_add(operation_obj, "p2p", p2p_obj);
+			json_object_object_add(servers_obj, "p2p", p2p_obj);
+		}
 	}
 	json_object_object_add(all_config, "servers_settings", servers_obj);
 
@@ -294,6 +370,7 @@ int put_json_all_config()
 		json_object_object_add(system_obj, "mac",   json_object_new_string(p.mac));
 	}
 	json_object_object_add(all_config, "system_settings", system_obj);
+
 
 
 	// put results
@@ -340,6 +417,38 @@ _FREE_CAMERA_OBJ:
 	return ret;
 }
 
+void put_json_user_config(T_CGI_USER_CONFIG *p)
+{
+	json_object *onvif_obj, *rtsp_acc_obj, *user_obj;
+
+	onvif_obj    = json_object_new_object();
+	rtsp_acc_obj = json_object_new_object();
+	user_obj     = json_object_new_object();
+
+	json_object_object_add(user_obj,  "model", json_object_new_string(MODEL_NAME));
+
+	json_object_object_add(onvif_obj, "id",    json_object_new_string(p->onvif.id));
+	json_object_object_add(onvif_obj, "pw",    json_object_new_string(p->onvif.pw));
+	json_object_object_add(user_obj,  "onvif", onvif_obj);
+
+	json_object_object_add(rtsp_acc_obj, "enable",  json_object_new_int(   p->rtsp.enable));
+	json_object_object_add(rtsp_acc_obj, "enctype", json_object_new_int(   p->rtsp.enctype));
+	json_object_object_add(rtsp_acc_obj, "id",      json_object_new_string(p->rtsp.id));
+	json_object_object_add(rtsp_acc_obj, "pw",      json_object_new_string(p->rtsp.pw));
+	json_object_object_add(user_obj, "live_stream_account", rtsp_acc_obj);
+
+	PUT_CACHE_CONTROL_NOCACHE;
+	PUT_CONTENT_TYPE_JSON;
+	PUT_CRLF;
+	PUTSTR("%s\r\n", json_object_to_json_string(user_obj));
+
+	// free
+	json_object_put(onvif_obj);
+	json_object_put(rtsp_acc_obj);
+	json_object_put(user_obj);
+
+}
+
 void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 {
 	json_object *myobj, *systemobj;
@@ -371,7 +480,7 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj;
+	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj;
 
 	myobj   = json_object_new_object();
 	bsobj   = json_object_new_object();
@@ -380,6 +489,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	dnsobj  = json_object_new_object();
 	ntpobj  = json_object_new_object();
 	onvif_obj = json_object_new_object();
+	p2p_obj   = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
@@ -423,6 +533,10 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(onvif_obj, "pw",      json_object_new_string(p->onvif.pw));
 	json_object_object_add(myobj, "onvif", onvif_obj);
 
+	// p2p
+	json_object_object_add(p2p_obj, "p2p_enable",  json_object_new_int   (p->p2p.enable));
+	json_object_object_add(myobj, "p2p", p2p_obj);
+
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
 	PUT_CRLF;
@@ -436,6 +550,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(dnsobj);
 	json_object_put(ntpobj);
 	json_object_put(onvif_obj);
+	json_object_put(p2p_obj);
 	json_object_put(myobj);
 }
 
@@ -489,11 +604,10 @@ void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 
 void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 {
-	json_object *myobj, *misc_obj, *recordobj, *p2pobj;
+	json_object *myobj, *misc_obj, *recordobj;
 
 	myobj = json_object_new_object();
 	recordobj = json_object_new_object();
-	p2pobj    = json_object_new_object();
 	misc_obj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
@@ -508,13 +622,6 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	json_object_object_add(misc_obj, "display_datetime", json_object_new_int(p->display_datetime));
 	json_object_object_add(myobj, "misc", misc_obj);
 
-	if( strcmp(MODEL_NAME, "NEXX360") == 0){
-		json_object_object_add(p2pobj, "p2p_enable",   json_object_new_int(p->p2p.enable));
-		json_object_object_add(p2pobj, "p2p_username", json_object_new_string(p->p2p.username));
-		json_object_object_add(p2pobj, "p2p_password", json_object_new_string(p->p2p.password));
-		json_object_object_add(myobj, "p2p", p2pobj);
-	}
-
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
 	PUT_CRLF;
@@ -524,7 +631,6 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	// free
 	json_object_put(recordobj);
 	json_object_put(misc_obj);
-	json_object_put(p2pobj);
 	json_object_put(myobj);
 }
 
@@ -546,15 +652,89 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 #endif
 
-	json_object_object_add(recordobj, "fps", json_object_new_int(p->rec.fps));
-	json_object_object_add(recordobj, "bps", json_object_new_int(p->rec.bps));
+	// record info
+	if( strcmp(MODEL_NAME, "NEXX360") == 0){
+
+		int fpsIdx = p->rec.fps-1;
+		if(fpsIdx < 0 ) fpsIdx = 0;
+		if(fpsIdx > 14) fpsIdx = 14;
+
+		int bpsIdx = 0;
+		int kbps = p->rec.bps; // kbps
+		switch (kbps) {
+			case 512:
+				bpsIdx = 0;
+				break;
+			case 1000:
+				bpsIdx = 1;
+				break;
+			case 2000:
+				bpsIdx = 2;
+				break;
+			case 3000:
+				bpsIdx = 3;
+				break;
+			case 4000:
+				bpsIdx = 4;
+				break;
+		}
+		json_object_object_add(recordobj, "fps", json_object_new_int(fpsIdx));
+		json_object_object_add(recordobj, "bps", json_object_new_int(bpsIdx)); // kbps
+	}
+	else{
+		json_object_object_add(recordobj, "fps", json_object_new_int(p->rec.fps));
+		json_object_object_add(recordobj, "bps", json_object_new_int(p->rec.bps));
+	}
 	json_object_object_add(recordobj, "gop", json_object_new_int(p->rec.gop));
 	json_object_object_add(recordobj, "rc",  json_object_new_int(p->rec.rc));
 	json_object_object_add(myobj, "record", recordobj);
 
+	// streaming info
 	json_object_object_add(streamobj, "resolution", json_object_new_int(p->stm.res));
-	json_object_object_add(streamobj, "fps",        json_object_new_int(p->stm.fps));
-	json_object_object_add(streamobj, "bps",        json_object_new_int(p->stm.bps));
+	if( strcmp(MODEL_NAME, "NEXX360") == 0){
+		int fpsIdx = p->stm.fps-1;
+		if(fpsIdx < 0 ) fpsIdx = 0;
+		if(fpsIdx > 14) fpsIdx = 14;
+
+		int bpsIdx = 0;
+		int kbps = p->stm.bps; // kbps
+		switch (kbps) {
+			case 512:
+				bpsIdx = 0;
+				break;
+			case 1000:
+				bpsIdx = 1;
+				break;
+			case 2000:
+				bpsIdx = 2;
+				break;
+			case 3000:
+				bpsIdx = 3;
+				break;
+			case 4000:
+				bpsIdx = 4;
+				break;
+			case 5000:
+				bpsIdx = 5;
+				break;
+			case 6000:
+				bpsIdx = 6;
+				break;
+			case 7000:
+				bpsIdx = 7;
+				break;
+			case 8000:
+				bpsIdx = 8;
+				break;
+		}
+
+		json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
+		json_object_object_add(streamobj, "bps", json_object_new_int(bpsIdx)); // kbps
+	}
+	else{
+		json_object_object_add(streamobj, "fps",        json_object_new_int(p->stm.fps));
+		json_object_object_add(streamobj, "bps",        json_object_new_int(p->stm.bps));
+	}
 	json_object_object_add(streamobj, "gop",        json_object_new_int(p->stm.gop));
 	json_object_object_add(streamobj, "rc",         json_object_new_int(p->stm.rc));
 	json_object_object_add(myobj, "stream", streamobj);
@@ -616,6 +796,12 @@ int do_search(char *pContents)
 					T_CGI_SYSTEM_CONFIG t;memset(&t,0, sizeof t);
 					sysctl_message(UDS_GET_SYSTEM_CONFIG, (void*)&t, sizeof t );
 					put_json_system_config(&t);
+					return 0;
+				}
+				else if(!strcmp(prm[i].value, "user_config")){
+					T_CGI_USER_CONFIG t;memset(&t, 0, sizeof t);
+					sysctl_message(UDS_GET_USER_CONFIG, (void*)&t, sizeof t);
+					put_json_user_config(&t);
 					return 0;
 				}
 				else {

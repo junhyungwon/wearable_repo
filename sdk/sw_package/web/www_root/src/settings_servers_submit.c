@@ -38,6 +38,7 @@ static int submit_settings_qcgi()
 		int  daylight_saving=-1;
 		int  enable_onvif=-1;
 		int  time_zone=-99;
+		int  enable_p2p=-1;
 
         char *str= req->getstr(req, "bs_enable", false);
         if (str != NULL) {
@@ -133,6 +134,13 @@ static int submit_settings_qcgi()
             sprintf(t.onvif.pw, "%s", str);
         }
 
+		if(bFitt360 == 0){
+			str= req->getstr(req, "p2p_enable", false);
+			if (str != NULL) {
+				enable_p2p = atoi(str);
+			}
+		}
+
         //req->free(req);
 
         CGI_DBG("bs_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
@@ -143,155 +151,12 @@ static int submit_settings_qcgi()
 			CGI_DBG("Invalid Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
-		CGI_DBG("dns_server1:%s\n", t.dns.server1);
-		CGI_DBG("dns_server2:%s\n", t.dns.server2);
 
-		t.bs.enable = bs_enable;
-		t.ms.enable = ms_enable;
-		t.ddns.enable = ddns_enable;
-		t.ntp.enable = ntp_enable;
-		t.daylight_saving = daylight_saving;
-		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
-		t.time_zone = time_zone;      // A value of +12 is only device.
-		t.onvif.enable = enable_onvif;
-
-        // check parameter values
-
-        ret = sysctl_message(UDS_SET_SERVERS_CONFIG, (void*)&t, sizeof t );
-        CGI_DBG("ret:%d\n", ret);
-        if(0 > ret) {
-            return SUBMIT_ERR;
-        }
-		else if( ret == ERR_NO_CHANGE) {
-			return SUBMIT_NO_CHANGE;
-		}
-
-        return SUBMIT_OK;
-    }
-}
-
-
-#if 0 // deprecated
-static int submit_settings()
-{
-
-    int ret, isPOST = 0;
-    T_CGIPRM prm[128];
-
-    char *method = getenv("REQUEST_METHOD");
-	if(method == NULL) return ERR_INVALID_METHOD;
-    CGI_DBG("method : %s\n", method);
-
-    char *contents=NULL;
-    if(0 == strcmp(method, "POST")){
-        contents = get_cgi_contents();
-        isPOST = TRUE;
-    }
-    else {
-        contents = getenv("QUERY_STRING");
-        isPOST = FALSE;
-    }
-
-	if(contents == NULL) return ERR_INVALID_PARAM;
-    CGI_DBG("contents:%s\n", contents);
-
-    int cnt = parseContents(contents, prm);
-    CGI_DBG("cnt:%d\n", cnt);
-
-    if(cnt>0){
-
-        int  i=0;
-        T_CGI_SERVERS_CONFIG t;
-		memset(&t, 0, sizeof t);
-
-		int  bs_enable=-1;
-		int  ms_enable=-1;
-		int  ddns_enable=-1;
-		int  ntp_enable=-1;
-		int  daylight_saving=-1;
-		int  enable_onvif=-1;
-		int  time_zone=-99;
-
-
-        for(;i<cnt;i++) {
-
-            CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
-            if(!strcmp(prm[i].name, "bs_enable")){
-                bs_enable = atoi(prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_bs_ip")){
-				sprintf(t.bs.serveraddr, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_bs_id")){
-				sprintf(t.bs.id, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_bs_pw")){
-				sprintf(t.bs.pw, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_bs_port")){
-                t.bs.port = atoi(prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "ms_enable")){
-                ms_enable = atoi(prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_ms_ip")){
-				sprintf(t.ms.serveraddr, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_ms_port")){
-				t.ms.port = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "ddns_enable")){
-                ddns_enable = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_ddns_server")){
-                sprintf(t.ddns.serveraddr, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_ddns_hostname")){
-                sprintf(t.ddns.hostname, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_ddns_id")){
-				sprintf(t.ddns.id, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_ddns_pw")){
-				sprintf(t.ddns.pw, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "txt_dns_1")){
-                sprintf(t.dns.server1, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_dns_2")){
-                sprintf(t.dns.server2, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "ntp_enable")){
-                ntp_enable = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_ntp_ip")){
-				sprintf(t.ntp.serveraddr, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "daylight_saving")){
-                daylight_saving = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "enable_onvif")){
-                enable_onvif = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "cbo_timezone")){
-                time_zone = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "timezone_abbr")){
-                sprintf(t.time_zone_abbr, "%s", prm[i].value);
-            }
-        }
-		
-        // Must finish parsing before free.
-        if(isPOST){ free(contents); }
-
-        CGI_DBG("bs_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d\n", 
-				bs_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone);
-
-		if( bs_enable == -1 || ms_enable == -1 || ddns_enable == -1 || ntp_enable == -1 || daylight_saving == -1 || enable_onvif == -1
-		|| time_zone == -99) {
-			CGI_DBG("Invalid Parameter\n");
+		if( bFitt360 == 0 && enable_p2p == -1){
+			CGI_DBG("Invalid Parameter:enable_p2p\n");
 			return ERR_INVALID_PARAM;
 		}
+
 		CGI_DBG("dns_server1:%s\n", t.dns.server1);
 		CGI_DBG("dns_server2:%s\n", t.dns.server2);
 
@@ -300,9 +165,10 @@ static int submit_settings()
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;
 		t.daylight_saving = daylight_saving;
-		t.onvif.enable = enable_onvif;
 		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
 		t.time_zone = time_zone;      // A value of +12 is only device.
+		t.onvif.enable = enable_onvif;
+		t.p2p.enable = enable_p2p;
 
         // check parameter values
 
@@ -317,12 +183,8 @@ static int submit_settings()
 
         return SUBMIT_OK;
     }
-    else {
-        return SUBMIT_ERR;
-    }
-
 }
-#endif // deprecated
+
 
 int main(int argc, char *argv[])
 {
