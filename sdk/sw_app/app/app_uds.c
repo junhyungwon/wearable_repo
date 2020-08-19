@@ -535,6 +535,13 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->onvif.id, app_set->account_info.onvif.id); // max 32
 	strcpy(t->onvif.pw, app_set->account_info.onvif.pw); // max 32
 
+	// voip
+	t->voip.port   = app_set->voip.port;
+	strcpy(t->voip.ipaddr, app_set->voip.ipaddr);
+	strcpy(t->voip.userid, app_set->voip.userid);
+	strcpy(t->voip.passwd, app_set->voip.passwd);
+	strcpy(t->voip.peerid, app_set->voip.peerid);
+
 	return 0;
 }
 
@@ -654,6 +661,29 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 		app_onvifserver_restart();
 	}
+
+	// voip config
+	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
+		strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
+		isChanged++;
+	}
+	if(app_set->voip.port != t->voip.port){
+		app_set->voip.port = t->voip.port;
+		isChanged++;
+	}
+	if(strcmp( app_set->voip.userid, t->voip.userid)){
+		strcpy(app_set->voip.userid, t->voip.userid);
+		isChanged++;
+	}
+	if(strcmp( app_set->voip.passwd,t->voip.passwd)){
+		strcpy(app_set->voip.passwd,t->voip.passwd);
+		isChanged++;
+	}
+	if(strcmp( app_set->voip.peerid, t->voip.peerid)){
+		strcpy(app_set->voip.peerid, t->voip.peerid);
+		isChanged++;
+	}
+	
 
 
 	return isChanged;

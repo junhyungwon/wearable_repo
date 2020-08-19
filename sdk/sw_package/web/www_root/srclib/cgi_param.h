@@ -57,6 +57,14 @@ typedef struct _tagCgiP2pServerConfig {
     char password[32];
 }T_CGI_P2PSERVER_CONFIG;
 
+typedef struct _tagCgiVoipConfig{
+    char ipaddr[16];
+    short  port;
+    char userid[16];
+    char passwd[16];
+    char peerid[16];
+}T_CGI_VOIP_CONFIG;
+
 typedef struct _tagCgiServersConfig {
 	T_CGI_BACKUP_SERVER bs;  //ftp
 	T_CGI_MANAGE_SERVER ms;
@@ -68,6 +76,7 @@ typedef struct _tagCgiServersConfig {
 	int					daylight_saving;
 	T_CGI_ONVIF_CONFIG  onvif;
     T_CGI_P2PSERVER_CONFIG p2p;
+    T_CGI_VOIP_CONFIG voip;
 	
 }T_CGI_SERVERS_CONFIG;
 /* end of servers settings */

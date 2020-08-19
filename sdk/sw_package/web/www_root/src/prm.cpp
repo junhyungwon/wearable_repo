@@ -116,7 +116,7 @@ int put_json_all_config()
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj;
-	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj;
+	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
 
@@ -297,6 +297,7 @@ int put_json_all_config()
 	ntp_obj     = json_object_new_object();
 	onvif_obj   = json_object_new_object();
 	p2p_obj     = json_object_new_object();
+	voip_obj    = json_object_new_object();
 	{
 		T_CGI_SERVERS_CONFIG p;memset(&p, 0, sizeof p);
 		if(0>sysctl_message(UDS_GET_SERVERS_CONFIG, (void*)&p, sizeof p )){
@@ -348,6 +349,14 @@ int put_json_all_config()
 			//json_object_object_add(operation_obj, "p2p", p2p_obj);
 			json_object_object_add(servers_obj, "p2p", p2p_obj);
 		}
+		
+		// voip
+		json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p.voip.ipaddr));
+		json_object_object_add(voip_obj, "port",   json_object_new_int(   p.voip.port));
+		json_object_object_add(voip_obj, "userid", json_object_new_string(p.voip.userid));
+		json_object_object_add(voip_obj, "passwd", json_object_new_string(p.voip.passwd));
+		json_object_object_add(voip_obj, "peerid", json_object_new_string(p.voip.peerid));
+		json_object_object_add(servers_obj, "voip", voip_obj);
 	}
 	json_object_object_add(all_config, "servers_settings", servers_obj);
 
@@ -392,6 +401,7 @@ _FREE_SERVERS_OBJ:
 	json_object_put(dns_obj);
 	json_object_put(ntp_obj);
 	json_object_put(onvif_obj);
+	json_object_put(voip_obj);
 	json_object_put(servers_obj);
 
 _FREE_NETWORK_OBJ:
@@ -480,7 +490,7 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj;
+	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
 
 	myobj   = json_object_new_object();
 	bsobj   = json_object_new_object();
@@ -490,6 +500,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	ntpobj  = json_object_new_object();
 	onvif_obj = json_object_new_object();
 	p2p_obj   = json_object_new_object();
+	voip_obj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
@@ -537,6 +548,14 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(p2p_obj, "p2p_enable",  json_object_new_int   (p->p2p.enable));
 	json_object_object_add(myobj, "p2p", p2p_obj);
 
+	// voip
+	json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p->voip.ipaddr));
+	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->voip.port));
+	json_object_object_add(voip_obj, "userid", json_object_new_string(p->voip.userid));
+	json_object_object_add(voip_obj, "passwd", json_object_new_string(p->voip.passwd));
+	json_object_object_add(voip_obj, "peerid", json_object_new_string(p->voip.peerid));
+	json_object_object_add(myobj, "voip", voip_obj);
+
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
 	PUT_CRLF;
@@ -551,6 +570,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(ntpobj);
 	json_object_put(onvif_obj);
 	json_object_put(p2p_obj);
+	json_object_put(voip_obj);
 	json_object_put(myobj);
 }
 

@@ -134,6 +134,27 @@ static int submit_settings_qcgi()
             sprintf(t.onvif.pw, "%s", str);
         }
 
+        str= req->getstr(req, "txt_voip_ip", false);
+        if (str != NULL) {
+            sprintf(t.voip.ipaddr, "%s", str);
+        }
+        str= req->getstr(req, "txt_voip_port", false);
+        if (str != NULL) {
+            t.voip.port = atoi(str);
+        }
+        str= req->getstr(req, "txt_voip_id", false);
+        if (str != NULL) {
+            sprintf(t.voip.userid, "%s", str);
+        }
+        str= req->getstr(req, "txt_voip_pw", false);
+        if (str != NULL) {
+            sprintf(t.voip.passwd, "%s", str);
+        }
+        str= req->getstr(req, "txt_voip_peerid", false);
+        if (str != NULL) {
+            sprintf(t.voip.peerid, "%s", str);
+        }
+
 		if(bFitt360 == 0){
 			str= req->getstr(req, "p2p_enable", false);
 			if (str != NULL) {
@@ -170,7 +191,12 @@ static int submit_settings_qcgi()
 		t.onvif.enable = enable_onvif;
 		t.p2p.enable = enable_p2p;
 
-        // check parameter values
+        // check voip values
+		CGI_DBG("voip.ipaddr:%s\n", t.voip.ipaddr);
+		CGI_DBG("voip.port  :%d\n", t.voip.port);
+		CGI_DBG("voip.userid:%s\n", t.voip.userid);
+		CGI_DBG("voip.passwd:%s\n", t.voip.passwd);
+		CGI_DBG("voip.peerid:%s\n", t.voip.peerid);
 
         ret = sysctl_message(UDS_SET_SERVERS_CONFIG, (void*)&t, sizeof t );
         CGI_DBG("ret:%d\n", ret);

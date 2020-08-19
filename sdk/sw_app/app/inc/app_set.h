@@ -226,6 +226,14 @@ typedef struct {
 } app_account_t ; // size:320
 
 typedef struct {
+    char  ipaddr[MAX_CHAR_16];
+    short port ;
+    char  userid[MAX_CHAR_16] ;
+    char  passwd[MAX_CHAR_16] ;
+    char  peerid[MAX_CHAR_16] ;
+} app_voip_t; // 66 
+
+typedef struct {
 	app_ch_cfg_t			ch[MAX_CH_NUM+1];
 	app_watchdog_t			wd;
 
@@ -241,7 +249,10 @@ typedef struct {
     
     app_account_t           account_info;
 
-	char reserved[474]; // 1024 - 164 (ddns) - 66 (time) - 320(account)
+    app_voip_t              voip; // 66
+
+	//char reserved[474]; // 1024 - 164 (ddns) - 66 (time) - 320(account)
+	char reserved[408];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 66(voip)
 } app_set_t;
 
 /*----------------------------------------------------------------------------

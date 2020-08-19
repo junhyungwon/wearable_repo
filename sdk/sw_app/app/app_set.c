@@ -45,19 +45,19 @@ typedef enum{
 	CFG_MAX
 } app_cfg_e;
 
-const char* const RTSP_DEFAULT_ID = "admin";
-const char* const RTSP_DEFAULT_PW = "admin";
-const char* const P2P_DEFAULT_ID  = "linkflow";
-const char* const P2P_DEFAULT_PW  = "12345678";
-const char* const WEB_DEFAULT_ID  = "admin";
-const char* const WEB_DEFAULT_PW  = "admin";
+const char* const RTSP_DEFAULT_ID   = "admin";
+const char* const RTSP_DEFAULT_PW   = "admin";
+const char* const P2P_DEFAULT_ID    = "linkflow";
+const char* const P2P_DEFAULT_PW    = "12345678";
+const char* const WEB_DEFAULT_ID    = "admin";
+const char* const WEB_DEFAULT_PW    = "admin";
 const char* const ONVIF_DEFAULT_ID  = "admin";
 const char* const ONVIF_DEFAULT_PW  = "admin";
 
 static int qbr[MAX_RESOL][MAX_QUALITY] = {
 	{ 2000, 1000, 512},		//# 480p
 	{ 4000, 3000, 2000},	//# 720p
-	{ 8000, 6000, 4000}	//# 1080p
+	{ 8000, 6000, 4000}	    //# 1080p
 };
 
 static int FPS_IDX[FPS_MAX]	= {30, 15, 5};
@@ -226,8 +226,15 @@ static void char_memset(void)
 
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
 
-    memset(app_set->reserved, CFG_INVALID, 474) ;
+	// VOIP size : 66 
+    app_set->voip.port = CFG_INVALID ;
+    memset(app_set->voip.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
+    memset(app_set->voip.userid, CHAR_MEMSET, MAX_CHAR_16);
+    memset(app_set->voip.passwd, CHAR_MEMSET, MAX_CHAR_16);
+    memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
 
+    memset(app_set->reserved, CFG_INVALID, 408) ;
+//    memset(app_set->reserved, CFG_INVALID, 474) ;  -66 (voip)
 //    memset(app_set->reserved, CFG_INVALID, 794) ;
 }
 
@@ -378,6 +385,15 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.lv = %d\n", pset->account_info.onvif.lv) ;
     printf("pset->account_info.onvif.id = %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
+
+    printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
+    printf("pset->voip.port   = %d\n", pset->voip.port);
+    printf("pset->voip.userid = %s\n", pset->voip.userid);
+    printf("pset->voip.passwd = %s\n", pset->voip.passwd);
+    printf("pset->voip.peerid = %s\n", pset->voip.peerid);
+
+
+
 
 	printf("\n");
 
@@ -700,6 +716,21 @@ static void cfg_param_check(app_set_t* pset)
     printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
 
+
+	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
+		strcpy(pset->voip.ipaddr, "0.0.0.0");
+
+	if(pset->voip.port <= CFG_INVALID) pset->voip.port	= 9999;
+
+	if((int)pset->voip.userid[0] == CHAR_INVALID || (int)pset->voip.userid[0] == 0)
+		strcpy(pset->voip.userid, "");
+
+	if((int)pset->voip.passwd[0]  == CHAR_INVALID || (int)pset->voip.passwd[0] == 0)
+		strcpy(pset->voip.passwd, "");
+
+	if((int)pset->voip.peerid[0] == CHAR_INVALID || (int)pset->voip.peerid[0] == 0)
+		strcpy(pset->voip.peerid, "");
+
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 
@@ -938,6 +969,12 @@ void app_set_default(int default_type)
 	app_set->account_info.onvif.lv = 0;	// 0:Administrator
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
+
+    strcpy(app_set->voip.ipaddr, "0.0.0.0");
+    app_set->voip.port = 9999;
+	memset((void*)app_set->voip.userid, 0x00, sizeof(app_set->voip.userid));
+	memset((void*)app_set->voip.passwd, 0x00, sizeof(app_set->voip.passwd));
+	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
 }
 
 void app_set_delete_cfg(void)
