@@ -1,5 +1,5 @@
 /*
- * File : poll_dev.c
+ * File : poll_wlan.c
  *
  * Copyright (C) 2020 LF
  *
@@ -11,11 +11,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/poll.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-
 #define __USE_GNU
 #include <sys/socket.h>
 #include <linux/types.h>
@@ -23,7 +21,7 @@
 #include <errno.h>
 
 #include "netmgr_ipc_cmd_defs.h"
-#include "poll_dev.h"
+#include "poll_wlan.h"
 #include "common.h"
 #include "event_hub.h"
 #include "main.h"
@@ -48,13 +46,13 @@ typedef struct {
 	netlink_session_t usb_ss[NETMGR_USB_MAX_NUM];
 	int fd;  /* netlink file descriptor */
 	
-} netmgr_poll_dev_t;
+} netmgr_poll_wlan_t;
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-static netmgr_poll_dev_t t_proc;
-static netmgr_poll_dev_t *idev = &t_proc;
+static netmgr_poll_wlan_t t_proc;
+static netmgr_poll_wlan_t *iwlan = &t_proc;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -217,7 +215,7 @@ static int netlink_usb_detach_parse(char *buffer, size_t len, int *v, int *p)
 	session_id = (busnum << 8 | devaddr);
 	
 	for (i = 0; i < NETMGR_USB_MAX_NUM; i++) {
-		pusb_ss = &idev->usb_ss[i];
+		pusb_ss = &iwlan->usb_ss[i];
 		if (pusb_ss->sid == session_id) {
 			break;
 		}
@@ -228,7 +226,7 @@ static int netlink_usb_detach_parse(char *buffer, size_t len, int *v, int *p)
 		return -1;
 	}
 
-	pusb_ss = &idev->usb_ss[i];
+	pusb_ss = &iwlan->usb_ss[i];
 	pusb_ss->sid = 0; //# clear session.
 
 	*v = pusb_ss->vid; 
@@ -272,7 +270,7 @@ static int netlink_usb_attach_parse(char *buffer, size_t len, int *v, int *p)
 	}
 
 	for (i = 0; i < NETMGR_USB_MAX_NUM; i++) {
-		pusb_ss = &idev->usb_ss[i];
+		pusb_ss = &iwlan->usb_ss[i];
 		if (pusb_ss->sid == session_id) {
 			eprintf("already founded usb devices.(%x:%x)\n", vendor, product);
 			return -1;
@@ -280,15 +278,15 @@ static int netlink_usb_attach_parse(char *buffer, size_t len, int *v, int *p)
 	}
 
 	if (vendor == RTL_8188E_VID && product == RTL_8188E_PID) {
-		pusb_ss = &idev->usb_ss[0];
+		pusb_ss = &iwlan->usb_ss[0];
 	} else if (vendor == RTL_8188C_VID && product == RTL_8188C_PID) {
-		pusb_ss = &idev->usb_ss[1];
+		pusb_ss = &iwlan->usb_ss[1];
 	} else if (vendor == RTL_8192C_VID && product == RTL_8192C_PID) {
-		pusb_ss = &idev->usb_ss[2];
+		pusb_ss = &iwlan->usb_ss[2];
 	} else if (vendor == RTL_8821A_VID && product == RTL_8821A_PID) {
-		pusb_ss = &idev->usb_ss[3];
+		pusb_ss = &iwlan->usb_ss[3];
 	} else if (vendor == RTL_8812A_VID && product == RTL_8812A_PID) {
-		pusb_ss = &idev->usb_ss[4];
+		pusb_ss = &iwlan->usb_ss[4];
 	} else
 		/* not supported device. */
 		return -1;
@@ -334,25 +332,25 @@ static int __is_connected_wlan(void)
 			fclose(f);
 
 			if ((d_vid == RTL_8188E_VID) && (d_pid == RTL_8188E_PID)) {
-				idev->usb_ss[0].sid = (busnum << 8 | value);
-				idev->usb_ss[0].vid = RTL_8188E_VID;
-				idev->usb_ss[0].pid = RTL_8188E_PID;
+				iwlan->usb_ss[0].sid = (busnum << 8 | value);
+				iwlan->usb_ss[0].vid = RTL_8188E_VID;
+				iwlan->usb_ss[0].pid = RTL_8188E_PID;
 			} else if((d_vid == RTL_8188C_VID) && (d_pid == RTL_8188C_PID)) {
-				idev->usb_ss[1].sid = (busnum << 8 | value);
-				idev->usb_ss[1].vid = RTL_8188C_VID;
-				idev->usb_ss[1].pid = RTL_8188C_PID;
+				iwlan->usb_ss[1].sid = (busnum << 8 | value);
+				iwlan->usb_ss[1].vid = RTL_8188C_VID;
+				iwlan->usb_ss[1].pid = RTL_8188C_PID;
 			} else if((d_vid == RTL_8192C_VID) && (d_pid == RTL_8192C_PID)) {
-				idev->usb_ss[2].sid = (busnum << 8 | value);
-				idev->usb_ss[2].vid = RTL_8192C_VID;
-				idev->usb_ss[2].pid = RTL_8192C_PID;
+				iwlan->usb_ss[2].sid = (busnum << 8 | value);
+				iwlan->usb_ss[2].vid = RTL_8192C_VID;
+				iwlan->usb_ss[2].pid = RTL_8192C_PID;
 			} else if((d_vid == RTL_8821A_VID) && (d_pid == RTL_8821A_PID)) {
-				idev->usb_ss[3].sid = (busnum << 8 | value);
-				idev->usb_ss[3].vid = RTL_8821A_VID;
-				idev->usb_ss[3].pid = RTL_8821A_PID;
+				iwlan->usb_ss[3].sid = (busnum << 8 | value);
+				iwlan->usb_ss[3].vid = RTL_8821A_VID;
+				iwlan->usb_ss[3].pid = RTL_8821A_PID;
 			} else if((d_vid == RTL_8812A_VID) && (d_pid == RTL_8812A_PID)) {
-				idev->usb_ss[4].sid = (busnum << 8 | value);
-				idev->usb_ss[4].vid = RTL_8812A_VID;
-				idev->usb_ss[4].pid = RTL_8812A_PID;
+				iwlan->usb_ss[4].sid = (busnum << 8 | value);
+				iwlan->usb_ss[4].vid = RTL_8812A_VID;
+				iwlan->usb_ss[4].pid = RTL_8812A_PID;
 			}
 			
 			/* USB을 연결하고 부팅하면 netlink에서 검색을 못한다. 수동으로 검색하는 루틴에서 
@@ -369,58 +367,14 @@ static int __is_connected_wlan(void)
 	return 0;
 }
 
-static int __is_connected_rndis(void)
-{
-	struct stat sb;
-	char path[1024 + 1];
-	int ret = 0;
-	
-	//# /sys/module/rndis_host ????? ???? ??? ??? ???.
-	memset(path, 0, sizeof(path));
-	snprintf(path, sizeof(path), "/sys/module/rndis_host");
-	
-	if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-		/* mdev?? usb ??? ?? */
-		ret = 1;
-	} 
-	
-	return ret;
-}
-
-static int __is_connected_usb2eth(void)
-{
-    FILE *f = NULL;
-    int ret = 0;
-
-    if (0 == access(USBETHER_OPER_PATH, R_OK)) {
-	    f = fopen(USBETHER_OPER_PATH, "r");
-	    if (f != NULL) {
-	        ret = 1;
-	    }
-    	fclose(f);
-	}
-
-	return ret;
-}
-
-static int __is_connected_cradle(void)
-{
-	int status;
-	
-	/* 0-> connect 1-> remove */
-	gpio_get_value(BACKUP_DET, &status);
-
-	return (status?0:1);
-}
-
 /*****************************************************************************
 * @brief    network proc function!
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-static void *THR_dev_poll(void *prm)
+static void *THR_wlan_poll(void *prm)
 {
-	app_thr_obj *tObj = &idev->pObj;
+	app_thr_obj *tObj = &iwlan->pObj;
 	int exit = 0, cmd, flags;
 	
 	struct pollfd pfd;
@@ -448,114 +402,57 @@ static void *THR_dev_poll(void *prm)
 	nls.nl_groups = NETLINK_GROUP_KERNEL; //# bit mask group..
 
 	// Open hotplug event netlink socket
-	idev->fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
-	if (idev->fd < 0) {
+	iwlan->fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_KOBJECT_UEVENT);
+	if (iwlan->fd < 0) {
 		eprintf("netlink scan thread exit!!\n");
 		return NULL;
 	}
 
-	flags = fcntl(idev->fd, F_GETFD);
+	flags = fcntl(iwlan->fd, F_GETFD);
 	if (flags < 0) {
 		eprintf("fcntl %x\n", flags);
-		close(idev->fd);
+		close(iwlan->fd);
 		return NULL;
 	}
 	
 	/* ?? ?????? open? ??? ? */
 	if (!(flags & FD_CLOEXEC)) {
-		fcntl(idev->fd, F_SETFD, flags | FD_CLOEXEC);
+		fcntl(iwlan->fd, F_SETFD, flags | FD_CLOEXEC);
 	}
 
-	flags = fcntl(idev->fd, F_GETFL);
+	flags = fcntl(iwlan->fd, F_GETFL);
 	if (flags < 0) {
-		close(idev->fd);
+		close(iwlan->fd);
 		return NULL;
 	}
 
 	if (!(flags & O_NONBLOCK)) {
-		fcntl(idev->fd, F_SETFL, flags | O_NONBLOCK);
+		fcntl(iwlan->fd, F_SETFL, flags | O_NONBLOCK);
 	}
 
 	// Listen to netlink socket (non-block and close execution)
-	ret = bind(idev->fd, (void *)&nls, sizeof(struct sockaddr_nl));
+	ret = bind(iwlan->fd, (void *)&nls, sizeof(struct sockaddr_nl));
 	if (ret < 0) {
 		eprintf("scan thread exit (ret %d)!!\n", ret);
-		close(idev->fd);
+		close(iwlan->fd);
 		return NULL;
 	}
 
 	pfd.events = POLLIN;
 	pfd.revents = 0;
-	pfd.fd = idev->fd;
-
+	pfd.fd = iwlan->fd;
+	
+	/* 동글을 연결하고 시스템이 켜지는 경우 netlink로 이벤트 전달이 안됨 */
 	if (!__is_connected_wlan()) 
 	{
-		app_cfg->ste.bit.wlan = 1;
-		netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_WIFI, 1);
+		netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
 	}
 	
 	while (!exit)
 	{
-		int event_noty = 0;
-		int event_device = 0;
-		
 		cmd = tObj->cmd;
         if (cmd == APP_CMD_EXIT) {
 		    break;
-		}
-		
-		//# wait USB Rndis Device
-		ret = __is_connected_rndis();
-		if (ret) {
-			/* set attach event */
-			if (app_cfg->ste.bit.rndis == 0) {
-				app_cfg->ste.bit.rndis = 1;
-				event_noty = 1; /* send attach event */
-				event_device = NETMGR_DEV_TYPE_RNDIS;
-			}
-		} else {
-			/* set remove event */
-			if (app_cfg->ste.bit.rndis == 1) {
-				app_cfg->ste.bit.rndis = 0;
-				event_noty = 1; /* send remove event */
-				event_device = NETMGR_DEV_TYPE_RNDIS;
-			}
-		}
-		
-		//# wait USB2Ether Device
-		ret = __is_connected_usb2eth();
-		if (ret) {
-			/* set attach event */
-			if (app_cfg->ste.bit.usb2eth == 0) {
-				app_cfg->ste.bit.usb2eth = 1;
-				event_noty = 1; /* send attach event */
-				event_device = NETMGR_DEV_TYPE_USB2ETHER;
-			}
-		} else {
-			/* set remove event */
-			if (app_cfg->ste.bit.usb2eth == 1) {
-				app_cfg->ste.bit.usb2eth = 0;
-				event_noty = 1; /* send remove event */
-				event_device = NETMGR_DEV_TYPE_USB2ETHER;
-			}
-		}
-		
-		//# wait cradle Device
-		ret = __is_connected_cradle();
-		if (ret) {
-			/* set attach event */
-			if (app_cfg->ste.bit.cradle == 0) {
-				app_cfg->ste.bit.cradle = 1;
-				event_noty = 1; /* send attach event */
-				event_device = NETMGR_DEV_TYPE_CRADLE;
-			}
-		} else {
-			/* set remove event */
-			if (app_cfg->ste.bit.cradle == 1) {
-				app_cfg->ste.bit.cradle = 0;
-				event_noty = 1; /* send remove event */
-				event_device = NETMGR_DEV_TYPE_CRADLE;
-			}
 		}
 		
 		//# wait USB Wi-Fi event
@@ -567,7 +464,7 @@ static void *THR_dev_poll(void *prm)
 				memset(msg, 0, sizeof(msg));
 
 				//len = recv(inlink->fd, buffer, sizeof(buffer), MSG_DONTWAIT);
-				len = recvmsg(idev->fd, &meh, 0);
+				len = recvmsg(iwlan->fd, &meh, 0);
 				if (len > 32)
 				{
 					ret = netlink_subsystem_parse(msg, len, &sub, &detached);
@@ -587,9 +484,9 @@ static void *THR_dev_poll(void *prm)
 										((v == RTL_8821A_VID) && (p == RTL_8821A_PID))
 									   )
 									{
-										app_cfg->ste.bit.wlan = 0;
-										event_noty = 1;
-										event_device = NETMGR_DEV_TYPE_WIFI;
+										app_cfg->wlan_vid = -1; /* device가 제거된 상태 */
+										app_cfg->wlan_pid = -1;
+										netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 0);
 									}
 								}
 							} else {
@@ -601,12 +498,10 @@ static void *THR_dev_poll(void *prm)
 										((v == RTL_8821A_VID) && (p == RTL_8821A_PID))
 									   )
 									{
-										app_cfg->ste.bit.wlan = 1;
 										/* 현재 연결되 USB 장치의 VID와 PID를 저장 */
 										app_cfg->wlan_vid = v;
 										app_cfg->wlan_pid = p;
-										event_noty = 1;
-										event_device = NETMGR_DEV_TYPE_WIFI;
+										netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
 									}
 								}
 							}
@@ -614,26 +509,8 @@ static void *THR_dev_poll(void *prm)
 					}
 				} //# if (len > 32)
 			} //# if (pfd.revents & POLLIN)
+			delay_msecs(50);
 		} //# if (ret > 0)
-		else
-		{
-			/* TODO: Timeout? ??? ??? ?? 100ms? ?? ????. */
-		}
-		
-		if (event_noty) 
-		{
-			if (event_device == NETMGR_DEV_TYPE_WIFI) 
-				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_WIFI, app_cfg->ste.bit.wlan);
-			else if (event_device == NETMGR_DEV_TYPE_USB2ETHER) 
-				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_USB2ETHER, app_cfg->ste.bit.usb2eth);
-			else if (event_device == NETMGR_DEV_TYPE_RNDIS) 
-				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_RNDIS, app_cfg->ste.bit.rndis);	
-			else if (event_device == NETMGR_DEV_TYPE_CRADLE) 
-				netmgr_event_hub_polldev_noty(NETMGR_DEV_TYPE_CRADLE, app_cfg->ste.bit.cradle);				
-		}
-		
-		// for next event : wait
-		delay_msecs(50);
 	} 
 	
 	tObj->active = 0;
@@ -647,15 +524,13 @@ static void *THR_dev_poll(void *prm)
 * @section  DESC Description: 
 *   - desc
 *****************************************************************************/
-int netmgr_poll_dev_init(void)
+int netmgr_poll_wlan_init(void)
 {
 	app_thr_obj *tObj;
 	
-	gpio_input_init(BACKUP_DET);
-	
-	tObj = &idev->pObj;
-	if (thread_create(tObj, THR_dev_poll, APP_THREAD_PRI, NULL) < 0) {
-    	eprintf("create netmgr usb device poll thread\n");
+	tObj = &iwlan->pObj;
+	if (thread_create(tObj, THR_wlan_poll, APP_THREAD_PRI, NULL) < 0) {
+    	eprintf("create netmgr usb wifi poll thread\n");
 		return EFAIL;
     }
 	
@@ -669,19 +544,17 @@ int netmgr_poll_dev_init(void)
 * @section  DESC Description: 
 *   - desc
 *****************************************************************************/
-int netmgr_poll_dev_exit(void)
+int netmgr_poll_wlan_exit(void)
 {
 	app_thr_obj *tObj;
 
 	/* delete usb scan object */
-    tObj = &idev->pObj;
+    tObj = &iwlan->pObj;
    	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while (tObj->active)
 		delay_msecs(20);
 
     thread_delete(tObj);
-	
-	gpio_exit(BACKUP_DET);
 	
     aprintf("... done!\n");
 	

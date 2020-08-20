@@ -24,7 +24,6 @@
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
-#include <syslog.h>
 #include "msg.h"
 
 /*----------------------------------------------------------------------------
@@ -33,7 +32,7 @@
 /* for debugging macro */
 #define __APP_DEBUG__
 
-#define aprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x); } while(0)
+#define aprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x);} while(0)
 #define eprintf(x...) do { printf(" [NETMGR ERR!] %s: ", __func__); printf(x); } while(0)
 
 #ifdef __APP_DEBUG__
@@ -88,6 +87,5 @@ extern app_netmgr_cfg_t *app_cfg;
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-void log_write(char *msg);
 
 #endif	/* __MAIN_H__ */

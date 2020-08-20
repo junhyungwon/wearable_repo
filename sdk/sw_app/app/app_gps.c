@@ -304,7 +304,7 @@ int app_gps_get_rmc_data(app_gps_meta_t *p_meta)
 	p_meta->dir        = igps->r_data.dir;
 	
 	memcpy(&p_meta->gtm, &igps->r_data.gtm, sizeof(struct tm));
-	//p_meta->gtm.tm_year = tmp_data.gtm.tm_year; /* +1900 ?�됨 */
+	//p_meta->gtm.tm_year = tmp_data.gtm.tm_year; /* +1900 ?ˆë¨ */
 	//p_meta->gtm.tm_mon  = tmp_data.gtm.tm_mon; 
 	//p_meta->gtm.tm_mday = tmp_data.gtm.tm_mday; 
 	//p_meta->gtm.tm_hour = tmp_data.gtm.tm_hour; 
@@ -323,7 +323,7 @@ static void send_gps_data()
 	if (app_gps_get_rmc_data((app_gps_meta_t *)&Gpsdata) == 0) {
 			gpsdata_send((void*)&Gpsdata);
 	} else {
-		/* GPS ?�결?� ?��?�??�신???�될 경우 */
+		/* GPS ?°ê²°?€ ?ˆì?ë§??˜ì‹ ???ˆë  ê²½ìš° */
 		//dprintf("Failed to get GPRMC Data\n");
 	}
 }
@@ -361,7 +361,7 @@ static void *THR_gps_recv_msg(void *prm)
 		case GNSS_CMD_GPS_POLL_DATA:
 			memset(&igps->r_data, 0, sizeof(gnss_shm_data_t));
 			
-			/* GPS ?�로?�스?�서 shared 메모리에 ?�?�한 ?�이?��? 가?�온??*/
+			/* GPS ?„ë¡œ?¸ìŠ¤?ì„œ shared ë©”ëª¨ë¦¬ì— ?€?¥í•œ ?°ì´?°ë? ê°€?¸ì˜¨??*/
 			memcpy((char *)&igps->r_data, (char *)igps->sbuf, sizeof(gnss_shm_data_t));
 
 			//GPS LED State
@@ -369,7 +369,7 @@ static void *THR_gps_recv_msg(void *prm)
 				(igps->r_data.gps_fixed == 0) ? app_leds_gps_ctrl(LED_GPS_FAIL) : app_leds_gps_ctrl(LED_GPS_ON);
 			}
 			
-			/* GPS ?�간?�로 ?�스??TIME ?�기??*/
+			/* GPS ?œê°„?¼ë¡œ ?œìŠ¤??TIME ?™ê¸°??*/
 			/* 3D fixed */
 			if (igps->r_data.gps_fixed == 1 && sync_time)
 			{

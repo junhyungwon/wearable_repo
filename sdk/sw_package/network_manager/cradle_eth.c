@@ -32,7 +32,8 @@
 
 #define __STAGE_CRADLE_ETH_WAIT_ACTIVE	(0x00)
 #define __STAGE_CRADLE_ETH_WAIT_DHCP	(0x01)
-#define __STAGE_CRADLE_ETH_GET_STATUS	(0x02)
+#define __STAGE_CRADLE_ETH_DHCP_NOTY	(0x02)
+#define __STAGE_CRADLE_ETH_GET_STATUS	(0x03)
 
 #define NETMGR_CRADLE_ETH_DEVNAME		"eth0"
 
@@ -69,7 +70,6 @@ static void *THR_cradle_eth_main(void *prm)
 	app_thr_obj *tObj = &icradle->cObj;
 	int exit = 0, cmd;
 	int quit = 0;
-	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -95,7 +95,7 @@ static void *THR_cradle_eth_main(void *prm)
 					netmgr_udhcpc_stop(NETMGR_CRADLE_ETH_DEVNAME);
 				}
 				netmgr_net_link_down(NETMGR_CRADLE_ETH_DEVNAME);
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
 				quit = 1;
 				continue;
 			}
@@ -106,25 +106,28 @@ static void *THR_cradle_eth_main(void *prm)
 				res = netmgr_is_netdev_active(NETMGR_CRADLE_ETH_DEVNAME);
 				if (!res) {
 					icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
 				}
 				break;
 			
+			case __STAGE_CRADLE_ETH_DHCP_NOTY:
+				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
+				netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
+				dprintf("rndis ipaddress %s", icradle->ip);
+				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_CRADLE, icradle->ip, icradle->mask, icradle->gw);
+				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_CRADLE);
+				icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
+				break;
+				
 			case __STAGE_CRADLE_ETH_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(NETMGR_CRADLE_ETH_DEVNAME)) {
-					icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
-					
-					memset(tmp_buf, 0, sizeof(tmp_buf));
-					netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
-					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", icradle->ip);
-					log_write(tmp_buf);
-					netmgr_set_shm_ip_info(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, icradle->mask, icradle->gw);
+					icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
 				} else {
 					if (icradle->cradle_eth_timer >= CNT_CRADLE_ETH_WAIT_DHCP) {
 						/* error */
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ERROR);
 						icradle->cradle_eth_timer = 0;
 						quit = 1; /* loop exit */
 					} else {
@@ -141,6 +144,8 @@ static void *THR_cradle_eth_main(void *prm)
 						/* static ip alloc */
 						netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, 
 									icradle->mask, icradle->gw);
+						dprintf("------------------cradle eth noty\n");			
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);			
 						icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
 					} else {
 						/* dhcp ip alloc */
@@ -238,6 +243,8 @@ int netmgr_cradle_eth_event_start(void)
 	netmgr_net_link_up(NETMGR_CRADLE_ETH_DEVNAME); 
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
+	aprintf("... done!\n");
+	
 	return 0;
 }
 
@@ -251,6 +258,8 @@ int netmgr_cradle_eth_event_stop(void)
 	app_thr_obj *tObj = &icradle->cObj;
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
+	
+	aprintf("... done!\n");
 	
 	return 0;
 }

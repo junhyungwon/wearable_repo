@@ -198,7 +198,6 @@ typedef struct {
     char reserved[MAX_CHAR_32-2-6] ; // used 2 byte for daylightsaving, timesync_type,6 bytes(1 for \0) for time_zone_abbr
 } app_timecfg_t ;  // 66
 
-
 typedef struct {
     unsigned char       lv;        // 0:administrator, 1:operator, 2:viewer, 3:guest
     char                id[MAX_CHAR_32];
@@ -258,24 +257,20 @@ typedef struct {
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-extern app_set_t *app_set;
-
 void app_set_default(int default_type);
 int app_set_open(void);
 int app_set_write(void);
-
 void app_set_delete_cfg(void);
 void app_set_version_read(void);
-
 int get_bitrate_val(int quality, int resol);
 int get_fps_val(app_frate_e idx);
 int get_frame_size(int resol, int *wi, int *he);
 int GetSvrMacAddress(char *MacAddr) ;
 int DefaultGetMac(char *MacAddr) ;
-
 void app_setting_reset(int type) ; // for onvif 
-
 int app_set_web_password(char *id, char *pw, int lv, int authtype);
 int app_set_onvif_password(char *id, char *pw, int lv);
+
+extern app_set_t *app_set;
 
 #endif	/* _APP_SET_H_ */

@@ -242,7 +242,7 @@ static void *THR_micom(void *prm)
 						/* Short KEY */
 						if (!app_cfg->ste.b.ftp_run)
 						{
-							app_voip_set_event();
+							app_voip_event_noty();
 						}
                 	}
 				}

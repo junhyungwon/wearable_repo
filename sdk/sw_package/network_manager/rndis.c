@@ -40,10 +40,9 @@
 
 #define __STAGE_RNDIS_WAIT_ACTIVE	(0x00)
 #define __STAGE_RNDIS_WAIT_DHCP		(0x01)
-#define __STAGE_RNDIS_GET_STATUS	(0x02)
+#define __STAGE_RNDIS_DHCP_NOTY		(0x02)
+#define __STAGE_RNDIS_GET_STATUS	(0x03)
  
-#define RNDIS_OPER_PATH		  		"/sys/class/net/usb0/operstate"
-#define USBETHER_OPER_PATH	  		"/sys/class/net/eth1/operstate"
 #define RNDIS_DEVNAME(a)			((a==1)?"usb0":"eth1")
 #define RNDIS_DEV_NAME_USB	  		1
 #define RNDIS_DEV_NAME_ETH	  		2
@@ -134,7 +133,6 @@ static void *THR_rndis_main(void *prm)
 	app_thr_obj *tObj = &irndis->rObj;
 	int exit = 0;
 	int quit = 0;
-	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -142,6 +140,7 @@ static void *THR_rndis_main(void *prm)
 	while (!exit)
 	{
 		int cmd = 0;
+		
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT)
 			break;
@@ -151,13 +150,12 @@ static void *THR_rndis_main(void *prm)
 		//# 루프에 진입하기 위해서는 APP_CMD_START나 APP_CMD_STOP을 수신 해야 함.
 		while (!quit)
 		{
-			int st = 0;
-			int type = 0;
+			int st = 0, res;
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
 				netmgr_udhcpc_stop(RNDIS_DEVNAME(irndis->iftype));
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
 				quit = 1;
 				continue;
 			}
@@ -166,24 +164,31 @@ static void *THR_rndis_main(void *prm)
 			switch (st) {
 			case __STAGE_RNDIS_GET_STATUS:
 				/* TODO */
-				netmgr_is_netdev_active(RNDIS_DEVNAME(irndis->iftype));
+				res = netmgr_is_netdev_active(RNDIS_DEVNAME(irndis->iftype));
+				if (!res) {
+					irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
+				}
 				break;
 			
+			case __STAGE_RNDIS_DHCP_NOTY:
+				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
+				netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
+				dprintf("rndis ipaddress %s\n", irndis->ip);
+				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_RNDIS, irndis->ip, irndis->mask, irndis->gw);
+				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_RNDIS);
+				irndis->stage = __STAGE_RNDIS_GET_STATUS;
+				break;
+				
 			case __STAGE_RNDIS_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(RNDIS_DEVNAME(irndis->iftype))) {
-					irndis->stage = __STAGE_RNDIS_GET_STATUS;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
-					
-					memset(tmp_buf, 0, sizeof(tmp_buf));
-					netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
-					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", irndis->ip);
-					log_write(tmp_buf);
-					netmgr_set_shm_ip_info(RNDIS_DEVNAME(irndis->iftype), irndis->ip, irndis->mask, irndis->gw);
+					irndis->stage = __STAGE_RNDIS_DHCP_NOTY;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
 				} else {
 					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_DHCP) {
 						/* error */
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
 						quit = 1; /* loop exit */
 					} else {
 						irndis->rndis_timer++;
@@ -201,7 +206,7 @@ static void *THR_rndis_main(void *prm)
 				} else {
 					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_ACTIVE) {
 						/* error */
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ERROR);
 						quit = 1; /* loop exit */
 					} else {
 						irndis->rndis_timer++;
@@ -275,6 +280,8 @@ int netmgr_rndis_event_start(void)
 	irndis->rndis_timer = 0;
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
+	aprintf("... done!\n");
+	
 	return 0;
 }
 
@@ -288,6 +295,8 @@ int netmgr_rndis_event_stop(void)
 	app_thr_obj *tObj = &irndis->rObj;
 
    	event_send(tObj, APP_CMD_STOP, 0, 0);
+	
+	aprintf("... done!\n");
 	
 	return 0;
 }

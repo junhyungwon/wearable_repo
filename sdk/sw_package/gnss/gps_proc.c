@@ -30,7 +30,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define GPS_PROC_LENGTH			1000 /*  nmea ?�이????1000�?76 *1000 = 760KB 가 ?�요??*/
+#define GPS_PROC_LENGTH			1000 /*  nmea ?°ì´????1000ê°?76 *1000 = 760KB ê°€ ?„ìš”??*/
 
 #define GPS_DISABLED			0
 #define	GPS_ENABLED				1
@@ -108,7 +108,7 @@ static int gps_dev_init(const char *devname, int rate)
 
 	tcflush(fd, TCIFLUSH); //# input flush.
 	
-	/* ?�재 ?�정??바로 ?�용?�다. (TCSANOW) */
+	/* ?„ìž¬ ?¤ì •??ë°”ë¡œ ?ìš©?œë‹¤. (TCSANOW) */
 	tcsetattr(fd, TCSANOW, &options);
 
 	return fd;
@@ -134,13 +134,13 @@ static void gps_set_rmc_data(int isEnable)
 		iproc->w_data.lot     	= session->gpsdata.fix.longitude;
 		iproc->w_data.dir     	= session->gpsdata.fix.track;
 		
-		iproc->w_data.gtm.tm_year  	= session->nmea.date.tm_year; //# 1900?�을 ?�해????
-		iproc->w_data.gtm.tm_mon  	= session->nmea.date.tm_mon; //# +1???�야 1??부???�작??
+		iproc->w_data.gtm.tm_year  	= session->nmea.date.tm_year; //# 1900?„ì„ ?”í•´????
+		iproc->w_data.gtm.tm_mon  	= session->nmea.date.tm_mon; //# +1???´ì•¼ 1??ë¶€???œìž‘??
 		iproc->w_data.gtm.tm_mday  	= session->nmea.date.tm_mday;
 		iproc->w_data.gtm.tm_hour  	= session->nmea.date.tm_hour;
 		iproc->w_data.gtm.tm_min  	= session->nmea.date.tm_min;
 		iproc->w_data.gtm.tm_sec  	= session->nmea.date.tm_sec;
-		iproc->w_data.subsec    	= session->nmea.subseconds.tv_nsec / 1000000L; //# nano 초로 ?�시.. ms�?변경하�??�해??					
+		iproc->w_data.subsec    	= session->nmea.subseconds.tv_nsec / 1000000L; //# nano ì´ˆë¡œ ?œì‹œ.. msë¡?ë³€ê²½í•˜ê¸??„í•´??					
 			
 		#if 0	
 		dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
@@ -219,12 +219,12 @@ static void *THR_gps_poll(void *prm)
 				((changed & SPEED_SET) != 0))
 			
 			{
-				/* 1초마???�이?��? ?�신??*/
-				/* REPORT_IS ?�래?��? ?�정?�면 모든 ?�이?��? ?�신?�것?�로 ?�단 */
+				/* 1ì´ˆë§ˆ???°ì´?°ê? ?˜ì‹ ??*/
+				/* REPORT_IS ?Œëž˜?¤ê? ?¤ì •?˜ë©´ ëª¨ë“  ?°ì´?°ê? ?˜ì‹ ?œê²ƒ?¼ë¡œ ?ë‹¨ */
 				gps_set_rmc_data(GPS_ENABLED);
 			}
 				
-			/* ?�?�레?��? ?�작?�키�??�한 최소?�의 delay */
+			/* ?€?°ë ˆ?œë? ?™ìž‘?œí‚¤ê¸??„í•œ ìµœì†Œ?œì˜ delay */
 			delay_msecs(20);
 		} /* while (poll_done == 0) */
 			
@@ -276,14 +276,14 @@ int app_gps_proc_init(void)
 void app_gps_data_request()
 {
 	pthread_mutex_lock(&iproc->lock);
- 	/* shared memory�� ���� �� �޼��� ���� */
+ 	/* shared memory¿¡ ÀúÀå ÈÄ ¸Þ¼¼Áö Àü´Þ */
 	memcpy((char *)app_cfg->shmbuf, (char *)&iproc->w_data, sizeof(gnss_shm_data_t));
 	send_msg(GNSS_CMD_GPS_POLL_DATA);
 	pthread_mutex_unlock(&iproc->lock);
 }
 
 /*****************************************************************************
-* @brief    gnss parse�??�행?�킨??
+* @brief    gnss parseë¥??¤í–‰?œí‚¨??
 * @section  [desc]
 *****************************************************************************/
 int app_gps_proc_start(void)
@@ -293,7 +293,7 @@ int app_gps_proc_start(void)
 }
 
 /*****************************************************************************
-* @brief    gnss parse�??�시?��?.
+* @brief    gnss parseë¥??¼ì‹œ?•ì?.
 * @section  [desc]
 *****************************************************************************/
 int app_gps_proc_stop(void)
@@ -308,7 +308,7 @@ int app_gps_proc_stop(void)
 }
 
 /*****************************************************************************
-* @brief    gnss parse�??�전??종료
+* @brief    gnss parseë¥??„ì „??ì¢…ë£Œ
 * @section  [desc]
 *****************************************************************************/
 void app_gps_proc_exit(void)

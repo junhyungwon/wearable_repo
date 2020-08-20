@@ -25,7 +25,7 @@
 #define OSA_THR_PRI_MIN          sched_get_priority_min(SCHED_FIFO)
 #define OSA_THR_PRI_DEFAULT     (OSA_THR_PRI_MIN + (OSA_THR_PRI_MAX-OSA_THR_PRI_MIN)/2)
 
-#define APP_THREAD_PRI			(OSA_THR_PRI_DEFAULT + 1)
+#define APP_THREAD_PRI			(OSA_THR_PRI_DEFAULT + 1) //# High
 
 //# OSA error macro
 #define OSA_SOK      			0  ///< Status : OK
@@ -103,10 +103,10 @@ typedef enum {
 
 	//# for key
 	APP_KEY_UP,
-	APP_KEY_LEFT,
-	APP_KEY_OK,
-	APP_KEY_RIGHT,
 	APP_KEY_DOWN,
+	APP_KEY_LEFT,
+	APP_KEY_RIGHT,
+	APP_KEY_OK,
 
 	MAX_APP_CMD
 } app_cmd_e;

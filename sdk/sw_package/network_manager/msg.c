@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "msg.h"
+#include "main.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -211,13 +212,15 @@ int event_wait(app_thr_obj *tObj)
 *****************************************************************************/
 int event_send(app_thr_obj *tObj, int cmd, int prm0, int prm1)
 {
-	if (tObj == NULL || !tObj->active)
+	if (tObj == NULL || !tObj->active) {
+		eprintf("event send fail!!(%x)...........\n", cmd);
 		return EFAIL;
-
+	}
+	
 	tObj->cmd = cmd;
 	tObj->param0 = prm0;
 	tObj->param1 = prm1;
-
+	
 	OSA_semSignal(&tObj->sem);
 
 	return 0;

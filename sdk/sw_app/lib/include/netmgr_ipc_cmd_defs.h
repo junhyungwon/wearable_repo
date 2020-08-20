@@ -131,6 +131,8 @@ typedef struct {
     char mask_address[NETMGR_NET_STR_MAX_SZ+1];
     char gw_address[NETMGR_NET_STR_MAX_SZ+1];
 	
+	int device;
+	
 } netmgr_shm_response_info_t;
 
 #if defined (__cplusplus)

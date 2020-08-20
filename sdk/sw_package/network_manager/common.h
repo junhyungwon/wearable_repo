@@ -1,8 +1,8 @@
 /*
- * gpio.h
+ * common.h
  */
-#ifndef __DEV_GPIO_H__
-#define __DEV_GPIO_H__
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 /*----------------------------------------------------------------------------
  Defines referenced	header files
@@ -45,6 +45,7 @@
 #define RTL_8812A_PID			0x010d
 
 #define USBETHER_OPER_PATH	  	"/sys/class/net/eth1/operstate"
+#define RNDIS_OPER_PATH		  	"/sys/class/net/usb0/operstate"
 #define USB_LS_CMD_STR			"/usr/bin/lsusb"
 
 /*----------------------------------------------------------------------------

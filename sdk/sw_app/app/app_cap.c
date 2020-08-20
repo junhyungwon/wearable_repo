@@ -551,7 +551,7 @@ int app_cap_stop(void)
 }
 
 /*
- * sound capture¸¦ À§ÇÑ GMEM ¸Þ¸ð¸® ÁÖ¼Ò ¹ÝÈ¯
+ * sound captureë¥¼ ìœ„í•œ GMEM ë©”ëª¨ë¦¬ ì£¼ì†Œ ë°˜í™˜
  */
 void *app_cap_get_gmem(void)
 {

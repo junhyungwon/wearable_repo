@@ -41,9 +41,10 @@ extern "C" {
 #define SIPC_CMD_SIP_READY				(0x701)
 #define SIPC_CMD_SIP_START				(0x702) /* 전화 걸기 */
 #define SIPC_CMD_SIP_STOP				(0x703) /* 전화 종료 */
-#define SIPC_CMD_SIP_GET_STATUS			(0x704) /* main--> baresip call Status */
-#define SIPC_CMD_SIP_SET_UA				(0x705) /* set user agent account */
-#define SIPC_CMD_SIP_ANSWER				(0x706) /* Call 수신 */
+#define SIPC_CMD_SIP_ANSWER				(0x704) /* Call 수신 */
+#define SIPC_CMD_SIP_GET_STATUS			(0x705) /* main--> baresip call Status */
+#define SIPC_CMD_SIP_REGISTER_UA		(0x706) /* set user agent account */
+#define SIPC_CMD_SIP_UNREGISTER_UA		(0x707) /* set user agent account */
 
 /* baresip 상태와 동일한 이름으로 정의함 */
 #define SIPC_STATE_CALL_IDLE			0
@@ -52,11 +53,13 @@ extern "C" {
 #define SIPC_STATE_CALL_ESTABLISHED		3 /* 전화 연결 됨 (송/수신 포함) */
 #define SIPC_STATE_CALL_STOP			4 /* 전화 종료. (연결이 안돼서 자동으로 종료되는 것도 포함) */
 
+#define SIPC_DATA_SZ					128
+
 typedef struct {
-	char ua_uri[128];     /* local information. 일반적으로 단말기 번호 */
-	char pbx_uri[128];    /* 교환기 주소 */
-	char passwd[128];     /* 단말기 등록 비밀번호 */
-	char peer_uri[128];	  /* 연결할 상대 단말 정보 */
+	char ua_uri[SIPC_DATA_SZ];     /* local information. 일반적으로 단말기 번호 */
+	char pbx_uri[SIPC_DATA_SZ];    /* 교환기 주소 */
+	char passwd[SIPC_DATA_SZ];     /* 단말기 등록 비밀번호 */
+	char peer_uri[SIPC_DATA_SZ];	  /* 연결할 상대 단말 정보 */
 
 } sipc_uri_t;
 

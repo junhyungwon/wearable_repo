@@ -387,6 +387,84 @@ int ctrl_set_port(int http_port, int https_port, int rtsp_port)
 }
 
 /*****************************************************************************
+* @brief    set network info(ip, subnet, DHCP or STATIC)
+* @section  [desc]
+* parameter token is device name(eth0, wlan0, usb1...)
+*****************************************************************************/
+int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet)
+{
+    char log[256] = {0,};
+	int ret;
+	
+	if (!net_type)  // STATIC
+	{
+		if (strcmp(token, "wlan0") == 0) {
+			if (ipaddr != NULL)
+				strcpy(app_set->net_info.wlan_ipaddr, ipaddr);
+			if (subnet != NULL)
+				strcpy(app_set->net_info.wlan_netmask, subnet);
+			
+			sprintf(log, "[APP] --- Wireless ipaddress changed System Restart ---");
+					
+		} else {
+			if (ipaddr != NULL)
+				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
+			if (subnet != NULL)
+				strcpy(app_set->net_info.eth_netmask, subnet);
+			
+			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");	
+		}
+	}	
+	
+	app_set->net_info.type = net_type;
+	ret = app_rec_state();	
+	if (ret) {
+		sleep(1);
+		app_rec_stop(1);
+	}
+	app_file_exit();
+	app_log_write( MSG_LOG_SHUTDOWN, log);
+    app_set_write();
+
+//    mic_exit_state(OFF_RESET, 0);
+//    app_main_ctrl(APP_CMD_EXIT, 0, 0);
+
+	mcu_pwr_off(OFF_RESET) ;
+    return SOK ;
+}
+
+/*****************************************************************************
+* @brief    set network gateway info(gateway)
+* @section  [desc]
+*****************************************************************************/
+int ctrl_set_gateway(const char *gw)
+{
+    char log[255]={0,};
+    int ret;
+
+    if (gw != NULL)
+        strcpy(app_set->net_info.eth_gateway, gw);
+
+    ret = app_rec_state();
+    if (ret) {
+        sleep(1);
+        app_rec_stop(1);
+    }
+    app_file_exit();
+
+    sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
+    app_log_write( MSG_LOG_SHUTDOWN, log );
+    app_set_write();
+
+//    mic_exit_state(OFF_RESET, 0);
+//    app_main_ctrl(APP_CMD_EXIT, 0, 0);
+
+	mcu_pwr_off(OFF_RESET);
+
+    return SOK;
+}
+
+/*****************************************************************************
 * @brief    get version function
 * @section  DESC Description
 *   - desc
