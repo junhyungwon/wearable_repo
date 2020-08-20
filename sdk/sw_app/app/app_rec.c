@@ -149,7 +149,7 @@ static void *THR_rec_send_msg(void *prm)
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
-		/* file ¾²·¹µå¿¡¼­ °ü¸®ÇÏµµ·Ï º¯°æ */
+		/* file ì“°ë ˆë“œì—ì„œ ê´€ë¦¬í•˜ë„ë¡ ë³€ê²½ */
 		//if (cmd == APP_CMD_STOP || app_cfg->ste.b.mmc_err || (app_set->rec_info.overwrite == OFF && app_cfg->ste.b.disk_full)) {
 		//	continue;
 		//}
@@ -201,12 +201,12 @@ int app_rec_start(void)
 	int start = 1;
 	unsigned long sz;
 	
-	/* record off ¸ðµå */
+	/* record off ëª¨ë“œ */
 	if (!app_cfg->en_rec) {
 		return EFAIL;
 	}
 
-	/* Ä«¸Þ¶ó ÀÌ»ó ¶Ç´Â SD Ä«µå ÀÌ»ó,, ¶Ç´Â Æß¿þ¾î ¾÷µ¥ÀÌÆ® */
+	/* ì¹´ë©”ë¼ ì´ìƒ ë˜ëŠ” SD ì¹´ë“œ ì´ìƒ,, ë˜ëŠ” íŽŒì›¨ì–´ ì—…ë°ì´íŠ¸ */
 	if (!app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
 		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err ) 
 	{
@@ -221,21 +221,21 @@ int app_rec_start(void)
 		return EFAIL;
 	}
 	
-	/* record ÇÁ·Î¼¼½º°¡ ½ÃÀÛÇÏÁö ¾ÊÀº °æ¿ì... */
+	/* record í”„ë¡œì„¸ìŠ¤ê°€ ì‹œìž‘í•˜ì§€ ì•Šì€ ê²½ìš°... */
 	if (!irec->init) {
 		OSA_waitMsecs(50);
 	}
 	
 	aprintf("Record Process Start!!\n");
 	
-	/* overwrite ¸ðµå°¡ ¾Æ´Ï¸é SD Ä«µå ¿ë·®ÀÌ 1GB ÀÌ»ó ³²À» °æ¿ì¿¡¸¸ ½ÃÀÛ */
+	/* overwrite ëª¨ë“œê°€ ì•„ë‹ˆë©´ SD ì¹´ë“œ ìš©ëŸ‰ì´ 1GB ì´ìƒ ë‚¨ì„ ê²½ìš°ì—ë§Œ ì‹œìž‘ */
 	if (!app_set->rec_info.overwrite) {
 		sz = app_file_get_free_size();
         if (sz > ((1024*MB)/KB)) {
 			if (app_cfg->vid_count)
 	        	dev_buzz_ctrl(100, 1);	//# buzz: rec start
 		} else {
-			/*  ¿ë·® ºÎÁ·À¸·Î record ½ÃÀÛ ¾È ÇÔ */
+			/*  ìš©ëŸ‰ ë¶€ì¡±ìœ¼ë¡œ record ì‹œìž‘ ì•ˆ í•¨ */
 			start = 0;
 		}
 	} else {
@@ -244,7 +244,7 @@ int app_rec_start(void)
 	}
 	
 	if (start) {
-		/* ÀÌÀü Record »óÅÂ°¡ ³¡³¯ ¶§ ±îÁö wait */
+		/* ì´ì „ Record ìƒíƒœê°€ ëë‚  ë•Œ ê¹Œì§€ wait */
 		while (irec->evt_rec) {
 			app_msleep(50);
 		}
@@ -255,7 +255,7 @@ int app_rec_start(void)
 	return SOK;
 }
 
-/* SD Ä«µå¿¡ ¹®Á¦·Î ÀÎÇÑ Á¾·á. µîµî */
+/* SD ì¹´ë“œì— ë¬¸ì œë¡œ ì¸í•œ ì¢…ë£Œ. ë“±ë“± */
 int app_rec_stop(int buzz)
 {
 	if (irec->evt_rec) {
@@ -337,7 +337,7 @@ int app_rec_exit(void)
 	thread_delete(tObj);
 	
 	//#--- stop message receive thread. 
-	//# ÇÁ·Î¼¼½º¿¡¼­ ÀÌ¹Ì Á¾·á°¡ µÇ¹Ç·Î APP_CMD_EXIT¸¦ ÇÏ¸é ¾ÈµÊ.
+	//# í”„ë¡œì„¸ìŠ¤ì—ì„œ ì´ë¯¸ ì¢…ë£Œê°€ ë˜ë¯€ë¡œ APP_CMD_EXITë¥¼ í•˜ë©´ ì•ˆë¨.
 //	tObj = &irec->rObj;
 //	thread_delete(tObj);
 	

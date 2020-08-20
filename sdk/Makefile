@@ -61,12 +61,12 @@ app_web:
 app_web_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root clean
 
-sipc:
+voip:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re all
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem all
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip all
 
-sipc_clean:
+voip_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re clean
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem clean
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
@@ -83,8 +83,8 @@ gnss:
 gnss_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gnss clean
 
-ubxapp: app app_web netdev sipc av_rec gnss fsupdate
-ubxapp_clean: app_clean app_web_clean netdev_clean sipc_clean av_rec_clean gnss_clean
+ubxapp: app app_web netdev voip av_rec gnss fsupdate
+ubxapp_clean: app_clean app_web_clean netdev_clean voip_clean av_rec_clean gnss_clean
 ubxapp_all: ubxapp_clean ubxapp
 
 ##### EXTERNAL OPENSOURCE PACKAGE BUILD #####

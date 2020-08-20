@@ -1,12 +1,12 @@
 /*
- * File : poll_dev.h
+ * File : poll_cradle_dev.h
  *
  * Copyright (C) 2020 LF
  *
  */
 
-#ifndef __BPOLL_DEV_H__
-#define __BPOLL_DEV_H__
+#ifndef __POLL_CRADLE_DEV_H__
+#define __POLL_CRADLE_DEV_H__
 
 /*----------------------------------------------------------------------------
  Defines referenced	header files
@@ -23,7 +23,7 @@
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-int netmgr_poll_dev_init(void);
-int netmgr_poll_dev_exit(void);
+int netmgr_poll_cradle_init(void);
+int netmgr_poll_cradle_exit(void);
 
-#endif	/* __BPOLL_DEV_H__ */
+#endif	/* __POLL_CRADLE_DEV_H__ */

@@ -45,13 +45,14 @@
 #define SUPPLICANT_CONFIG		"/etc/wpa_supplicant.conf"
 #define SUPPLICANT_PID_PATH     "/var/run/wpa_supplicant.pid"
 
-#define __STAGE_CLI_MOD_LOAD		0
-#define __STAGE_CLI_MOD_WAIT		1
-#define __STAGE_CLI_AUTH_START		2
-#define __STAGE_CLI_WAIT_AUTH		3
-#define __STAGE_CLI_SET_IP			4
-#define __STAGE_CLI_WAIT_DHCP		5
-#define __STAGE_CLI_GET_RSSI_LEVEL	6
+#define __STAGE_CLI_MOD_LOAD		(0x0)
+#define __STAGE_CLI_MOD_WAIT		(0x1)
+#define __STAGE_CLI_AUTH_START		(0x2)
+#define __STAGE_CLI_WAIT_AUTH		(0x3)
+#define __STAGE_CLI_SET_IP			(0x4)
+#define __STAGE_CLI_WAIT_DHCP		(0x5)
+#define __STAGE_CLI_DHCP_NOTY		(0x6)
+#define __STAGE_CLI_GET_RSSI_LEVEL	(0x7)
 
 typedef struct {
 	app_thr_obj cObj; /* wlan client mode */
@@ -478,7 +479,6 @@ static void *THR_wlan_cli_main(void *prm)
 	app_thr_obj *tObj = &i_cli->cObj;
 	int exit = 0;
 	int quit = 0;
-	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -503,7 +503,7 @@ static void *THR_wlan_cli_main(void *prm)
 			if (cmd == APP_CMD_STOP) {
 				//dprintf("wlan station stopping!!!!\n");
 				__cli_stop(cli_dev_name);
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
 				quit = 1;
 				continue;
 			}
@@ -513,28 +513,31 @@ static void *THR_wlan_cli_main(void *prm)
 			case __STAGE_CLI_GET_RSSI_LEVEL:
 				if (i_cli->cli_timer >= CNT_RSSI_SEND) {
 					__cli_get_link_status(i_cli->ssid, &i_cli->level);
-					netmgr_event_hub_dev_rssi_status(NETMGR_DEV_TYPE_WIFI, i_cli->level);
+					netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, i_cli->level);
 					i_cli->cli_timer = 0;
 				} else 
 					i_cli->cli_timer++;
 				break;
+			
+			case __STAGE_CLI_DHCP_NOTY:
+				netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
+				dprintf("wlan client ip address %s\n", i_cli->ip);
+				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
+				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_WIFI);
+				i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
+				break;
 				
 			case __STAGE_CLI_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(cli_dev_name)) {
-					i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
+				if (netmgr_udhcpc_is_run(cli_dev_name)) 
+				{
 					i_cli->cli_timer = 0;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
-					
-					memset(tmp_buf, 0, sizeof(tmp_buf));
-					netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-					snprintf(tmp_buf, sizeof(tmp_buf), "wi-fi client ipaddress %s", i_cli->ip);
-					log_write(tmp_buf);
-					netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
+					i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 				} else {
 					if (i_cli->cli_timer >= CNT_CLI_DHCP) {
 						/* error */
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
 						quit = 1; /* loop exit */
 					} else {
 						i_cli->cli_timer++;
@@ -545,7 +548,7 @@ static void *THR_wlan_cli_main(void *prm)
 			case __STAGE_CLI_SET_IP:
 				if (i_cli->dhcp == 0) { //# set static ip
 					netmgr_set_ip_static(cli_dev_name, i_cli->ip, i_cli->mask, i_cli->gw);
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
 				} else {
 					netmgr_set_ip_dhcp(cli_dev_name);
@@ -565,7 +568,7 @@ static void *THR_wlan_cli_main(void *prm)
 						/* fail */
 						/* error 상태를 mainapp에 알려줘야 함 */
 						quit = 1;
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
 					}
 				}
 				break;
@@ -588,7 +591,7 @@ static void *THR_wlan_cli_main(void *prm)
 						/* fail */
 						/* error 상태를 mainapp에 알려줘야 함 */
 						quit = 1;
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
 					} 
 				}
 				break;
@@ -694,6 +697,8 @@ int netmgr_wlan_cli_start(void)
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
+	aprintf("... done!\n");
+	
 	return 0;
 }
 
@@ -708,6 +713,8 @@ int netmgr_wlan_cli_stop(void)
 			
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_STOP, 0, 0);
+	
+	aprintf("... done!\n");
 	
 	return 0;
 }

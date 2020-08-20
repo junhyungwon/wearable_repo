@@ -148,7 +148,6 @@ typedef union {
 	    unsigned int mmc_err    		: 1;  	//# mmc error
 	    unsigned int log        		: 1;
 	    unsigned int sock       		: 1;
-	    unsigned int shock      		: 1;
         unsigned int gps        		: 1;
         unsigned int disk_full			: 1; 	// disk full because overwrite off.
         unsigned int pwr_off			: 1;	// check power off
@@ -157,8 +156,9 @@ typedef union {
 		unsigned int cradle_eth_ready  	: 1;    // status of attached or detached cradle
 		unsigned int cradle_eth_run   	: 1;    // cradle network(eth0) running   
 		unsigned int web_server 		: 1;    // web_server
-		unsigned int prerec_state  		: 1; // record state before using FTP
-		unsigned int nokey  	   		: 1; // prevent key
+		unsigned int prerec_state  		: 1; 	// record state before using FTP
+		unsigned int nokey  	   		: 1; 	// prevent key
+		unsigned int voip  				: 1; 	// voip start/stop
 	} b;
 	unsigned int w;
 } app_state;

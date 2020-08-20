@@ -44,6 +44,8 @@ int ctrl_jpg_quality(int ch, int value);		//# runtime
 int ctrl_vid_resolution(int resol) ;                    //# runtime 
 
 int ctrl_set_port(int http_port, int https_port, int rtsp_port) ; //# runtime
+int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet) ;
+int ctrl_set_gateway(const char *gw) ;
 int ctrl_set_NTP(char *server_addr) ;
 int ctrl_set_DNS(char *server_addr) ;
 

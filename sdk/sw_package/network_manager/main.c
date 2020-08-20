@@ -27,7 +27,9 @@
 #include "wlan_softap.h"
 #include "rndis.h"
 #include "event_hub.h"
-#include "poll_dev.h"
+#include "poll_wlan.h"
+#include "poll_cradle_dev.h"
+#include "poll_usbnet.h"
 #include "main.h"
 #include "common.h"
 #include "usb2eth.h"
@@ -99,17 +101,17 @@ static void ___thread_start(void)
 	netmgr_wlan_cli_init();
 	/* Wi-Fi Host Mode */
 	netmgr_wlan_hostapd_init();
-	
 	/* rndis */
 	netmgr_rndis_init();
 	/* usb2eth */
 	netmgr_usb2eth_init();
-	
 	/* eth0 */
 	netmgr_cradle_eth_init();
 	
 	/* 연결된 USB 장치를 확인 (가장 늦게 실행 해야 함) */
-	netmgr_poll_dev_init();
+	netmgr_poll_wlan_init();
+	netmgr_poll_cradle_init();
+	netmgr_poll_usbnet_init();
 }
 
 /*****************************************************************************
@@ -124,6 +126,9 @@ static void app_main(void)
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
+	/* mapp와 message를 송/수신..*/
+	netmgr_event_hub_init(); //# 위치 변경하면 안됨.
+	
 	while(!exit)
 	{
 		cmd = event_wait(tObj);
@@ -132,22 +137,21 @@ static void app_main(void)
 		else if (cmd == APP_CMD_START)
 			___thread_start();
 	}
+	
+	netmgr_wlan_cli_exit();
+	netmgr_wlan_hostapd_exit();
+	netmgr_rndis_exit();
+	netmgr_usb2eth_exit();
+	netmgr_cradle_eth_exit();
+	
+	netmgr_poll_wlan_exit();
+	netmgr_poll_cradle_exit();
+	netmgr_poll_usbnet_exit();
+	netmgr_event_hub_exit();
+	
 	tObj->active = 0;
 	
 	aprintf("exit...\n");
-}
-
-/*****************************************************************************
-* @brief    system log write
-* @section  [desc]
-*****************************************************************************/
-void log_write(char *msg)
-{
-	char tmpMsg[256] = {0,};
-	
-	memset(tmpMsg, 0, sizeof(tmpMsg));
-	snprintf(tmpMsg, sizeof(tmpMsg), "[net_mgr] %s", msg);
-	syslog(LOG_ERR, "%s\n", tmpMsg);
 }
 
 /*****************************************************************************
@@ -161,21 +165,9 @@ int main(int argc, char **argv)
 	main_thread_init();
 	shared_mem_init();
 	
-	/* mapp와 message를 송/수신..*/
-	netmgr_event_hub_init();
-	
 	//#--- main --------------
 	app_main();
 	//#-----------------------
-	
-	netmgr_wlan_cli_exit();
-	netmgr_wlan_hostapd_exit();
-	netmgr_rndis_exit();
-	netmgr_usb2eth_exit();
-	netmgr_cradle_eth_exit();
-	
-	netmgr_poll_dev_exit();
-	netmgr_event_hub_exit();
 	
 	main_thread_exit();
 	

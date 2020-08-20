@@ -33,6 +33,8 @@ typedef struct {
 	
 	int qid;
 	
+	pthread_mutex_t lock;
+	
 } netmgr_event_hub_t;
 
 /*----------------------------------------------------------------------------
@@ -103,16 +105,22 @@ static void *THR_event_hub_main(void *prm)
             break;
 		
 		switch (cmd) {
-		case APP_KEY_UP: //# polldev noty
+		case APP_KEY_UP: //# 6 polldev noty
 			send_msg(NETMGR_CMD_DEV_DETECT, tObj->param0, tObj->param1);
 			break;
-		case APP_KEY_DOWN: //# device link status noty
+		
+		case APP_KEY_DOWN: //# 7 device link status noty
+			//dprintf("NETMGR_CMD_DEV_LINK_STATUS done!!\n");
 			send_msg(NETMGR_CMD_DEV_LINK_STATUS, tObj->param0, tObj->param1);
 			break;
-		case APP_KEY_LEFT:	
+		
+		case APP_KEY_LEFT: //8
+			//dprintf("NETMGR_CMD_DEV_IP_STATUS done!!\n");	
 			send_msg(NETMGR_CMD_DEV_IP_STATUS, 0, 0);
 			break;
-		case APP_KEY_RIGHT:	/* Wi-Fi RSSi */
+		
+		case APP_KEY_RIGHT:	/*9 Wi-Fi RSSi */
+			//dprintf("NETMGR_CMD_WLAN_CLIENT_RSSI done!!\n");
 			send_msg(NETMGR_CMD_WLAN_CLIENT_RSSI, tObj->param0, tObj->param1);
 			break;	
 		}
@@ -151,52 +159,42 @@ static void *THR_event_hub_poll(void *prm)
 		
 		switch (cmd) {
 		case NETMGR_CMD_WLAN_SOFTAP_START:
-			dprintf("NETMGR_CMD_WLAN_SOFTAP_START\n");
 			netmgr_wlan_hostapd_start();
 			break;
 		
 		case NETMGR_CMD_WLAN_SOFTAP_STOP:
-			dprintf("NETMGR_CMD_WLAN_SOFTAP_STOP\n");
 			netmgr_wlan_hostapd_stop();
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_START:
-			dprintf("NETMGR_CMD_WLAN_CLIENT_START\n");
 			netmgr_wlan_cli_start();
 			break;
 		
 		case NETMGR_CMD_WLAN_CLIENT_STOP:
-			dprintf("NETMGR_CMD_WLAN_CLIENT_STOP\n");
 			netmgr_wlan_cli_stop();
 			break;	
 			
 		case NETMGR_CMD_RNDIS_START:
-			dprintf("NETMGR_CMD_RNDIS_START\n");
 			netmgr_rndis_event_start();
 			break;
 		
 		case NETMGR_CMD_RNDIS_STOP:
-			dprintf("NETMGR_CMD_RNDIS_STOP\n");
 			netmgr_rndis_event_stop();
 			break;	
 		
 		case NETMGR_CMD_USB2ETH_START:
-			dprintf("NETMGR_CMD_USB2ETH_START\n");
 			netmgr_usb2eth_event_start();
 			break;
 		
 		case NETMGR_CMD_USB2ETH_STOP:
-			dprintf("NETMGR_CMD_USB2ETH_STOP\n");
 			netmgr_usb2eth_event_stop();
 			break;	
 				
 		case NETMGR_CMD_CRADLE_ETH_START:
-			dprintf("NETMGR_CMD_CRADLE_ETH_START\n");
 			netmgr_cradle_eth_event_start();
 			break;
 		
 		case NETMGR_CMD_CRADLE_ETH_STOP:
-			dprintf("NETMGR_CMD_CRADLE_ETH_STOP\n");
 			netmgr_cradle_eth_event_stop();
 			break;
 						
@@ -230,6 +228,7 @@ static void *THR_event_hub_poll(void *prm)
 *****************************************************************************/
 int netmgr_event_hub_init(void)
 {
+	pthread_mutexattr_t attr;
 	app_thr_obj *tObj;
 	
 	tObj = &ievt->rObj;
@@ -244,6 +243,10 @@ int netmgr_event_hub_init(void)
 		return EFAIL;
     }
 	
+	pthread_mutexattr_init(&attr);
+  	pthread_mutex_init(&ievt->lock, &attr);
+  	pthread_mutexattr_destroy(&attr);
+  
 	aprintf("done!...\n");
 	
 	return 0;
@@ -266,6 +269,8 @@ int netmgr_event_hub_exit(void)
 
     thread_delete(tObj);
 	
+	pthread_mutex_destroy(&ievt->lock);
+	
     aprintf("... done!\n");
 	
 	return 0;
@@ -276,58 +281,46 @@ int netmgr_event_hub_exit(void)
 * @section  DESC Description: 
 *   - desc
 *****************************************************************************/
-int netmgr_event_hub_polldev_noty(int type, int ste)
+int netmgr_event_hub_dev_status(int type, int ste)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
-	/* APP_KEY_UP을 이용한다 */
+	pthread_mutex_lock(&ievt->lock);
 	event_send(tObj, APP_KEY_UP, type, ste);
+	pthread_mutex_unlock(&ievt->lock);
 	
 	return 0;
 }
 
-/*****************************************************************************
-* @brief    send noty event (device insert / remove)
-* @section  DESC Description: 
-*   - desc
-*****************************************************************************/
-int netmgr_event_hub_dev_link_status(int type, int status)
+int netmgr_event_hub_link_status(int type, int ste)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
-	/* APP_KEY_UP을 이용한다 */
-	event_send(tObj, APP_KEY_DOWN, type, status);
+	pthread_mutex_lock(&ievt->lock);
+	event_send(tObj, APP_KEY_DOWN, type, ste);
+	pthread_mutex_unlock(&ievt->lock);
 	
 	return 0;
 }
 
-/*****************************************************************************
-* @brief    send noty event (device insert / remove)
-* @section  DESC Description: 
-*   - desc
-*****************************************************************************/
-int netmgr_event_hub_dev_ip_status(int type)
+int netmgr_event_hub_dhcp_noty(int type)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
-	/* APP_KEY_LEFT을 이용한다 */
+	pthread_mutex_lock(&ievt->lock);
 	event_send(tObj, APP_KEY_LEFT, type, 0);
+	pthread_mutex_unlock(&ievt->lock);
 	
 	return 0;
 }
 
-/*****************************************************************************
-* @brief    send noty event (device insert / remove)
-* @section  DESC Description: 
-*   - desc
-*****************************************************************************/
-int netmgr_event_hub_dev_rssi_status(int type, int level)
+int netmgr_event_hub_rssi_status(int type, int ste)
 {
 	app_thr_obj *tObj = &ievt->sObj;
 	
-	/* APP_KEY_RIGHT을 이용한다 */
-	event_send(tObj, APP_KEY_RIGHT, type, level);
+	pthread_mutex_lock(&ievt->lock);
+	event_send(tObj, APP_KEY_RIGHT, type, 0);
+	pthread_mutex_unlock(&ievt->lock);
 	
 	return 0;
 }
-

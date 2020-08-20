@@ -32,7 +32,8 @@
 
 #define __STAGE_USB2ETH_WAIT_ACTIVE		(0x00)
 #define __STAGE_USB2ETH_WAIT_DHCP		(0x01)
-#define __STAGE_USB2ETH_GET_STATUS		(0x02)
+#define __STAGE_USB2ETH_DHCP_NOTY		(0x02)
+#define __STAGE_USB2ETH_GET_STATUS		(0x03)
 
 #define NETMGR_USB2ETH_DEVNAME			"eth1"
 
@@ -69,7 +70,6 @@ static void *THR_usb2eth_main(void *prm)
 	app_thr_obj *tObj = &iusb2eth->uObj;
 	int exit = 0, cmd;
 	int quit = 0;
-	char tmp_buf[256]={0,};
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -94,7 +94,7 @@ static void *THR_usb2eth_main(void *prm)
 					netmgr_udhcpc_stop(NETMGR_USB2ETH_DEVNAME);
 				
 				netmgr_net_link_down(NETMGR_USB2ETH_DEVNAME);
-				netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
 				quit = 1;
 				continue;
 			}
@@ -105,25 +105,26 @@ static void *THR_usb2eth_main(void *prm)
 				res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
 				if (!res) {
 					iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
 				}
 				break;
 			
+			case __STAGE_USB2ETH_DHCP_NOTY:
+				netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
+				dprintf("rndis ipaddress %s\n", iusb2eth->ip);
+				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_USB2ETHER, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
+				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_USB2ETHER);
+				break;
+				
 			case __STAGE_USB2ETH_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(NETMGR_USB2ETH_DEVNAME)) {
 					iusb2eth->stage = __STAGE_USB2ETH_GET_STATUS;
-					netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
-					
-					memset(tmp_buf, 0, sizeof(tmp_buf));
-					netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
-					snprintf(tmp_buf, sizeof(tmp_buf), "rndis ipaddress %s", iusb2eth->ip);
-					log_write(tmp_buf);
-					netmgr_set_shm_ip_info(NETMGR_USB2ETH_DEVNAME, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
 				} else {
 					if (iusb2eth->usb2eth_timer >= CNT_USB2ETH_WAIT_DHCP) {
 						/* error */
-						netmgr_event_hub_dev_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ERROR);
 						iusb2eth->usb2eth_timer = 0;
 						quit = 1; /* loop exit */
 					} else {
@@ -140,6 +141,7 @@ static void *THR_usb2eth_main(void *prm)
 						/* static ip alloc */
 						netmgr_set_ip_static(NETMGR_USB2ETH_DEVNAME, iusb2eth->ip, 
 									iusb2eth->mask, iusb2eth->gw);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);			
 						iusb2eth->stage = __STAGE_USB2ETH_GET_STATUS;
 					} else {
 						/* dhcp ip alloc */
@@ -237,6 +239,8 @@ int netmgr_usb2eth_event_start(void)
 	netmgr_net_link_up(NETMGR_USB2ETH_DEVNAME);
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
+	aprintf("... done!\n");
+	
 	return 0;
 }
 
@@ -250,6 +254,8 @@ int netmgr_usb2eth_event_stop(void)
 	app_thr_obj *tObj = &iusb2eth->uObj;
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
+	
+	aprintf("... done!\n");
 	
 	return 0;
 }

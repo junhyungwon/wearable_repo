@@ -20,6 +20,7 @@
 #include "app_ctrl.h"
 #include "app_set.h"
 #include "app_rtsptx.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -249,12 +250,24 @@ static void *THR_gui(void *prm)
 			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
 				igui->tmr_cnt = 0;
 				/* check wis-streamer */
-				system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
-				if (!ctrl_is_live_process((const char *)"wis-streamer"))
-					app_rtsptx_start();
+				//system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
+				//if (!ctrl_is_live_process((const char *)"wis-streamer"))
+				//	app_rtsptx_start();
 			} else {
 				igui->tmr_cnt++;
 			}
+		}
+		
+		if (!app_cfg->ste.b.voip) 
+		{
+			if (app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run) {
+				/* voip register start */
+				app_cfg->ste.b.voip = 1;
+				app_voip_start(app_set->voip.userid, app_set->voip.ipaddr, 
+						app_set->voip.passwd, app_set->voip.peerid);	
+			}
+		} else {
+			/* voip unregister */
 		}
 		
 		tObj->cmd = 0;

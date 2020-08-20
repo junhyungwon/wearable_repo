@@ -240,8 +240,8 @@ void dev_snd_aic3x_close(void *hndl, int mode)
 #endif
 
 /*
- * VOIP ¸ðµâÀ» »ç¿ë ¾È ÇÒ °æ¿ì ÇÊ¿äÇÔ.
- * sound ÀåÄ¡¸¦ baresip¿¡¼­ Á¡À¯ÇÏ¹Ç·Î main¿¡¼­´Â openÀ» ÇÒ ¼ö ¾ø´Ù.
+ * VOIP ëª¨ë“ˆì„ ì‚¬ìš© ì•ˆ í•  ê²½ìš° í•„ìš”í•¨.
+ * sound ìž¥ì¹˜ë¥¼ baresipì—ì„œ ì ìœ í•˜ë¯€ë¡œ mainì—ì„œëŠ” openì„ í•  ìˆ˜ ì—†ë‹¤.
  */
  
 /*****************************************************************************
@@ -339,7 +339,7 @@ int app_snd_start(void)
 	
 	memset(isnd, 0, sizeof(app_snd_t));
 	
-	/* GMEM Address °¡Á®¿Â´Ù */
+	/* GMEM Address ê°€ì ¸ì˜¨ë‹¤ */
 	imem = (g_mem_info_t *)app_cap_get_gmem();
 	isnd->imem = imem;
 

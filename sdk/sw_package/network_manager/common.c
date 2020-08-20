@@ -555,12 +555,10 @@ int netmgr_udhcpc_is_run(const char *ifname)
 	char buf[256]={0,};
 	char path[128]={0,};
 	FILE *f;
-
 	int r = 0, pid;
 	
 	/* get udhcpc */
 	memset(&st, 0, sizeof(st));
-	
 	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
 	f = fopen(path, "r");
 	if (f == NULL) {
@@ -579,7 +577,7 @@ int netmgr_udhcpc_is_run(const char *ifname)
 	} else
 		/* process exist */
 		r = 1;
-
+	
 	return r;
 }
 
@@ -643,12 +641,11 @@ int netmgr_set_shm_ip_info(int dev, const char *ip, const char *mask, const char
 	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_RESPONSE_INFO_SZ);
-	
 	strcpy(info->ip_address, ip);
 	strcpy(info->mask_address, mask);
 	strcpy(info->gw_address, gw);
 	
-	netmgr_event_hub_dev_ip_status(dev);
+	info->device = dev;
 	
 	return 0;
 }

@@ -230,6 +230,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	case UA_EVENT_CALL_RTCP:
 		/* 통화 연결 후 RTCP 이벤트가 전송됨 */
 	case UA_EVENT_UNREGISTERING:
+	case UA_EVENT_CALL_RTPESTAB:
 		return;
 	
 	default:
@@ -244,28 +245,66 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 }
 //-----------------------------------------------------------------------------------------------
 //###################### Baresip Helper ########################################################
-static int __create_user(const char *call_num, const char *server_addr, const char *passwd)
+static int __register_user(const char *call_num, const char *server_addr, const char *passwd)
 {
 	struct ua *ua = NULL;
 	int err = 0;
+	struct account *acc;
 	
 	memset(ui_buf, 0, sizeof(ui_buf));
 	
 	//# <sip:1006@192.168.0.5>;auth_pass=1234
 	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s>;auth_pass=%s", 
 					UA_PREFIX, call_num, server_addr, passwd);
-	dprintf("Creating UA for %s ...\n", ui_buf);
 	
+	info("Creating UA for %s ....\n", ui_buf);
+		 
 	err = ua_alloc(&ua, ui_buf);
 	if (err) {
 		eprintf("custom_menu: create_ua failed: %x\n", err);
 		return -1;
 	}
-			
+	
+	/* return ua->acc (account) */
+	acc = ua_account(ua);
+	if (!acc) {
+		warning("account: no account for this ua\n");
+		return ENOENT;
+	}
+		
 	if (account_regint(ua_account(ua))) {
-		(void)ua_register(ua);
+		int e;
+		
+		e = ua_register(ua);
+		if (e) {
+			warning("account: failed to register ua"
+				" '%s' (%m)\n", account_aor(acc), e);
+		}
 	}
 	
+	return 0;
+}
+
+static int __unregister_user(const char *call_num)
+{
+	struct ua *ua = NULL;
+
+	if (str_isset(call_num)) {
+		ua = uag_find_aor(call_num);
+	}
+
+	if (!ua) {
+		return ENOENT;
+	}
+
+	if (ua == uag_current()) {
+//		(void)cmd_ua_next(pf, NULL);
+	}
+
+//	(void)re_hprintf(pf, "deleting ua: %s\n", carg->prm);
+//	mem_deref(ua);
+//	(void)ua_print_reg_status(pf, NULL);
+
 	return 0;
 }
 
@@ -325,7 +364,7 @@ static int recv_msg(void)
 		return -1;
 	}
 	
-	if (msg.cmd == SIPC_CMD_SIP_SET_UA) {
+	if (msg.cmd == SIPC_CMD_SIP_REGISTER_UA) {
 		/* clear user information */
 		memset(ikey->uri.ua_uri, 0, sizeof(ikey->uri.ua_uri));
 		memset(ikey->uri.pbx_uri, 0, sizeof(ikey->uri.pbx_uri));
@@ -390,10 +429,10 @@ static void *THR_sipc_main(void *prm)
 		}
 		
 		switch (cmd) {
-		case SIPC_CMD_SIP_SET_UA:
-			info("baresip create user agent\n");
+		case SIPC_CMD_SIP_REGISTER_UA:
+			info("baresip register user!\n");
 			/* 계정을 등록 */
-			__create_user(ikey->uri.ua_uri, ikey->uri.pbx_uri, ikey->uri.passwd);
+			__register_user(ikey->uri.ua_uri, ikey->uri.pbx_uri, ikey->uri.passwd);
 			break;
 		
 		case SIPC_CMD_SIP_START:

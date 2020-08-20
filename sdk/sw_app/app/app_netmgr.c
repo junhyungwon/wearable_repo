@@ -57,18 +57,6 @@ static app_netmgr_t *inetmgr=&netmgr_obj;
 -----------------------------------------------------------------------------*/
 static void *THR_netmgr_send_msg(void *prm);
 
-static char *__get_netdev_string(int type)
-{
-	switch (type) {
-	case NETMGR_DEV_TYPE_WIFI: return "wlan";
-	case NETMGR_DEV_TYPE_USB2ETHER: return "usb2ether";
-	case NETMGR_DEV_TYPE_RNDIS: return "rndis";
-	case NETMGR_DEV_TYPE_CRADLE: return "eth0";
-	}
-	
-	return "unknown";
-}
-
 static int send_msg(int cmd)
 {
 	to_netmgr_msg_t msg;
@@ -84,8 +72,10 @@ static int recv_msg(void)
 	to_netmgr_main_msg_t msg;
 	
 	//# blocking
-	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0)
+	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0) {
+		eprintf("invalid netmgr message (cmd = %x)\n", msg.cmd);
 		return -1;
+	}
 	
 	if (msg.cmd == NETMGR_CMD_DEV_DETECT) {
 		inetmgr->device = msg.device;
@@ -330,6 +320,8 @@ static void __netmgr_dev_link_status_handler(void)
 			app_leds_rf_ctrl(LED_RF_OFF);
 		} 
 	}
+	
+	//dprintf("current dev 0x%x link status %d\n", device, link);
 }
 
 static void __netmgr_dev_ip_status_handler(void)
@@ -345,7 +337,7 @@ static void __netmgr_dev_ip_status_handler(void)
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_RESPONSE_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_shm_response_info_t *)databuf;
 	
 	//# for debugging
 	dprintf("Get dhcp ip address is %s\n", info->ip_address);
@@ -473,12 +465,12 @@ static void *THR_netmgr_recv_msg(void *prm)
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
-			//dprintf("device type %s, state %s!\n", __get_netdev_string(inetmgr->device), inetmgr->insert?"insert":"remove");
+			//dprintf("device type %x, state %s!\n", inetmgr->device, inetmgr->insert?"insert":"remove");
 			__netmgr_hotplug_noty();
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
-			//dprintf("device type %x, link status %x!\n", __get_netdev_string(inetmgr->device), inetmgr->link_status);
+			//dprintf("device type %x, link status %x!\n", inetmgr->device, inetmgr->link_status);
 			__netmgr_dev_link_status_handler();
 			break;
 		
