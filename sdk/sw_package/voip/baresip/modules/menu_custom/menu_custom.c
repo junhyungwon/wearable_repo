@@ -54,7 +54,7 @@ typedef struct {
 -----------------------------------------------------------------------------*/
 static key_config_t key_obj_t;
 static key_config_t *ikey = &key_obj_t;
-static char ui_buf[1024];
+static char ui_buf[2048];
 
 //##############################################################################################
 static int __execlp(const char *arg)
@@ -390,7 +390,7 @@ static int __register_user(const char *call_num, const char *server_addr, const 
 	
 	//(void)net_check(net);
 	//# <sip:1006@192.168.0.5>;auth_pass=1234
-	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=udp>;auth_pass=%s", 
+	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=tcp>;auth_pass=%s", 
 					UA_PREFIX, call_num, server_addr, passwd);
 	
 	info("Creating UA for %s ....\n", ui_buf);

@@ -597,7 +597,7 @@ void netmgr_udhcpc_stop(const char *ifname)
 	    kill(pid, SIGKILL);
 	    waitpid(pid, NULL, 0);
 	} else
-		eprintf("couldn't stop udhcpc\n");
+		eprintf("couldn't stop udhcpc(%s)\n", path);
 }
 
 /*
