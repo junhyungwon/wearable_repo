@@ -47,8 +47,10 @@ endif
 
 all:
 	@echo === Target Platform [$(platform)] ===
-	$(CXX) -s $(CFLAGS) -O2 -Wall P2PTunnelServer.c -I./ -I../include/PPPP -I../../Includes -I../../include $(PPPLIB) -lpthread -lrt -o P2PTunnelServer_$(platform)
-	$(CXX) -s $(CFLAGS) -O2 -Wall P2PTunnelAgent.c -I./ -I../include/PPPP -I../../Includes -I../../include $(PPPLIB) -lpthread -lrt -o P2PTunnelAgent_$(platform)
+	$(CXX) -s $(CFLAGS) -O2 -Wall P2PTunnelServer.c -I./ -I../include/PPPP -I../../Includes -I../../include $(PPPLIB) -lpthread -lrt -o P2PTunnelServer
+	$(CXX) -s $(CFLAGS) -O2 -Wall P2PTunnelAgent.c -I./ -I../include/PPPP -I../../Includes -I../../include $(PPPLIB) -lpthread -lrt -o P2PTunnelAgent
+#	$(CXX) -s $(CFLAGS) -O2 -Wall P2PTunnelServer.c -I./ -I../include/PPPP -I../../Includes -I../../include $(PPPLIB) -lpthread -lrt -o P2PTunnelServer_$(platform)
+#	$(CXX) -s $(CFLAGS) -O2 -Wall P2PTunnelAgent.c -I./ -I../include/PPPP -I../../Includes -I../../include $(PPPLIB) -lpthread -lrt -o P2PTunnelAgent_$(platform)
 
 
 clean:
