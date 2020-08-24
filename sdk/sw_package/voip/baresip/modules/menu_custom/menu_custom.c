@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>	//# waitpid
 #include <re.h>
 #include <baresip.h>
 #include <unistd.h>
@@ -18,7 +19,6 @@
 
 #include "sipc_ipc_cmd_defs.h"
 #include "msg.h"
-#include "alsa_mixer.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -57,6 +57,106 @@ static key_config_t *ikey = &key_obj_t;
 static char ui_buf[1024];
 
 //##############################################################################################
+static int __execlp(const char *arg)
+{
+    int numArg, i, j, k;
+    int len, status;
+
+    char exArg[10][64];
+	pid_t chId;
+	pid_t pid_child;
+
+    if (arg[0] == '\0')
+        return 0;
+
+    j = 0; 	k = 0;
+	len = strlen(arg);
+
+    for (i = 0; i < len; i++) {
+        if (arg[i] == ' ') {
+		    exArg[j][k] = '\0';
+		    j ++; k = 0;
+		} else {
+		    exArg[j][k] = arg[i];
+		    k ++;
+		}
+	}
+
+    if (exArg[j][k - 1] == '\n') {
+	    exArg[j][k - 1] = '\0';
+	} else {
+	    exArg[j][k] = '\0';
+	}
+
+	numArg = j + 1;
+	if (numArg > 10) {
+	    warning("The no of arguments are greater than 10" \
+	    		"calling standard system function...\n");
+	    return (system(arg));
+	}
+
+    chId = fork();
+	if (chId == 0) {
+	    // child process
+	    switch (numArg) {
+	    case 1:
+	        execlp(exArg[0],exArg[0],NULL);
+	        break;
+	    case 2:
+	        execlp(exArg[0],exArg[0],exArg[1],NULL);
+	        break;
+	    case 3:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],NULL);
+	        break;
+	    case 4:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],NULL);
+	        break;
+	    case 5:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
+	               NULL);
+	        break;
+	    case 6:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
+	               exArg[5],NULL);
+	        break;
+	    case 7:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
+	               exArg[5],exArg[6],NULL);
+	        break;
+	    case 8:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
+	               exArg[5],exArg[6],exArg[7],NULL);
+	        break;
+	    case 9:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
+	               exArg[5],exArg[6],exArg[7],exArg[8],NULL);
+	        break;
+	    case 10:
+	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
+	               exArg[5],exArg[6],exArg[7],exArg[8],exArg[9],NULL);
+	        break;
+		}
+        warning("execlp failed...\n");
+	    return -1;
+	} else if (chId < 0) {
+		warning("Failed to create child process\n");
+		return -1;
+	} else {
+		/* parent process */
+		/* wait for the completion of the child process */
+		/* 3th option WNOHANG->non-block 0->block */
+		pid_child = waitpid(chId, &status, 0);
+		#if 0
+		if (WIFEXITED(status))
+			info("Chiled exited with the code %d\n", WEXITSTATUS(status));
+		else
+			warning("Child terminated abnormally..\n");
+		#endif	
+	}
+
+    return 0;
+}
+
 //---------------------------- UI CALL HELPER --------------------------------------------------
 static const char *translate_errorcode(uint16_t scode)
 {
@@ -113,6 +213,34 @@ static int call_reinvite(struct re_printf *pf, void *unused)
 	return call_modify(ua_call(uag_current()));
 }
 #endif
+
+static void check_registrations(void)
+{
+	static bool ual_ready = false;
+	struct le *le;
+	uint32_t n;
+
+	if (ual_ready)
+		return;
+
+	for (le = list_head(uag_list()); le; le = le->next) {
+		struct ua *ua = le->data;
+
+		if (!ua_isregistered(ua))
+			return;
+	}
+
+	n = list_count(uag_list());
+
+	/* We are ready */
+	ui_output(baresip_uis(),
+		  "\x1b[32mAll %u useragent%s registered successfully!"
+		  " (%u ms)\x1b[;m\n",
+		  n, n==1 ? "" : "s",
+		  (uint32_t)(tmr_jiffies() - ikey->start_ticks));
+
+	ual_ready = true;
+}
 
 /*
  * user agent에 의해서 이벤트가 발생되면 callback 함수로 호출됨.
@@ -206,6 +334,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		break;
 	
 	case UA_EVENT_REGISTER_OK:
+		check_registrations();
 		/* 최초 resister ok event가 전송됨 */ 
 		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
 		ikey->ste.call_dir = 0;
@@ -214,6 +343,11 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		break;
 	
 	case UA_EVENT_REGISTER_FAIL:
+		if (strcmp(prm, "Connection timed out") == 0) {
+			/* ETIMEOUT (네트워크에 문제가 있음 */
+		} else if (strcmp(prm, "Protocol not supported")== 0) {
+			/* 등록이 진행 중임 */
+		}
 		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
 		ikey->ste.call_dir = 0;
 		ikey->ste.call_reg = 0;
@@ -247,14 +381,16 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 //###################### Baresip Helper ########################################################
 static int __register_user(const char *call_num, const char *server_addr, const char *passwd)
 {
+	//struct network *net = baresip_network();
 	struct ua *ua = NULL;
 	int err = 0;
 	struct account *acc;
 	
 	memset(ui_buf, 0, sizeof(ui_buf));
 	
+	//(void)net_check(net);
 	//# <sip:1006@192.168.0.5>;auth_pass=1234
-	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s>;auth_pass=%s", 
+	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=udp>;auth_pass=%s", 
 					UA_PREFIX, call_num, server_addr, passwd);
 	
 	info("Creating UA for %s ....\n", ui_buf);
@@ -272,7 +408,8 @@ static int __register_user(const char *call_num, const char *server_addr, const 
 		return ENOENT;
 	}
 		
-	if (account_regint(ua_account(ua))) {
+	if (account_regint(ua_account(ua))) 
+	{
 		int e;
 		
 		e = ua_register(ua);
@@ -499,12 +636,13 @@ static int module_init(void)
 	if (err)
 		return err;
 	
-	/* alsa mixer config */
-	amixer_set_input_path();
-	amixer_set_output_path();
-	
-	amixer_set_volume(SND_VOLUME_C, 80);
-	amixer_set_volume(SND_VOLUME_P, 90);
+	/* alsa volume */
+//	amixer cset numid=17 50% # DAC_L1 to HPLOUT Volume Control
+//	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
+//  amixer cset numid=31 80%	
+//	__execlp("/usr/bin/amixer cset numid=17 50%");
+	__execlp("/usr/bin/amixer cset numid=1 80% > /dev/null");
+	__execlp("/usr/bin/amixer cset numid=31 80% > /dev/null");
 		
 	return 0;
 }

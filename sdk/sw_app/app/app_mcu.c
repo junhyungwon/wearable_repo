@@ -238,12 +238,19 @@ static void *THR_micom(void *prm)
 					    app_set_write();
 					    mcu_pwr_off(OFF_NORMAL);
 					    exit = 1;
-				    } else { 
-						/* Short KEY */
-						if (!app_cfg->ste.b.ftp_run)
-						{
-							app_voip_event_noty();
-						}
+				    } else {
+						//# record start/stop
+						if (!app_cfg->ste.b.ftp_run) 
+						{     
+							if(app_rec_state()) 
+							{
+								app_rec_stop(1);
+							} 
+							else  
+							{
+								app_rec_start();
+							}
+						} 
                 	}
 				}
 

@@ -123,7 +123,6 @@ static void app_main(void)
 	app_thr_obj *tObj = &app_cfg->mObj;
 	int exit = 0,cmd;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	/* mapp와 message를 송/수신..*/
@@ -150,8 +149,6 @@ static void app_main(void)
 	netmgr_event_hub_exit();
 	
 	tObj->active = 0;
-	
-	aprintf("exit...\n");
 }
 
 /*****************************************************************************

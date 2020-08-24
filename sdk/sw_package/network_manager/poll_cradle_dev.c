@@ -59,7 +59,6 @@ static void *THR_cradle_poll(void *prm)
 	int exit = 0, cmd;
 	int ret;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -90,7 +89,6 @@ static void *THR_cradle_poll(void *prm)
 	} 
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }

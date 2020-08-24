@@ -142,8 +142,7 @@ static int _check_disk_free_space(void)
 	unsigned long used = ifile->disk_used;
 	int ret = 0;
 	
-//	FILE_DBG("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", 
-//			(sum - used), used, MIN_THRESHOLD_SIZE);
+	//dprintf("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", (sum - used), used, MIN_THRESHOLD_SIZE);
 	if ((used + MIN_THRESHOLD_SIZE) >= sum) 
 		ret = -1; /* disk full state */
 	
@@ -340,7 +339,7 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
 	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
 
-	FILE_DBG(" Add List name: %s, size %u(KB)\n", path, iSize);
+//	FILE_DBG(" Add List name: %s, size %u(KB)\n", path, iSize);
 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add_tail(&ptr->queue, head);
@@ -755,7 +754,7 @@ int app_file_add_list(const char *pathname, int size)
 	
 	OSA_mutexLock(&ifile->mutex_file);	
 	add_node_tail(pathname, &ilist, (unsigned int)size);
-	FILE_DBG("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
+//	FILE_DBG("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
 	OSA_mutexUnlock(&ifile->mutex_file);
 
 	return SOK;

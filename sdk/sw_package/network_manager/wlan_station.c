@@ -480,7 +480,6 @@ static void *THR_wlan_cli_main(void *prm)
 	int exit = 0;
 	int quit = 0;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -607,7 +606,6 @@ static void *THR_wlan_cli_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }
@@ -625,8 +623,6 @@ int netmgr_wlan_cli_init(void)
     	eprintf("create netmgr wlan client thread\n");
 		return EFAIL;
     }
-	
-	aprintf("done!...\n");
 	
 	return 0;
 }
@@ -646,8 +642,6 @@ int netmgr_wlan_cli_exit(void)
 		delay_msecs(20);
 
     thread_delete(tObj);
-	
-    aprintf("... done!\n");
 	
 	return 0;
 }
@@ -697,8 +691,6 @@ int netmgr_wlan_cli_start(void)
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
-	aprintf("... done!\n");
-	
 	return 0;
 }
 
@@ -713,8 +705,6 @@ int netmgr_wlan_cli_stop(void)
 			
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_STOP, 0, 0);
-	
-	aprintf("... done!\n");
 	
 	return 0;
 }

@@ -71,7 +71,6 @@ static void *THR_usb2eth_main(void *prm)
 	int exit = 0, cmd;
 	int quit = 0;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -160,7 +159,6 @@ static void *THR_usb2eth_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }
@@ -178,8 +176,6 @@ int netmgr_usb2eth_init(void)
     	eprintf("create netmgr usb2eth thread\n");
 		return EFAIL;
     }
-	
-	aprintf("done!...\n");
 	
 	return 0;
 }
@@ -199,8 +195,6 @@ int netmgr_usb2eth_exit(void)
 		delay_msecs(20);
 
     thread_delete(tObj);
-	
-    aprintf("... done!\n");
 	
 	return 0;
 }
@@ -239,8 +233,6 @@ int netmgr_usb2eth_event_start(void)
 	netmgr_net_link_up(NETMGR_USB2ETH_DEVNAME);
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
-	aprintf("... done!\n");
-	
 	return 0;
 }
 
@@ -254,8 +246,6 @@ int netmgr_usb2eth_event_stop(void)
 	app_thr_obj *tObj = &iusb2eth->uObj;
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
-	
-	aprintf("... done!\n");
 	
 	return 0;
 }

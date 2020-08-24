@@ -220,7 +220,7 @@ static void *THR_dev(void *prm)
         {
         	//# check mmc card
 			mmc = dev_ste_mmc();
-			if(mmc != app_cfg->ste.b.mmc) {
+			if (mmc != app_cfg->ste.b.mmc) {
 				app_cfg->ste.b.mmc = mmc;
 				dprintf("SD Card %s\n", mmc?"insert":"remove");
 				aprintf("done! will restart\n");
@@ -231,20 +231,15 @@ static void *THR_dev(void *prm)
 			}
 
 		    rkey = chk_rec_key();
-		    if(rkey == KEY_SHORT) 
-            {			//# record start/stop
-                if(!app_cfg->ste.b.ftp_run) 
-                {     
-			        if(app_rec_state()) 
-                    {
-				        app_rec_stop(1);
-			        } 
-                    else  
-                    {
-				        app_rec_start();
-			        }
-                }
-		    } else if(rkey == KEY_LONG) 
+		    if (rkey == KEY_SHORT) 
+            {		
+				/* Short KEY */
+				if (!app_cfg->ste.b.ftp_run)
+				{
+					app_voip_event_noty();
+				}	
+		    } 
+			else if(rkey == KEY_LONG) 
 			{	//# sw update
                 if(!app_cfg->ste.b.ftp_run)
 				{
@@ -260,7 +255,6 @@ static void *THR_dev(void *prm)
                 }     
 		    }
         }
-
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
