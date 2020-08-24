@@ -54,8 +54,6 @@
 #   USE_X11           X11 video output
 #
 
-# added by rupy
-BASIC_MODULES=no
 # Default is enabled
 MOD_AUTODETECT := 1
 
@@ -264,30 +262,30 @@ endif
 # ------------------------------------------------------------------------- #
 MODULES   += $(EXTRA_MODULES)
 ifneq ($(BASIC_MODULES),no)
-MODULES   += account
-MODULES   += auloop
-MODULES   += b2bua
-MODULES   += contact
-MODULES   += ctrl_tcp
-MODULES   += debug_cmd
-MODULES   += ebuacip
-MODULES   += echo
-MODULES   += fakevideo
-MODULES   += httpd
-MODULES   += ice
-MODULES   += menu
-MODULES   += mwi
-MODULES   += natpmp
-MODULES   += presence
-MODULES   += selfview
-MODULES   += srtp
+#MODULES   += account
+#MODULES   += auloop
+#MODULES   += b2bua
+#MODULES   += contact
+#MODULES   += ctrl_tcp
+#MODULES   += debug_cmd
+#MODULES   += ebuacip
+#MODULES   += echo
+#MODULES   += fakevideo
+#MODULES   += httpd
+#MODULES   += ice
+#MODULES   += menu
+#MODULES   += mwi
+#MODULES   += natpmp
+#MODULES   += presence
+#MODULES   += selfview
+#MODULES   += srtp
 MODULES   += stun
 MODULES   += turn
-MODULES   += uuid
-MODULES   += vidbridge
-MODULES   += vidinfo
-MODULES   += vidloop
-MODULES   += vumeter
+#MODULES   += uuid
+#MODULES   += vidbridge
+#MODULES   += vidinfo
+#MODULES   += vidloop
+#MODULES   += vumeter
 
 #ifneq ($(HAVE_PTHREAD),)
 #MODULES   += aubridge aufile
@@ -310,174 +308,174 @@ USE_DTLS_SRTP =
 USE_SYSLOG    =
 USE_CUSTOM_MENU := 1
 
-ifneq ($(USE_AAC),)
-MODULES   += aac
-endif
+#ifneq ($(USE_AAC),)
+#MODULES   += aac
+#endif
 ifneq ($(USE_ALSA),)
 MODULES   += alsa
 endif
-ifneq ($(USE_AMR),)
-MODULES   += amr
-endif
-ifneq ($(USE_APTX),)
-MODULES   += aptx
-endif
-ifneq ($(USE_AUDIOUNIT),)
-MODULES   += audiounit
-endif
-ifneq ($(USE_AVCAPTURE),)
-MODULES   += avcapture
-endif
-ifneq ($(USE_AVCODEC),)
-MODULES   += avcodec
-ifneq ($(USE_AVFORMAT),)
-MODULES   += avformat
-endif
-endif
-ifneq ($(USE_CAIRO),)
-MODULES   += cairo
-ifneq ($(USE_MPG123),)
-MODULES   += rst
-endif
-endif
-ifneq ($(USE_CODEC2),)
-MODULES   += codec2
-endif
-ifneq ($(USE_CONS),)
-MODULES   += cons
-endif
-ifneq ($(USE_COREAUDIO),)
-MODULES   += coreaudio
-endif
-ifneq ($(USE_DTLS_SRTP),)
-MODULES   += dtls_srtp
-endif
-ifneq ($(USE_QTCAPTURE),)
-MODULES   += qtcapture
-CFLAGS    += -DQTCAPTURE_RUNLOOP
-endif
-ifneq ($(USE_ECHO),)
-MODULES   += echo
-endif
-ifneq ($(USE_EVDEV),)
-MODULES   += evdev
-endif
+#ifneq ($(USE_AMR),)
+#MODULES   += amr
+#endif
+#ifneq ($(USE_APTX),)
+#MODULES   += aptx
+#endif
+#ifneq ($(USE_AUDIOUNIT),)
+#MODULES   += audiounit
+#endif
+#ifneq ($(USE_AVCAPTURE),)
+#MODULES   += avcapture
+#endif
+#ifneq ($(USE_AVCODEC),)
+#MODULES   += avcodec
+#ifneq ($(USE_AVFORMAT),)
+#MODULES   += avformat
+#endif
+#endif
+#ifneq ($(USE_CAIRO),)
+#MODULES   += cairo
+#ifneq ($(USE_MPG123),)
+#MODULES   += rst
+#endif
+#endif
+#ifneq ($(USE_CODEC2),)
+#MODULES   += codec2
+#endif
+#ifneq ($(USE_CONS),)
+#MODULES   += cons
+#endif
+#ifneq ($(USE_COREAUDIO),)
+#MODULES   += coreaudio
+#endif
+#ifneq ($(USE_DTLS_SRTP),)
+#MODULES   += dtls_srtp
+#endif
+#ifneq ($(USE_QTCAPTURE),)
+#MODULES   += qtcapture
+#CFLAGS    += -DQTCAPTURE_RUNLOOP
+#endif
+#ifneq ($(USE_ECHO),)
+#MODULES   += echo
+#endif
+#ifneq ($(USE_EVDEV),)
+#MODULES   += evdev
+#endif
 ifneq ($(USE_G711),)
 MODULES   += g711
 endif
-ifneq ($(USE_G722),)
-MODULES   += g722
-endif
-ifneq ($(USE_G722_1),)
-MODULES   += g7221
-endif
-ifneq ($(USE_G726),)
-MODULES   += g726
-endif
-ifneq ($(USE_GSM),)
-MODULES   += gsm
-endif
-ifneq ($(USE_GST),)
-MODULES   += gst
-endif
-ifneq ($(USE_GST_VIDEO),)
-MODULES   += gst_video
-endif
-ifneq ($(USE_GTK),)
-MODULES   += gtk
-endif
-ifneq ($(USE_ILBC),)
-MODULES   += ilbc
-endif
-ifneq ($(USE_ISAC),)
-MODULES   += isac
-endif
-ifneq ($(USE_JACK),)
-MODULES   += jack
-endif
-ifneq ($(USE_L16),)
-MODULES   += l16
-endif
-ifneq ($(USE_OPUS_MS),)
-MODULES   += opus_multistream
-endif
-ifneq ($(USE_MPA),)
-MODULES   += mpa
-endif
-ifneq ($(USE_MQTT),)
-MODULES   += mqtt
-endif
-ifneq ($(USE_OPENGL),)
-MODULES   += opengl
-endif
-ifneq ($(USE_OPENGLES),)
-MODULES   += opengles
-endif
-ifneq ($(USE_OPUS),)
-MODULES   += opus
-endif
-ifneq ($(USE_OSS),)
-MODULES   += oss
-endif
-ifneq ($(USE_PLC),)
-MODULES   += plc
-endif
-ifneq ($(USE_PORTAUDIO),)
-MODULES   += portaudio
-endif
-ifneq ($(USE_PULSE),)
-MODULES   += pulse
-endif
-ifneq ($(USE_SDL),)
-MODULES   += sdl
-endif
-ifneq ($(USE_SNDFILE),)
-MODULES   += sndfile
-endif
-ifneq ($(USE_SPEEX_PP),)
-MODULES   += speex_pp
-endif
-ifneq ($(USE_STDIO),)
-MODULES   += stdio
-endif
-ifneq ($(USE_SNDIO),)
-MODULES   += sndio
-endif
-ifneq ($(USE_SYSLOG),)
-MODULES   += syslog
-endif
-ifneq ($(USE_V4L2),)
-MODULES   += v4l2 v4l2_codec
-endif
-ifneq ($(USE_OMX_RPI),)
-MODULES   += omx
-else
-ifneq ($(USE_OMX_BELLAGIO),)
-MODULES   += omx
-endif
-endif
-ifneq ($(USE_VPX),)
-MODULES   += vp8
-MODULES   += $(shell pkg-config 'vpx >= 1.3.0' && echo "vp9")
-endif
-ifneq ($(USE_WINWAVE),)
-MODULES   += winwave
-endif
-ifneq ($(USE_X11),)
-MODULES   += x11 x11grab
-endif
-ifneq ($(USE_ZRTP),)
-MODULES   += zrtp
-endif
-ifneq ($(USE_GZRTP),)
-MODULES   += gzrtp
-endif
-ifneq ($(USE_DSHOW),)
-MODULES   += dshow
-endif
-ifneq ($(USE_RTCPSUMMARY),)
-MODULES   += rtcpsummary
-endif
+#ifneq ($(USE_G722),)
+#MODULES   += g722
+#endif
+#ifneq ($(USE_G722_1),)
+#MODULES   += g7221
+#endif
+#ifneq ($(USE_G726),)
+#MODULES   += g726
+#endif
+#ifneq ($(USE_GSM),)
+#MODULES   += gsm
+#endif
+#ifneq ($(USE_GST),)
+#MODULES   += gst
+#endif
+#ifneq ($(USE_GST_VIDEO),)
+#MODULES   += gst_video
+#endif
+#ifneq ($(USE_GTK),)
+#MODULES   += gtk
+#endif
+#ifneq ($(USE_ILBC),)
+#MODULES   += ilbc
+#endif
+#ifneq ($(USE_ISAC),)
+#MODULES   += isac
+#endif
+#ifneq ($(USE_JACK),)
+#MODULES   += jack
+#endif
+#ifneq ($(USE_L16),)
+#MODULES   += l16
+#endif
+#ifneq ($(USE_OPUS_MS),)
+#MODULES   += opus_multistream
+#endif
+#ifneq ($(USE_MPA),)
+#MODULES   += mpa
+#endif
+#ifneq ($(USE_MQTT),)
+#MODULES   += mqtt
+#endif
+#ifneq ($(USE_OPENGL),)
+#MODULES   += opengl
+#endif
+#ifneq ($(USE_OPENGLES),)
+#MODULES   += opengles
+#endif
+#ifneq ($(USE_OPUS),)
+#MODULES   += opus
+#endif
+#ifneq ($(USE_OSS),)
+#MODULES   += oss
+#endif
+#ifneq ($(USE_PLC),)
+#MODULES   += plc
+#endif
+#ifneq ($(USE_PORTAUDIO),)
+#MODULES   += portaudio
+#endif
+#ifneq ($(USE_PULSE),)
+#MODULES   += pulse
+#endif
+#ifneq ($(USE_SDL),)
+#MODULES   += sdl
+#endif
+#ifneq ($(USE_SNDFILE),)
+#MODULES   += sndfile
+#endif
+#ifneq ($(USE_SPEEX_PP),)
+#MODULES   += speex_pp
+#endif
+#ifneq ($(USE_STDIO),)
+#MODULES   += stdio
+#endif
+#ifneq ($(USE_SNDIO),)
+#MODULES   += sndio
+#endif
+#ifneq ($(USE_SYSLOG),)
+#MODULES   += syslog
+#endif
+#ifneq ($(USE_V4L2),)
+#MODULES   += v4l2 v4l2_codec
+#endif
+#ifneq ($(USE_OMX_RPI),)
+#MODULES   += omx
+#else
+#ifneq ($(USE_OMX_BELLAGIO),)
+#MODULES   += omx
+#endif
+#endif
+#ifneq ($(USE_VPX),)
+#MODULES   += vp8
+#MODULES   += $(shell pkg-config 'vpx >= 1.3.0' && echo "vp9")
+#endif
+#ifneq ($(USE_WINWAVE),)
+#MODULES   += winwave
+#endif
+#ifneq ($(USE_X11),)
+#MODULES   += x11 x11grab
+#endif
+#ifneq ($(USE_ZRTP),)
+#MODULES   += zrtp
+#endif
+#ifneq ($(USE_GZRTP),)
+#MODULES   += gzrtp
+#endif
+#ifneq ($(USE_DSHOW),)
+#MODULES   += dshow
+#endif
+#ifneq ($(USE_RTCPSUMMARY),)
+#MODULES   += rtcpsummary
+#endif
 #added by rupy
 ifneq ($(USE_CUSTOM_MENU),)
 MODULES   += menu_custom
