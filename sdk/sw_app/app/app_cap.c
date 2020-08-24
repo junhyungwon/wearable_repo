@@ -76,15 +76,12 @@ void video_status(void)
     char msg[128] = {0,};
 
 	/* current maximum video count */
-	count = Vcap_get_video_status(MAX_CH_NUM_ONEEYE, &vstatus[0], &temp);
-
-    for (i = 0; i < count; i++)
-    {
-		/* cam led on/off */
-		app_leds_cam_ctrl(i, vstatus[i]);
-		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
-        vcount += vstatus[i] ;
-	}
+	Vcap_get_video_status(MAX_CH_NUM_ONEEYE, &vstatus[0], &temp);
+	
+	/* Fixed */
+	app_leds_cam_ctrl(vstatus[0]);
+	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
+    vcount += vstatus[0] ;
 	app_cfg->vid_count = vcount ;
 
     sprintf(msg, " Camera Detected Count: %d", count );

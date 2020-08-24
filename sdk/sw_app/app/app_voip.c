@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <app_leds.h>
 
 #include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
@@ -160,6 +161,7 @@ static void __call_register_handler(void)
 
 static void __call_unregister_handler(void)
 {
+	/* TODO */
 }
 
 static void __call_event_handler(void)
@@ -207,6 +209,20 @@ static void __call_event_handler(void)
 	
 	default:
 		break;
+	}
+}
+
+static void __call_status_handler(void)
+{
+	int is_reg = ivoip->st.call_reg;
+	int errcode = ivoip->st.call_err;
+	
+	/* BLINK 상태 확인이 필요함 */
+	if (is_reg) {
+		/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
+		app_leds_voip_ctrl(DEV_LED_ON);
+	} else {
+		app_leds_voip_ctrl(DEV_LED_OFF);
 	}
 }
 
@@ -273,6 +289,7 @@ static void *THR_voip_recv_msg(void *prm)
 			break;
 		
 		case SIPC_CMD_SIP_GET_STATUS:
+			__call_status_handler();
 			break;
 			
 		case SIPC_CMD_SIP_EXIT:

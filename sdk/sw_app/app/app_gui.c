@@ -269,7 +269,7 @@ static void *THR_gui(void *prm)
 		} else {
 			/* voip unregister */
 			if ((app_cfg->ste.b.cradle_eth_run == 0) && (app_cfg->ste.b.usbnet_run == 0)) {
-				/* ³×Æ®¿öÅ© ¿¬°áÀÌ ÇØÁ¦µÇ¸é Àçµî·ÏÀ» ÇØ¾ß ÇÔ */
+				/* ë„¤íŠ¸ì›Œí¬ ì—°ê²°ì´ í•´ì œë˜ë©´ ìž¬ë“±ë¡ì„ í•´ì•¼ í•¨ */
 				if (app_cfg->ste.b.voip == 1)
 					app_cfg->ste.b.voip = 0;
 			}

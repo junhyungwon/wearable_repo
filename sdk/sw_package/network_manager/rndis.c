@@ -52,6 +52,7 @@ typedef struct {
 	
 	int stage;
 	int iftype;
+	int first;
 	int rndis_timer;
 	
 	char ip[16];		//# ip address
@@ -165,6 +166,7 @@ static void *THR_rndis_main(void *prm)
 				/* TODO */
 				res = netmgr_is_netdev_active(RNDIS_DEVNAME(irndis->iftype));
 				if (!res) {
+					irndis->first = 0;
 					irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
 				}
@@ -196,9 +198,13 @@ static void *THR_rndis_main(void *prm)
 				break;
 				
 			case __STAGE_RNDIS_WAIT_ACTIVE:
-				irndis->iftype = __wait_for_active();
-				if (irndis->iftype > 0) 
-				{
+				res = __wait_for_active();
+				if (irndis->iftype > 0) {
+					if (!irndis->first) {
+						irndis->iftype = res;
+						irndis->first = 1;
+					}
+					dprintf("active rndis %d(%s)\n", irndis->iftype, RNDIS_DEVNAME(irndis->iftype));
 					netmgr_set_ip_dhcp(RNDIS_DEVNAME(irndis->iftype));
 					irndis->stage = __STAGE_RNDIS_WAIT_DHCP;
 					irndis->rndis_timer = 0;
@@ -272,6 +278,8 @@ int netmgr_rndis_event_start(void)
 	
 	irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
 	irndis->rndis_timer = 0;
+	irndis->first = 0;
+	
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
 	return 0;

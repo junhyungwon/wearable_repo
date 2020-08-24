@@ -51,7 +51,6 @@ extern "C" {
 #define LED_DISK_USAGE_ON_2			1	/* turn on two sd leds */
 #define LED_DISK_USAGE_ON_3			2	/* turn on three sd leds */
 
-
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -62,7 +61,7 @@ extern "C" {
 int app_leds_init(void);
 int app_leds_rf_ctrl(int ste);
 int app_leds_gps_ctrl(int ste);
-int app_leds_cam_ctrl(int index, int ste);
+int app_leds_cam_ctrl(int ste);
 int app_leds_mmc_ctrl(int ste);
 int app_leds_mmc_capacity_ctrl(int step);
 int app_leds_rec_ctrl(int ste);
@@ -72,6 +71,7 @@ int app_leds_backup_state_ctrl(int ste);
 int app_leds_sys_normal_ctrl(void);
 int app_leds_sys_error_ctrl(void);
 int app_leds_eth_status_ctrl(int ste);
+int app_leds_voip_ctrl(int ste);
 
 #ifdef __cplusplus
 }

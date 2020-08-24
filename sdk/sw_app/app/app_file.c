@@ -544,17 +544,6 @@ static void _check_overwite_full_led(int file_state)
 }
 
 /*****************************************************************************
- * @brief	 check the amount of disk usage.
- * @section  DESC Description
- *	 - desc : 
- *****************************************************************************/
-static void _set_disk_full_state(app_file_t *prm)
-{
-	if (prm->file_state == FILE_STATE_NORMAL)
-		prm->file_state = (app_set->rec_info.overwrite)?FILE_STATE_OVERWRITE:FILE_STATE_FULL;
-}
-
-/*****************************************************************************
 * @brief    file manangement thread function
 * @section  - check rec_dir size & delete old files
             - do every 1 min
@@ -595,26 +584,28 @@ static void *THR_file_mng(void *prm)
 				else							  capacity_full = 0;
 				
 				if (!app_set->rec_info.overwrite) {
-					/* overwrite ??? ?? ?? */
+					/* overwrite ??? ?? ???? ?? ?? */
 					if (capacity_full) {
-						/* ?? ??? ?? ? */
 						app_rec_stop(0); /* buzzer off */
+						ifile->file_state = FILE_STATE_FULL;
+					} else {
+						ifile->file_state = FILE_STATE_NORMAL;
 					}
-					
-					ifile->file_state = FILE_STATE_NORMAL;
 				} else {
-					/* overwrite ?? ? ?? */
-					_set_disk_full_state(ifile);
-					
-					OSA_mutexLock(&ifile->mutex_file);
-					r = _delete_files(MIN_THRESHOLD_SIZE);
-					OSA_mutexUnlock(&ifile->mutex_file);
-					
-					if (r == EFAIL) {
-						eprintf("Delete file Error!!\n");
-						app_cfg->ste.b.mmc_err = 1;
-						app_rec_stop(ON);
-						continue;
+					/* overwrite ?? ? ? */
+					if (capacity_full) {
+						ifile->file_state = FILE_STATE_OVERWRITE;
+						OSA_mutexLock(&ifile->mutex_file);
+						r = _delete_files(MIN_THRESHOLD_SIZE);
+						OSA_mutexUnlock(&ifile->mutex_file);
+						if (r == EFAIL) {
+							eprintf("Delete file Error!!\n");
+							app_cfg->ste.b.mmc_err = 1;
+							app_rec_stop(ON);
+							continue;
+						}
+					} else {
+						ifile->file_state = FILE_STATE_NORMAL;
 					}
 				}
 				
@@ -653,7 +644,7 @@ int app_file_init(void)
 
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir(ifile->rec_root);
-	ret = _check_threshold_size(ifile);
+	ret = _check_threshold_size(ifile); //# Get Disk MAX Size.
     if (ret < 0) {
 		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
 		app_log_write(MSG_LOG_WRITE, msg);
