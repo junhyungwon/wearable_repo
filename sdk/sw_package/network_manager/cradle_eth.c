@@ -71,7 +71,6 @@ static void *THR_cradle_eth_main(void *prm)
 	int exit = 0, cmd;
 	int quit = 0;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -144,7 +143,6 @@ static void *THR_cradle_eth_main(void *prm)
 						/* static ip alloc */
 						netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, 
 									icradle->mask, icradle->gw);
-						dprintf("------------------cradle eth noty\n");			
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);			
 						icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
 					} else {
@@ -163,7 +161,6 @@ static void *THR_cradle_eth_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }

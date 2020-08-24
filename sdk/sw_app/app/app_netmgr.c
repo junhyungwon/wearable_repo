@@ -340,9 +340,9 @@ static void __netmgr_dev_ip_status_handler(void)
 	info = (netmgr_shm_response_info_t *)databuf;
 	
 	//# for debugging
-	dprintf("Get dhcp ip address is %s\n", info->ip_address);
-	dprintf("Get dhcp mask address is %s\n", info->mask_address);
-	dprintf("Get dhcp gateway address is %s\n", info->gw_address);
+//	dprintf("Get dhcp ip address is %s\n", info->ip_address);
+//	dprintf("Get dhcp mask address is %s\n", info->mask_address);
+//	dprintf("Get dhcp gateway address is %s\n", info->gw_address);
 	
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
 	if (device == NETMGR_DEV_TYPE_CRADLE) {
@@ -475,7 +475,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
-			dprintf("received netmgr device ip status!\n");
+			//dprintf("received netmgr device ip status!\n");
 			__netmgr_dev_ip_status_handler();
 			break;
 			

@@ -28,7 +28,8 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define SIPC_BIN_STR		"/opt/fit/bin/baresip.out"
-#define SIPC_CMD_STR		"/opt/fit/bin/baresip.out &"
+/* IPV4 Only */
+#define SIPC_CMD_STR		"/opt/fit/bin/baresip.out -4 &" 
 
 #define SIP_ACCOUNT_PATH	"/root/.baresip"
 

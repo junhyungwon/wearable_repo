@@ -84,7 +84,6 @@ static void *THR_usbnet_poll(void *prm)
 	int exit = 0, cmd;
 	int ret;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -130,7 +129,6 @@ static void *THR_usbnet_poll(void *prm)
 	} 
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }
@@ -149,8 +147,6 @@ int netmgr_poll_usbnet_init(void)
     	eprintf("create netmgr usb device poll thread\n");
 		return EFAIL;
     }
-	
-	aprintf("done!...\n");
 	
 	return 0;
 }
@@ -171,8 +167,6 @@ int netmgr_poll_usbnet_exit(void)
 		delay_msecs(20);
 
     thread_delete(tObj);
-	
-    aprintf("... done!\n");
 	
 	return 0;
 }

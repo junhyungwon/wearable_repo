@@ -268,6 +268,11 @@ static void *THR_gui(void *prm)
 			}
 		} else {
 			/* voip unregister */
+			if ((app_cfg->ste.b.cradle_eth_run == 0) && (app_cfg->ste.b.usbnet_run == 0)) {
+				/* 네트워크 연결이 해제되면 재등록을 해야 함 */
+				if (app_cfg->ste.b.voip == 1)
+					app_cfg->ste.b.voip = 0;
+			}
 		}
 		
 		tObj->cmd = 0;

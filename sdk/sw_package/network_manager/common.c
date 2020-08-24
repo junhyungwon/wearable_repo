@@ -601,7 +601,7 @@ void netmgr_udhcpc_stop(const char *ifname)
 }
 
 /*
- * ÀÌ ÇÔ¼ö´Â ifconfig ethX upÀ» ÇØ¾ß °ªÀ» ÀĞÀ» ¼ö ÀÖ´Ù.
+ * ì´ í•¨ìˆ˜ëŠ” ifconfig ethX upì„ í•´ì•¼ ê°’ì„ ì½ì„ ìˆ˜ ìˆë‹¤.
  */
 int netmgr_is_netdev_active(const char *ifname)
 {
@@ -635,7 +635,7 @@ int netmgr_set_shm_ip_info(int dev, const char *ip, const char *mask, const char
 	netmgr_shm_response_info_t *info;
 	char *databuf;
 	
-	//# Memory OffsetÀ» ´õÇÒ ¶§ ¹ÙÀÌÆ® ´ÜÀ§·Î ´õÇÏ±â À§ÇØ¼­ ÀÓ½Ã Æ÷ÀÎÅÍ »ç¿ë.
+	//# Memory Offsetì„ ë”í•  ë•Œ ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ ë”í•˜ê¸° ìœ„í•´ì„œ ì„ì‹œ í¬ì¸í„° ì‚¬ìš©.
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_RESPONSE_INFO_OFFSET);
 	info = (netmgr_shm_response_info_t *)databuf;
 	
@@ -961,7 +961,7 @@ int netmgr_wlan_load_kermod(int vid, int pid)
 	char path[128] = {0,};
 	char name[128] = {0,};
 	
-	/* kernel module ÆÄÀÏ¸íÀ» È®ÀÎ */
+	/* kernel module íŒŒì¼ëª…ì„ í™•ì¸ */
 	if ((vid == RTL_8188E_VID) && (pid == RTL_8188E_PID)) {
 		strcpy(path, RTL_8188E_PATH);
 		strcpy(name, RTL_8188E_NAME);
@@ -980,7 +980,7 @@ int netmgr_wlan_load_kermod(int vid, int pid)
 		return -1;
 	}
 				
-	/* ÀÌ¹Ì ¸ğµâÀÌ loadingµÈ »óÅÂÀÌ¸é insmod ¼öÇà ¾È ÇÔ */
+	/* ì´ë¯¸ ëª¨ë“ˆì´ loadingëœ ìƒíƒœì´ë©´ insmod ìˆ˜í–‰ ì•ˆ í•¨ */
 	if (__wlan_get_module(name) == 0) {
 		__wlan_insmod(path);
 	} else {

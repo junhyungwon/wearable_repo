@@ -230,7 +230,6 @@ static void *THR_wlan_hostapd_main(void *prm)
 	int exit = 0;
 	int quit = 0;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -294,7 +293,6 @@ static void *THR_wlan_hostapd_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }
@@ -312,8 +310,6 @@ int netmgr_wlan_hostapd_init(void)
     	eprintf("create netmgr wlan hostap thread\n");
 		return EFAIL;
     }
-	
-	aprintf("done!...\n");
 	
 	return 0;
 }
@@ -333,8 +329,6 @@ int netmgr_wlan_hostapd_exit(void)
 		delay_msecs(20);
 
     thread_delete(tObj);
-	
-    aprintf("... done!\n");
 	
 	return 0;
 }

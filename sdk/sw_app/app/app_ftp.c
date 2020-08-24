@@ -284,7 +284,6 @@ static int createDataSock(char * host, int port)
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
-
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
@@ -372,7 +371,6 @@ static int ftp_send_file(int sd, char *filename)
     char tmpHost[100];
     int tmpPort, data_sock;
     char buf[MSIZE];
-
 
 	if(ftpNewCmd(sd, buf, "TYPE", "I") != 0)
 		return -1 ;
@@ -559,7 +557,6 @@ static int ftp_close(int sd)
 	return 0;
 }
 
-
 static void ftp_send(void)
 {
 	int i=0;
@@ -702,7 +699,6 @@ static void ftp_send(void)
 
 }
 
-
 int app_get_ftp_state(void)
 {
 	return iftp->ftp_state;
@@ -712,7 +708,6 @@ void app_ftp_state_reset(void)
 {
 	iftp->ftp_state = FTP_STATE_NONE;
 }
-
 
 /*****************************************************************************
 * @brief    ftp main function

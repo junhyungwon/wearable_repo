@@ -53,6 +53,16 @@ typedef struct {
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+static char __mode_chg_nav_bei[] = {
+	0xB5, 0x62, 0x06, 0x3E, 0x3C, 0x00, 0x00, 0x00, 0x20, 0x07,  //# 10
+	0x00, 0x08, 0x10, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x01,  //# 20
+	0x03, 0x00, 0x01, 0x00, 0x01, 0x01, 0x02, 0x04, 0x08, 0x00,  //# 30
+	0x00, 0x00, 0x01, 0x01, 0x03, 0x08, 0x10, 0x00, 0x01, 0x00,  //# 40
+	0x01, 0x01, 0x04, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x01,  //# 50
+	0x05, 0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x01, 0x06, 0x08,  //# 60
+	0x0E, 0x00, 0x00, 0x00, 0x01, 0x01, 0x2F, 0xA1		         //# 68
+};
+
 static app_gps_proc_t t_proc_obj;
 static app_gps_proc_t *iproc=&t_proc_obj;
 
@@ -165,7 +175,7 @@ static void *THR_gps_poll(void *prm)
 	app_thr_obj *tObj = &iproc->mObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+//	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while(!exit)
@@ -233,7 +243,7 @@ static void *THR_gps_poll(void *prm)
 	gps_dev_exit(app_cfg->gps_fd);
 	tObj->active = 0;
 
-	aprintf("exit...\n");
+//	aprintf("exit...\n");
 		
 	return NULL;
 }
@@ -264,7 +274,7 @@ int app_gps_proc_init(void)
 		return -1;
 	}
 	
-	aprintf("... done!\n");
+	//aprintf("... done!\n");
 	
 	return 0;
 }
@@ -302,8 +312,6 @@ int app_gps_proc_stop(void)
 	
 	tcflush(app_cfg->gps_fd, TCIFLUSH); //# input flush.
 	
-	aprintf("... done!\n");
-	
 	return 0;
 }
 
@@ -323,6 +331,4 @@ void app_gps_proc_exit(void)
     thread_delete(tObj);
 	
 	pthread_mutex_destroy(&iproc->lock);  
-
-    dprintf("... done!\n");
 }

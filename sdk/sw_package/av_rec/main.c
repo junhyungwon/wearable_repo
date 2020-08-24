@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <sys/mman.h> //# mmap
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <cmem.h>
 #include <unistd.h>
 
@@ -205,11 +206,12 @@ static int search_frame(int sec)
 *****************************************************************************/
 static int evt_file_open(stream_info_t *ifr)
 {
+	struct stat sb;
 	struct tm ts, *gmtm;
 	char buf_time[64];
 	char filename[128];
     int minute_change=0;
-    
+	
 	gmtm = gmtime((const time_t *)&ifr->t_sec);
 
 //    localtime_r((const time_t *)&ifr->t_sec, &ts);
@@ -233,10 +235,16 @@ static int evt_file_open(stream_info_t *ifr)
 
         minute_change = 0;
 		
-		if (irec->fevt != NULL) {
+		if (irec->fevt != NULL) 
+		{
+			unsigned long sz;
+			
         	avi_file_close(irec->fevt, irec->fname);	//# close current file
-			send_msg(AV_CMD_REC_FLIST, 0, irec->fname);
-		}
+			/* calculate file size */
+			lstat(irec->fname, &sb);
+			sz = (sb.st_size / KB); /* Byte->KB */
+			send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+		}	
 		//# get current date & time
 //        localtime_r((const time_t *)&ifr->t_sec, &ts);
 		strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
@@ -266,9 +274,15 @@ static int evt_file_open(stream_info_t *ifr)
 
 static void evt_file_close(void)
 {
+	struct stat sb;
+	unsigned long sz;
+	
 	if (irec->fevt) {
 		avi_file_close(irec->fevt, irec->fname);
-		send_msg(AV_CMD_REC_FLIST, 0, irec->fname);
+		/* calculate file size */
+		lstat(irec->fname, &sb);
+		sz = (sb.st_size / KB); /* Byte->KB */
+		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
 		irec->fevt = NULL;
 	}
 }

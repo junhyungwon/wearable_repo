@@ -95,7 +95,6 @@ static void *THR_event_hub_main(void *prm)
 	app_thr_obj *tObj = &ievt->sObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -127,7 +126,6 @@ static void *THR_event_hub_main(void *prm)
 	} 
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }
@@ -142,7 +140,6 @@ static void *THR_event_hub_poll(void *prm)
 	app_thr_obj *tObj = &ievt->rObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	//# communication main process ---------------
@@ -216,8 +213,6 @@ static void *THR_event_hub_poll(void *prm)
 	Msg_Kill(ievt->qid);
 	tObj->active = 0;
 	
-	aprintf("exit...\n");
-	
 	return NULL;
 }
 
@@ -247,8 +242,6 @@ int netmgr_event_hub_init(void)
   	pthread_mutex_init(&ievt->lock, &attr);
   	pthread_mutexattr_destroy(&attr);
   
-	aprintf("done!...\n");
-	
 	return 0;
 }
 
@@ -270,8 +263,6 @@ int netmgr_event_hub_exit(void)
     thread_delete(tObj);
 	
 	pthread_mutex_destroy(&ievt->lock);
-	
-    aprintf("... done!\n");
 	
 	return 0;
 }

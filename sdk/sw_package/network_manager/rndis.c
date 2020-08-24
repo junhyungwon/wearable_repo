@@ -134,7 +134,6 @@ static void *THR_rndis_main(void *prm)
 	int exit = 0;
 	int quit = 0;
 	
-	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -223,7 +222,6 @@ static void *THR_rndis_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
 	
 	return NULL;
 }
@@ -241,8 +239,6 @@ int netmgr_rndis_init(void)
     	eprintf("create netmgr rndis thread\n");
 		return EFAIL;
     }
-	
-	aprintf("done!...\n");
 	
 	return 0;
 }
@@ -262,8 +258,6 @@ int netmgr_rndis_exit(void)
 
     thread_delete(tObj);
 	
-    aprintf("... done!\n");
-	
 	return 0;
 }
 
@@ -280,8 +274,6 @@ int netmgr_rndis_event_start(void)
 	irndis->rndis_timer = 0;
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
-	aprintf("... done!\n");
-	
 	return 0;
 }
 
@@ -295,8 +287,6 @@ int netmgr_rndis_event_stop(void)
 	app_thr_obj *tObj = &irndis->rObj;
 
    	event_send(tObj, APP_CMD_STOP, 0, 0);
-	
-	aprintf("... done!\n");
 	
 	return 0;
 }
