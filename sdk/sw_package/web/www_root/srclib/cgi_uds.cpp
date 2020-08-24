@@ -75,6 +75,40 @@ int sysctl_message(
 	CGI_DBG("cmd=%d\n", cmd);
 
 	switch(cmd) {
+		case UDS_GET_VOIP_CONFIG:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_GET_VOIP_CONFIG);
+				ret = write(cs, wbuf, sizeof wbuf);
+				CGI_DBG("Sent CMD : %s\n", wbuf);
+
+				// 2. wait response and read sizeof T_CGI_VOIPO_CONFIG bytes
+				ret = read(cs, (T_CGI_VOIP_CONFIG*)data, sizeof(T_CGI_VOIP_CONFIG));
+				CGI_DBG("Read, size:%d\n", ret);
+
+				if(ret > 0){
+					close(cs);
+					return 0;
+				}
+			}
+			break;
+		case UDS_SET_VOIP_CONFIG:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_SET_VOIP_CONFIG);
+				ret = write(cs, wbuf, sizeof wbuf);
+				CGI_DBG("Sent CMD : %s\n", wbuf);
+
+				// 2. wait response and read sizeof T_CGI_VOIP_CONFIG bytes
+				ret = read(cs, (T_CGI_VOIP_CONFIG*)data, sizeof(T_CGI_VOIP_CONFIG));
+				CGI_DBG("Read, size:%d\n", ret);
+
+				if(ret > 0){
+					close(cs);
+					return 0;
+				}
+			}
+			break;
 		case UDS_GET_USER_CONFIG:
 			{
 				// 1. write command

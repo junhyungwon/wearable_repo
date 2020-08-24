@@ -148,7 +148,8 @@ int app_main(void)
 	if (app_set->ftp_info.ON_OFF)
         app_ftp_init();
 
-    if (app_set->sys_info.P2P_ON_OFF == ON) {
+    //if (app_set->sys_info.P2P_ON_OFF == ON) 
+	{
         add_p2p_account() ;
         app_p2p_start() ;
         app_p2p_init() ;

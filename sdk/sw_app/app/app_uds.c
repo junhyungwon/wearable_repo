@@ -497,6 +497,50 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 	return -1;
 }
 
+int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
+{
+	// voip
+	t->port   = app_set->voip.port;
+	strcpy(t->ipaddr, app_set->voip.ipaddr);
+	strcpy(t->userid, app_set->voip.userid);
+	strcpy(t->passwd, app_set->voip.passwd);
+	strcpy(t->peerid, app_set->voip.peerid);
+
+	// TODO:
+	// current status, connected or disconnected
+
+	return 0;
+}
+
+int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
+{
+	int isChanged=0;
+	// voip config
+	if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
+		strcpy(app_set->voip.ipaddr,t->ipaddr);
+		isChanged++;
+	}
+	if(app_set->voip.port != t->port){
+		app_set->voip.port = t->port;
+		isChanged++;
+	}
+	if(strcmp( app_set->voip.userid, t->userid)){
+		strcpy(app_set->voip.userid, t->userid);
+		isChanged++;
+	}
+	if(strcmp( app_set->voip.passwd,t->passwd)){
+		strcpy(app_set->voip.passwd,t->passwd);
+		isChanged++;
+	}
+	if(strcmp( app_set->voip.peerid, t->peerid)){
+		strcpy(app_set->voip.peerid, t->peerid);
+		isChanged++;
+	}
+
+	return isChanged;
+	// 웹에서 apply,누르면 restart는 하는걸로...
+}
+
 int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 {
 	// backup server(ftp)
@@ -1475,6 +1519,56 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "reload_config") == 0)
 		{
+		}
+		else if (strcmp(rbuf, "GetVoipConfiguration") == 0) {
+			sprintf(wbuf, "[APP_UDS] --- GetVoipConfiguration ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			T_CGI_VOIP_CONFIG t;memset(&t,0, sizeof t);
+			if(0 == getVoipConfiguration(&t)){
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+				if (ret > 0) {
+
+					// TODO something...
+				}
+				else { 
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed sent:"); 
+				}
+			}
+		}
+		else if (strcmp(rbuf, "SetVoipConfiguration") == 0) {
+			sprintf(wbuf, "[APP_UDS] --- SetVoipConfiguration ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			// 1. send READY
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+
+			if(ret > 0){
+				// 2. read data
+				T_CGI_VOIP_CONFIG t;
+				ret = read(cs_uds, &t, sizeof t);
+				DBG_UDS("Read, size=%d\n", ret);
+				if(ret > 0){
+					ret = setVoipConfiguration(&t);
+
+					char str[128] = "OK";
+					if(ret == 0)
+						sprintf(str, "%s", "NO CHANGE");
+					else if(ret < 0)
+						sprintf(str, "%s", "ERROR");
+					ret = write(cs_uds, str, sizeof str);
+				}
+				else {
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed read: "); 
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
 		}
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
 			sprintf(wbuf, "[APP_UDS] --- GetServersConfiguration ---");

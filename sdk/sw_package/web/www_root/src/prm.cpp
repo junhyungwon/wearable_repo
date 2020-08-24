@@ -427,6 +427,28 @@ _FREE_CAMERA_OBJ:
 	return ret;
 }
 
+void put_json_voip_config(T_CGI_VOIP_CONFIG *p)
+{
+	json_object *voip_obj;
+
+	voip_obj     = json_object_new_object();
+
+	json_object_object_add(voip_obj, "model",  json_object_new_string(MODEL_NAME));
+	json_object_object_add(voip_obj, "userid", json_object_new_string(p->userid));
+	json_object_object_add(voip_obj, "passwd", json_object_new_string(p->passwd));
+	json_object_object_add(voip_obj, "peerid", json_object_new_string(p->peerid));
+	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->port));
+
+	PUT_CACHE_CONTROL_NOCACHE;
+	PUT_CONTENT_TYPE_JSON;
+	PUT_CRLF;
+	PUTSTR("%s\r\n", json_object_to_json_string(voip_obj));
+
+	// free
+	json_object_put(voip_obj);
+
+}
+
 void put_json_user_config(T_CGI_USER_CONFIG *p)
 {
 	json_object *onvif_obj, *rtsp_acc_obj, *user_obj;
@@ -456,7 +478,6 @@ void put_json_user_config(T_CGI_USER_CONFIG *p)
 	json_object_put(onvif_obj);
 	json_object_put(rtsp_acc_obj);
 	json_object_put(user_obj);
-
 }
 
 void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
@@ -822,6 +843,12 @@ int do_search(char *pContents)
 					T_CGI_USER_CONFIG t;memset(&t, 0, sizeof t);
 					sysctl_message(UDS_GET_USER_CONFIG, (void*)&t, sizeof t);
 					put_json_user_config(&t);
+					return 0;
+				}
+				else if(!strcmp(prm[i].value, "voip_config")){
+					T_CGI_VOIP_CONFIG t;memset(&t, 0, sizeof t);
+					sysctl_message(UDS_GET_VOIP_CONFIG, (void*)&t, sizeof t);
+					put_json_voip_config(&t);
 					return 0;
 				}
 				else {

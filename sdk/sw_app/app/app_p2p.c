@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define P2P_SERVER "./bin/P2PTunnelServer_ti"
+#define P2P_SERVER "/opt/fit/bin/P2PTunnelServer"
 
 #define P2P_NAME   "P2PTunnelServer"  // name size of process in /proc/../status is 16
 #define CHECK_MSEC        1000
@@ -71,6 +71,8 @@ int app_p2p_start(void)
     {
 //        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.deviceId) ;
         sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.uid) ;
+
+		printf("%s !\n", p2p_cmd) ;
      
         ret = system(p2p_cmd) ;   
     }
@@ -82,7 +84,8 @@ int app_p2p_stop(void)
     int ret = 0 ;
     char p2p_cmd[MAX_CHAR_128] = {0, } ;
 	
-    sprintf(p2p_cmd, "killall P2PTunnelServer_ti") ;
+    sprintf(p2p_cmd, "killall -9 %s", P2P_SERVER) ;
+	printf("%s !\n", p2p_cmd) ;
     ret = system(p2p_cmd) ;
 
     return 0;
