@@ -51,6 +51,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 //#define FMS_DEBUG
+#define RECVBUFFSIZE		2048
 
 typedef struct {
     app_thr_obj sockObj ;

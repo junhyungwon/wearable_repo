@@ -592,7 +592,7 @@ static void *THR_file_mng(void *prm)
 						ifile->file_state = FILE_STATE_NORMAL;
 					}
 				} else {
-					/* overwrite ?? ? ? */
+					/* overwrite ??? ?? ? ? ? full ??? ?? ?? overwrite ??? ?? ?? ? */
 					if (capacity_full) {
 						ifile->file_state = FILE_STATE_OVERWRITE;
 						OSA_mutexLock(&ifile->mutex_file);
@@ -604,9 +604,7 @@ static void *THR_file_mng(void *prm)
 							app_rec_stop(ON);
 							continue;
 						}
-					} else {
-						ifile->file_state = FILE_STATE_NORMAL;
-					}
+					} 
 				}
 				
 			    _check_overwite_full_led(ifile->file_state);

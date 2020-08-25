@@ -272,7 +272,7 @@ ifneq ($(BASIC_MODULES),no)
 #MODULES   += echo
 #MODULES   += fakevideo
 #MODULES   += httpd
-#MODULES   += ice
+MODULES   += ice
 #MODULES   += menu
 #MODULES   += mwi
 #MODULES   += natpmp
@@ -291,23 +291,9 @@ MODULES   += turn
 #MODULES   += aubridge aufile
 #endif
 
-endif 
+endif
 
 ################################################################################
-# unset variable
-USE_CONS  = 
-USE_L16   =
-USE_AAC   =
-USE_CAIRO =
-USE_V4L2  =
-USE_X11   =
-USE_EVDEV =
-USE_OSS   =
-USE_STDIO =
-USE_DTLS_SRTP =
-USE_SYSLOG    =
-USE_CUSTOM_MENU := 1
-
 #ifneq ($(USE_AAC),)
 #MODULES   += aac
 #endif
@@ -477,6 +463,4 @@ endif
 #MODULES   += rtcpsummary
 #endif
 #added by rupy
-ifneq ($(USE_CUSTOM_MENU),)
 MODULES   += menu_custom
-endif
