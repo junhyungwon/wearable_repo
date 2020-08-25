@@ -814,7 +814,7 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "\n# Media NAT modules\n");
 	(void)re_fprintf(f, "module\t\t\t" "stun" MOD_EXT "\n");
 	(void)re_fprintf(f, "module\t\t\t" "turn" MOD_EXT "\n");
-	(void)re_fprintf(f, "#module\t\t\t" "ice" MOD_EXT "\n");
+	(void)re_fprintf(f, "module\t\t\t" "ice" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "natpmp" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "pcp" MOD_EXT "\n");
 

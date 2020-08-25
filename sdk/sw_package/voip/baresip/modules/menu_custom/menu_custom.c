@@ -294,7 +294,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	case UA_EVENT_CALL_RINGING:
 		/* stop any ringtones */
 		ikey->play = mem_deref(ikey->play);
-		/* play ringback */
+		/* play ringback (-1 repeat) */
 		(void)play_file(&ikey->play, player, 
 					"ringback.wav", -1, cfg->audio.play_mod, cfg->audio.play_dev);
 		
@@ -327,8 +327,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			const char *tone;
 			tone = translate_errorcode(err_code);
 			if (tone) {
-				/* TODO */
-				//(void)play_file(&menu.play, player, tone, 1);
+				play_file(&ikey->play, player, 
+						tone, 1, cfg->audio.play_mod, cfg->audio.play_dev);
 			}
 		}
 		break;
@@ -390,8 +390,13 @@ static int __register_user(const char *call_num, const char *server_addr, const 
 	
 	//(void)net_check(net);
 	//# <sip:1006@192.168.0.5>;auth_pass=1234
+	#if 1
 	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=tcp>;auth_pass=%s", 
 					UA_PREFIX, call_num, server_addr, passwd);
+	#else
+	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=tcp>;auth_pass=%s;stunserver=stun:stun.l.google.com:19302;medianat=ice;stunuser=test;stunpass=test", 
+					UA_PREFIX, call_num, server_addr, passwd);
+	#endif
 	
 	info("Creating UA for %s ....\n", ui_buf);
 		 

@@ -383,7 +383,6 @@ fsupdate:
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_cli $(TARGET_FS)/usr/sbin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_passphrase $(TARGET_FS)/usr/sbin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_supplicant $(TARGET_FS)/usr/sbin/.
-	-cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh

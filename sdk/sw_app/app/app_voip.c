@@ -216,11 +216,16 @@ static void __call_status_handler(void)
 {
 	int is_reg = ivoip->st.call_reg;
 	int errcode = ivoip->st.call_err;
+	int action = ivoip->st.call_ste;
 	
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) {
 		/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
-		app_leds_voip_ctrl(DEV_LED_ON);
+		if (action == SIPC_STATE_CALL_ESTABLISHED) {
+			app_leds_voip_ctrl(DEV_LED_BLINK);
+		} else {
+			app_leds_voip_ctrl(DEV_LED_ON);
+		}
 	} else {
 		app_leds_voip_ctrl(DEV_LED_OFF);
 	}

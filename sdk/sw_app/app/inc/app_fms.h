@@ -57,7 +57,6 @@
 
 #define AUTH_SIZE               MAX_CHAR_64
 
-#define RECVBUFFSIZE		2048
 //#define MAXUSER                 5
 
 #define DIR_JPEG_NAND          "/media/nand/jpeg"

@@ -47,6 +47,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define IPINSTALL_DEBUG 
+#define RECVBUFFSIZE 1024
 
 #ifdef IPINSTALL_DEBUG
 #define DEBUG_PRI(msg, args...) printf("[IPINSTALL] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)

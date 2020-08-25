@@ -199,7 +199,7 @@ static void *THR_rndis_main(void *prm)
 				
 			case __STAGE_RNDIS_WAIT_ACTIVE:
 				res = __wait_for_active();
-				if (irndis->iftype > 0) {
+				if (res > 0) {
 					if (!irndis->first) {
 						irndis->iftype = res;
 						irndis->first = 1;

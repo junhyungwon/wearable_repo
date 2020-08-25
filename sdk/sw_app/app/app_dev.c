@@ -34,6 +34,7 @@
 #include "app_mcu.h"
 #include "app_gui.h"
 #include "app_process.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
