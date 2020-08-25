@@ -21,7 +21,15 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define DEFAULT_FPS				30 // 20 //24
+#define NEXX360_STR				"NEXX360"
+#define NEXXONE_STR				"NEXXONE"
+
+/*
+ * FITT/NEXX360--> Default FPS 15
+ * NEXXONE--> Default FPS 30
+ */ 
+#define DEFAULT_FPS				15 // 20 //24
+#define NEXXONE_DEFAULT_FPS		30 // 20 //24
 
 #define FTP_HOUR_MIN            0
 #define FTP_HOUR_MAX            24
@@ -32,9 +40,12 @@
 #define CHAR_INVALID            255
 #define CHAR_MEMSET     		0x00
 
-
 #define PARTIAL_RESET          0
 #define FULL_RESET             1
+
+#define MIN_BITRATE            512
+#define MAX_BITRATE            8000
+#define DEFAULT_QUALITY        4000
 
 typedef enum {
 	RATE_CTRL_VBR,
@@ -257,11 +268,8 @@ typedef struct {
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-void app_set_default(int default_type);
 int app_set_open(void);
 int app_set_write(void);
-void app_set_delete_cfg(void);
-void app_set_version_read(void);
 int get_bitrate_val(int quality, int resol);
 int get_fps_val(app_frate_e idx);
 int get_frame_size(int resol, int *wi, int *he);

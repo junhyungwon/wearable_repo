@@ -22,7 +22,7 @@
 #define EN_WIFI_CLIENT          1
 #define SW_RELEASE				1
 
-#define TCX_MODEL   MODEL_NAME
+#define TCX_MODEL   			MODEL_NAME
 
 #if SW_RELEASE
 #define FITT360_SW_VER      "2.04.00Ns"

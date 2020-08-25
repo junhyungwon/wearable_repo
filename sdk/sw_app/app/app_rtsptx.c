@@ -87,17 +87,18 @@ int app_rtsptx_start(void)
 	STREAM_SET streamSet;
 	FILE *fd = NULL;
     char rtsp_cmd[MAX_CHAR_128] = {0, } ;
-/*
-    while(1)
-	{
-		app_msleep(10) ;
-		if(app_cfg->ste.b.cap)
-		{
-		    app_msleep(100) ;
-		    break ;
-		}
-	}
-*/
+//    int retcnt = 0 ;
+
+//    while(1)
+//	{
+//		app_msleep(10) ;
+//		retcnt += 1 ;
+//		if(app_cfg->vid_count == MAX_CH_NUM || retcnt == 500)
+//		{
+//		    break ;
+//		}
+//	}
+
 #ifdef RTSP_ENCRYPT
     char *rname ;
     srand(time(NULL)) ;

@@ -196,11 +196,14 @@ static int getNetworkInfo(const char *devName, ONVIF_NET_INFO * out_info)
 
 void *thdRestartOnvifServer(void *arg)
 {
+	// 쓰레드 미사용하고, kill하면,  socket이 물려 있어서 정상종료되지 않는 경우가 있다, 
+	// 그래서 이렇게 하긴 했는데 더 좋은 방법이 있을것 같은데 뭘까나..
+	
 	int cnt=0;
 	char buff = 'e';
 	int nCS = *((int *)arg);
 	do {
-		usleep(1000);
+		usleep(10000);
 		int n2 = send(nCS, &buff, 1, MSG_NOSIGNAL);
 		if(n2 == -1)
 			break;
@@ -208,12 +211,20 @@ void *thdRestartOnvifServer(void *arg)
 			break;
 	}while(1);
 
-	// 바로 호출시 socket이 물려 있어서 정상종료되지 않는 경우가 있다, 그래서 이렇게 하긴 했는데 더 좋은 방법이 있을것 같은데 뭘까나..
+	// 이걸로 onvifserver를 kill함, 그래서 socket이 강제로 끊어짐.
 	app_onvifserver_restart();
 	
 	return NULL;
 }	
 
+/* 이 함수의 trigger는 onvifserver process에서 보내오는 메시지이다. 
+ * onvif user가 변경되었으니, 사용자 계정이 변경되었다는 신호이다.
+ * app_fitt.out이 onvifserver를 실행시키는 주체이므로, 
+ * 이 user 변경 신호를 받으면 onvifserver를 restart(kill and start)를 시키게된다.
+ * UDS를 요청한 주체를 kill하기 때문에 소켓이 연결된 상태로 끊어지기(Kill) 때문에,
+ * Normally socket close가 일어나지 않은 상태로 onvifserver가 재시작이 될 수 있다.
+ * 그래서, thread로 분리한 것이며, NOSIGNAL을 보내 PIPE에러를 회피한다.
+ */
 static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)
 {
 	if(strcmp(pUser->UserName, "admin")==0) {
@@ -380,7 +391,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 		isChanged++;
 	}
 
-
+#if 0
 	if(t->live_stream_account_enable){
 		char dec_ID[32]={0};
 		char dec_PW[32]={0};
@@ -432,6 +443,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 			isChanged++;
 		}
 	}
+#endif
 
 	if(isChanged>0) {
 		DBG_UDS("isChanged:%d\n", isChanged);
@@ -489,7 +501,7 @@ int updateUser(T_CGI_USER *t)
 
 int checkAccount(T_CGI_ACCOUNT *acc)
 {
-	DBG_UDS("id:%s, pw:%s\n", app_set->account_info.webuser.id, app_set->account_info.webuser.pw);
+	DBG_UDS("old web account, id:%s, pw:%s\n", app_set->account_info.webuser.id, app_set->account_info.webuser.pw);
 	if(!strcmp(app_set->account_info.webuser.id, acc->id)
 	&& !strcmp(app_set->account_info.webuser.pw, acc->pw)) {
 		return 0;
@@ -578,6 +590,8 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	t->onvif.enable = app_set->net_info.enable_onvif;
 	strcpy(t->onvif.id, app_set->account_info.onvif.id); // max 32
 	strcpy(t->onvif.pw, app_set->account_info.onvif.pw); // max 32
+	
+	t->p2p.enable = app_set->sys_info.P2P_ON_OFF;
 
 	// voip
 	t->voip.port   = app_set->voip.port;
@@ -699,13 +713,23 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		app_set->net_info.enable_onvif = t->onvif.enable;
 		isChanged++;
 	}
+
+#if 0
 	if(0!=strcmp(app_set->account_info.onvif.pw, t->onvif.pw)){
 		strcpy(app_set->account_info.onvif.pw, t->onvif.pw); // 31
 		isChanged++;
 
 		app_onvifserver_restart();
 	}
+#endif
 
+	// p2p
+	if((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
+		if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
+			app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
+			isChanged++;
+		}
+	}
 	// voip config
 	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
 		strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
@@ -728,10 +752,122 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		isChanged++;
 	}
 	
-
-
 	return isChanged;
 	// restart 후에 적용됨. 2019년 8월 22일, 웹에서 apply,누르면 restart는 하는걸로...
+}
+
+static int getUserConfiguration(T_CGI_USER_CONFIG *t)
+{
+	sprintf(t->web.id, "%s", app_set->account_info.webuser.id);
+	sprintf(t->web.pw, "%s", app_set->account_info.webuser.pw);
+
+	t->onvif.enable = app_set->net_info.enable_onvif;
+	sprintf(t->onvif.id, "%s", app_set->account_info.onvif.id);
+	sprintf(t->onvif.pw, "%s", app_set->account_info.onvif.pw);
+
+	char rtsp_user[32]={0};
+	char rtsp_pass[32]={0};
+	if(app_set->account_info.enctype) // if AES
+	{
+		decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32);
+		decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_pass, 32);
+	}
+	else {
+		strcpy(rtsp_user, app_set->account_info.rtsp_userid);
+		strcpy(rtsp_pass, app_set->account_info.rtsp_passwd);
+	}
+	t->rtsp.enable = app_set->account_info.ON_OFF;
+	t->rtsp.enctype = app_set->account_info.enctype;
+	strcpy(t->rtsp.id, rtsp_user);
+	strcpy(t->rtsp.pw, rtsp_pass);
+
+	return 0;
+}
+
+int setUserConfiguration(T_CGI_USER_CONFIG *t)
+{
+	int isChanged=0;
+
+	// web part
+	if(0 == app_set_web_password(t->web.id, t->web.pw, 0, 0)) {
+		DBG_UDS("Updated web password: id:%s, pw:%s\n", t->web.id, t->web.pw);
+		isChanged++;
+	}else {
+		DBG_UDS("Failed set Web Account, id:%s, pw:%s\n", t->web.id, t->web.pw);
+	}
+
+	// onvif part
+	//if(0==strcmp(t->onvif.id, app_set->account_info.onvif.id))
+	if(0==strcmp(t->onvif.id, "admin"))
+	{
+		//strcpy(app_set->account_info.onvif.id, "admin"); // fixed
+		if(0!=strcmp(t->onvif.pw, app_set->account_info.onvif.pw)){
+			strcpy(app_set->account_info.onvif.pw, t->onvif.pw);
+			DBG_UDS("Updated app_set->account_info.onvif.pw=%s\n", app_set->account_info.onvif.pw);
+			isChanged++;
+		}
+	}
+	else {
+		DBG_UDS("Failed set ONVIF Account, id:%s, pw:%s\n", t->onvif.id, t->onvif.pw);
+	}
+
+	// rtsp account part
+	if(t->rtsp.enable != app_set->account_info.ON_OFF) {
+		app_set->account_info.ON_OFF = t->rtsp.enable;
+		DBG_UDS("app_set->account_info.ON_OFF=%d\n", app_set->account_info.ON_OFF);
+		isChanged++;
+	}
+
+#if 1
+	if(t->rtsp.enable){
+		char dec_ID[32]={0};
+		char dec_PW[32]={0};
+
+		// 기존꺼 첵크
+		if(app_set->account_info.enctype) {// 1, AES
+			decrypt_aes(app_set->account_info.rtsp_userid, dec_ID, 32) ;
+			decrypt_aes(app_set->account_info.rtsp_passwd, dec_PW, 32) ;
+		} else {
+			strcpy(dec_ID, app_set->account_info.rtsp_userid);
+			strcpy(dec_PW, app_set->account_info.rtsp_passwd);
+		}
+
+		// check enctype
+		if(app_set->account_info.enctype != t->rtsp.enctype){
+			isChanged++;
+			DBG_UDS("t->account_info.enctype=%d\n", t->rtsp.enctype);
+		}
+
+		// 새로 들어온값 check
+		if(0!=strcmp(t->rtsp.id, dec_ID)
+		|| 0!=strcmp(t->rtsp.pw, dec_PW)
+		|| app_set->account_info.enctype != t->rtsp.enctype){
+
+			app_set->account_info.enctype = t->rtsp.enctype;
+
+			DBG_UDS("app_set->account_info.enctype    =%d\n", t->rtsp.enctype);
+			DBG_UDS("app_set->account_info.rtsp_userid=%s\n", t->rtsp.id);
+			DBG_UDS("app_set->account_info.rtsp_passwd=%s\n", t->rtsp.pw);
+
+			if(app_set->account_info.enctype) {//1,  AES
+				char enc_ID[32]={0};
+				char enc_PW[32]={0};
+                encrypt_aes(t->rtsp.id, enc_ID, 32);
+                encrypt_aes(t->rtsp.pw, enc_PW, 32);
+				
+				memcpy(app_set->account_info.rtsp_userid, enc_ID, 32);
+				memcpy(app_set->account_info.rtsp_passwd, enc_PW, 32);
+			}
+			else {
+				strcpy(app_set->account_info.rtsp_userid, t->rtsp.id);
+				strcpy(app_set->account_info.rtsp_passwd, t->rtsp.pw);
+			}
+			isChanged++;
+		}
+	}
+#endif
+
+	return isChanged;
 }
 
 static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
@@ -833,23 +969,15 @@ static int getKbps(int ch)
 {
 	int br = 0;
 	
-#if 1
-	int bidx             = app_set->ch[ch].quality;
-    app_ch_cfg_t *ch_prm = &app_set->ch[ch];
-    br               = get_bitrate_val(bidx, ch_prm->resol); 
-	// bitrate HIGH 0, MID 1, LOW 2
-    // resol 480P 0 720P 1 1080P 2
-#else
-	br = app_cfg->ich[ch].br;
-#endif
+	br = app_set->ch[ch].quality;
 	return br;
 }
+
 static int getKbpsIdx(int ch)
 {
-	int idx             = app_set->ch[ch].quality;
+	int idx = app_set->ch[ch].quality;
 	return idx;
 }
-
 
 // The parameter "ch" means  Recording or Streaming
 // if ch is 4, it will return streaming information, 
@@ -866,8 +994,9 @@ static int getRC(int ch) // rate control
 static int getFps(int ch)
 {
     int fps = app_set->ch[ch].framerate;
-    return get_fps_val(fps) ;
+	return fps ;
 }
+
 static int getFpsIdx(int ch)
 {
     int idx = app_set->ch[ch].framerate;
@@ -951,39 +1080,97 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 {
 	int ch=0;
 	
-    for(ch = 0; ch < 4; ch++)
+	if(strcmp(MODEL_NAME, NEXX360_STR) == 0)
 	{
-	    if(rec_fps < FPS_MAX && rec_fps >= 0 && app_set->ch[ch].framerate != rec_fps) 
-            app_set->ch[ch].framerate = rec_fps ;
-	    if(rec_bps < MAX_QUALITY && rec_bps >= 0 && app_set->ch[ch].quality != rec_bps)
-            app_set->ch[ch].quality = rec_bps ;
-	    if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
-            app_set->ch[ch].gop = rec_gop ;
-	    if(rec_rc != app_set->ch[ch].rate_ctrl)
-            app_set->ch[ch].rate_ctrl = rec_rc ;
-    }
+	    for(ch = 0; ch < 4; ch++)
+	    {
+	        if(rec_fps <= DEFAULT_FPS && rec_fps > 0 && app_set->ch[ch].framerate != rec_fps) 
+                app_set->ch[ch].framerate = rec_fps ;
+	        if(rec_bps <= MAX_BITRATE && rec_bps >= MIN_BITRATE && app_set->ch[ch].quality != rec_bps)
+                app_set->ch[ch].quality = rec_bps ;
+	        if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
+                app_set->ch[ch].gop = rec_gop ;
+	        if(rec_rc != app_set->ch[ch].rate_ctrl)
+                app_set->ch[ch].rate_ctrl = rec_rc ;
+        }
 
-	DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
+	    DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
 
-	ch=4;// display
+	    ch=4;// display
 
-	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
-		app_set->ch[ch].resol = stm_res ;
-	if(stm_fps < FPS_MAX && stm_fps >= 0 && app_set->ch[ch].framerate != stm_fps)
-		app_set->ch[ch].framerate = stm_fps ;
-	if(stm_bps < MAX_QUALITY && stm_bps >= 0 &&app_set->ch[ch].quality != stm_bps)
-		app_set->ch[ch].quality = stm_bps ;
-	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
-		app_set->ch[ch].gop = stm_gop ;
-	if(stm_rc != app_set->ch[ch].rate_ctrl){
-		app_set->ch[ch].rate_ctrl = stm_rc;
+	    if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		    app_set->ch[ch].resol = stm_res ;
+	    if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+		    app_set->ch[ch].framerate = stm_fps ;
+	    if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+		    app_set->ch[ch].quality = stm_bps ;
+	    if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+		    app_set->ch[ch].gop = stm_gop ;
+	    if(stm_rc != app_set->ch[ch].rate_ctrl){
+		    app_set->ch[ch].rate_ctrl = stm_rc;
+	    }  
+	} 
+	else if(strcmp(MODEL_NAME, NEXXONE_STR) == 0)
+	{
+		if(rec_fps <= NEXXONE_DEFAULT_FPS && rec_fps > 0 && app_set->ch[ch].framerate != rec_fps) 
+			app_set->ch[ch].framerate = rec_fps ;
+		if(rec_bps <= MAX_BITRATE && rec_bps >= MIN_BITRATE && app_set->ch[ch].quality != rec_bps)
+			app_set->ch[ch].quality = rec_bps ;
+		if(rec_gop <= NEXXONE_DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
+			app_set->ch[ch].gop = rec_gop ;
+		if(rec_rc != app_set->ch[ch].rate_ctrl)
+			app_set->ch[ch].rate_ctrl = rec_rc ;
+
+	    DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
+
+	    ch=1;// display
+
+	    if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		    app_set->ch[ch].resol = stm_res ;
+	    if(stm_fps <= NEXXONE_DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+		    app_set->ch[ch].framerate = stm_fps ;
+	    if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+		    app_set->ch[ch].quality = stm_bps ;
+	    if(stm_gop <= NEXXONE_DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+		    app_set->ch[ch].gop = stm_gop ;
+	    if(stm_rc != app_set->ch[ch].rate_ctrl){
+		    app_set->ch[ch].rate_ctrl = stm_rc;
+	    }  
 	}
+	else
+	{
+        for(ch = 0; ch < 4; ch++)
+	    {
+	        if(rec_fps < FPS_MAX && rec_fps >= 0 && app_set->ch[ch].framerate != rec_fps) 
+                app_set->ch[ch].framerate = rec_fps ;
+	        if(rec_bps < MAX_QUALITY && rec_bps >= 0 && app_set->ch[ch].quality != rec_bps)
+                app_set->ch[ch].quality = rec_bps ;
+	        if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
+                app_set->ch[ch].gop = rec_gop ;
+	        if(rec_rc != app_set->ch[ch].rate_ctrl)
+                app_set->ch[ch].rate_ctrl = rec_rc ;
+        }
 
+	    DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
+
+	    ch=4;// display
+
+	    if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		    app_set->ch[ch].resol = stm_res ;
+	    if(stm_fps < FPS_MAX && stm_fps >= 0 && app_set->ch[ch].framerate != stm_fps)
+		    app_set->ch[ch].framerate = stm_fps ;
+	    if(stm_bps < MAX_QUALITY && stm_bps >= 0 &&app_set->ch[ch].quality != stm_bps)
+		    app_set->ch[ch].quality = stm_bps ;
+	    if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+		    app_set->ch[ch].gop = stm_gop ;
+	    if(stm_rc != app_set->ch[ch].rate_ctrl){
+		    app_set->ch[ch].rate_ctrl = stm_rc;
+	    }
+    }
 	DBG_UDS("ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
-
+    
 	return 0;
 }
-
 
 int setNTP(int fromDHCP, char *ntp)
 {
@@ -1265,7 +1452,7 @@ void *myFunc(void *arg)
 						st.ipv4_addr,
 						st.ipv4_prefixlen, inet_ntoa(*(struct in_addr *)&ipaddr));
 
-				//ctrl_set_network(st.ipv4_dhcp, st.token, st.ipv4_addr, inet_ntoa(*(struct in_addr *)&ipaddr)) ;
+				ctrl_set_network(st.ipv4_dhcp, st.token, st.ipv4_addr, inet_ntoa(*(struct in_addr *)&ipaddr)) ;
 			}
 			else {
 				DBG_UDS("ret:%d, ", ret);
@@ -1279,7 +1466,7 @@ void *myFunc(void *arg)
 
 			ret = read(cs_uds, gw, sizeof gw);
 			if(ret > 0){
-				//ctrl_set_gateway(gw) ;
+				ctrl_set_gateway(gw) ;
 				// TODO something...
 			}
 			else {
@@ -1620,6 +1807,53 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
+		else if (strcmp(rbuf, "GetUserConfiguration") == 0) {
+			sprintf(wbuf, "[APP_UDS] --- GetUserconfiguration ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			T_CGI_USER_CONFIG t;memset(&t,0, sizeof t);
+			if(0 == getUserConfiguration(&t)){
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+				if (ret > 0) {
+
+					// TODO something...
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
+			}
+		}
+		else if (strcmp(rbuf, "SetUserConfiguration") == 0) {
+			sprintf(wbuf, "[APP_UDS] --- SetUserConfiguration ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+			if(ret > 0){
+				T_CGI_USER_CONFIG t; memset(&t, 0, sizeof t);
+				ret = read(cs_uds, &t, sizeof t);
+				DBG_UDS("Read T_CGI_USER_CONFIG, size=%d\n", ret);
+				if(ret > 0){
+					ret = setUserConfiguration(&t);
+
+					char strOptions[128] = "OK";
+					if(ret == 0)
+						sprintf(strOptions, "%s", "NO CHANGE");
+					else if(ret < 0){
+						// maybe does not occur
+						sprintf(strOptions, "%s", "ERROR");
+					}
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed read: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
 		else if (strcmp(rbuf, "GetSystemConfiguration") == 0) {
 			sprintf(wbuf, "[APP_UDS] --- GetSystemconfiguration ---");
 			app_log_write(MSG_LOG_WRITE, wbuf);
@@ -1779,34 +2013,22 @@ void *myFunc(void *arg)
 			sprintf(wbuf, "[APP_UDS] --- GetVideoQuality ---");
 			//app_log_write(MSG_LOG_WRITE, wbuf);
 
-			/*
-			char strOptions[256] = {0}; // write 256
-			{
-				// fps, bps, iframe, rate control by order
-				sprintf(strOptions, "%d %d %d %d %d %d %d %d", 
-						rec_fps, rec_kbps, rec_gop, rec_rc,
-						stm_fps, stm_kbps, stm_gop, stm_rc);
-				int rec_fps=0, rec_kbps=0, rec_gop=0, rec_rc=0;
-				int stm_fps=0, stm_kbps=0, stm_gop=0, stm_rc=0;
-			}
-			ret = write(cs_uds, strOptions, sizeof strOptions);
-			*/
+			T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
 
-				T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
+			// get recording inforamtion
 
-				// get recording inforamtion
-				p.rec.res = getResolutionIdx(0);
-				p.rec.fps = getFpsIdx (0);
-				p.rec.bps = getKbpsIdx(0);
-				p.rec.gop = getGop (0);
-				p.rec.rc  = getRC  (0);
+			p.rec.res = getResolutionIdx(0);
+			p.rec.fps = getFps(0);
+			p.rec.bps = getKbps(0);
+			p.rec.gop = getGop (0);
+			p.rec.rc  = getRC  (0);
 
-				// get streaming information
-				p.stm.res = getResolutionIdx(4);
-				p.stm.fps = getFpsIdx (4);
-				p.stm.bps = getKbpsIdx(4);
-				p.stm.gop = getGop (4);
-				p.stm.rc  = getRC  (4);
+			// get streaming information
+			p.stm.res = getResolutionIdx(4);
+			p.stm.fps = getFps(4);
+			p.stm.bps = getKbps(4);
+			p.stm.gop = getGop (4);
+			p.stm.rc  = getRC  (4);
 
 			ret = write(cs_uds, &p, sizeof p);
 			if (ret > 0) {
@@ -1888,16 +2110,13 @@ void *myFunc(void *arg)
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
 			{
-				sprintf(strOptions, "%d %d %d %d %d %d %d %s %s",
+				sprintf(strOptions, "%d %d %d %d %d %d",
 						app_set->rec_info.pre_rec,     // 0:on, 1:off
 						app_set->rec_info.auto_rec,    // 0:on, 1:off
 						app_set->rec_info.audio_rec,   // 0:on, 1:off
 						app_set->rec_info.period_idx,  // 0:1MIN, 1:5MIN
 						app_set->rec_info.overwrite,
-						app_set->sys_info.osd_set,
-						app_set->sys_info.P2P_ON_OFF,
-						app_set->sys_info.p2p_id,            // 32
-						app_set->sys_info.p2p_passwd);       // 32
+						app_set->sys_info.osd_set);
 			}
 			ret = write(cs_uds, strOptions, sizeof strOptions);
 			if (ret > 0) {
@@ -1921,24 +2140,16 @@ void *myFunc(void *arg)
 				DBG_UDS("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
 					int pre_rec=0, auto_rec=0, audio_rec=0, rec_interval=0, rec_overwrite=0;
-					int display_datetime=0, p2p_enable=0;
-					char username[32], password[32];
-					sscanf(rbuf, "%d %d %d %d %d %d %d %s %s", 
+					int display_datetime=0;
+					sscanf(rbuf, "%d %d %d %d %d %d", 
 							&pre_rec,
 							&auto_rec,
 							&audio_rec,
 							&rec_interval,
 							&rec_overwrite,
-							&display_datetime,
-							&p2p_enable,
-							username,
-							password);
+							&display_datetime);
 					setRecordOptions(pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite);
 					setDisplayDateTime(display_datetime);
-
-					if( strcmp(MODEL_NAME, "NEXX360") == 0){
-						setP2PServer(p2p_enable, username, password);
-					}
 
 					char strOptions[128] = "OK";
 					ret = write(cs_uds, strOptions, sizeof strOptions);
@@ -1975,74 +2186,161 @@ void *myFunc(void *arg)
 				}
 				else if(encoding == 2) {
 
-					if(rcv_kbps != 0) // 
+                    if(strcmp(MODEL_NAME, NEXX360_STR) == 0)
 					{
-						if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P) // FHD Streaming
-						{
-							if(rcv_kbps > 7000)
-								rcv_kbps = 0 ;               //  HIGH 0 --> 8000Kbps   
-							else if(rcv_kbps <= 7000 && rcv_kbps > 5000)
-								rcv_kbps = 1 ;               //  MID  1 --> 6000Kbps   
-							else if(rcv_kbps <= 5000)
-								rcv_kbps = 2 ;               //  LOW  2 --> 4000Kbps   
-							else
-								rcv_kbps = 2 ;
+					    if(rcv_kbps > 0) // 
+					    {
+					        if(rcv_kbps > 7500 && rcv_kbps <= 8000)
+						        rcv_kbps = 8000 ;             
+						    else if(rcv_kbps > 6500 && rcv_kbps <= 7500)
+						        rcv_kbps = 7000 ;          
+						    else if(rcv_kbps > 5500 && rcv_kbps <= 6500)
+					            rcv_kbps = 6000 ;         
+						    else if(rcv_kbps > 4500 && rcv_kbps <= 5500)
+					            rcv_kbps = 5000 ;  
+						    else if(rcv_kbps > 3500 && rcv_kbps <= 4500)
+					            rcv_kbps = 4000 ;   
+						    else if(rcv_kbps > 2500 && rcv_kbps <= 3500)
+					            rcv_kbps = 3000 ;                 
+						    else if(rcv_kbps > 1500 && rcv_kbps <= 2500)
+					            rcv_kbps = 2000 ;               
+						    else if(rcv_kbps > 750 && rcv_kbps <= 1500)
+					            rcv_kbps = 1000 ;              
+						    else if(rcv_kbps > 500 && rcv_kbps <= 750)
+					            rcv_kbps = 512 ;                
+					
+						    if(app_set->ch[MAX_CH_NUM].quality != rcv_kbps)
+							    ctrl_vid_bitrate(MAX_CH_NUM, rcv_kbps);
 
-						}
-						else if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P) // HD Streaming
-						{
-							if(rcv_kbps > 3500)
-								rcv_kbps = 0 ;               //  HIGH 0 --> 4000Kbps   
-							else if(rcv_kbps <= 3500 && rcv_kbps > 2500)
-								rcv_kbps = 1 ;               //  MID  1 --> 3000Kbps   
-							else if(rcv_kbps <= 2500)
-								rcv_kbps = 2 ;               //  LOW  2 --> 2000Kbps   
-							else
-								rcv_kbps = 2 ;
-						}
-						else 
-						{
-							if(rcv_kbps > 1500)
-								rcv_kbps = 0 ;               //  HIGH 0 --> 2000Kbps   
-							else if(rcv_kbps <= 1500 && rcv_kbps > 800)
-								rcv_kbps = 1 ;               //  MID  1 --> 1000Kbps   
-							else if(rcv_kbps <= 800)
-								rcv_kbps = 2 ;               //  LOW  2 --> 512Kbps   
-							else
-								rcv_kbps = 2 ;
+					    }
 
-						}
+					    if(rcv_fps != 0) // 
+					    {
+						    if(app_set->ch[MAX_CH_NUM].framerate != rcv_fps)
+							    ctrl_vid_framerate(MAX_CH_NUM, rcv_fps);
+					    }
 
-						if(app_set->ch[4].quality != rcv_kbps)
-							ctrl_vid_bitrate(4, rcv_kbps);
-
+					    if(rcv_gov != 0 )
+					    {
+						    if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
+						    {
+							    if(app_set->ch[MAX_CH_NUM].gop != rcv_gov)
+								    ctrl_vid_gop_set(MAX_CH_NUM, rcv_gov) ;  
+						    }
+					    }
 					}
-
-					if(rcv_fps != 0) // 
+					else if (strcmp(MODEL_NAME, NEXXONE_STR) == 0)
 					{
-						if(rcv_fps > 20)
-							rcv_fps = 0 ;                   // HIGH 0 -> 30fps 
-						else if(rcv_fps <= 20 && rcv_fps > 8)
-							rcv_fps = 1 ;                   // MID 1 -> 15fps
-						else if(rcv_fps <= 8)
-							rcv_fps = 2 ;                   // LOW 2 -> 5fps
-						else
-							rcv_fps = 0 ;
+						if(rcv_kbps > 0) // 
+					    {
+					        if(rcv_kbps > 7500 && rcv_kbps <= 8000)
+						        rcv_kbps = 8000 ;             
+						    else if(rcv_kbps > 6500 && rcv_kbps <= 7500)
+						        rcv_kbps = 7000 ;          
+						    else if(rcv_kbps > 5500 && rcv_kbps <= 6500)
+					            rcv_kbps = 6000 ;         
+						    else if(rcv_kbps > 4500 && rcv_kbps <= 5500)
+					            rcv_kbps = 5000 ;  
+						    else if(rcv_kbps > 3500 && rcv_kbps <= 4500)
+					            rcv_kbps = 4000 ;   
+						    else if(rcv_kbps > 2500 && rcv_kbps <= 3500)
+					            rcv_kbps = 3000 ;                 
+						    else if(rcv_kbps > 1500 && rcv_kbps <= 2500)
+					            rcv_kbps = 2000 ;               
+						    else if(rcv_kbps > 750 && rcv_kbps <= 1500)
+					            rcv_kbps = 1000 ;              
+						    else if(rcv_kbps > 500 && rcv_kbps <= 750)
+					            rcv_kbps = 512 ;                
+					
+						    if(app_set->ch[NEXXONE_CH_NUM].quality != rcv_kbps)
+							    ctrl_vid_bitrate(NEXXONE_CH_NUM, rcv_kbps);
 
+					    }
 
-						if(app_set->ch[4].framerate != rcv_fps)
-							ctrl_vid_framerate(4, rcv_fps);
+					    if(rcv_fps != 0) // 
+					    {
+						    if(app_set->ch[NEXXONE_CH_NUM].framerate != rcv_fps)
+							    ctrl_vid_framerate(NEXXONE_CH_NUM, rcv_fps);
+					    }
+
+					    if(rcv_gov != 0 )
+					    {
+						    if(rcv_gov <= NEXXONE_DEFAULT_FPS && rcv_gov > 0)
+						    {
+							    if(app_set->ch[NEXXONE_CH_NUM].gop != rcv_gov)
+								    ctrl_vid_gop_set(NEXXONE_CH_NUM, rcv_gov) ;  
+						    }
+					    }
 					}
-
-					if(rcv_gov != 0 )
+					else
 					{
-						if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
-						{
-							if(app_set->ch[4].gop != rcv_gov)
-								ctrl_vid_gop_set(4, rcv_gov) ;  
-						}
-					}
+					    if(rcv_kbps != 0) // 
+					    {
+						    if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P) // FHD Streaming
+						    {
+							    if(rcv_kbps > 7000)
+							 	    rcv_kbps = 0 ;               //  HIGH 0 --> 8000Kbps   
+							    else if(rcv_kbps <= 7000 && rcv_kbps > 5000)
+								    rcv_kbps = 1 ;               //  MID  1 --> 6000Kbps   
+							    else if(rcv_kbps <= 5000)
+								    rcv_kbps = 2 ;               //  LOW  2 --> 4000Kbps   
+							    else
+								    rcv_kbps = 2 ;
 
+						    }
+						    else if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P) // HD Streaming
+						    {
+							    if(rcv_kbps > 3500)
+								    rcv_kbps = 0 ;               //  HIGH 0 --> 4000Kbps     
+		  					    else if(rcv_kbps <= 3500 && rcv_kbps > 2500)
+								    rcv_kbps = 1 ;               //  MID  1 --> 3000Kbps   
+							    else if(rcv_kbps <= 2500)
+								    rcv_kbps = 2 ;               //  LOW  2 --> 2000Kbps   
+							    else
+								    rcv_kbps = 2 ;
+						    }
+						    else 
+						    {
+							    if(rcv_kbps > 1500)
+								    rcv_kbps = 0 ;               //  HIGH 0 --> 2000Kbps   
+							    else if(rcv_kbps <= 1500 && rcv_kbps > 800)
+								    rcv_kbps = 1 ;               //  MID  1 --> 1000Kbps   
+							    else if(rcv_kbps <= 800)
+								    rcv_kbps = 2 ;               //  LOW  2 --> 512Kbps   
+							    else
+								    rcv_kbps = 2 ;
+
+						    }
+
+						    if(app_set->ch[4].quality != rcv_kbps)
+							    ctrl_vid_bitrate(4, rcv_kbps);
+					    }
+
+					    if(rcv_fps != 0) // 
+					    {
+						    if(rcv_fps > 12)
+							    rcv_fps = 0 ;                   // HIGH 0 -> 15fps 
+						    else if(rcv_fps <= 12 && rcv_fps > 8)
+							    rcv_fps = 1 ;                   // MID 1 -> 10fps
+						    else if(rcv_fps <= 8)
+							    rcv_fps = 2 ;                   // LOW 2 -> 5fps
+						    else
+							    rcv_fps = 0 ;
+
+						    if(app_set->ch[4].framerate != rcv_fps)
+							    ctrl_vid_framerate(4, rcv_fps);
+					    }
+
+					    if(rcv_gov != 0 )
+					    {
+						    if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
+						    {
+							    if(app_set->ch[4].gop != rcv_gov)
+								    ctrl_vid_gop_set(4, rcv_gov) ;  
+						    }
+					    }
+                    }
+					 
 					if(rcv_height == 720 && app_set->ch[MAX_CH_NUM].resol != RESOL_720P)
 						ctrl_vid_resolution(RESOL_480P);
 					else if(rcv_height == 1080 && app_set->ch[MAX_CH_NUM].resol != RESOL_1080P)
@@ -2177,7 +2475,6 @@ void *myFunc(void *arg)
 
 					if(0 == app_set_web_password(user.id, user.pw, user.lv, user.authtype))
 					{
-
 						if( 0 == app_web_make_passwordfile(user.id, user.pw, user.lv, user.authtype)){
 
 							char strOptions[128] = "OK";
@@ -2277,8 +2574,6 @@ void * uds_syscmd_thread(void * arg)
 
 	return NULL;
 }
-
-
 
 int app_uds_start()
 {

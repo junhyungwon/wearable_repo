@@ -133,7 +133,7 @@ int app_main(void)
 
 	//if(app_set->net_info.enable_onvif==1)
 	{
-		if (app_onvifserver_start() ==0) {
+		if (app_onvifserver_start() == 0) {
 			app_cfg->ste.b.onvifserver = 1; // have to add this flag....
 		}
 	}
@@ -147,8 +147,8 @@ int app_main(void)
 
 	if (app_set->ftp_info.ON_OFF)
         app_ftp_init();
-
-    //if (app_set->sys_info.P2P_ON_OFF == ON) 
+	
+    if (app_set->sys_info.P2P_ON_OFF == ON) 
 	{
         add_p2p_account() ;
         app_p2p_start() ;

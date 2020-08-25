@@ -21,10 +21,11 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define NET_TYPE_STATIC 		0
-#define NET_TYPE_DHCP                   1
+#define NET_TYPE_DHCP           1
 
 #define MAX_CH_NUM				4
-#define MAX_CH_NUM_ONEEYE		1		
+#define NEXXONE_CH_NUM			1
+
 #define MAX_AVI_CNT             4096 //  About 64G / 120Mbyte(1minute)
 
 #define MAX_CHAR_10             10
@@ -51,6 +52,9 @@
 
 #define CFG_DIR_NAND            "/media/nand/cfg"
 #define CFG_FILE_NAND           "/media/nand/cfg/fbx_cfg.ini"
+
+#define NEXX_CFG_FILE_MMC       "/mmc/cfg/nexx_cfg.ini"
+#define NEXX_CFG_FILE_NAND      "/media/nand/cfg/nexx_cfg.ini"
 
 /* micom watchdog */
 #define WD_ENC					(1<<0)

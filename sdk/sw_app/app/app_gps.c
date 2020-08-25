@@ -135,6 +135,7 @@ static void *THR_gps_jack_detect(void *prm)
 		}
 		
 	}
+	
 	while (!exit) 
 	{
 		cmd = tObj->cmd;
