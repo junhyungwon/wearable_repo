@@ -113,9 +113,11 @@ static void __netmgr_wlan_event_handler(int ste)
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
 	info = (netmgr_shm_request_info_t *)databuf;
 	
-	if ((strcmp(MODEL_NAME, "NEXX360") == 0) && (app_cfg->vid_count == 0)) {
-		mode = 1; /* AP Mode */			
-	} 
+	if (app_cfg->vid_count == 0) {
+		if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0))
+			mode = 1; /* AP Mode */			
+	}
+	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 					

@@ -110,10 +110,12 @@ int ctrl_enc_multislice()
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
     int ch = 4;
 
+// sliceSize = iputHeight * inputHeight * packetsize / macroblocksize * 100
+
     if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P)
         params.packetSize = 40;  // 5 180bytes   40  hdmi slice size = 1440bytes....
     else if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P)
-        params.packetSize = 18;  //   17  hdmi slice size = 1387bytes....  18 1468
+        params.packetSize = 17;  //   17  hdmi slice size = 1387bytes....  18 1468
     else
         params.packetSize = 80;  // 14 189bytes  80  480p  slice size = 1080....
 
@@ -134,10 +136,9 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
     int br ;
-    int default_fps = DEFAULT_FPS ;
-
+    int default_fps = 0;
     app_ch_cfg_t *ch_prm;
-
+	
     switch(framerate)
     {
         case FPS_30 :
@@ -166,7 +167,12 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
     br = get_bitrate_val(app_set->ch[ch].quality, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
     
     // resol 1080P 0, 720P 1, 480P 2
-    app_cfg->ich[ch].br = (br * framerate)/DEFAULT_FPS;
+	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
+		default_fps = NEXXONE_DEFAULT_FPS;
+	} else {
+		default_fps = DEFAULT_FPS;
+	} 
+    app_cfg->ich[ch].br = (br * framerate)/default_fps;
     app_cfg->ich[ch].fr = get_fps_val(ch_prm->framerate);
 
     params.frameRate = app_cfg->ich[ch].fr;
@@ -188,7 +194,7 @@ int ctrl_vid_bitrate(int ch, int bitrate)
     char log[128] = {0, };
     char msg[128] = {0, } ;
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int br ;
+    int br, default_fps=0;
 
     app_ch_cfg_t *ch_prm;
 
@@ -221,9 +227,15 @@ int ctrl_vid_bitrate(int ch, int bitrate)
     app_log_write( MSG_LOG_WRITE, log );
 
     br = get_bitrate_val(bitrate, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
-    // resol 480P 0 720P 1 1080P 2
-
-    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
+    
+	// resol 480P 0 720P 1 1080P 2
+	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
+		default_fps = NEXXONE_DEFAULT_FPS;
+	} else {
+		default_fps = DEFAULT_FPS;
+	} 
+	
+    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/default_fps;
 
     params.targetBitRate = app_cfg->ich[ch].br*1000 ;
 

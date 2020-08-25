@@ -60,9 +60,12 @@ static int qbr[MAX_RESOL][MAX_QUALITY] = {
 	{ 8000, 6000, 4000}	    //# 1080p
 };
 
+/*
+ * Nexx360/Fitt360 --> 15,10,5 Fps
+ * Nexxone ----------> 30,15,5
+ */ 
 static int FPS_IDX[FPS_MAX]	= {30, 15, 5};
 static char *cfg_dir[CFG_MAX] = {CFG_DIR_NAND, CFG_DIR_MMC};
-
 static char cMacAddr[18]; // Server's MAC address
 
 /*----------------------------------------------------------------------------
@@ -88,7 +91,7 @@ static char *find_reset(void) //setting default file search
 	memset(&globbuf, 0, sizeof(glob_t));
 
 	sprintf(path, "%s/*%s", SD_MOUNT_PATH, CFG_RE);
-    if(glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0)
+    if (glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0)
    	{
    		if(globbuf.gl_pathc > 0)
 		{
@@ -119,7 +122,7 @@ static void char_memset(void)
 {
     int i = 0 ;
 
-    for(i = 0; i < MAX_CH_NUM + 1; i++)
+    for (i = 0; i < MAX_CH_NUM + 1; i++)
     {
         app_set->ch[i].resol = CFG_INVALID ;
         app_set->ch[i].framerate = CFG_INVALID ;
@@ -392,15 +395,12 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->voip.passwd = %s\n", pset->voip.passwd);
     printf("pset->voip.peerid = %s\n", pset->voip.peerid);
 
-
-
-
 	printf("\n");
 
     return 0;
 }
 
-static void cfg_param_check(app_set_t* pset)
+static void cfg_param_check_nexx(app_set_t *pset)
 {
     char enc_ID[32] = {0, } ;
     char enc_Passwd[32] = {0, } ;
@@ -408,36 +408,154 @@ static void cfg_param_check(app_set_t* pset)
     char dec_Passwd[32] = {0, } ;
     char MacAddr[12]  ;
     char compbuff[32];
+	char ver_compare[16] ;
 
-	int ich=0, channels = 0;
+	int ich=0, channels = 0, check_version = 0, i;
+	int default_fps;
+	
+	channels = NEXXONE_CH_NUM+1;
+		
+	sprintf(ver_compare, "%s", FITT360_SW_VER);
 
-	//# MAX_CH_NUM = 4
-    channels = MAX_CH_NUM+1;
-
-	//# Encoding cfg per channel
-	for(ich = 0; ich < channels; ich++)
+	if(ver_compare[0] > pset->sys_info.fw_ver[0])
 	{
-		if(ich < MAX_CH_NUM)
-	        pset->ch[ich].resol  = RESOL_720P;
+        check_version = 1 ;
+	}
+	else
+	{
+		if(ver_compare[2] > pset->sys_info.fw_ver[2])
+            check_version = 1 ;
+		else
+		{
+			if(ver_compare[3] > pset->sys_info.fw_ver[3])
+				check_version = 1 ;
+			else
+			{
+				if(ver_compare[5] > pset->sys_info.fw_ver[5])
+					check_version = 1 ;
+				else
+				{
+					if(ver_compare[6] > pset->sys_info.fw_ver[6])
+					check_version = 1 ;
+				}
+			}
+		}
+	}
 
-		pset->ch[ich].motion = OFF;
-		if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
-            pset->ch[ich].gop = DEFAULT_FPS ;
+	if (!check_version)  // latest
+	{
+        printf("ver_compare[] = %s <=  pset->sys_info.fw_ver[] = %s\n", ver_compare, pset->sys_info.fw_ver) ;
+		
+		//# Encoding cfg per channel
+	    for(ich = 0; ich < channels; ich++)
+	    {
+		    if(ich < NEXXONE_CH_NUM)
+	            pset->ch[ich].resol  = RESOL_720P;
 
-		if(pset->ch[ich].framerate < FPS_30 || pset->ch[ich].framerate >= FPS_MAX)
-		    pset->ch[ich].framerate	= FPS_30;
-		if(pset->ch[ich].quality < Q_HIGH || pset->ch[ich].quality	>= MAX_QUALITY)
-		    pset->ch[ich].quality = Q_HIGH;
-		if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
-		    pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+		    pset->ch[ich].motion = OFF;
 
-        if(ich == MAX_CH_NUM)
-        {
-	        //# streaming channel...
-            if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
-	            pset->ch[ich].resol= RESOL_480P;
-        }
+		    if(pset->ch[ich].gop > NEXXONE_DEFAULT_FPS || pset->ch[ich].gop <= 0)
+                pset->ch[ich].gop = NEXXONE_DEFAULT_FPS ;
+
+		    if(pset->ch[ich].framerate <= 0  || pset->ch[ich].framerate > NEXXONE_DEFAULT_FPS)
+		        pset->ch[ich].framerate	= NEXXONE_DEFAULT_FPS;
+
+            printf("pset->ch[ich].framerate = %d\n",pset->ch[ich].framerate) ;
+            printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
+
+		    if(pset->ch[ich].quality < MIN_BITRATE || pset->ch[ich].quality	> MAX_BITRATE)
+		        pset->ch[ich].quality = DEFAULT_QUALITY;
+		
+		    if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
+		        pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+
+            if(ich == NEXXONE_CH_NUM)
+            {
+	       	 	//# streaming channel...
+                if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
+	                pset->ch[ich].resol= RESOL_720P;
+            }
+
+            printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
+		}
     }
+	else  // old --> current
+	{
+        printf("ver_compare[] = %s >  pset->sys_info.fw_ver[] = %s\n", ver_compare, pset->sys_info.fw_ver) ;
+		//# Encoding cfg per channel
+	    for(ich = 0; ich < channels; ich++)
+	    {
+		    if(ich < NEXXONE_CH_NUM)
+	            pset->ch[ich].resol  = RESOL_720P;
+			else if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
+	            pset->ch[ich].resol= RESOL_720P;
+
+		    pset->ch[ich].motion = OFF;
+
+		    if(pset->ch[ich].gop > NEXXONE_DEFAULT_FPS || pset->ch[ich].gop <= 0)
+                pset->ch[ich].gop = NEXXONE_DEFAULT_FPS ;
+
+		    if (pset->ch[ich].framerate <= FPS_30  || pset->ch[ich].framerate >= FPS_MAX)
+		        pset->ch[ich].framerate	= NEXXONE_DEFAULT_FPS;
+			else
+			{
+			    if (pset->ch[ich].gop == FPS_30) 
+                    pset->ch[ich].gop = 30; 
+			    
+				if (pset->ch[ich].gop == FPS_15) 
+                    pset->ch[ich].gop = 15; 
+			}	
+
+		    if (pset->ch[ich].quality < Q_HIGH || pset->ch[ich].quality >= MAX_QUALITY)
+		        pset->ch[ich].quality = DEFAULT_QUALITY;
+			else
+			{
+				if(ich != NEXXONE_CH_NUM)
+				{
+				    if(pset->ch[ich].quality == Q_HIGH)
+					    pset->ch[ich].quality = 4000 ; // 4MBPS
+				    if(pset->ch[ich].quality == Q_MID)
+					    pset->ch[ich].quality = 3000 ; 
+				    if(pset->ch[ich].quality == Q_LOW)
+					    pset->ch[ich].quality = 2000 ;
+				}
+				else
+				{
+					if(pset->ch[ich].resol == RESOL_1080P)
+					{
+				        if(pset->ch[ich].quality == Q_HIGH)
+					        pset->ch[ich].quality = 8000 ; // 8MBPS
+				        if(pset->ch[ich].quality == Q_MID)
+					        pset->ch[ich].quality = 6000 ; 
+				        if(pset->ch[ich].quality == Q_LOW)
+					        pset->ch[ich].quality = 4000 ; 
+					}
+					if(pset->ch[ich].resol == RESOL_720P)
+					{
+				        if(pset->ch[ich].quality == Q_HIGH)
+					        pset->ch[ich].quality = 4000 ; // 4MBPS
+				        if(pset->ch[ich].quality == Q_MID)
+					        pset->ch[ich].quality = 3000 ; 
+				        if(pset->ch[ich].quality == Q_LOW)
+					        pset->ch[ich].quality = 2000 ; 
+					}
+					if(pset->ch[ich].resol == RESOL_480P)
+					{
+				        if(pset->ch[ich].quality == Q_HIGH)
+					        pset->ch[ich].quality = 2000 ; // 4MBPS
+				        if(pset->ch[ich].quality == Q_MID)
+					        pset->ch[ich].quality = 1000 ; 
+				        if(pset->ch[ich].quality == Q_LOW)
+					        pset->ch[ich].quality = 512 ; 
+					}
+
+				}
+			}
+
+		    if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
+		        pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+		}
+	}
 
 	//# Watchdog...
 	if(pset->wd.gsn < GSN_IDX_01 || pset->wd.gsn >= GSN_IDX_MAX)
@@ -528,7 +646,7 @@ static void cfg_param_check(app_set_t* pset)
         pset->sys_info.osd_set = ON ; 
 
     if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)
-        pset->sys_info.P2P_ON_OFF = OFF ; 
+        pset->sys_info.P2P_ON_OFF = ON ; 
 
     if((int)pset->sys_info.p2p_id[0] == CHAR_INVALID)
         strcpy(pset->sys_info.p2p_id, P2P_DEFAULT_ID) ;
@@ -644,7 +762,7 @@ static void cfg_param_check(app_set_t* pset)
         pset->time_info.timesync_type = 1 ;
 
     if((int)pset->account_info.ON_OFF <= CFG_INVALID || (int)pset->account_info.ON_OFF > 1 )
-        pset->account_info.ON_OFF = OFF ;
+        pset->account_info.ON_OFF = ON ;
  
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
@@ -715,8 +833,7 @@ static void cfg_param_check(app_set_t* pset)
     printf("pset->account_info.onvif.lv		= %d\n", pset->account_info.onvif.lv) ;
     printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
-
-
+	
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, "0.0.0.0");
 
@@ -730,10 +847,19 @@ static void cfg_param_check(app_set_t* pset)
 
 	if((int)pset->voip.peerid[0] == CHAR_INVALID || (int)pset->voip.peerid[0] == 0)
 		strcpy(pset->voip.peerid, "");
-
+		
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 
+}
+
+static void app_set_version_read(void)
+{
+	if (app_set != NULL)
+	{
+		sprintf(app_set->sys_info.fw_ver, "%s", FITT360_SW_VER);
+		sprintf(app_set->sys_info.hw_ver, "%s", FITT360_HW_VER);
+	}
 }
 
 static int cfg_read(int is_mmc, char* cfg_path)
@@ -777,14 +903,14 @@ static int cfg_read(int is_mmc, char* cfg_path)
 			return EFAIL;
 		}
 
+	    cfg_param_check_nexx(app_set);
 		app_set_version_read();
-		cfg_param_check(app_set);
 	}
 
 	return SOK;
 }
 
-void app_set_default(int default_type)
+static void app_set_default(int default_type)
 {
     char MacAddr[12] ;
     char enc_ID[32] = {0, } ;
@@ -802,44 +928,69 @@ void app_set_default(int default_type)
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;
 
-    if(!default_type)
+    if (!default_type)
         memcpy(&tmp_set, app_set, sizeof(app_set_t)) ;
 
 	//# Encoding cfg per channel
+	if (strcmp(MODEL_NAME, NEXX360_STR) == 0) {
+		/* NEXX360 */
+		channels = MAX_CH_NUM+1;
 
-    channels = MAX_CH_NUM+1;
+		for (ich = 0; ich < channels; ich++)
+		{
+			app_set->ch[ich].resol		= RESOL_720P;
+			app_set->ch[ich].framerate	= DEFAULT_FPS;
+			app_set->ch[ich].quality	= DEFAULT_QUALITY;
+			app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+			app_set->ch[ich].motion 	= OFF;
+			app_set->ch[ich].gop 	    = DEFAULT_FPS;
+		}
+	} else if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
+		/* NEXXONE Camera Capture Channel */
+		app_set->ch[0].resol		= RESOL_720P;
+		app_set->ch[0].framerate	= NEXXONE_DEFAULT_FPS;
+		app_set->ch[0].quality		= DEFAULT_QUALITY;
+		app_set->ch[0].rate_ctrl	= RATE_CTRL_VBR;
+		app_set->ch[0].motion 		= OFF;
+		app_set->ch[0].gop 	    	= NEXXONE_DEFAULT_FPS;
+		
+		/* NEXXONE Video Streaming Channel */
+		app_set->ch[1].resol		= RESOL_720P;
+		app_set->ch[1].framerate	= NEXXONE_DEFAULT_FPS;
+		app_set->ch[1].quality		= DEFAULT_QUALITY;
+		app_set->ch[1].rate_ctrl	= RATE_CTRL_VBR;
+		app_set->ch[1].motion 		= OFF;
+		app_set->ch[1].gop 	    	= NEXXONE_DEFAULT_FPS;
+	} else {
+		/* FITT360 (index ±¸Á¶) */
+		channels = MAX_CH_NUM+1;
 
-	for(ich = 0; ich < channels; ich++)
-    {
-		app_set->ch[ich].resol		= RESOL_720P;
-		app_set->ch[ich].framerate	= FPS_30;
-		app_set->ch[ich].quality	= Q_HIGH;
-		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
-		app_set->ch[ich].motion 	= OFF;
-		app_set->ch[ich].gop 	    = DEFAULT_FPS;
-        if(ich == MAX_CH_NUM)
-        {
-		    app_set->ch[ich].quality	= Q_HIGH;
-		    app_set->ch[ich].resol		= RESOL_480P;
-        }
+		for (ich = 0; ich < channels; ich++)
+		{
+			app_set->ch[ich].resol		= RESOL_720P;
+			app_set->ch[ich].framerate	= FPS_15;
+			app_set->ch[ich].quality	= Q_HIGH;
+			app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+			app_set->ch[ich].motion 	= OFF;
+			app_set->ch[ich].gop 	    = DEFAULT_FPS;
+		}
 	}
+	
 	app_set->wd.gsn = GSN_IDX_03;
 
-
 	/******************** begin of net_info ********************/
-    if(default_type)  // FULL reset or hw reset
+    if (default_type)  // FULL reset or hw reset
     {
     	//# Network information for device
         app_set->net_info.type = NET_TYPE_STATIC ;
         strcpy(app_set->net_info.wlan_ipaddr, "192.168.0.252");
-	    app_set->wifiap.stealth = OFF ;
+	    app_set->wifiap.stealth = OFF;
         strcpy(app_set->net_info.wlan_netmask, "255.255.0.0");
         strcpy(app_set->net_info.wlan_gateway, "192.168.0.1");
 
         strcpy(app_set->net_info.eth_ipaddr, "192.168.1.252");
         strcpy(app_set->net_info.eth_netmask, "255.255.0.0");
         strcpy(app_set->net_info.eth_gateway, "192.168.1.1");
-
     }
     else  // soft reset
     {
@@ -886,25 +1037,22 @@ void app_set_default(int default_type)
     strcpy(app_set->ftp_info.pwd, "FTP_PASSWORD");
 
 	//# Wifi AP information
-
     app_set->wifiap.en_key = ON;
     strcpy(app_set->wifiap.ssid, "AP_SSID") ;
     strcpy(app_set->wifiap.pwd,"AP_PASSWORD") ;
-	app_set->wifiap.stealth = OFF ;
+	app_set->wifiap.stealth = OFF;
 
 	app_set_version_read();
 
-    if(!DefaultGetMac(MacAddr))
-    {
-        strncpy(app_set->sys_info.deviceId ,MacAddr, 12);
+    if (!DefaultGetMac(MacAddr)) {
+        strncpy(app_set->sys_info.deviceId, MacAddr, 12);
     }
-    else
-    {
+    else {
         printf( "Fatal error: Failed to get local host's MAC address\n" );
     }
 
     app_set->sys_info.osd_set = ON ;
-    app_set->sys_info.P2P_ON_OFF = OFF ;
+    app_set->sys_info.P2P_ON_OFF = ON ;
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 
     strcpy(app_set->sys_info.p2p_passwd, P2P_DEFAULT_PW) ;
 
@@ -930,23 +1078,27 @@ void app_set_default(int default_type)
 	strcpy(app_set->ddns_info.hostname, "fitt360.ddns.net");
 */  
     app_set->ddns_info.interval = 1 ;
-
 	strcpy(app_set->sys_info.deviceId, MODEL_NAME);
-	if(strcmp(app_set->sys_info.deviceId, "FITT360 Security")==0){
+	
+	if (strcmp(app_set->sys_info.deviceId, "FITT360 Security")==0) {
 		strcpy(app_set->sys_info.deviceId, "FITT360_0000");
 	    strcpy(app_set->time_info.time_zone_abbr, "JST");
-	}else {
+	} else {
 		strcat(app_set->sys_info.deviceId, "_0000");
 	    strcpy(app_set->time_info.time_zone_abbr, "KST");
 	}
-    strcpy(app_set->sys_info.uid ,"LFS-LSCS-A1-xxxx");
-
+    
+	strcpy(app_set->sys_info.uid ,"LFS-LSCS-A1-xxxx");
     app_set->time_info.time_zone = TIME_ZONE + 12;
     strcpy(app_set->time_info.time_server, "time.google.com") ;
     app_set->time_info.daylight_saving = 0 ;
     app_set->time_info.timesync_type = 1 ;
 
-    app_set->account_info.ON_OFF = OFF ;
+    if (strcmp(MODEL_NAME, NEXX360_STR) == 0 || strcmp(MODEL_NAME, NEXXONE_STR) == 0)
+        app_set->account_info.ON_OFF = ON;
+	else
+		app_set->account_info.ON_OFF = OFF;
+    
     app_set->account_info.enctype = 0 ;
     if(app_set->account_info.enctype) // 1, AES encryption
 	{
@@ -977,7 +1129,7 @@ void app_set_default(int default_type)
 	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
 }
 
-void app_set_delete_cfg(void)
+static void app_set_delete_cfg(void)
 {
     char cmd[MAX_CHAR_128]={0,};
 
@@ -1009,16 +1161,31 @@ int app_set_open(void)
 
     //#--- ucx app setting param
     app_set = (app_set_t *)&app_sys_set;
-//	memset(app_set, CFG_INVALID, sizeof(app_set_t));
 	char_memset();
-
-	if(cfg_read(CFG_MMC, CFG_FILE_MMC) == EFAIL)	//# sd read first.
-		ret = cfg_read(CFG_NAND, CFG_FILE_NAND);	//# nand read if sd read fail
-
-    if (ret == EFAIL) app_set_default(FULL_RESET);
-
+	
+	/* 
+	 * Fitt360 CFG Path 
+	 *            MMC  : ---> /mmc/cfg/fbx_cfg.ini
+	 *            NAND : ---> /media/nand/cfg/fbx_cfg.ini
+	 * 
+	 * NEXX360/NEXXONE CFG Path 
+	 *            MMC  : --> /mmc/cfg/nexx_cfg.ini
+	 *            NAND : --> /media/nand/cfg/nexx_cfg.ini 
+	 */
+	if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
+		if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
+			ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
+	} else {
+		/* FITT360 */
+		if (cfg_read(CFG_MMC, CFG_FILE_MMC) == EFAIL)	//# read previous setting type.
+			ret = cfg_read(CFG_NAND, CFG_FILE_NAND);	//# nand read if sd read fail
+	}
+	
+	if (ret == EFAIL) 
+	    app_set_default(FULL_RESET);
+	
+    app_set_delete_cfg(); // another verion setting file
 	app_set_write();
-
 	printf("done\n");
 
 	return 0;
@@ -1028,15 +1195,15 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
 {
     int ret ;
 
-    if(type >= 0 && type < 2)
+    if (type >= 0 && type < 2)
     {
         app_set_default(type);  // onvif factory default
 	    app_set_write();
 
         ret = app_rec_state();
-        if(ret)
+        if (ret)
         {
-            sleep(1) ;
+            sleep(1);
             app_rec_stop(1);
         }
 
@@ -1049,64 +1216,49 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
 
 int app_set_write(void)
 {
-/*
-    int dest_size = 0, dest1_size = 0 ;
-    unsigned char *dest = NULL ;
-    unsigned char dest1[128] = {0, };
-    unsigned char *dest2 = NULL ;;
-    unsigned char dest3[128] = {0, };
-*/
-	// save cfg in sd
+	char path[128] ={0,};
+
 	if (app_cfg->ste.b.mmc && !app_cfg->ste.b.mmc_err)
 	{
-	   if(-1 == access(CFG_DIR_MMC, 0)) {
-		   mkdir(CFG_DIR_MMC, 0775);
-		   chmod(CFG_DIR_MMC, 0775);
-	   }
-/*
+		if (-1 == access(CFG_DIR_MMC, 0)) {
+			mkdir(CFG_DIR_MMC, 0775);
+			chmod(CFG_DIR_MMC, 0775);
+		}
 
-       dest = base64_encode(app_set->account_info.rtsp_userid, 16, &dest_size) ;
-       printf("base64 dest_size = %d\n",dest_size) ; 
-       memcpy(dest1, dest, dest_size) ;
+		if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
+			snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
+		}
+		else {
+			snprintf(path, sizeof(path), "%s", CFG_FILE_MMC);
+		}
 
-       dest2 = base64_decode(dest1, dest_size, &dest1_size) ;
-       printf("base64 dest1_size = %d\n",dest1_size) ;
-       memcpy(dest3, dest2, dest1_size) ;
-
-       decrypt_aes(dest3, app_set->account_info.rtsp_userid, 32) ;
-
-       printf("app_set->account_info.rtsp_userid = %s\n",app_set->account_info.rtsp_userid) ;
-       strncpy(app_set->account_info.rtsp_userid, dest, dest_size) ;       
-*/
-
-	   if (OSA_fileWriteFile(CFG_FILE_MMC, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
-		   eprintf("couldn't open %s file\n", CFG_FILE_MMC);
-	   }
+		if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
+			eprintf("couldn't open %s file\n", path);
+		}
    }
 
 	//# save cfg in nand.
-	if(-1 == access(CFG_DIR_NAND, 0)) {
+	if (-1 == access(CFG_DIR_NAND, 0)) {
 		mkdir(CFG_DIR_NAND, 0775);
 		chmod(CFG_DIR_NAND, 0775);
 	}
-
-	if (OSA_fileWriteFile(CFG_FILE_NAND, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
-		eprintf("couldn't open %s file\n", CFG_FILE_NAND);
+	
+	memset(path, 0, sizeof(path));
+	if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
+		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
 	}
-	sync();
+	else  {
+		snprintf(path, sizeof(path), "%s", CFG_FILE_NAND);
+	}
+	
+	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
+		eprintf("couldn't open %s file\n", path);
+	}
 
+	sync();
 	printf(" [app] %s done...!\n", __func__);
 
 	return 0;
-}
-
-void app_set_version_read(void)
-{
-	if(app_set != NULL)
-	{
-		sprintf(app_set->sys_info.fw_ver, "%s", FITT360_SW_VER);
-		sprintf(app_set->sys_info.hw_ver, "%s", FITT360_HW_VER);
-	}
 }
 
 int get_bitrate_val(int quality, int resol)

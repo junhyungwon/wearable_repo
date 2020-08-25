@@ -71,12 +71,12 @@ static FILE *jfp = NULL;
 void video_status(void)
 {
     int i, temp, count, ret, vcount = 0;
-	int vstatus[MAX_CH_NUM_ONEEYE] = {0,};
+	int vstatus[NEXXONE_CH_NUM] = {0,};
 
     char msg[128] = {0,};
 
 	/* current maximum video count */
-	Vcap_get_video_status(MAX_CH_NUM_ONEEYE, &vstatus[0], &temp);
+	Vcap_get_video_status(NEXXONE_CH_NUM, &vstatus[0], &temp);
 	
 	/* Fixed */
 	app_leds_cam_ctrl(vstatus[0]);
@@ -96,10 +96,9 @@ void video_status(void)
             app_rec_stop(1);
         }
 		
-		if (strcmp(MODEL_NAME, "NEXX360") != 0) 
-            mcu_pwr_off(OFF_NORMAL) ;
-    } else
-	{
+		if ((strcmp(MODEL_NAME, NEXX360_STR) != 0) && (strcmp(MODEL_NAME, NEXXONE_STR) != 0)) 
+            mcu_pwr_off(OFF_NORMAL);
+    } else {
 		app_cfg->wd_tot |= WD_ENC; 
 	}
 	
@@ -338,28 +337,54 @@ static int cap_enc_init(VENC_PARAMS_S *vencParams)
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 	int i, channels=0;
+	
+	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
+		channels = NEXXONE_CH_NUM+1; /* 1ch camera + 1ch streaming */
 
-	channels = MAX_CH_NUM_ONEEYE+1;
+		for (i=0; i < channels; i++)
+		{
+			params.frameRate 		= app_cfg->ich[i].fr;
+			params.inputFrameRate 	= NEXXONE_DEFAULT_FPS;
+			params.targetBitRate 	= app_cfg->ich[i].br * 1000;
 
-	for(i=0; i < channels; i++)
-	{
-		params.frameRate 		= app_cfg->ich[i].fr;
-		params.inputFrameRate 	= DEFAULT_FPS;
-		params.targetBitRate 	= app_cfg->ich[i].br * 1000;
+			vencParams->encChannelParams[i].enableAnalyticinfo = 0;
+			Venc_params_set(vencParams, i, &params, VENC_ALL);
+		}
 
-        vencParams->encChannelParams[i].enableAnalyticinfo = 0;
-		Venc_params_set(vencParams, i, &params, VENC_ALL);
+		if (app_cfg->en_jpg)
+		{
+			params.frameRate 		= JPEG_FPS;
+			params.inputFrameRate 	= NEXXONE_DEFAULT_FPS;
+			params.targetBitRate 	= (app_cfg->ich[NEXXONE_CH_NUM].br * 1000)/NEXXONE_DEFAULT_FPS;
+
+			vencParams->encChannelParams[channels].enableAnalyticinfo = 0;
+			Venc_params_set(vencParams, channels, &params, VENC_ALL);
+		}
+	
+	} else {
+		channels = MAX_CH_NUM+1; /* 4 camera + 1 stream */
+
+		for (i=0; i < channels; i++)
+		{
+			params.frameRate 		= app_cfg->ich[i].fr;
+			params.inputFrameRate 	= DEFAULT_FPS;
+			params.targetBitRate 	= app_cfg->ich[i].br * 1000;
+
+			vencParams->encChannelParams[i].enableAnalyticinfo = 0;
+			Venc_params_set(vencParams, i, &params, VENC_ALL);
+		}
+
+		if (app_cfg->en_jpg)
+		{
+			params.frameRate 		= JPEG_FPS;
+			params.inputFrameRate 	= DEFAULT_FPS;
+			/* app_cfg->ich[4] ----> streaming channel set */
+			params.targetBitRate 	= (app_cfg->ich[MAX_CH_NUM].br * 1000)/DEFAULT_FPS;
+
+			vencParams->encChannelParams[channels].enableAnalyticinfo = 0;
+			Venc_params_set(vencParams, channels, &params, VENC_ALL);
+		}
 	}
-
-	if(app_cfg->en_jpg)
-	{
-		params.frameRate = JPEG_FPS;
-		params.inputFrameRate 	= DEFAULT_FPS;
-		params.targetBitRate 	= (app_cfg->ich[MAX_CH_NUM_ONEEYE].br * 1000)/DEFAULT_FPS;
-
-		vencParams->encChannelParams[channels].enableAnalyticinfo = 0;
-		Venc_params_set(vencParams, channels, &params, VENC_ALL);
-    }
 
 	return SOK;
 }
@@ -380,8 +405,12 @@ static void cap_enc_late_init(void)
 {
 	int i, channels=0;
 
-	channels = MAX_CH_NUM_ONEEYE+1;
-
+	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
+		channels = NEXXONE_CH_NUM+1;
+	} else {
+		channels = MAX_CH_NUM+1;
+	}
+	
 	//#--- set rate control
 	for(i=0; i < channels; i++)
     {
@@ -396,11 +425,16 @@ static void cap_enc_late_init(void)
 static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 {
 	int idx=0, wi, he, br, channels;
+	int default_fps = 0;
 	app_ch_cfg_t *ch_prm;
 
-
-	channels = MAX_CH_NUM_ONEEYE+1;
-
+	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
+		channels = NEXXONE_CH_NUM+1;
+		default_fps = NEXXONE_DEFAULT_FPS;
+	} else {
+		channels = MAX_CH_NUM+1;
+		default_fps = DEFAULT_FPS;
+	}
 
 	for(idx=0; idx<channels; idx++)
 	{
@@ -415,13 +449,22 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 
 		app_cfg->ich[idx].wi = wi;
 		app_cfg->ich[idx].he = he;
-		app_cfg->ich[idx].fr = get_fps_val(ch_prm->framerate);
-
-		br = get_bitrate_val(ch_prm->quality, ch_prm->resol);
-		app_cfg->ich[idx].br = (br * app_cfg->ich[idx].fr)/DEFAULT_FPS;
-        app_cfg->ich[idx].rc = app_set->ch[idx].rate_ctrl ;  
-
+		
+		if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0))
+		{
+		    app_cfg->ich[idx].fr = app_set->ch[idx].framerate ;
+		    app_cfg->ich[idx].br = (app_set->ch[idx].quality * app_cfg->ich[idx].fr)/default_fps;
+		}
+		else
+		{
+		    app_cfg->ich[idx].fr = get_fps_val(ch_prm->framerate);
+			br = get_bitrate_val(ch_prm->quality, ch_prm->resol);
+			app_cfg->ich[idx].br = (br * app_cfg->ich[idx].fr)/DEFAULT_FPS;
+			
+		}
+		app_cfg->ich[idx].rc = app_set->ch[idx].rate_ctrl ; 
 		printf(" [app] (CH%d): %dx%d, fr %d, br %d\n", idx, wi, he, app_cfg->ich[idx].fr, app_cfg->ich[idx].br);
+        
 
 		if(idx==0) {
 			//# set cap param
@@ -460,11 +503,11 @@ int app_cap_start(void)
 	Vcap_params_init(&vcapParams);
 	Venc_params_init(&vencParams);
 
-	Vdis_params_init(&vdisParams, app_set->ch[MAX_CH_NUM_ONEEYE].resol);  // 0 sd, 1 hd 2 fhd 
+	Vdis_params_init(&vdisParams, app_set->ch[NEXXONE_CH_NUM].resol);  // 0 sd, 1 hd 2 fhd 
 
 	//#--- init component
 	vsysParams.enableEncode 	= 1; //# if hardware test -> 0
-	vsysParams.enableHDMI		= app_set->ch[MAX_CH_NUM_ONEEYE].resol;
+	vsysParams.enableHDMI		= app_set->ch[NEXXONE_CH_NUM].resol;
     vsysParams.enableMjpeg      = app_cfg->en_jpg;
 	vsysParams.systemUseCase 	= VSYS_USECASE_CAPTURE;
 	vsysParams.decoderHD 		= SYSTEM_DEVICE_VID_DEC_NVP2440H_DRV; //SYSTEM_DEVICE_VID_DEC_PH3100K_DRV;
@@ -478,7 +521,7 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 
 	vsysParams.captMode = CAPT_MODE_720P;
-	vsysParams.numChs = MAX_CH_NUM_ONEEYE;
+	vsysParams.numChs = NEXXONE_CH_NUM;
 
 	app_cfg->num_ch = vsysParams.numChs;
 

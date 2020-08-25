@@ -73,13 +73,13 @@ static app_gui_t *igui = &t_gui;
 
 static void get_wd_name(char *name)
 {
-	if (!(app_cfg->wd_flags & WD_ENC))
+	if ((app_cfg->wd_tot & WD_ENC) && ((app_cfg->wd_flags & WD_ENC)==0))
 		strcat(name, WD_ENC_NAME);
-	if (!(app_cfg->wd_flags & WD_DEV))
+	if ((app_cfg->wd_tot & WD_DEV) && ((app_cfg->wd_flags & WD_DEV)==0))
 		strcat(name, WD_DEV_NAME);
-	if (!(app_cfg->wd_flags & WD_MICOM))
+	if ((app_cfg->wd_tot & WD_MICOM) && ((app_cfg->wd_flags & WD_MICOM)==0))
 		strcat(name, WD_MICOM_NAME);
-	if (!(app_cfg->wd_flags & WD_FILE))
+	if ((app_cfg->wd_tot & WD_FILE) && ((app_cfg->wd_flags & WD_FILE)==0))
 		strcat(name, WD_FILE_NAME);
 }
 
