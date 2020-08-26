@@ -136,7 +136,6 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
     int br ;
-    int default_fps = 0;
     app_ch_cfg_t *ch_prm;
 	
     switch(framerate)
@@ -167,18 +166,13 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
     br = get_bitrate_val(app_set->ch[ch].quality, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
     
     // resol 1080P 0, 720P 1, 480P 2
-	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
-		default_fps = NEXXONE_DEFAULT_FPS;
-	} else {
-		default_fps = DEFAULT_FPS;
-	} 
-    app_cfg->ich[ch].br = (br * framerate)/default_fps;
+    app_cfg->ich[ch].br = (br * framerate)/DEFAULT_FPS;
     app_cfg->ich[ch].fr = get_fps_val(ch_prm->framerate);
 
     params.frameRate = app_cfg->ich[ch].fr;
     params.targetBitRate = app_cfg->ich[ch].br*1000 ;
 
-    Venc_setInputFrameRate(ch, default_fps);
+    Venc_setInputFrameRate(ch, DEFAULT_FPS);
 
     Venc_setDynamicParam(ch, 0, &params, VENC_FRAMERATE);
 
@@ -194,7 +188,7 @@ int ctrl_vid_bitrate(int ch, int bitrate)
     char log[128] = {0, };
     char msg[128] = {0, } ;
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int br, default_fps=0;
+    int br;
 
     app_ch_cfg_t *ch_prm;
 
@@ -229,13 +223,7 @@ int ctrl_vid_bitrate(int ch, int bitrate)
     br = get_bitrate_val(bitrate, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
     
 	// resol 480P 0 720P 1 1080P 2
-	if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
-		default_fps = NEXXONE_DEFAULT_FPS;
-	} else {
-		default_fps = DEFAULT_FPS;
-	} 
-	
-    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/default_fps;
+    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
 
     params.targetBitRate = app_cfg->ich[ch].br*1000 ;
 
@@ -1215,7 +1203,8 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
     app_leds_fw_update_ctrl();
 
 #if 1
-	sprintf(cmd, "cp -f %s %s/", fwpath, disk);
+	sprintf(cmd, "tar xvf %s -C %s/", fwpath, disk);
+	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
 	printf("fwupdate cmd:%s\n", cmd);
 	system(cmd);
 #endif

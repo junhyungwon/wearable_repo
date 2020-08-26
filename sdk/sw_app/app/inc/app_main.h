@@ -23,8 +23,17 @@
 #define NET_TYPE_STATIC 		0
 #define NET_TYPE_DHCP           1
 
-#define MAX_CH_NUM				4
-#define NEXXONE_CH_NUM			1
+#if defined(NEXXONE)
+	#define MAX_CH_NUM				1
+#elif defined(NEXX360)
+	#define MAX_CH_NUM				4
+#elif defined(FITT360_SECURITY)
+	#define MAX_CH_NUM				4
+#else
+    #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
+#endif
+
+#define STM_CH_NUM				MAX_CH_NUM // streaming channel
 
 #define MAX_AVI_CNT             4096 //  About 64G / 120Mbyte(1minute)
 

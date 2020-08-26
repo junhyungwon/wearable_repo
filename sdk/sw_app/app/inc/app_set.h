@@ -21,15 +21,19 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define NEXX360_STR				"NEXX360"
-#define NEXXONE_STR				"NEXXONE"
 
-/*
- * FITT/NEXX360--> Default FPS 15
- * NEXXONE--> Default FPS 30
- */ 
-#define DEFAULT_FPS				15 // 20 //24
-#define NEXXONE_DEFAULT_FPS		30 // 20 //24
+#if defined(NEXXONE)
+    #define DEFAULT_FPS				30
+#elif defined(NEXX360)
+    #define DEFAULT_FPS				15
+#elif defined(FITT360_SECURITY)
+    #define DEFAULT_FPS				15
+#else
+    #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
+#endif
+
+#define DEFAULT_GOV				DEFAULT_FPS
+#define MAX_GOV					DEFAULT_FPS
 
 #define FTP_HOUR_MIN            0
 #define FTP_HOUR_MAX            24

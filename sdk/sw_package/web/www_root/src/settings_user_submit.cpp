@@ -14,10 +14,6 @@ static int submit_settings()
     int isPOST = 0;
     T_CGIPRM prm[128];
 
-	int bFitt360 = 1;
-	if( strcmp(MODEL_NAME, "NEXX360") == 0)
-		bFitt360 = 0;
-
     char *method = getenv("REQUEST_METHOD");
 	if(method == NULL) return ERR_INVALID_METHOD;
     CGI_DBG("method : %s\n", method);
@@ -138,30 +134,14 @@ static int submit_settings()
 		sprintf(t.onvif.pw, "%s", onvif_pw);
 
 		// check not null
-		if(bFitt360){
-			if( live_stream_account_enable == -1)
-			{
-				CGI_DBG("Not received RTSP Account Enable\n");
-				return ERR_INVALID_PARAM;
-			}
-			else if( live_stream_account_enable == 1)
-			{
-				if(live_stream_account_enctype  == -1) {
-					CGI_DBG("Not received RTSP Account Enctype\n");
-					return ERR_INVALID_PARAM;
-				}
-				if(strlen(live_stream_account_id) < 1){
-					CGI_DBG("RTSP ID len < 1\n");
-					return ERR_INVALID_PARAM;
-				}
-				if(strlen(live_stream_account_pw) < 1){
-					CGI_DBG("RTSP PW len < 1\n");
-					return ERR_INVALID_PARAM;
-				}
-			}
+#if defined(FITT360_SECURITY)
+		if( live_stream_account_enable == -1)
+		{
+			CGI_DBG("Not received RTSP Account Enable\n");
+			return ERR_INVALID_PARAM;
 		}
-		else {
-			live_stream_account_enable=1;
+		else if( live_stream_account_enable == 1)
+		{
 			if(live_stream_account_enctype  == -1) {
 				CGI_DBG("Not received RTSP Account Enctype\n");
 				return ERR_INVALID_PARAM;
@@ -175,12 +155,28 @@ static int submit_settings()
 				return ERR_INVALID_PARAM;
 			}
 		}
+#elif defined(NEXXONE) || defined(NEXX360)
+		live_stream_account_enable=1;
+		if(live_stream_account_enctype  == -1) {
+			CGI_DBG("Not received RTSP Account Enctype\n");
+			return ERR_INVALID_PARAM;
+		}
+		if(strlen(live_stream_account_id) < 1){
+			CGI_DBG("RTSP ID len < 1\n");
+			return ERR_INVALID_PARAM;
+		}
+		if(strlen(live_stream_account_pw) < 1){
+			CGI_DBG("RTSP PW len < 1\n");
+			return ERR_INVALID_PARAM;
+		}
+#else
+
+#endif
 
 		t.rtsp.enable = live_stream_account_enable;
 		t.rtsp.enctype = live_stream_account_enctype;
 		sprintf(t.rtsp.id, "%s", live_stream_account_id);
 		sprintf(t.rtsp.pw, "%s", live_stream_account_pw);
-
 
         // Must finish parsing before free.
         if(isPOST){ free(contents); }
