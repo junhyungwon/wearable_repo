@@ -724,12 +724,13 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 #endif
 
 	// p2p
-	if((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
-		if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
-			app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
-			isChanged++;
-		}
+#if defined(NEXXONE) || defined(NEXX360)
+	if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
+		app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
+		isChanged++;
 	}
+#endif
+
 	// voip config
 	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
 		strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
@@ -929,17 +930,17 @@ static int getResolution(int VideoEncoding, int *w, int *h)
 		return 0;
 	}
 
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P) // HD
+    if(app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD
 	{
 		*w = 1280;
 		*h = 720;
 	}
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P) // FHD
+    if(app_set->ch[STM_CH_NUM].resol == RESOL_1080P) // FHD
 	{
 		*w = 1920;
 		*h = 1080;
 	}
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_480P) // SD
+    if(app_set->ch[STM_CH_NUM].resol == RESOL_480P) // SD
 	{
 		*w = 720;
 		*h = 480;
@@ -1080,94 +1081,68 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 {
 	int ch=0;
 	
-	if(strcmp(MODEL_NAME, NEXX360_STR) == 0)
+#if defined(NEXXONE) || defined(NEXX360)
+	// REC 
+	for(ch = 0; ch < MAX_CH_NUM; ch++)
 	{
-	    for(ch = 0; ch < 4; ch++)
-	    {
-	        if(rec_fps <= DEFAULT_FPS && rec_fps > 0 && app_set->ch[ch].framerate != rec_fps) 
-                app_set->ch[ch].framerate = rec_fps ;
-	        if(rec_bps <= MAX_BITRATE && rec_bps >= MIN_BITRATE && app_set->ch[ch].quality != rec_bps)
-                app_set->ch[ch].quality = rec_bps ;
-	        if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
-                app_set->ch[ch].gop = rec_gop ;
-	        if(rec_rc != app_set->ch[ch].rate_ctrl)
-                app_set->ch[ch].rate_ctrl = rec_rc ;
-        }
-
-	    DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
-
-	    ch=4;// display
-
-	    if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
-		    app_set->ch[ch].resol = stm_res ;
-	    if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
-		    app_set->ch[ch].framerate = stm_fps ;
-	    if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
-		    app_set->ch[ch].quality = stm_bps ;
-	    if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
-		    app_set->ch[ch].gop = stm_gop ;
-	    if(stm_rc != app_set->ch[ch].rate_ctrl){
-		    app_set->ch[ch].rate_ctrl = stm_rc;
-	    }  
-	} 
-	else if(strcmp(MODEL_NAME, NEXXONE_STR) == 0)
-	{
-		if(rec_fps <= NEXXONE_DEFAULT_FPS && rec_fps > 0 && app_set->ch[ch].framerate != rec_fps) 
+		DBG_UDS("[REC] ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
+		if(rec_fps <= DEFAULT_FPS && rec_fps > 0 && app_set->ch[ch].framerate != rec_fps) 
 			app_set->ch[ch].framerate = rec_fps ;
 		if(rec_bps <= MAX_BITRATE && rec_bps >= MIN_BITRATE && app_set->ch[ch].quality != rec_bps)
 			app_set->ch[ch].quality = rec_bps ;
-		if(rec_gop <= NEXXONE_DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
+		if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
 			app_set->ch[ch].gop = rec_gop ;
 		if(rec_rc != app_set->ch[ch].rate_ctrl)
 			app_set->ch[ch].rate_ctrl = rec_rc ;
-
-	    DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
-
-	    ch=1;// display
-
-	    if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
-		    app_set->ch[ch].resol = stm_res ;
-	    if(stm_fps <= NEXXONE_DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
-		    app_set->ch[ch].framerate = stm_fps ;
-	    if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
-		    app_set->ch[ch].quality = stm_bps ;
-	    if(stm_gop <= NEXXONE_DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
-		    app_set->ch[ch].gop = stm_gop ;
-	    if(stm_rc != app_set->ch[ch].rate_ctrl){
-		    app_set->ch[ch].rate_ctrl = stm_rc;
-	    }  
 	}
-	else
+
+	// STM
+	ch=STM_CH_NUM;
+	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		app_set->ch[ch].resol = stm_res ;
+	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+		app_set->ch[ch].framerate = stm_fps ;
+	if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+		app_set->ch[ch].quality = stm_bps ;
+	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+		app_set->ch[ch].gop = stm_gop ;
+	if(stm_rc != app_set->ch[ch].rate_ctrl){
+		app_set->ch[ch].rate_ctrl = stm_rc;
+	}
+	DBG_UDS("[STM] ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
+
+#else // FITT360
+	// REC index base
+	for(ch = 0; ch < MAX_CH_NUM; ch++)
 	{
-        for(ch = 0; ch < 4; ch++)
-	    {
-	        if(rec_fps < FPS_MAX && rec_fps >= 0 && app_set->ch[ch].framerate != rec_fps) 
-                app_set->ch[ch].framerate = rec_fps ;
-	        if(rec_bps < MAX_QUALITY && rec_bps >= 0 && app_set->ch[ch].quality != rec_bps)
-                app_set->ch[ch].quality = rec_bps ;
-	        if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
-                app_set->ch[ch].gop = rec_gop ;
-	        if(rec_rc != app_set->ch[ch].rate_ctrl)
-                app_set->ch[ch].rate_ctrl = rec_rc ;
-        }
+		if(rec_fps < FPS_MAX && rec_fps >= 0 && app_set->ch[ch].framerate != rec_fps) 
+			app_set->ch[ch].framerate = rec_fps ;
+		if(rec_bps < MAX_QUALITY && rec_bps >= 0 && app_set->ch[ch].quality != rec_bps)
+			app_set->ch[ch].quality = rec_bps ;
+		if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
+			app_set->ch[ch].gop = rec_gop ;
+		if(rec_rc != app_set->ch[ch].rate_ctrl)
+			app_set->ch[ch].rate_ctrl = rec_rc ;
+	}
 
-	    DBG_UDS("ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
+	DBG_UDS("[REC] ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
 
-	    ch=4;// display
-
-	    if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
-		    app_set->ch[ch].resol = stm_res ;
-	    if(stm_fps < FPS_MAX && stm_fps >= 0 && app_set->ch[ch].framerate != stm_fps)
-		    app_set->ch[ch].framerate = stm_fps ;
-	    if(stm_bps < MAX_QUALITY && stm_bps >= 0 &&app_set->ch[ch].quality != stm_bps)
-		    app_set->ch[ch].quality = stm_bps ;
-	    if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
-		    app_set->ch[ch].gop = stm_gop ;
-	    if(stm_rc != app_set->ch[ch].rate_ctrl){
-		    app_set->ch[ch].rate_ctrl = stm_rc;
-	    }
-    }
-	DBG_UDS("ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
+	// STM
+	ch=STM_CH_NUM;
+	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		app_set->ch[ch].resol = stm_res ;
+	if(stm_fps < FPS_MAX && stm_fps >= 0 && app_set->ch[ch].framerate != stm_fps)
+		app_set->ch[ch].framerate = stm_fps ;
+	if(stm_bps < MAX_QUALITY && stm_bps >= 0 &&app_set->ch[ch].quality != stm_bps)
+		app_set->ch[ch].quality = stm_bps ;
+	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+		app_set->ch[ch].gop = stm_gop ;
+	if(stm_rc != app_set->ch[ch].rate_ctrl){
+		app_set->ch[ch].rate_ctrl = stm_rc;
+	}
+		
+	DBG_UDS("[STM] ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
+#endif
     
 	return 0;
 }
@@ -2024,11 +1999,11 @@ void *myFunc(void *arg)
 			p.rec.rc  = getRC  (0);
 
 			// get streaming information
-			p.stm.res = getResolutionIdx(4);
-			p.stm.fps = getFps(4);
-			p.stm.bps = getKbps(4);
-			p.stm.gop = getGop (4);
-			p.stm.rc  = getRC  (4);
+			p.stm.res = getResolutionIdx(STM_CH_NUM);
+			p.stm.fps = getFps (STM_CH_NUM);
+			p.stm.bps = getKbps(STM_CH_NUM);
+			p.stm.gop = getGop (STM_CH_NUM);
+			p.stm.rc  = getRC  (STM_CH_NUM);
 
 			ret = write(cs_uds, &p, sizeof p);
 			if (ret > 0) {
@@ -2083,10 +2058,10 @@ void *myFunc(void *arg)
 				int kbps=0;
 				int fps=0, ei=0, gop=0;
 				getResolution(VideoEncoding, &w,&h);
-				kbps = getKbps(4);
-				gop  = getGop(4);
+				kbps = getKbps(STM_CH_NUM);
+				gop  = getGop(STM_CH_NUM);
 				ei   = 1; // fixed
-				fps  = getFps(4);
+				fps  = getFps(STM_CH_NUM);
 				sprintf(strOptions, "w=%d,h=%d,kbps=%d,fps=%d,ei=%d,gov=%d", 
 						w, h, kbps, fps, ei, gop);
 
@@ -2162,7 +2137,7 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-		else if (strcmp(rbuf, "SetVideoEncoderConfiguration") == 0)
+		else if (strcmp(rbuf, "SetVideoEncoderConfiguration") == 0) // streaming from ONVIF
 		{
 			//OnvifServer uses this command
 			sprintf(wbuf, "[APP_UDS] --- SetVideoEncoderConfiguration---");
@@ -2177,175 +2152,120 @@ void *myFunc(void *arg)
 				DBG_UDS("encoding:%d, width=%d,height=%d,kbps=%d,fps=%d,ei=%d,gov=%d\n", encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov);
 
 				if(encoding == 0){
-					if(rcv_height == 720 && app_set->ch[MAX_CH_NUM].resol != RESOL_720P)
+					if(rcv_height == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 						ctrl_vid_resolution(RESOL_480P);
-					else if(rcv_height == 1080 && app_set->ch[MAX_CH_NUM].resol != RESOL_1080P)
+					else if(rcv_height == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
 						ctrl_vid_resolution(RESOL_720P);
-					else if(rcv_height == 480 && app_set->ch[MAX_CH_NUM].resol != RESOL_480P)
+					else if(rcv_height == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
 						ctrl_vid_resolution(RESOL_1080P);
 				}
 				else if(encoding == 2) {
 
-                    if(strcmp(MODEL_NAME, NEXX360_STR) == 0)
+#if defined(NEXXONE) || defined(NEXX360)
+					if(rcv_kbps > 0) // 
 					{
-					    if(rcv_kbps > 0) // 
-					    {
-					        if(rcv_kbps > 7500 && rcv_kbps <= 8000)
-						        rcv_kbps = 8000 ;             
-						    else if(rcv_kbps > 6500 && rcv_kbps <= 7500)
-						        rcv_kbps = 7000 ;          
-						    else if(rcv_kbps > 5500 && rcv_kbps <= 6500)
-					            rcv_kbps = 6000 ;         
-						    else if(rcv_kbps > 4500 && rcv_kbps <= 5500)
-					            rcv_kbps = 5000 ;  
-						    else if(rcv_kbps > 3500 && rcv_kbps <= 4500)
-					            rcv_kbps = 4000 ;   
-						    else if(rcv_kbps > 2500 && rcv_kbps <= 3500)
-					            rcv_kbps = 3000 ;                 
-						    else if(rcv_kbps > 1500 && rcv_kbps <= 2500)
-					            rcv_kbps = 2000 ;               
-						    else if(rcv_kbps > 750 && rcv_kbps <= 1500)
-					            rcv_kbps = 1000 ;              
-						    else if(rcv_kbps > 500 && rcv_kbps <= 750)
-					            rcv_kbps = 512 ;                
-					
-						    if(app_set->ch[MAX_CH_NUM].quality != rcv_kbps)
-							    ctrl_vid_bitrate(MAX_CH_NUM, rcv_kbps);
-
-					    }
-
-					    if(rcv_fps != 0) // 
-					    {
-						    if(app_set->ch[MAX_CH_NUM].framerate != rcv_fps)
-							    ctrl_vid_framerate(MAX_CH_NUM, rcv_fps);
-					    }
-
-					    if(rcv_gov != 0 )
-					    {
-						    if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
-						    {
-							    if(app_set->ch[MAX_CH_NUM].gop != rcv_gov)
-								    ctrl_vid_gop_set(MAX_CH_NUM, rcv_gov) ;  
-						    }
-					    }
+						if(rcv_kbps > 512 && rcv_kbps <= 750) rcv_kbps = 512 ;                
+						else if(rcv_kbps <= 1500) rcv_kbps = 1000 ;              
+						else if(rcv_kbps <= 2500) rcv_kbps = 2000 ;               
+						else if(rcv_kbps <= 3500) rcv_kbps = 3000 ;                 
+						else if(rcv_kbps <= 4500) rcv_kbps = 4000 ;   
+						else if(rcv_kbps <= 5500) rcv_kbps = 5000 ;  
+						else if(rcv_kbps <= 6500) rcv_kbps = 6000 ;         
+						else if(rcv_kbps <= 7500) rcv_kbps = 7000 ;          
+						else if(rcv_kbps <= 8000) rcv_kbps = 8000 ;             
+						else  rcv_kbps = 4000 ; // default value
+				
+						if(app_set->ch[STM_CH_NUM].quality != rcv_kbps)
+							ctrl_vid_bitrate(STM_CH_NUM, rcv_kbps);
 					}
-					else if (strcmp(MODEL_NAME, NEXXONE_STR) == 0)
+
+					if(rcv_fps != 0) // 
 					{
-						if(rcv_kbps > 0) // 
-					    {
-					        if(rcv_kbps > 7500 && rcv_kbps <= 8000)
-						        rcv_kbps = 8000 ;             
-						    else if(rcv_kbps > 6500 && rcv_kbps <= 7500)
-						        rcv_kbps = 7000 ;          
-						    else if(rcv_kbps > 5500 && rcv_kbps <= 6500)
-					            rcv_kbps = 6000 ;         
-						    else if(rcv_kbps > 4500 && rcv_kbps <= 5500)
-					            rcv_kbps = 5000 ;  
-						    else if(rcv_kbps > 3500 && rcv_kbps <= 4500)
-					            rcv_kbps = 4000 ;   
-						    else if(rcv_kbps > 2500 && rcv_kbps <= 3500)
-					            rcv_kbps = 3000 ;                 
-						    else if(rcv_kbps > 1500 && rcv_kbps <= 2500)
-					            rcv_kbps = 2000 ;               
-						    else if(rcv_kbps > 750 && rcv_kbps <= 1500)
-					            rcv_kbps = 1000 ;              
-						    else if(rcv_kbps > 500 && rcv_kbps <= 750)
-					            rcv_kbps = 512 ;                
-					
-						    if(app_set->ch[NEXXONE_CH_NUM].quality != rcv_kbps)
-							    ctrl_vid_bitrate(NEXXONE_CH_NUM, rcv_kbps);
-
-					    }
-
-					    if(rcv_fps != 0) // 
-					    {
-						    if(app_set->ch[NEXXONE_CH_NUM].framerate != rcv_fps)
-							    ctrl_vid_framerate(NEXXONE_CH_NUM, rcv_fps);
-					    }
-
-					    if(rcv_gov != 0 )
-					    {
-						    if(rcv_gov <= NEXXONE_DEFAULT_FPS && rcv_gov > 0)
-						    {
-							    if(app_set->ch[NEXXONE_CH_NUM].gop != rcv_gov)
-								    ctrl_vid_gop_set(NEXXONE_CH_NUM, rcv_gov) ;  
-						    }
-					    }
+						if(app_set->ch[STM_CH_NUM].framerate != rcv_fps)
+							ctrl_vid_framerate(STM_CH_NUM, rcv_fps);
 					}
-					else
+
+					if(rcv_gov != 0 )
 					{
-					    if(rcv_kbps != 0) // 
-					    {
-						    if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P) // FHD Streaming
-						    {
-							    if(rcv_kbps > 7000)
-							 	    rcv_kbps = 0 ;               //  HIGH 0 --> 8000Kbps   
-							    else if(rcv_kbps <= 7000 && rcv_kbps > 5000)
-								    rcv_kbps = 1 ;               //  MID  1 --> 6000Kbps   
-							    else if(rcv_kbps <= 5000)
-								    rcv_kbps = 2 ;               //  LOW  2 --> 4000Kbps   
-							    else
-								    rcv_kbps = 2 ;
+						if(rcv_gov <= MAX_GOV && rcv_gov > 0)
+						{
+							if(app_set->ch[STM_CH_NUM].gop != rcv_gov)
+								ctrl_vid_gop_set(STM_CH_NUM, rcv_gov) ;  
+						}
+					}
+#else // defined(FITT360_SECURITY)
+					if(rcv_kbps != 0) // 
+					{
+						if(app_set->ch[STM_CH_NUM].resol == RESOL_1080P) // FHD Streaming
+						{
+							if(rcv_kbps > 7000)
+								rcv_kbps = 0 ;               //  HIGH 0 --> 8000Kbps   
+							else if(rcv_kbps <= 7000 && rcv_kbps > 5000)
+								rcv_kbps = 1 ;               //  MID  1 --> 6000Kbps   
+							else if(rcv_kbps <= 5000)
+								rcv_kbps = 2 ;               //  LOW  2 --> 4000Kbps   
+							else
+								rcv_kbps = 2 ;
 
-						    }
-						    else if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P) // HD Streaming
-						    {
-							    if(rcv_kbps > 3500)
-								    rcv_kbps = 0 ;               //  HIGH 0 --> 4000Kbps     
-		  					    else if(rcv_kbps <= 3500 && rcv_kbps > 2500)
-								    rcv_kbps = 1 ;               //  MID  1 --> 3000Kbps   
-							    else if(rcv_kbps <= 2500)
-								    rcv_kbps = 2 ;               //  LOW  2 --> 2000Kbps   
-							    else
-								    rcv_kbps = 2 ;
-						    }
-						    else 
-						    {
-							    if(rcv_kbps > 1500)
-								    rcv_kbps = 0 ;               //  HIGH 0 --> 2000Kbps   
-							    else if(rcv_kbps <= 1500 && rcv_kbps > 800)
-								    rcv_kbps = 1 ;               //  MID  1 --> 1000Kbps   
-							    else if(rcv_kbps <= 800)
-								    rcv_kbps = 2 ;               //  LOW  2 --> 512Kbps   
-							    else
-								    rcv_kbps = 2 ;
+						}
+						else if(app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD Streaming
+						{
+							if(rcv_kbps > 3500)
+								rcv_kbps = 0 ;               //  HIGH 0 --> 4000Kbps     
+							else if(rcv_kbps <= 3500 && rcv_kbps > 2500)
+								rcv_kbps = 1 ;               //  MID  1 --> 3000Kbps   
+							else if(rcv_kbps <= 2500)
+								rcv_kbps = 2 ;               //  LOW  2 --> 2000Kbps   
+							else
+								rcv_kbps = 2 ;
+						}
+						else 
+						{
+							if(rcv_kbps > 1500)
+								rcv_kbps = 0 ;               //  HIGH 0 --> 2000Kbps   
+							else if(rcv_kbps <= 1500 && rcv_kbps > 800)
+								rcv_kbps = 1 ;               //  MID  1 --> 1000Kbps   
+							else if(rcv_kbps <= 800)
+								rcv_kbps = 2 ;               //  LOW  2 --> 512Kbps   
+							else
+								rcv_kbps = 2 ;
 
-						    }
+						}
 
-						    if(app_set->ch[4].quality != rcv_kbps)
-							    ctrl_vid_bitrate(4, rcv_kbps);
-					    }
+						if(app_set->ch[STM_CH_NUM].quality != rcv_kbps)
+							ctrl_vid_bitrate(STM_CH_NUM, rcv_kbps);
+					}
 
-					    if(rcv_fps != 0) // 
-					    {
-						    if(rcv_fps > 12)
-							    rcv_fps = 0 ;                   // HIGH 0 -> 15fps 
-						    else if(rcv_fps <= 12 && rcv_fps > 8)
-							    rcv_fps = 1 ;                   // MID 1 -> 10fps
-						    else if(rcv_fps <= 8)
-							    rcv_fps = 2 ;                   // LOW 2 -> 5fps
-						    else
-							    rcv_fps = 0 ;
+					if(rcv_fps != 0) // 
+					{
+						if(rcv_fps > 12)
+							rcv_fps = 0 ;                   // HIGH 0 -> 15fps 
+						else if(rcv_fps <= 12 && rcv_fps > 8)
+							rcv_fps = 1 ;                   // MID 1 -> 10fps
+						else if(rcv_fps <= 8)
+							rcv_fps = 2 ;                   // LOW 2 -> 5fps
+						else
+							rcv_fps = 0 ;
 
-						    if(app_set->ch[4].framerate != rcv_fps)
-							    ctrl_vid_framerate(4, rcv_fps);
-					    }
+						if(app_set->ch[STM_CH_NUM].framerate != rcv_fps)
+							ctrl_vid_framerate(STM_CH_NUM, rcv_fps);
+					}
 
-					    if(rcv_gov != 0 )
-					    {
-						    if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
-						    {
-							    if(app_set->ch[4].gop != rcv_gov)
-								    ctrl_vid_gop_set(4, rcv_gov) ;  
-						    }
-					    }
-                    }
+					if(rcv_gov != 0 )
+					{
+						if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
+						{
+							if(app_set->ch[STM_CH_NUM].gop != rcv_gov)
+								ctrl_vid_gop_set(STM_CH_NUM, rcv_gov) ;  
+						}
+					}
+#endif
 					 
-					if(rcv_height == 720 && app_set->ch[MAX_CH_NUM].resol != RESOL_720P)
+					if(rcv_height == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 						ctrl_vid_resolution(RESOL_480P);
-					else if(rcv_height == 1080 && app_set->ch[MAX_CH_NUM].resol != RESOL_1080P)
+					else if(rcv_height == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
 						ctrl_vid_resolution(RESOL_720P);
-					else if(rcv_height == 480 && app_set->ch[MAX_CH_NUM].resol != RESOL_480P)
+					else if(rcv_height == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
 						ctrl_vid_resolution(RESOL_1080P);
 				}
 				else {

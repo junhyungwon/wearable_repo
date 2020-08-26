@@ -35,6 +35,15 @@ static char out_buf[1024];
 #define PUTSTR printf
 #endif
 
+#if defined(NEXXONE)
+	#define MAX_FPS 30
+#elif defined(NEXX360)
+	#define MAX_FPS 15
+#elif defined(FITT360_SECURITY)
+	#define MAX_FPS 15
+#else
+	#error "Check PRODUCT_NAME in Rules.make"
+#endif
 
 /******************************************************************************/
 
@@ -136,90 +145,88 @@ int put_json_all_config()
 		}
 
 		// record info
-		if( strcmp(MODEL_NAME, "NEXX360") == 0){
+#if defined(NEXXONE)||defined(NEXX360)
+		int fpsIdx = p.rec.fps-1;
+		if(fpsIdx < 0 ) fpsIdx = 0;
+		if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1; // fpsIdx is Zero-based number.
 
-			int fpsIdx = p.rec.fps-1;
-			if(fpsIdx < 0 ) fpsIdx = 0;
-			if(fpsIdx > 14) fpsIdx = 14;
-
-			int bpsIdx = 0;
-			int kbps = p.rec.bps; // kbps
-			switch (kbps) {
-				case 512:
-					bpsIdx = 0;
-					break;
-				case 1000:
-					bpsIdx = 1;
-					break;
-				case 2000:
-					bpsIdx = 2;
-					break;
-				case 3000:
-					bpsIdx = 3;
-					break;
-				case 4000:
-					bpsIdx = 4;
-					break;
-			}
-
-			json_object_object_add(recordobj, "fps", json_object_new_int(fpsIdx));
-			json_object_object_add(recordobj, "bps", json_object_new_int(bpsIdx)); // kbps
+		int bpsIdx = 0;
+		int kbps = p.rec.bps; // kbps
+		switch (kbps) {
+			case 512:
+				bpsIdx = 0;
+				break;
+			case 1000:
+				bpsIdx = 1;
+				break;
+			case 2000:
+				bpsIdx = 2;
+				break;
+			case 3000:
+				bpsIdx = 3;
+				break;
+			case 4000:
+				bpsIdx = 4;
+				break;
 		}
-		else{
-			json_object_object_add(recordobj, "fps", json_object_new_int(p.rec.fps));
-			json_object_object_add(recordobj, "bps", json_object_new_int(p.rec.bps));
-		}
+
+		json_object_object_add(recordobj, "fps", json_object_new_int(fpsIdx));
+		json_object_object_add(recordobj, "bps", json_object_new_int(bpsIdx)); // kbps
+#else
+		json_object_object_add(recordobj, "fps", json_object_new_int(p.rec.fps));
+		json_object_object_add(recordobj, "bps", json_object_new_int(p.rec.bps));
+#endif
 		json_object_object_add(recordobj, "gop", json_object_new_int(p.rec.gop));
 		json_object_object_add(recordobj, "rc",  json_object_new_int(p.rec.rc));
 		//json_object_object_add(recordobj, "desc",  json_object_new_string("Video Quality for Recording"));
 		json_object_object_add(camera_obj, "record", recordobj);
 
+
 		// streaming info
 		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
-		if( strcmp(MODEL_NAME, "NEXX360") == 0){
+#if defined(NEXXONE)||defined(NEXX360)
 
-			int fpsIdx = p.stm.fps-1;
-			if(fpsIdx < 0 ) fpsIdx = 0;
-			if(fpsIdx > 14) fpsIdx = 14;
+		fpsIdx = p.stm.fps-1;
+		if(fpsIdx < 0 ) fpsIdx = 0;
+		if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;
 
-			int bpsIdx = 0;
-			int kbps = p.stm.bps; // kbps
-			switch (kbps) {
-				case 512:
-					bpsIdx = 0;
-					break;
-				case 1000:
-					bpsIdx = 1;
-					break;
-				case 2000:
-					bpsIdx = 2;
-					break;
-				case 3000:
-					bpsIdx = 3;
-					break;
-				case 4000:
-					bpsIdx = 4;
-					break;
-				case 5000:
-					bpsIdx = 5;
-					break;
-				case 6000:
-					bpsIdx = 6;
-					break;
-				case 7000:
-					bpsIdx = 7;
-					break;
-				case 8000:
-					bpsIdx = 8;
-					break;
-			}
-			json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
-			json_object_object_add(streamobj, "bps", json_object_new_int(bpsIdx)); // kbps
+		bpsIdx = 0;
+		kbps = p.stm.bps; // kbps
+		switch (kbps) {
+			case 512:
+				bpsIdx = 0;
+				break;
+			case 1000:
+				bpsIdx = 1;
+				break;
+			case 2000:
+				bpsIdx = 2;
+				break;
+			case 3000:
+				bpsIdx = 3;
+				break;
+			case 4000:
+				bpsIdx = 4;
+				break;
+			case 5000:
+				bpsIdx = 5;
+				break;
+			case 6000:
+				bpsIdx = 6;
+				break;
+			case 7000:
+				bpsIdx = 7;
+				break;
+			case 8000:
+				bpsIdx = 8;
+				break;
 		}
-		else{
-			json_object_object_add(streamobj, "fps", json_object_new_int(p.stm.fps));
-			json_object_object_add(streamobj, "bps", json_object_new_int(p.stm.bps));
-		}
+		json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
+		json_object_object_add(streamobj, "bps", json_object_new_int(bpsIdx)); // kbps
+#else
+		json_object_object_add(streamobj, "fps", json_object_new_int(p.stm.fps));
+		json_object_object_add(streamobj, "bps", json_object_new_int(p.stm.bps));
+#endif
 		json_object_object_add(streamobj, "gop", json_object_new_int(p.stm.gop));
 		json_object_object_add(streamobj, "rc",  json_object_new_int(p.stm.rc));
 		//json_object_object_add(recordobj, "desc",  json_object_new_string("Video Quality for Streaming"));
@@ -342,13 +349,13 @@ int put_json_all_config()
 		json_object_object_add(onvif_obj,   "pw",      json_object_new_string(p.onvif.pw));
 		json_object_object_add(servers_obj, "onvif", onvif_obj);
 		
-		if( strcmp(MODEL_NAME, "NEXX360") == 0){
-			json_object_object_add(p2p_obj, "p2p_enable",   json_object_new_int(p.p2p.enable));
-			//json_object_object_add(p2p_obj, "p2p_username", json_object_new_string(p.p2p.username));
-			//json_object_object_add(p2p_obj, "p2p_password", json_object_new_string(p.p2p.password));
-			//json_object_object_add(operation_obj, "p2p", p2p_obj);
-			json_object_object_add(servers_obj, "p2p", p2p_obj);
-		}
+#if defined(NEXXONE)||defined(NEXX360)
+		json_object_object_add(p2p_obj, "p2p_enable",   json_object_new_int(p.p2p.enable));
+		//json_object_object_add(p2p_obj, "p2p_username", json_object_new_string(p.p2p.username));
+		//json_object_object_add(p2p_obj, "p2p_password", json_object_new_string(p.p2p.password));
+		//json_object_object_add(operation_obj, "p2p", p2p_obj);
+		json_object_object_add(servers_obj, "p2p", p2p_obj);
+#endif
 		
 		// voip
 		json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p.voip.ipaddr));
@@ -694,88 +701,85 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 #endif
 
 	// record info
-	if( strcmp(MODEL_NAME, "NEXX360") == 0){
+#if defined(NEXXONE)||defined(NEXX360)
+	int fpsIdx = p->rec.fps-1;
+	if(fpsIdx < 0 ) fpsIdx = 0;
+	if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;
 
-		int fpsIdx = p->rec.fps-1;
-		if(fpsIdx < 0 ) fpsIdx = 0;
-		if(fpsIdx > 14) fpsIdx = 14;
-
-		int bpsIdx = 0;
-		int kbps = p->rec.bps; // kbps
-		switch (kbps) {
-			case 512:
-				bpsIdx = 0;
-				break;
-			case 1000:
-				bpsIdx = 1;
-				break;
-			case 2000:
-				bpsIdx = 2;
-				break;
-			case 3000:
-				bpsIdx = 3;
-				break;
-			case 4000:
-				bpsIdx = 4;
-				break;
-		}
-		json_object_object_add(recordobj, "fps", json_object_new_int(fpsIdx));
-		json_object_object_add(recordobj, "bps", json_object_new_int(bpsIdx)); // kbps
+	int bpsIdx = 0;
+	int kbps = p->rec.bps; // kbps
+	switch (kbps) {
+		case 512:
+			bpsIdx = 0;
+			break;
+		case 1000:
+			bpsIdx = 1;
+			break;
+		case 2000:
+			bpsIdx = 2;
+			break;
+		case 3000:
+			bpsIdx = 3;
+			break;
+		case 4000:
+			bpsIdx = 4;
+			break;
 	}
-	else{
-		json_object_object_add(recordobj, "fps", json_object_new_int(p->rec.fps));
-		json_object_object_add(recordobj, "bps", json_object_new_int(p->rec.bps));
-	}
+	json_object_object_add(recordobj, "fps", json_object_new_int(fpsIdx));
+	json_object_object_add(recordobj, "bps", json_object_new_int(bpsIdx)); // kbps
+#else
+	json_object_object_add(recordobj, "fps", json_object_new_int(p->rec.fps));
+	json_object_object_add(recordobj, "bps", json_object_new_int(p->rec.bps));
+#endif
 	json_object_object_add(recordobj, "gop", json_object_new_int(p->rec.gop));
 	json_object_object_add(recordobj, "rc",  json_object_new_int(p->rec.rc));
 	json_object_object_add(myobj, "record", recordobj);
 
 	// streaming info
 	json_object_object_add(streamobj, "resolution", json_object_new_int(p->stm.res));
-	if( strcmp(MODEL_NAME, "NEXX360") == 0){
-		int fpsIdx = p->stm.fps-1;
-		if(fpsIdx < 0 ) fpsIdx = 0;
-		if(fpsIdx > 14) fpsIdx = 14;
+#if defined(NEXXONE)||defined(NEXX360)
+	fpsIdx = p->stm.fps-1;
+	if(fpsIdx < 0 ) fpsIdx = 0;
+	if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;
 
-		int bpsIdx = 0;
-		int kbps = p->stm.bps; // kbps
-		switch (kbps) {
-			case 512:
-				bpsIdx = 0;
-				break;
-			case 1000:
-				bpsIdx = 1;
-				break;
-			case 2000:
-				bpsIdx = 2;
-				break;
-			case 3000:
-				bpsIdx = 3;
-				break;
-			case 4000:
-				bpsIdx = 4;
-				break;
-			case 5000:
-				bpsIdx = 5;
-				break;
-			case 6000:
-				bpsIdx = 6;
-				break;
-			case 7000:
-				bpsIdx = 7;
-				break;
-			case 8000:
-				bpsIdx = 8;
-				break;
-		}
+	bpsIdx = 0;
+	kbps = p->stm.bps; // kbps
+	switch (kbps) {
+		case 512:
+			bpsIdx = 0;
+			break;
+		case 1000:
+			bpsIdx = 1;
+			break;
+		case 2000:
+			bpsIdx = 2;
+			break;
+		case 3000:
+			bpsIdx = 3;
+			break;
+		case 4000:
+			bpsIdx = 4;
+			break;
+		case 5000:
+			bpsIdx = 5;
+			break;
+		case 6000:
+			bpsIdx = 6;
+			break;
+		case 7000:
+			bpsIdx = 7;
+			break;
+		case 8000:
+			bpsIdx = 8;
+			break;
+	}
 
-		json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
-		json_object_object_add(streamobj, "bps", json_object_new_int(bpsIdx)); // kbps
-	}
-	else{
-		json_object_object_add(streamobj, "fps",        json_object_new_int(p->stm.fps));
-		json_object_object_add(streamobj, "bps",        json_object_new_int(p->stm.bps));
-	}
+	json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
+	json_object_object_add(streamobj, "bps", json_object_new_int(bpsIdx)); // kbps
+#else
+	json_object_object_add(streamobj, "fps",        json_object_new_int(p->stm.fps));
+	json_object_object_add(streamobj, "bps",        json_object_new_int(p->stm.bps));
+#endif
 	json_object_object_add(streamobj, "gop",        json_object_new_int(p->stm.gop));
 	json_object_object_add(streamobj, "rc",         json_object_new_int(p->stm.rc));
 	json_object_object_add(myobj, "stream", streamobj);

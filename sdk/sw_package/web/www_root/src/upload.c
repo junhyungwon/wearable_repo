@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	int status = -1, value;
 	qentry_t *req = NULL;
 
-	req = qcgireq_setoption(NULL, true, FW_FILE_PATH, 1024*1024*32);
+	req = qcgireq_setoption(NULL, true, FW_FILE_PATH, 1024*1024*48);
 	req = qcgireq_parse(req, Q_CGI_POST);
 	if(NULL == req) {
 		CGI_DBG("Failed qdecoder alloc\n");
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	sprintf(filepath, "%s/%s", FW_FILE_PATH, filename);
+	sprintf(filepath, "%s/%s.tar", FW_FILE_PATH, filename);
 	//CGI_DBG("filepath : %s\n", filepath);
 
 	if( 0 != rename(savepath, filepath)){

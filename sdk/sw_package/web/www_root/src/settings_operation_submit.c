@@ -80,14 +80,13 @@ static int submit_settings_fitt360()
 		if(isPOST){ free(contents); }
 
 		// check parameter values
-
 		T_CGI_OPERATION_CONFIG t;
 		memset(&t, 0, sizeof(t));
-		t.rec.pre_rec       = pre_rec;
-		t.rec.auto_rec      = auto_rec;
-		t.rec.audio_rec     = audio_rec;
-		t.rec.interval      = rec_interval;
-		t.rec.overwrite     = rec_overwrite;
+		t.rec.pre_rec      = pre_rec;
+		t.rec.auto_rec     = auto_rec;
+		t.rec.audio_rec    = audio_rec;
+		t.rec.interval     = rec_interval;
+		t.rec.overwrite    = rec_overwrite;
 		t.display_datetime = display_datetime;
 
 		if(0 != sysctl_message(UDS_SET_OPERATION_CONFIG, (void*)&t, sizeof t )) {
@@ -101,7 +100,7 @@ static int submit_settings_fitt360()
 	}
 }
 
-static int submit_settings_nexx360()
+static int submit_settings()
 {
 	int isPOST = 0;
 	T_CGIPRM prm[128];
@@ -173,6 +172,7 @@ static int submit_settings_nexx360()
 
 		// check parameter values
 		T_CGI_OPERATION_CONFIG t;
+		memset(&t, 0, sizeof(t));
 		t.rec.pre_rec       = pre_rec;
 		t.rec.auto_rec      = auto_rec;
 		t.rec.audio_rec     = audio_rec;
@@ -196,12 +196,7 @@ int main(int argc, char *argv[])
 {
 	int nError = SUBMIT_ERR;
 
-	if( strcmp(MODEL_NAME, "NEXX360") == 0){
-		nError = submit_settings_nexx360();
-	}
-	else {
-		nError = submit_settings_fitt360();
-	}
+	nError = submit_settings();
 
 	send_response(nError);
 

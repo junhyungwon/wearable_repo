@@ -413,7 +413,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	int ich=0, channels = 0, check_version = 0, i;
 	int default_fps;
 	
-	channels = NEXXONE_CH_NUM+1;
+	channels = MAX_CH_NUM+1;
 		
 	sprintf(ver_compare, "%s", FITT360_SW_VER);
 
@@ -449,16 +449,16 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		//# Encoding cfg per channel
 	    for(ich = 0; ich < channels; ich++)
 	    {
-		    if(ich < NEXXONE_CH_NUM)
+		    if(ich < MAX_CH_NUM)
 	            pset->ch[ich].resol  = RESOL_720P;
 
 		    pset->ch[ich].motion = OFF;
 
-		    if(pset->ch[ich].gop > NEXXONE_DEFAULT_FPS || pset->ch[ich].gop <= 0)
-                pset->ch[ich].gop = NEXXONE_DEFAULT_FPS ;
+		    if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
+                pset->ch[ich].gop = DEFAULT_FPS ;
 
-		    if(pset->ch[ich].framerate <= 0  || pset->ch[ich].framerate > NEXXONE_DEFAULT_FPS)
-		        pset->ch[ich].framerate	= NEXXONE_DEFAULT_FPS;
+		    if(pset->ch[ich].framerate <= 0  || pset->ch[ich].framerate > DEFAULT_FPS)
+		        pset->ch[ich].framerate	= DEFAULT_FPS;
 
             printf("pset->ch[ich].framerate = %d\n",pset->ch[ich].framerate) ;
             printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
@@ -469,7 +469,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		    if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
 		        pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
 
-            if(ich == NEXXONE_CH_NUM)
+            if(ich == MAX_CH_NUM)
             {
 	       	 	//# streaming channel...
                 if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
@@ -485,18 +485,18 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		//# Encoding cfg per channel
 	    for(ich = 0; ich < channels; ich++)
 	    {
-		    if(ich < NEXXONE_CH_NUM)
+		    if(ich < MAX_CH_NUM)
 	            pset->ch[ich].resol  = RESOL_720P;
 			else if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
 
 		    pset->ch[ich].motion = OFF;
 
-		    if(pset->ch[ich].gop > NEXXONE_DEFAULT_FPS || pset->ch[ich].gop <= 0)
-                pset->ch[ich].gop = NEXXONE_DEFAULT_FPS ;
+		    if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
+                pset->ch[ich].gop = DEFAULT_FPS ;
 
 		    if (pset->ch[ich].framerate <= FPS_30  || pset->ch[ich].framerate >= FPS_MAX)
-		        pset->ch[ich].framerate	= NEXXONE_DEFAULT_FPS;
+		        pset->ch[ich].framerate	= DEFAULT_FPS;
 			else
 			{
 			    if (pset->ch[ich].gop == FPS_30) 
@@ -510,7 +510,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		        pset->ch[ich].quality = DEFAULT_QUALITY;
 			else
 			{
-				if(ich != NEXXONE_CH_NUM)
+				if(ich != MAX_CH_NUM)
 				{
 				    if(pset->ch[ich].quality == Q_HIGH)
 					    pset->ch[ich].quality = 4000 ; // 4MBPS
@@ -931,50 +931,33 @@ static void app_set_default(int default_type)
     if (!default_type)
         memcpy(&tmp_set, app_set, sizeof(app_set_t)) ;
 
+#if defined(NEXXONE) || defined(NEXX360)
 	//# Encoding cfg per channel
-	if (strcmp(MODEL_NAME, NEXX360_STR) == 0) {
-		/* NEXX360 */
-		channels = MAX_CH_NUM+1;
+	channels = MAX_CH_NUM+1;
 
-		for (ich = 0; ich < channels; ich++)
-		{
-			app_set->ch[ich].resol		= RESOL_720P;
-			app_set->ch[ich].framerate	= DEFAULT_FPS;
-			app_set->ch[ich].quality	= DEFAULT_QUALITY;
-			app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
-			app_set->ch[ich].motion 	= OFF;
-			app_set->ch[ich].gop 	    = DEFAULT_FPS;
-		}
-	} else if (strcmp(MODEL_NAME, NEXXONE_STR) == 0) {
-		/* NEXXONE Camera Capture Channel */
-		app_set->ch[0].resol		= RESOL_720P;
-		app_set->ch[0].framerate	= NEXXONE_DEFAULT_FPS;
-		app_set->ch[0].quality		= DEFAULT_QUALITY;
-		app_set->ch[0].rate_ctrl	= RATE_CTRL_VBR;
-		app_set->ch[0].motion 		= OFF;
-		app_set->ch[0].gop 	    	= NEXXONE_DEFAULT_FPS;
-		
-		/* NEXXONE Video Streaming Channel */
-		app_set->ch[1].resol		= RESOL_720P;
-		app_set->ch[1].framerate	= NEXXONE_DEFAULT_FPS;
-		app_set->ch[1].quality		= DEFAULT_QUALITY;
-		app_set->ch[1].rate_ctrl	= RATE_CTRL_VBR;
-		app_set->ch[1].motion 		= OFF;
-		app_set->ch[1].gop 	    	= NEXXONE_DEFAULT_FPS;
-	} else {
-		/* FITT360 (index 구조) */
-		channels = MAX_CH_NUM+1;
-
-		for (ich = 0; ich < channels; ich++)
-		{
-			app_set->ch[ich].resol		= RESOL_720P;
-			app_set->ch[ich].framerate	= FPS_15;
-			app_set->ch[ich].quality	= Q_HIGH;
-			app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
-			app_set->ch[ich].motion 	= OFF;
-			app_set->ch[ich].gop 	    = DEFAULT_FPS;
-		}
+	for (ich = 0; ich < channels; ich++)
+	{
+		app_set->ch[ich].resol		= RESOL_720P;
+		app_set->ch[ich].framerate	= DEFAULT_FPS;
+		app_set->ch[ich].quality	= DEFAULT_QUALITY;
+		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+		app_set->ch[ich].motion 	= OFF;
+		app_set->ch[ich].gop 	    = DEFAULT_FPS;
 	}
+#else
+	/* FITT360 (index 구조) */
+	channels = MAX_CH_NUM+1;
+
+	for (ich = 0; ich < channels; ich++)
+	{
+		app_set->ch[ich].resol		= RESOL_720P;
+		app_set->ch[ich].framerate	= FPS_15;
+		app_set->ch[ich].quality	= Q_HIGH;
+		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+		app_set->ch[ich].motion 	= OFF;
+		app_set->ch[ich].gop 	    = DEFAULT_FPS;
+	}
+#endif
 	
 	app_set->wd.gsn = GSN_IDX_03;
 
@@ -1094,10 +1077,11 @@ static void app_set_default(int default_type)
     app_set->time_info.daylight_saving = 0 ;
     app_set->time_info.timesync_type = 1 ;
 
-    if (strcmp(MODEL_NAME, NEXX360_STR) == 0 || strcmp(MODEL_NAME, NEXXONE_STR) == 0)
-        app_set->account_info.ON_OFF = ON;
-	else
-		app_set->account_info.ON_OFF = OFF;
+#if defined(NEXXONE) || defined(NEXX360)
+	app_set->account_info.ON_OFF = ON;
+#else
+	app_set->account_info.ON_OFF = OFF;
+#endif
     
     app_set->account_info.enctype = 0 ;
     if(app_set->account_info.enctype) // 1, AES encryption
@@ -1172,14 +1156,14 @@ int app_set_open(void)
 	 *            MMC  : --> /mmc/cfg/nexx_cfg.ini
 	 *            NAND : --> /media/nand/cfg/nexx_cfg.ini 
 	 */
-	if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
-		if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
-			ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
-	} else {
-		/* FITT360 */
-		if (cfg_read(CFG_MMC, CFG_FILE_MMC) == EFAIL)	//# read previous setting type.
-			ret = cfg_read(CFG_NAND, CFG_FILE_NAND);	//# nand read if sd read fail
-	}
+#if defined(NEXXONE) || defined(NEXX360)
+	if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
+		ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
+#else
+	/* FITT360 */
+	if (cfg_read(CFG_MMC, CFG_FILE_MMC) == EFAIL)	//# read previous setting type.
+		ret = cfg_read(CFG_NAND, CFG_FILE_NAND);	//# nand read if sd read fail
+#endif
 	
 	if (ret == EFAIL) 
 	    app_set_default(FULL_RESET);
@@ -1225,12 +1209,11 @@ int app_set_write(void)
 			chmod(CFG_DIR_MMC, 0775);
 		}
 
-		if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
-			snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
-		}
-		else {
-			snprintf(path, sizeof(path), "%s", CFG_FILE_MMC);
-		}
+#if defined(NEXXONE) || defined(NEXX360)
+		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
+#else
+		snprintf(path, sizeof(path), "%s", CFG_FILE_MMC);
+#endif
 
 		if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
 			eprintf("couldn't open %s file\n", path);
@@ -1244,12 +1227,12 @@ int app_set_write(void)
 	}
 	
 	memset(path, 0, sizeof(path));
-	if ((strcmp(MODEL_NAME, NEXX360_STR) == 0) || (strcmp(MODEL_NAME, NEXXONE_STR) == 0)) {
-		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
-	}
-	else  {
-		snprintf(path, sizeof(path), "%s", CFG_FILE_NAND);
-	}
+
+#if defined(NEXXONE) || defined(NEXX360)
+	snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
+#else
+	snprintf(path, sizeof(path), "%s", CFG_FILE_NAND);
+#endif
 	
 	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
 		eprintf("couldn't open %s file\n", path);

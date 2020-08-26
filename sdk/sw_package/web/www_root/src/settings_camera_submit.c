@@ -11,10 +11,6 @@
 
 static int submit_settings()
 {
-	int bFitt360 = 1;
-	if( strcmp(MODEL_NAME, "NEXX360") == 0)
-		bFitt360 = 0;
-
     int isPOST = 0;
     T_CGIPRM prm[128];
 
@@ -95,77 +91,75 @@ static int submit_settings()
 
         T_CGI_VIDEO_QUALITY vq;
 
-		if(bFitt360){
-			vq.rec.fps = rec_fps;
-			vq.rec.bps = rec_bps;
-		}else{
-			// NEXX360
-			int fpsIdx = rec_fps+1;
-			int bpsIdx = rec_bps;
-			int kbps = 512;
-			switch (bpsIdx) {
-				case 0:
-					kbps = 512;
-					break;
-				case 1:
-					kbps = 1000;
-					break;
-				case 2:
-					kbps = 2000;
-					break;
-				case 3:
-					kbps = 3000;
-					break;
-				case 4:
-					kbps = 4000;
-					break;
-			}
-			vq.rec.fps = fpsIdx;
-			vq.rec.bps = kbps;
+#if defined(NEXXONE) || defined(NEXX360)
+		// Record Options
+		int bpsIdx = rec_bps;
+		int kbps = 512;
+		switch (bpsIdx) {
+			case 0:
+				kbps = 512;
+				break;
+			case 1:
+				kbps = 1000;
+				break;
+			case 2:
+				kbps = 2000;
+				break;
+			case 3:
+				kbps = 3000;
+				break;
+			case 4:
+				kbps = 4000;
+				break;
 		}
+		vq.rec.fps = rec_fps+1;
+		vq.rec.bps = kbps;
+
+		// Streaming Options
+		bpsIdx = stm_bps;
+		kbps = 512;
+		switch (bpsIdx) {
+			case 0:
+				kbps = 512;
+				break;
+			case 1:
+				kbps = 1000;
+				break;
+			case 2:
+				kbps = 2000;
+				break;
+			case 3:
+				kbps = 3000;
+				break;
+			case 4:
+				kbps = 4000;
+				break;
+			case 5:
+				kbps = 5000;
+				break;
+			case 6:
+				kbps = 6000;
+				break;
+			case 7:
+				kbps = 7000;
+				break;
+			case 8:
+				kbps = 8000;
+				break;
+		}
+		vq.stm.fps = stm_fps+1;
+		vq.stm.bps = kbps;
+#elif defined(FITT360_SECURITY)
+		vq.rec.fps = rec_fps;
+		vq.rec.bps = rec_bps;
+		vq.stm.fps = stm_fps;
+		vq.stm.bps = stm_bps;
+#else
+#error "Invalid Product Name!!!"
+#endif
 		vq.rec.gop = rec_gop;
 		vq.rec.rc  = rec_rc;
-		vq.stm.res = stm_res; // 0:480p, 1:720p, 2:1080p
-		if(bFitt360){
-			vq.stm.fps = stm_fps;
-			vq.stm.bps = stm_bps;
-		}else {
-			// NEXX360
-			int fpsIdx = stm_fps+1;
-			int bpsIdx = stm_bps;
-			int kbps = 512;
-			switch (bpsIdx) {
-				case 0:
-					kbps = 512;
-					break;
-				case 1:
-					kbps = 1000;
-					break;
-				case 2:
-					kbps = 2000;
-					break;
-				case 3:
-					kbps = 3000;
-					break;
-				case 4:
-					kbps = 4000;
-					break;
-				case 5:
-					kbps = 5000;
-					break;
-				case 6:
-					kbps = 6000;
-					break;
-				case 7:
-					kbps = 7000;
-					break;
-				case 8:
-					kbps = 8000;
-					break;
-			}
-			vq.stm.fps = fpsIdx;
-			vq.stm.bps = kbps;
-		}
+		vq.stm.res = stm_res;
 		vq.stm.gop = stm_gop;
 		vq.stm.rc  = stm_rc;
 

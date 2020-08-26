@@ -12,16 +12,12 @@
 
 static int submit_settings_qcgi()
 {
-    int ret=SUBMIT_NO_CHANGE;
-
-	int bFitt360 = 1;
-	if( strcmp(MODEL_NAME, "NEXX360") == 0)
-		bFitt360 = 0;
-
 #if 0 // for debug
     char *contents = get_cgi_contents();
 	CGI_DBG("contents:%s\n", contents);
 #endif
+
+    int ret=SUBMIT_NO_CHANGE;
 
     qentry_t *req = qcgireq_parse(NULL, Q_CGI_POST);
     if (req)
@@ -155,28 +151,39 @@ static int submit_settings_qcgi()
             sprintf(t.voip.peerid, "%s", str);
         }
 
-		if(bFitt360 == 0){
-			str= req->getstr(req, "p2p_enable", false);
-			if (str != NULL) {
-				enable_p2p = atoi(str);
-			}
+#if defined(NEXXONE) || defined(NEXX360)
+		str= req->getstr(req, "p2p_enable", false);
+		if (str != NULL) {
+			enable_p2p = atoi(str);
 		}
+#endif
 
         //req->free(req);
 
         CGI_DBG("bs_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
 				bs_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone, t.onvif.id, t.onvif.pw);
 
-		if( bs_enable == -1 || ms_enable == -1 || ddns_enable == -1 || ntp_enable == -1 || daylight_saving == -1 || (bFitt360 && enable_onvif == -1)
+		if( bs_enable == -1 || ms_enable == -1 
+				|| ddns_enable == -1 || ntp_enable == -1 
+				|| daylight_saving == -1 
 		|| time_zone == -99) {
 			CGI_DBG("Invalid Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
 
-		if( bFitt360 == 0 && enable_p2p == -1){
+#if defined(FITT360_SECURITY)
+		if(enable_onvif==-1){
+			CGI_DBG("Incorrect enable_onvif\n");
+			return ERR_INVALID_PARAM;
+		}
+#endif
+
+#if defined(NEXXONE) || defined(NEXX360)
+		if(enable_p2p == -1){
 			CGI_DBG("Invalid Parameter:enable_p2p\n");
 			return ERR_INVALID_PARAM;
 		}
+#endif
 
 		CGI_DBG("dns_server1:%s\n", t.dns.server1);
 		CGI_DBG("dns_server2:%s\n", t.dns.server2);
