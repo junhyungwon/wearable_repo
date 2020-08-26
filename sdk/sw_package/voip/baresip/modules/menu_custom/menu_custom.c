@@ -379,7 +379,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 }
 //-----------------------------------------------------------------------------------------------
 //###################### Baresip Helper ########################################################
-static int __register_user(const char *call_num, const char *server_addr, const char *passwd)
+static int __register_user(int enable, short port, const char *call_num, const char *server_addr, 
+			const char *passwd, const char *stun_domain)
 {
 	//struct network *net = baresip_network();
 	struct ua *ua = NULL;
@@ -390,13 +391,16 @@ static int __register_user(const char *call_num, const char *server_addr, const 
 	
 	//(void)net_check(net);
 	//# <sip:1006@192.168.0.5>;auth_pass=1234
-	#if 1
-	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=tcp>;auth_pass=%s", 
-					UA_PREFIX, call_num, server_addr, passwd);
-	#else
-	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s;transport=tcp>;auth_pass=%s;stunserver=stun:stun.l.google.com:19302;medianat=ice;stunuser=test;stunpass=test", 
-					UA_PREFIX, call_num, server_addr, passwd);
-	#endif
+	if (enable) {
+		/* stun server enable */
+		snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s:%d;transport=tcp>;auth_pass=%s;stunserver=stun:%s;medianat=stun", 
+					UA_PREFIX, call_num, server_addr, port, passwd, stun_domain);
+//	snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s:%d;transport=tcp>;auth_pass=%s;stunserver=stun:52.78.124.88:3478;medianat=ice;stunuser=test;stunpass=test", 
+//					UA_PREFIX, call_num, server_addr, port, passwd);
+	} else {
+		snprintf(ui_buf, sizeof(ui_buf), "%s <sip:%s@%s:%d;transport=tcp>;auth_pass=%s", 
+					UA_PREFIX, call_num, server_addr, port, passwd);	
+	}
 	
 	info("Creating UA for %s ....\n", ui_buf);
 		 
@@ -436,6 +440,7 @@ static int __unregister_user(const char *call_num)
 	}
 
 	if (!ua) {
+		fprintf(stdout, "ua: %s not found!\n", call_num);
 		return ENOENT;
 	}
 
@@ -443,9 +448,8 @@ static int __unregister_user(const char *call_num)
 //		(void)cmd_ua_next(pf, NULL);
 	}
 
-//	(void)re_hprintf(pf, "deleting ua: %s\n", carg->prm);
-//	mem_deref(ua);
-//	(void)ua_print_reg_status(pf, NULL);
+	fprintf(stdout, "deleting ua: %s\n", call_num);
+	mem_deref(ua);
 
 	return 0;
 }
@@ -511,10 +515,15 @@ static int recv_msg(void)
 		memset(ikey->uri.ua_uri, 0, sizeof(ikey->uri.ua_uri));
 		memset(ikey->uri.pbx_uri, 0, sizeof(ikey->uri.pbx_uri));
 		memset(ikey->uri.passwd, 0, sizeof(ikey->uri.passwd));
+		memset(ikey->uri.stun_uri, 0, sizeof(ikey->uri.stun_uri));
 	
 		strcpy(ikey->uri.ua_uri, msg.uri.ua_uri);
 		strcpy(ikey->uri.pbx_uri, msg.uri.pbx_uri);
 		strcpy(ikey->uri.passwd, msg.uri.passwd);
+		strcpy(ikey->uri.stun_uri, msg.uri.stun_uri);
+		
+		ikey->uri.en_stun = msg.uri.en_stun;
+		ikey->uri.port = msg.uri.port;
 	} 
 	else if (msg.cmd == SIPC_CMD_SIP_START) {
 		memset(ikey->uri.peer_uri, 0, sizeof(ikey->uri.peer_uri));
@@ -574,9 +583,15 @@ static void *THR_sipc_main(void *prm)
 		case SIPC_CMD_SIP_REGISTER_UA:
 			info("baresip register user!\n");
 			/* 계정을 등록 */
-			__register_user(ikey->uri.ua_uri, ikey->uri.pbx_uri, ikey->uri.passwd);
+			__register_user(ikey->uri.en_stun, ikey->uri.port, ikey->uri.ua_uri, 
+					ikey->uri.pbx_uri, ikey->uri.passwd, ikey->uri.stun_uri);
 			break;
 		
+		case SIPC_CMD_SIP_UNREGISTER_UA:
+			info("baresip unregister user!\n");
+			__unregister_user(ikey->uri.ua_uri);
+			break;
+			
 		case SIPC_CMD_SIP_START:
 			info("baresip peer number %s\n", ikey->uri.peer_uri);
 			__dialer_user(ikey->uri.peer_uri);
@@ -647,7 +662,7 @@ static int module_init(void)
 //  amixer cset numid=31 80%	
 //	__execlp("/usr/bin/amixer cset numid=17 50%");
 	__execlp("/usr/bin/amixer cset numid=1 80% > /dev/null");
-	__execlp("/usr/bin/amixer cset numid=31 80% > /dev/null");
+	__execlp("/usr/bin/amixer cset numid=31 50% > /dev/null");
 		
 	return 0;
 }

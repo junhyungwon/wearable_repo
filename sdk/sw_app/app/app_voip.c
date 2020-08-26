@@ -41,10 +41,15 @@ typedef struct {
 	int init;
 	int qid;
 	
+	short svr_port;
+	int enable_stun;
+	
 	char dev_num[SIPC_DATA_SZ];     /* local information. 일반적으로 단말기 번호 */
 	char server[SIPC_DATA_SZ];    	/* 교환기 주소 */
 	char passwd[SIPC_DATA_SZ];     /* 단말기 등록 비밀번호 */
 	char peer_num[SIPC_DATA_SZ];	  /* 연결할 상대 단말 정보 */
+	
+	char stun_svr[SIPC_DATA_SZ];	  /* stun 연결 시 주소 */
 	
 	sipc_status_t st;
 	
@@ -80,7 +85,8 @@ static int send_msg(int cmd, const char *uri)
 }
 
 /* account 파일을 사용할 경우 이 명령을 필요없음 */
-static int send_ua_msg(int cmd, const char *login, const char *domain, const char *pass)
+static int send_ua_msg(int cmd, int enable, short port, const char *login, 
+			const char *domain, const char *pass, const char *stun_domain)
 {
 	to_sipc_msg_t msg;
 	
@@ -93,6 +99,11 @@ static int send_ua_msg(int cmd, const char *login, const char *domain, const cha
 		strcpy(msg.uri.pbx_uri, domain);
 	if (pass != NULL)
 		strcpy(msg.uri.passwd, pass);
+	if (stun_domain != NULL)
+		strcpy(msg.uri.stun_uri, stun_domain);	
+	
+	msg.uri.en_stun = enable;
+	msg.uri.port = port;
 	
 	return Msg_Send(ivoip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
@@ -155,13 +166,15 @@ static void __call_register_handler(void)
 {
 	dprintf("baresip user register start.....\n");
 	/* create ua and register */
-	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->dev_num, 
-					ivoip->server, ivoip->passwd);
+	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->enable_stun, ivoip->svr_port, ivoip->dev_num, 
+					ivoip->server, ivoip->passwd, ivoip->stun_svr);
 }
 
 static void __call_unregister_handler(void)
 {
-	/* TODO */
+	dprintf("baresip user unregister start.....\n");
+	/* create ua and register */
+	send_ua_msg(SIPC_CMD_SIP_UNREGISTER_UA, 0, 0, ivoip->dev_num, NULL, NULL, NULL);
 }
 
 static void __call_event_handler(void)
@@ -254,7 +267,7 @@ static void *THR_voip_main(void *prm)
 		}  else if (cmd == APP_CMD_NOTY) {
 			__call_event_handler();
 		} else if (cmd == APP_CMD_STOP) {
-			/* TODO */
+			__call_unregister_handler();
 		}
 	}
 	
@@ -386,7 +399,8 @@ void app_voip_exit(void)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-void app_voip_start(const char *uag, const char *server, const char *passwd, const char *peer)
+void app_voip_start(int enable_stun, short server_port, const char *uag, const char *server, 
+			const char *passwd, const char *peer, const char *stun_server)
 {
 	app_thr_obj *tObj = &ivoip->eObj;
 	
@@ -398,6 +412,15 @@ void app_voip_start(const char *uag, const char *server, const char *passwd, con
 		strcpy(ivoip->passwd, passwd);
 	if (peer != NULL)
 		strcpy(ivoip->peer_num, peer);
+	if (stun_server != NULL)
+		strcpy(ivoip->stun_svr, stun_server);
+		
+	if (server_port < 0)
+		ivoip->svr_port = 5060; //# set default port
+	else
+		ivoip->svr_port = server_port;
+	
+	ivoip->enable_stun = enable_stun;
 	
 	OSA_mutexLock(&ivoip->lock);
 	event_send(tObj, APP_CMD_START, 0, 0);

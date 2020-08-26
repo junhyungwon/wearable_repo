@@ -44,7 +44,7 @@ extern "C" {
 #define SIPC_CMD_SIP_ANSWER				(0x704) /* Call 수신 */
 #define SIPC_CMD_SIP_GET_STATUS			(0x705) /* main--> baresip call Status */
 #define SIPC_CMD_SIP_REGISTER_UA		(0x706) /* set user agent account */
-#define SIPC_CMD_SIP_UNREGISTER_UA		(0x707) /* set user agent account */
+#define SIPC_CMD_SIP_UNREGISTER_UA		(0x707) /* unset user agent account */
 
 /* baresip 상태와 동일한 이름으로 정의함 */
 #define SIPC_STATE_CALL_IDLE			0
@@ -56,11 +56,15 @@ extern "C" {
 #define SIPC_DATA_SZ					128
 
 typedef struct {
-	char ua_uri[SIPC_DATA_SZ];     /* local information. 일반적으로 단말기 번호 */
-	char pbx_uri[SIPC_DATA_SZ];    /* 교환기 주소 */
-	char passwd[SIPC_DATA_SZ];     /* 단말기 등록 비밀번호 */
-	char peer_uri[SIPC_DATA_SZ];	  /* 연결할 상대 단말 정보 */
-
+	int en_stun;					/* enable stun server */
+	short port;						/* SIP port */
+	
+	char ua_uri[SIPC_DATA_SZ];     	/* local information. 일반적으로 단말기 번호 */
+	char pbx_uri[SIPC_DATA_SZ];    	/* 교환기 주소 */
+	char passwd[SIPC_DATA_SZ];     	/* 단말기 등록 비밀번호 */
+	char peer_uri[SIPC_DATA_SZ];	/* 연결할 상대 단말 정보 */
+	char stun_uri[SIPC_DATA_SZ];    /* stun server address */
+	
 } sipc_uri_t;
 
 typedef struct {

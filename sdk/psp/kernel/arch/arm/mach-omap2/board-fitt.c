@@ -80,7 +80,7 @@ EXPORT_SYMBOL(board_rev);
 static struct aic3x_pdata aic3x_pdata = {
 	.gpio_reset = 0, /* < 0 if not used */
 	.setup = NULL,
-	.micbias_vg = AIC3X_MICBIAS_2_5V, /* enum->1 */
+	.micbias_vg = AIC3X_MICBIAS_2_0V, //AIC3X_MICBIAS_2_5V, /* enum->1 */
 };
 
 static struct i2c_board_info __initdata i2c0_boardinfo[2];
