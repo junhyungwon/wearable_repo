@@ -9,7 +9,7 @@ include $(ROOTDIR)/makerules/env.mk
 include $(ROOTDIR)/makerules/platform.mk
 include $(ROOTDIR)/component.mk
 
-CFLAGS += -DMODEL_NAME=$(MODEL_NAME)
+CFLAGS += -DMODEL_NAME=$(MODEL_NAME) -D$(MODEL_NAME)
 ##### APP BUILD #####
 
 app:

@@ -28,6 +28,11 @@ EXE =
 LIBS += -L../../srclib/ -lLFCGI -ljson-c
 ##### End of variables to change
 
+ifeq ($(PRODUCT_NAME),)
+$(info *********** PRODUCT_NAME is NULL. please check Rules.make)
+exit 0
+endif
+
 # dev default/cgi-bin directory 생성
 DEFAULT_CGI_BIN_DIR = $(WWW_DEV_DIR)/www_root/default/cgi-bin
 HAVE_DEFAULT_CGI_BIN_DIR = $(shell if [ -e $(DEFAULT_CGI_BIN_DIR) ]; then echo 1; else echo 0; fi;)
@@ -56,12 +61,12 @@ all: clean $(OBJC) $(OBJGPP)
 
 $(OBJC):%.o: %.c $(HEADERS)
 	@echo Linking $@ from $^
-	$(CC) -o $*.cgi $(CFLAGS) $(INC) -DMODEL_NAME='$(MODEL_NAME)' $(LDFLAGS) $(LIBS) $^ 
+	$(CC) -o $*.cgi $(CFLAGS) $(INC) -DMODEL_NAME='$(MODEL_NAME)' -D$(PRODUCT_NAME) $(LDFLAGS) $(LIBS) $^ 
 #	$(CC) -o $@ $(INC) $(LDFLAGS) $(LIBS) $<
 
 $(OBJGPP):%.o: %.cpp $(HEADERS)
 	@echo Compiling $@ from $<
-	$(GPP) -std=c++0x -Wall -c $(GPPFLAGS) $(INC) -DMODEL_NAME='$(MODEL_NAME)' -o $@ $<
+	$(GPP) -std=c++0x -Wall -c $(GPPFLAGS) $(INC) -DMODEL_NAME='$(MODEL_NAME)' -D$(PRODUCT_NAME) -o $@ $<
 	@echo Linking $@ from ...
 	$(GPP) -o $*.cgi $(LDFLAGS) $(LIBS) $@
 

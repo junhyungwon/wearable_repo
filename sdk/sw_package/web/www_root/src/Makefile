@@ -40,6 +40,11 @@ OBJC = $(SRCC:%.c=%.o)
 SRCGPP = $(wildcard *.cpp)
 OBJGPP = $(SRCGPP:%.cpp=%.o)
 
+ifeq ($(PRODUCT_NAME),)
+$(info *********** PRODUCT_NAME is NULL. please check Rules.make)
+exit 0
+endif
+
 # mkdir cgi-bin 
 HAVE_CGI_DIR = $(shell if [ -e ./cgi-bin ]; then echo 1; else echo 0; fi;)
 ifeq ($(HAVE_CGI_DIR),0)
@@ -59,12 +64,12 @@ all: clean $(OBJC) $(OBJGPP)
 
 $(OBJC):%.o: %.c $(HEADER)
 	@echo Linking $@ from ...
-	$(CC) -o cgi-bin/$*.cgi $(INC) -DMODEL_NAME='$(MODEL_NAME)'  $(LDFLAGS) $(LIBS) $^ 
+	$(CC) -o cgi-bin/$*.cgi $(INC) -DMODEL_NAME='$(MODEL_NAME)' -D$(PRODUCT_NAME) $(LDFLAGS) $(LIBS) $^ 
 #	$(CC) -o $@ $(INC) $(LDFLAGS) $(LIBS) $<
 
 $(OBJGPP):%.o: %.cpp $(HEADER)
 	@echo Linking $@ from ...
-	$(GPP) -o cgi-bin/$*.cgi $(INC) -DMODEL_NAME='$(MODEL_NAME)'  $(LDFLAGS) $(LIBS) $^ 
+	$(GPP) -o cgi-bin/$*.cgi $(INC) -DMODEL_NAME='$(MODEL_NAME)' -D$(PRODUCT_NAME) $(LDFLAGS) $(LIBS) $^ 
 
 clean:
 #	$(RM) $(OBJC)
