@@ -21,10 +21,15 @@ APP_BUILD_CFG 	 := debug
 RDK_BOARD_TYPE := DM8107_UBX
 #-------------------------------------------------
 
-########### MODEL NAME ##########
+########### MODEL NAME ########### 
 #MODEL_NAME := "FITT360 Security"
 #MODEL_NAME := "NEXX360"
 MODEL_NAME := "NEXXONE"
+
+#공백사용하지 마세요~ ""요것도 사용금지, 대문자사용
+#PRODUCT_NAME := FITT360_SECURITY
+#PRODUCT_NAME := NEXX360
+PRODUCT_NAME := NEXXONE
 
 #TYPE 1 NETWORK VERSION
 MODEL_TYPE := 1
@@ -260,5 +265,6 @@ export UBX_TARGET
 export USE_WIFI
 export MODEL_NAME
 export MODEL_TYPE
+export PRODUCT_NAME
 export EXTERNAL_PACKAGE
 export SYSROOT
