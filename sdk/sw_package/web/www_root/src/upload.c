@@ -9,7 +9,6 @@
 
 
 #define FW_FILE_PATH		"/tmp" // tmp 에 만들고, fitt에서 지지고볶고 난리를...
-						//	"/mmc" // ERROR:Invalid cross-device link, permission관련인듯.
 
 enum {
 	ERR_RECORD = -1000,
@@ -52,12 +51,10 @@ int main(int argc, char **argv)
 	char  filepath[128];
 	ssize_t count=0;
 
-	/*
 	CGI_DBG("filename    = %s\n", filename);
 	CGI_DBG("filelength  = %d\n", filelength);
 	CGI_DBG("contenttype = %s\n", contenttype);
 	CGI_DBG("savepath    = %s\n", savepath);
-	*/
 
 	if (filename == NULL || filelength < 1 || savepath == NULL) {
 		//CGI_DBG("Select File, Please....\n");
@@ -82,7 +79,7 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	sprintf(filepath, "%s/%s.tar", FW_FILE_PATH, filename);
+	sprintf(filepath, "%s/%s", FW_FILE_PATH, filename);
 	//CGI_DBG("filepath : %s\n", filepath);
 
 	if( 0 != rename(savepath, filepath)){

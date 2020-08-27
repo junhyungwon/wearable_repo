@@ -1647,7 +1647,7 @@ void *myFunc(void *arg)
 			if(ret > 0){
 				memset(rbuf, 0, sizeof rbuf);
 				ret = read(cs_uds, rbuf, sizeof rbuf);
-				DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
+				DBG_UDS("FWUPDATE ret:%d, rbuf:%s\n", ret, rbuf);
 				if (ret > 0) {
 
 					if (access(rbuf, F_OK) != 0) { 

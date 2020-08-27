@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<META HTTP-EQUIV="EXPIRES" CONTENT="0" />
+		<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+		<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE" />
+
+<script type="text/javascript">
+
+// check OS and IE web browser ////////////////////////////////////////////////
+var gOS;
+var OS_OTHER    = 0;
+var OS_WINDOWS  = 1;
+var OS_LINUX    = 2;
+var OS_MACOSX   = 3;
+var OS_MAC      = 4;
+var OS_SOLARIS  = 5;
+var OS_ANDROID  = 6;
+
+//	alert(navigator.userAgent+ '\n' +navigator.platform);
+
+// Internet Explorer 6-11
+var isIE = /*@cc_on!@*/false || !!document.documentMode;
+
+// Opera 8.0+
+var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+
+// Firefox 1.0+
+var isFirefox = typeof InstallTrigger != 'undefined';
+
+// Edge 20+
+var isEdge = !isIE && !!window.StyleMedia;
+
+// Chrome 1 - 71
+var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+
+// Blink engine detection
+var isBlink = (isChrome || isOpera) && !!window.CSS;
+
+if (navigator.platform.indexOf("Win32") != -1 || navigator.platform.indexOf("Win64") != -1) {
+	gOS = OS_WINDOWS;
+	
+
+} else if (navigator.platform.indexOf("armv7l") != -1 || navigator.platform.indexOf("Android") != -1 ) {
+	gOS = OS_ANDROID;
+} else if (navigator.platform.indexOf("Linux") != -1) {
+	gOS = OS_LINUX;
+} else if (navigator.userAgent.indexOf("Mac OS X") != -1) {
+	gOS = OS_MACOSX;
+} else if (navigator.userAgent.indexOf("MSIE 5.2") != -1) {
+	gOS = OS_MACOSX;
+} else if (navigator.platform.indexOf("Mac") != -1) {
+	gOS = OS_MAC; // This will show up as unsupported (ie. < OS X)
+	// Special case for Opera on OS X emulating IE (bug 402113)
+	if ((navigator.userAgent.indexOf("Opera") != -1) && (navigator.userAgent.indexOf("Opera 6") == -1)) {
+		gOS = OS_MACOSX;
+	}
+} else if (navigator.platform.indexOf("SunOS") != -1) {
+	gOS = OS_SOLARIS;
+} else {
+	gOS = OS_OTHER;
+}
+///////////////////////////////////////////////////////////////////////////////
+
+
+function writeDirection(stuff, elementToWriteTo) {
+	//alert(stuff);
+	
+	var span = document.createElement('span');
+	span.innerHTML = stuff;
+	elementToWriteTo.appendChild(span);
+}
+
+function make_view_object()
+{
+	if(isIE){
+		document.write('<img id="mjpeg" name="mjpeg" width="100%" height="100%" src="/cgi/get_image.cgi?action=jpeg_download"/>');
+	}
+	else {
+		writeDirection('<img id="mjpeg" name="mjpeg" width="100%" height="100%" src="#"/>', document.getElementById('jpeg_area'));
+	}
+}
+
+function changeStream()
+{
+}
+
+function full_screen()
+{
+
+}
+
+function OnDestroy()
+{
+	stop_jpeg();
+}
+
+function OnCreate() 
+{
+	document.body.margin=0;
+	document.body.padding=0;
+	
+//	document.getElementById("mjpeg").focus();
+	start_jpeg();
+}
+
+//////////////////// MJPEG /////////////////////////////
+
+var g_timer_id = 0;
+var g_timer_interval = 600000;
+
+function timer_proc()
+{
+	var jpgview = document.getElementById('mjpeg');
+    var tmp = "?"+(new Date()).getTime();
+	
+	if(isIE){
+		jpgview.src = '/cgi/get_image.cgi?action=jpeg_download'+tmp;
+		g_timer_id = setTimeout( 'timer_proc()', 1000 );
+	}
+	else {
+		
+		//jpgview.src = '#';
+		//jpgview.src = '/cgi/get_image.cgi?action=jpeg_download&duration=61';// + tmp;
+
+		jpgview.src = '/cgi/get_image.cgi?action=jpeg_download'+tmp;
+		g_timer_id = setTimeout( 'timer_proc()', 1000 );
+	}
+}
+
+
+function pause_ms(millis)
+{
+	var date = new Date();
+	var curDate = null;
+	
+	do {
+        curDate = new Date();
+    } while(curDate-date < millis);
+}
+
+function start_jpeg() 
+{
+	stop_jpeg();
+    timer_proc();
+}
+
+function stop_jpeg()
+{
+	var jpegview = document.getElementById('mjpeg');
+	
+	if(g_timer_id != 0){
+		clearTimeout(g_timer_id);
+		g_timer_id = 0;
+	}
+	jpegview.src = '#';
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// drawing rectangle
+///////////////////////////////////////////////////////////////////////////////
+
+var isDrawing = false;
+var xHeight = 0;
+var xWidth = 0;
+var startX = 0;
+var startY = 0;
+
+function setStartDraw(e) {
+
+	var currentElement=document.getElementById('selectionBox');
+
+	xHeight=0;
+	xWidth=0;
+
+	currentElement.style.height = xHeight;
+	currentElement.style.width = xWidth;
+
+	// pageX and pageY are the pixel coordinates
+	// at which the event occurred, relative to
+	// the upper-left corner of the window (NN4).
+	// Testing for both pageX and clientX covers
+	// DOM2/IE event models, as well as NN4.
+	if (e.pageX || e.pageY) {
+		startX = e.pageX;
+		startY = e.pageY;
+	} else if (e.clientX || e.clientY) {
+		startX = e.clientX + document.body.scrollLeft;
+		startY = e.clientY + document.body.scrollTop;
+	}
+
+
+	currentElement.style.top = startY;
+	currentElement.style.left = startX;
+	currentElement.style.display = 'inline';
+
+	isDrawing = true;
+	return false;
+
+}//end setStartDraw()
+
+
+function drawBox(e) {
+
+	var currentElement=document.getElementById('selectionBox');
+	var currentX = 0;
+	var currentY = 0;
+	
+	if (isDrawing) {
+	
+		// Get current cursor position
+		if (e.pageX || e.pageY) {
+			currentX = e.pageX;
+			currentY = e.pageY;
+		} else if (e.clientX || e.clientY) {
+			currentX = e.clientX + document.body.scrollLeft;
+			currentY = e.clientY + document.body.scrollTop;
+		}
+		
+		// Create box dimensions
+		
+		xHeight = currentY - startY;
+		xWidth  = currentX - startX;
+		
+		if (xWidth < 0){
+			currentElement.style.left = currentX;
+		}
+		else {
+			currentElement.style.left = startX;
+		}
+		
+		if (xHeight < 0)
+			currentElement.style.top = currentY;
+		else
+			currentElement.style.top = startY;
+		
+		currentElement.style.width = Math.abs(xWidth);
+		currentElement.style.height = Math.abs(xHeight);
+		
+		return false;
+	
+	}//isDrawing
+
+}//drawBox()
+
+
+
+function stopDraw(e) {
+
+	isDrawing = false;
+	return false;
+}
+
+function clearSelection(id) {
+
+	var currentElement=document.getElementById(id);
+	currentElement.style.display = none;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+</script>
+
+      </head>
+	<body  onload="OnCreate();" onUnload="OnDestroy();"  topmargin="0"  leftmargin="0" marginwidth="0" marginheight="0" onselectstart="return false" oncontextmenu="return false">
+
+<table width="800px" height="580" border="0" cellpadding="0" cellspacing="0"><!--1 full contents -->
+	<tr ><td>
+		<table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0"> <!--2  out-line -->	
+		<tr>
+
+		<td width="780px">
+			<table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF"><!--3 full contents -->
+
+			<tr valign="top" align="center"><td>
+			
+			<table width="100%" border="0" cellpadding="0" cellspacing="3">
+		      	<tr>
+			  	<td align="center" valign="top" width="100%">
+				<font class="titlebar"> 									
+					JPEG Preview
+				</font>
+		      	</td>
+			  </tr>
+			 </table>
+
+			<br/>
+
+<table width="75%" border="0" cellpadding="0" cellspacing="10" align="center">	 <!--4-->
+<tr>
+		
+<td  width="100%" align="center" valign="top" >
+		
+		<table border="0" cellpadding="0" cellspacing="0" >
+			<tr>
+			<td>
+				<!-- JPG VIEWER -->
+				<table border="1" cellpadding="0" cellspacing="0" bgcolor="black">
+					<tr><td width="720" height="408"
+						onmousedown="return setStartDraw(event);"
+						onmousemove="return drawBox(event);"
+						onmouseup="return stopDraw(event);" >
+
+					<div style="position:absolute;border:solid 2px #ff1493;display:none" id="selectionBox"></div>
+					<img src="#" id="mjpeg" name="mjpeg" width="720" height="408"/>
+					</td></tr>
+				</table>
+			</td>
+			</tr>
+
+			<tr>
+
+			<td>
+			<form method="post" name="buttons" id="buttons" >
+
+				<table width="100%" border="0" cellpadding="0" cellspacing="0">	
+				<tr>	
+					<td width="30%" align="left">
+					<table border="0" cellpadding="0" cellspacing="0" class="Contents_Lv2" >				
+					<tr><td>
+						<select name="stream_ch" onchange="changeStream()">
+				  	   		<option value="3" name="MJPEG" >JPEG</option>
+						</select>
+						</td></tr>
+					</table>
+					</td>
+
+					<td width="70%" align="right">
+						<table border="0" cellpadding="0" left-cellspacing="10" class="Contents_Lv2" >				
+						<tr style="PADDING-LEFT: 10px">			
+							<td>
+							</td>
+							<td>
+								<img name="btn_play" id="btn_play" alt="play" title="play" src="/image/play_btn.png" onClick="start_jpeg()" />
+							</td>
+							<td>
+								<img name="btn_stop" id="btn_stop" alt="stop" title="stop" src="/image/stop_btn.png" onClick="stop_jpeg()" />
+							</td>	
+						</tr>				
+						</table>	
+					</td>
+				</tr>
+				</table>
+			</form>
+			</td>
+			</tr>
+		</table>	
+		 </td>
+</tr>
+</table><!--4-->
+
+			</td></tr>	
+		</table> <!-- 3 contents-->
+	</td>
+
+	</tr>
+	
+	</table> <!--2  horizontal out-line -->
+	
+	</td></tr>
+</table> <!--1 full contents -->
+
+
+</body>
+</html>
+
