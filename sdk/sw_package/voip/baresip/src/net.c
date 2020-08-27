@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2010 - 2016 Creytiv.com
  */
+#include <string.h>
 #include <re.h>
 #include <baresip.h>
 #include "core.h"
@@ -751,4 +752,10 @@ int net_debug(struct re_printf *pf, const struct network *net)
 	err |= net_dns_debug(pf, net);
 
 	return err;
+}
+
+//# added by rupy
+void net_set_ifname(const struct network *net, const char *ifname)
+{
+	strcpy((char *)net->cfg.ifname, (char *)ifname);
 }

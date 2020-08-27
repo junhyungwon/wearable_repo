@@ -232,9 +232,9 @@ int netmgr_cradle_eth_event_start(void)
 		strcpy(icradle->ip, info->ip_address);
 		strcpy(icradle->mask, info->mask_address);
 		strcpy(icradle->gw, info->gw_address);
-		dprintf("cradle eth set ip static!\n");
+		//dprintf("cradle eth set ip static!\n");
 	} else {
-		dprintf("cradle eth set ip dhcp!\n");
+		//dprintf("cradle eth set ip dhcp!\n");
 	}
 	
 	netmgr_net_link_up(NETMGR_CRADLE_ETH_DEVNAME); 

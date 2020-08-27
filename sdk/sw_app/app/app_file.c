@@ -311,7 +311,7 @@ static int add_node_tail(const char *path, struct list_head *head, unsigned int 
 	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
 
-	FILE_DBG(" Add List name: %s, size %u\n", path, iSize);
+//	FILE_DBG(" Add List name: %s, size %u\n", path, iSize);
 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add(&ptr->queue, head);

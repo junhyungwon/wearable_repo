@@ -55,8 +55,14 @@ extern "C" {
 
 #define SIPC_DATA_SZ					128
 
+#define SIPC_NET_TYPE_WLAN				1
+#define SIPC_NET_TYPE_RNDIS				2
+#define SIPC_NET_TYPE_USB2ETH			3
+
 typedef struct {
 	int en_stun;					/* enable stun server */
+	int net_if;						/* network interface type */
+	
 	short port;						/* SIP port */
 	
 	char ua_uri[SIPC_DATA_SZ];     	/* local information. 일반적으로 단말기 번호 */

@@ -40,6 +40,7 @@ typedef struct {
 	int link_status;
 	int wlan_5G_enable;
 	int rssi_level;
+	int cur_usb_net;
 	
 	int shmid;  /* shared memory qid */
 	unsigned char *sbuf;  /* shared memory address */
@@ -115,7 +116,7 @@ static void __netmgr_wlan_event_handler(int ste)
 	
 #if defined(NEXXONE) || defined(NEXX360)
 	if (app_cfg->vid_count == 0) {
-		mode = 1; /* AP Mode */			
+		//mode = 1; /* AP Mode :TODO */			
 	}
 #endif
 	
@@ -312,6 +313,8 @@ static void __netmgr_dev_link_status_handler(void)
 	} else {
 		if (link == NETMGR_DEV_ACTIVE) {
 			app_cfg->ste.b.usbnet_run = 1;
+			/* 현재 연결된 USB 장치를 저장 */
+			inetmgr->cur_usb_net = device;
 			app_leds_rf_ctrl(LED_RF_OK);
 		} 
 		else if (link == NETMGR_DEV_ERROR)  {
@@ -550,4 +553,9 @@ int app_netmgr_exit(void)
 	aprintf("done!...\n");
 
 	return SOK;
+}
+
+int app_netmgr_get_usbnet_dev(void) 
+{
+	return inetmgr->cur_usb_net;
 }

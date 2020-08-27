@@ -20,7 +20,10 @@
 #include "app_ctrl.h"
 #include "app_set.h"
 #include "app_rtsptx.h"
+#include "app_netmgr.h"
 #include "app_voip.h"
+#include "netmgr_ipc_cmd_defs.h"
+#include "sipc_ipc_cmd_defs.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -261,20 +264,31 @@ static void *THR_gui(void *prm)
 		/* VOIP 이 시작 안된 경우 */
 		if (!app_cfg->ste.b.voip) 
 		{
-			/* 유선망 또는 USB 네트워크 */
-			if (app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run) 
+			/* 유선망은 제외 USB 네트워크 */
+			if (app_cfg->ste.b.usbnet_run) 
 			{
+				int network = 0, res;
+				
+				res = app_netmgr_get_usbnet_dev();
+				if (res == NETMGR_DEV_TYPE_WIFI) {
+					network = SIPC_NET_TYPE_WLAN;
+				} else if (res == NETMGR_DEV_TYPE_USB2ETHER) {
+					network = SIPC_NET_TYPE_USB2ETH;
+				} else {
+					network = SIPC_NET_TYPE_RNDIS;
+				}
+
 				/* voip register start */
 				app_cfg->ste.b.voip = 1;
-				app_voip_start(1, app_set->voip.port, app_set->voip.userid, app_set->voip.ipaddr, 
-						app_set->voip.passwd, app_set->voip.peerid, "stun.l.google.com:19302");	
+				app_voip_start(network, 1, app_set->voip.port, app_set->voip.userid, app_set->voip.ipaddr, 
+						app_set->voip.passwd, app_set->voip.peerid, VOIP_STUN_PATH);	
 			}
 		} else {
 			/* voip unregister */
-			if ((app_cfg->ste.b.cradle_eth_run == 0) && (app_cfg->ste.b.usbnet_run == 0)) {
+			if (app_cfg->ste.b.usbnet_run == 0) {
 				/* 네트워크 연결이 해제되면 재등록을 해야 함 */
 				app_cfg->ste.b.voip = 0;
-				//app_voip_stop();
+				app_voip_stop();
 			}
 		}
 		
