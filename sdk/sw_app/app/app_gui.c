@@ -258,20 +258,23 @@ static void *THR_gui(void *prm)
 			}
 		}
 		
+		/* VOIP 이 시작 안된 경우 */
 		if (!app_cfg->ste.b.voip) 
 		{
-			if (app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run) {
+			/* 유선망 또는 USB 네트워크 */
+			if (app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run) 
+			{
 				/* voip register start */
 				app_cfg->ste.b.voip = 1;
-				app_voip_start(app_set->voip.userid, app_set->voip.ipaddr, 
-						app_set->voip.passwd, app_set->voip.peerid);	
+				app_voip_start(1, app_set->voip.port, app_set->voip.userid, app_set->voip.ipaddr, 
+						app_set->voip.passwd, app_set->voip.peerid, "stun.l.google.com:19302");	
 			}
 		} else {
 			/* voip unregister */
 			if ((app_cfg->ste.b.cradle_eth_run == 0) && (app_cfg->ste.b.usbnet_run == 0)) {
 				/* 네트워크 연결이 해제되면 재등록을 해야 함 */
-				if (app_cfg->ste.b.voip == 1)
-					app_cfg->ste.b.voip = 0;
+				app_cfg->ste.b.voip = 0;
+				//app_voip_stop();
 			}
 		}
 		
