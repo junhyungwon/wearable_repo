@@ -156,7 +156,7 @@ static int submit_settings()
 			}
 		}
 #elif defined(NEXXONE) || defined(NEXX360)
-		live_stream_account_enable=1;
+		live_stream_account_enable=1; // FIXED
 		if(live_stream_account_enctype  == -1) {
 			CGI_DBG("Not received RTSP Account Enctype\n");
 			return ERR_INVALID_PARAM;
@@ -170,7 +170,7 @@ static int submit_settings()
 			return ERR_INVALID_PARAM;
 		}
 #else
-
+	#error  check PRODUCT_NAME
 #endif
 
 		t.rtsp.enable = live_stream_account_enable;

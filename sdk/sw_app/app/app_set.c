@@ -763,6 +763,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
     if((int)pset->account_info.ON_OFF <= CFG_INVALID || (int)pset->account_info.ON_OFF > 1 )
         pset->account_info.ON_OFF = ON ;
+
+    printf("pset->account_info.ON_OFF		= %d\n", pset->account_info.ON_OFF) ;
  
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;

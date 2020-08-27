@@ -50,12 +50,29 @@ static app_p2p_t *ip2p=&t_p2p;
 -----------------------------------------------------------------------------*/
 int add_p2p_account()
 {
+	char rtsp_user[32] = {0} ;
+	char rtsp_passwd[32] = {0} ;
+
     FILE *fp = NULL ;
 
     if((fp = fopen("/tmp/passwd.txt", "w")) != NULL) 
     { 
+#if 0 // RTSP 계정을 공유하기로 함...
         fprintf(fp,"%s\n",app_set->sys_info.p2p_id) ;
         fprintf(fp,"%s\n",app_set->sys_info.p2p_passwd) ;
+#endif
+	    if(app_set->account_info.enctype)
+	   	{
+            decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32) ;
+            decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
+            fprintf(fp,"%s\n",rtsp_user) ;
+            fprintf(fp,"%s\n",rtsp_passwd) ;
+		}
+		else
+		{	
+            fprintf(fp,"%s\n",app_set->account_info.rtsp_userid) ;
+            fprintf(fp,"%s\n",app_set->account_info.rtsp_passwd) ;
+		}
         fclose(fp) ;
     }
 
