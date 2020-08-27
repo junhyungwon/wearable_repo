@@ -385,13 +385,13 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 		isChanged++;
 	}
 
+#if 0
 	if(t->live_stream_account_enable != app_set->account_info.ON_OFF) {
 		app_set->account_info.ON_OFF = t->live_stream_account_enable;
 		DBG_UDS("app_set->account_info.ON_OFF=%d\n", app_set->account_info.ON_OFF);
 		isChanged++;
 	}
 
-#if 0
 	if(t->live_stream_account_enable){
 		char dec_ID[32]={0};
 		char dec_PW[32]={0};
