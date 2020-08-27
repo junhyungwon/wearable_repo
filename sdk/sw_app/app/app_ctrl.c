@@ -1203,7 +1203,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
     app_leds_fw_update_ctrl();
 
 #if 1
-	sprintf(cmd, "tar xvf %s -C %s/", fwpath, disk);
+	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
 	printf("fwupdate cmd:%s\n", cmd);
 	system(cmd);
