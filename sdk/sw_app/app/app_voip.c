@@ -43,6 +43,7 @@ typedef struct {
 	
 	short svr_port;
 	int enable_stun;
+	int net_type;
 	
 	char dev_num[SIPC_DATA_SZ];     /* local information. 일반적으로 단말기 번호 */
 	char server[SIPC_DATA_SZ];    	/* 교환기 주소 */
@@ -85,7 +86,7 @@ static int send_msg(int cmd, const char *uri)
 }
 
 /* account 파일을 사용할 경우 이 명령을 필요없음 */
-static int send_ua_msg(int cmd, int enable, short port, const char *login, 
+static int send_ua_msg(int cmd, int net, int enable, short port, const char *login, 
 			const char *domain, const char *pass, const char *stun_domain)
 {
 	to_sipc_msg_t msg;
@@ -104,6 +105,7 @@ static int send_ua_msg(int cmd, int enable, short port, const char *login,
 	
 	msg.uri.en_stun = enable;
 	msg.uri.port = port;
+	msg.uri.net_if = net;
 	
 	return Msg_Send(ivoip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
@@ -166,15 +168,15 @@ static void __call_register_handler(void)
 {
 	dprintf("baresip user register start.....\n");
 	/* create ua and register */
-	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->enable_stun, ivoip->svr_port, ivoip->dev_num, 
-					ivoip->server, ivoip->passwd, ivoip->stun_svr);
+	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
+			ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 }
 
 static void __call_unregister_handler(void)
 {
 	dprintf("baresip user unregister start.....\n");
-	/* create ua and register */
-	send_ua_msg(SIPC_CMD_SIP_UNREGISTER_UA, 0, 0, ivoip->dev_num, NULL, NULL, NULL);
+	
+	send_msg(SIPC_CMD_SIP_UNREGISTER_UA, NULL);
 }
 
 static void __call_event_handler(void)
@@ -186,7 +188,7 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-	dprintf("current baresip state = %d\n", action);
+//	dprintf("current baresip state = %d\n", action);
 	
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
@@ -264,7 +266,7 @@ static void *THR_voip_main(void *prm)
 			break;
 		} else if (cmd == APP_CMD_START) {
 			__call_register_handler();
-		}  else if (cmd == APP_CMD_NOTY) {
+		} else if (cmd == APP_CMD_NOTY) {
 			__call_event_handler();
 		} else if (cmd == APP_CMD_STOP) {
 			__call_unregister_handler();
@@ -399,7 +401,7 @@ void app_voip_exit(void)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-void app_voip_start(int enable_stun, short server_port, const char *uag, const char *server, 
+void app_voip_start(int net_type, int enable_stun, short server_port, const char *uag, const char *server, 
 			const char *passwd, const char *peer, const char *stun_server)
 {
 	app_thr_obj *tObj = &ivoip->eObj;
@@ -421,6 +423,7 @@ void app_voip_start(int enable_stun, short server_port, const char *uag, const c
 		ivoip->svr_port = server_port;
 	
 	ivoip->enable_stun = enable_stun;
+	ivoip->net_type = net_type;
 	
 	OSA_mutexLock(&ivoip->lock);
 	event_send(tObj, APP_CMD_START, 0, 0);

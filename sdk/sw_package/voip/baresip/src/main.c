@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 	if (err)
 		goto out;
 
-	net_change(baresip_network(), 60, net_change_handler, NULL);
+//	net_change(baresip_network(), 60, net_change_handler, NULL);
 
 	uag_set_exit_handler(ua_exit_handler, NULL);
 

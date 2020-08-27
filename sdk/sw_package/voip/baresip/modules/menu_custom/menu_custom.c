@@ -48,14 +48,37 @@ typedef struct {
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------
- Declares a function prototype
------------------------------------------------------------------------------*/
 static key_config_t key_obj_t;
 static key_config_t *ikey = &key_obj_t;
 static char ui_buf[2048];
 
+/*----------------------------------------------------------------------------
+ Declares a function prototype
+-----------------------------------------------------------------------------*/
+static int send_msg(int cmd, int state, int dir, int reg, int err);
+
+#if 0
+if (net_interface) {
+		struct config *theconf = conf_config();
+
+		str_ncpy(theconf->net.ifname, net_interface,
+			 sizeof(theconf->net.ifname));
+	}
+net_change(baresip_network(), 60, net_change_handler, NULL);
+
+void net_force_change(struct network *net)
+static void net_change_handler(void *arg)
+{
+	(void)arg;
+
+	info("IP-address changed: %j\n",
+	     net_laddr_af(baresip_network(), AF_INET));
+
+	(void)uag_reset_transp(true, true);
+}
+
+	
+#endif
 //##############################################################################################
 static int __execlp(const char *arg)
 {
@@ -157,6 +180,17 @@ static int __execlp(const char *arg)
     return 0;
 }
 
+static int __get_rndis_type(void) 
+{
+	int res = 1; /* default usb0 */
+	
+	if (0 == access("/sys/class/net/eth1/operstate", R_OK)) {
+		res = 0;
+	} 
+	
+	return res;	
+}
+	
 //---------------------------- UI CALL HELPER --------------------------------------------------
 static const char *translate_errorcode(uint16_t scode)
 {
@@ -342,6 +376,13 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		ikey->ste.call_err = 0;
 		break;
 	
+	case UA_EVENT_UNREGISTERING:
+		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
+		ikey->ste.call_dir = 0;
+		ikey->ste.call_reg = 0;
+		ikey->ste.call_err = 0;
+		break;
+		
 	case UA_EVENT_REGISTER_FAIL:
 		if (strcmp(prm, "Connection timed out") == 0) {
 			/* ETIMEOUT (네트워크에 문제가 있음 */
@@ -363,7 +404,6 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		/* 전화 돌려주기 기능 */
 	case UA_EVENT_CALL_RTCP:
 		/* 통화 연결 후 RTCP 이벤트가 전송됨 */
-	case UA_EVENT_UNREGISTERING:
 	case UA_EVENT_CALL_RTPESTAB:
 		return;
 	
@@ -377,19 +417,60 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	//# for debugging
 	//update_callstatus();
 }
+
 //-----------------------------------------------------------------------------------------------
 //###################### Baresip Helper ########################################################
-static int __register_user(int enable, short port, const char *call_num, const char *server_addr, 
+static void __call_stop(void)
+{
+	/* Stop any ongoing ring-tones */
+	ikey->play = mem_deref(ikey->play);
+	ua_hangup(uag_current(), NULL, 0, NULL);
+}
+
+static void __call_answer(void)
+{
+	struct ua *ua = uag_current();
+	
+	/* Stop any ongoing ring-tones */
+	ikey->play = mem_deref(ikey->play);
+	ua_hold_answer(ua, NULL);
+}
+
+static int __register_user(int network, int enable, short port, const char *call_num, const char *server_addr, 
 			const char *passwd, const char *stun_domain)
 {
-	//struct network *net = baresip_network();
+	struct network *net = baresip_network();
+	char devname[16] = {0,};
+	
 	struct ua *ua = NULL;
 	int err = 0;
 	struct account *acc;
 	
 	memset(ui_buf, 0, sizeof(ui_buf));
+	memset(devname, 0, sizeof(devname));
 	
-	//(void)net_check(net);
+	if (network == SIPC_NET_TYPE_WLAN) {
+		strcpy(devname, "wlan0");
+	} 
+	else if (network == SIPC_NET_TYPE_RNDIS) {
+		if (__get_rndis_type() == 1) {
+			strcpy(devname, "usb0");
+		} else {
+			strcpy(devname, "eth1");
+		}
+	} else {
+		strcpy(devname, "eth1");
+	}
+	info("current usb network name is %s\n",devname);
+	net_set_ifname(net, (const char *)devname);
+	sys_msleep(500); /* wait 0.5s */
+	
+	//######## IP-CHANGE-HANDLER #######################################
+	net_check(net);
+	info("IP-address changed: %j\n", net_laddr_af(net, AF_INET));
+	(void)uag_reset_transp(true, true);
+	//#####################################################################
+			 
 	//# <sip:1006@192.168.0.5>;auth_pass=1234
 	if (enable) {
 		/* stun server enable */
@@ -431,27 +512,26 @@ static int __register_user(int enable, short port, const char *call_num, const c
 	return 0;
 }
 
-static int __unregister_user(const char *call_num)
+static void __unregister_user(void)
 {
-	struct ua *ua = NULL;
-
-	if (str_isset(call_num)) {
-		ua = uag_find_aor(call_num);
+	struct le *le;
+	
+	/* stop active call (네트워크 연결이 안되기 때문에 전송할 필요가 없음 */
+	for (le = list_head(uag_list()); le; le = le->next) {
+		struct ua *ua = le->data;
+		
+		if (ua_isregistered(ua)) 
+		{
+			struct account *acc = ua_account(ua);
+			
+			info("unregister %s\n", account_aor(acc));
+			
+			ua_unregister(ua);
+			//mem_deref(ua);
+		}	
 	}
-
-	if (!ua) {
-		fprintf(stdout, "ua: %s not found!\n", call_num);
-		return ENOENT;
-	}
-
-	if (ua == uag_current()) {
-//		(void)cmd_ua_next(pf, NULL);
-	}
-
-	fprintf(stdout, "deleting ua: %s\n", call_num);
-	mem_deref(ua);
-
-	return 0;
+	
+	info("unregister done!!\n");
 }
 
 static int __dialer_user(const char *call_num)
@@ -468,22 +548,6 @@ static int __dialer_user(const char *call_num)
 	}
 
 	return err;
-}
-
-static void __call_stop(void)
-{
-	/* Stop any ongoing ring-tones */
-	ikey->play = mem_deref(ikey->play);
-	ua_hangup(uag_current(), NULL, 0, NULL);
-}
-
-static void __call_answer(void)
-{
-	struct ua *ua = uag_current();
-	
-	/* Stop any ongoing ring-tones */
-	ikey->play = mem_deref(ikey->play);
-	ua_hold_answer(ua, NULL);
 }
 
 static int send_msg(int cmd, int state, int dir, int reg, int err)
@@ -524,6 +588,7 @@ static int recv_msg(void)
 		
 		ikey->uri.en_stun = msg.uri.en_stun;
 		ikey->uri.port = msg.uri.port;
+		ikey->uri.net_if = msg.uri.net_if;
 	} 
 	else if (msg.cmd == SIPC_CMD_SIP_START) {
 		memset(ikey->uri.peer_uri, 0, sizeof(ikey->uri.peer_uri));
@@ -583,13 +648,13 @@ static void *THR_sipc_main(void *prm)
 		case SIPC_CMD_SIP_REGISTER_UA:
 			info("baresip register user!\n");
 			/* 계정을 등록 */
-			__register_user(ikey->uri.en_stun, ikey->uri.port, ikey->uri.ua_uri, 
+			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.ua_uri, 
 					ikey->uri.pbx_uri, ikey->uri.passwd, ikey->uri.stun_uri);
 			break;
 		
 		case SIPC_CMD_SIP_UNREGISTER_UA:
 			info("baresip unregister user!\n");
-			__unregister_user(ikey->uri.ua_uri);
+			__unregister_user();
 			break;
 			
 		case SIPC_CMD_SIP_START:

@@ -29,4 +29,6 @@
 int app_netmgr_init(void);
 int app_netmgr_exit(void);
 
+int app_netmgr_get_usbnet_dev(void);
+
 #endif	/* _APP_NETMGR_H_ */
