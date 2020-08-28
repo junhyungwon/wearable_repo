@@ -31,6 +31,9 @@ sdk/sw_package/network_manager/main.o
 sdk/sw_package/network_manager/msg.o
 sdk/sw_package/network_manager/net_mgr.out
 sdk/sw_package/network_manager/poll_dev.o
+sdk/sw_package/network_manager/poll_cradle_dev.o
+sdk/sw_package/network_manager/poll_usbnet.o
+sdk/sw_package/network_manager/poll_wlan.o
 sdk/sw_package/network_manager/rndis.o
 sdk/sw_package/network_manager/usb2eth.o
 sdk/sw_package/network_manager/wlan_softap.o
