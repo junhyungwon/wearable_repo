@@ -136,7 +136,7 @@ static int _check_threshold_size(app_file_t *pInfo)
  * @section  DESC Description
  *	 - desc : 
  *****************************************************************************/
-static int _check_disk_free_space(void)
+int app_file_check_disk_free_space(void)
 {
 	unsigned long sum = ifile->disk_max;
 	unsigned long used = ifile->disk_used;
@@ -580,18 +580,10 @@ static void *THR_file_mng(void *prm)
 				int capacity_full = 0;
 				
 				app_file_update_disk_usage();
-				if (_check_disk_free_space() < 0) capacity_full = 1;
-				else							  capacity_full = 0;
+				capacity_full = app_file_check_disk_free_space() ? 0 : 1;
+
 				
-				if (!app_set->rec_info.overwrite) {
-					/* overwrite ??? ?? ???? ?? ?? */
-					if (capacity_full) {
-						app_rec_stop(0); /* buzzer off */
-						ifile->file_state = FILE_STATE_FULL;
-					} else {
-						ifile->file_state = FILE_STATE_NORMAL;
-					}
-				} else {
+				if (app_set->rec_info.overwrite) {
 					/* overwrite ??? ?? ? ? ? full ??? ?? ?? overwrite ??? ?? ?? ? */
 					if (capacity_full) {
 						ifile->file_state = FILE_STATE_OVERWRITE;
@@ -604,7 +596,15 @@ static void *THR_file_mng(void *prm)
 							app_rec_stop(ON);
 							continue;
 						}
-					} 
+					}
+				} else {
+					/* overwrite ??? ?? ???? ?? ?? */
+					if (capacity_full) {
+						app_rec_stop(OFF); /* buzzer off */
+						ifile->file_state = FILE_STATE_FULL;
+					} else {
+						ifile->file_state = FILE_STATE_NORMAL;
+					}					 
 				}
 				
 			    _check_overwite_full_led(ifile->file_state);

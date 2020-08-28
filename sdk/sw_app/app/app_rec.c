@@ -149,7 +149,7 @@ static void *THR_rec_send_msg(void *prm)
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
-		/* file 쓰레드에서 관리하도록 변경 */
+		/* file ?�레?�에??관리하?�록 변�?*/
 		//if (cmd == APP_CMD_STOP || app_cfg->ste.b.mmc_err || (app_set->rec_info.overwrite == OFF && app_cfg->ste.b.disk_full)) {
 		//	continue;
 		//}
@@ -192,6 +192,36 @@ static void *THR_rec_send_msg(void *prm)
 	return NULL;
 }
 
+
+static int _is_enable_rec_start()
+{	
+	//# currently record
+	if (irec->evt_rec) {
+		eprintf("currently recording...\n");
+		return EFAIL;
+	}
+
+	/* 카메???�상 ?�는 SD 카드 ?�상,, ?�는 ?�웨???�데?�트 */
+	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
+		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err ) 
+	{
+		eprintf("can't record cuz %s %s %s %s\n",
+			app_cfg->ste.b.mmc?"":"no MMC!", app_cfg->ste.b.busy?"system busy":"",
+			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec");
+		return EFAIL;
+	}
+
+	
+	/* overwrite 모드가 ?�니�?SD 카드 ?�량??1GB ?�상 ?�을 경우?�만 ?�작 */
+	if (!app_set->rec_info.overwrite && app_file_check_disk_free_space() == EFAIL) {
+		eprintf("Bypass start record!\n");
+		return EFAIL;
+	}
+
+	return SOK;
+}
+
+
 /*****************************************************************************
 * @brief    record start/stop function
 * @section
@@ -200,62 +230,30 @@ int app_rec_start(void)
 {
 	int start = 1;
 	unsigned long sz;
-	
-	/* record off 모드 */
-	if (!app_cfg->en_rec) {
-		return EFAIL;
-	}
 
-	/* 카메라 이상 또는 SD 카드 이상,, 또는 펌웨어 업데이트 */
-	if (!app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
-		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err ) 
-	{
-		eprintf("can't record cuz %s %s\n",
-			app_cfg->ste.b.mmc?"":"no MMC!", app_cfg->ste.b.busy?"system busy":"");
+	//# Check the status of recording.
+	if (_is_enable_rec_start() == EFAIL)
 		return EFAIL;
-	}
+
 	
-	//# currently record
-	if (irec->evt_rec) {
-		eprintf("currently recording...\n");
-		return EFAIL;
-	}
-	
-	/* record 프로세스가 시작하지 않은 경우... */
+	/* record ?�로?�스가 ?�작?��? ?��? 경우... */
 	if (!irec->init) {
 		OSA_waitMsecs(50);
 	}
 	
 	aprintf("Record Process Start!!\n");
 	
-	/* overwrite 모드가 아니면 SD 카드 용량이 1GB 이상 남을 경우에만 시작 */
-	if (!app_set->rec_info.overwrite) {
-		sz = app_file_get_free_size();
-        if (sz > ((1024*MB)/KB)) {
-			if (app_cfg->vid_count)
-	        	dev_buzz_ctrl(100, 1);	//# buzz: rec start
-		} else {
-			/*  용량 부족으로 record 시작 안 함 */
-			start = 0;
-		}
-	} else {
-		if (app_cfg->vid_count)
-	        dev_buzz_ctrl(100, 1);			//# buzz: rec start
-	}
-	
-	if (start) {
-		/* 이전 Record 상태가 끝날 때 까지 wait */
-		while (irec->evt_rec) {
-			app_msleep(50);
-		}
+	//# Record start if captuer is not zero.
+	if (app_cfg->vid_count) {
+        dev_buzz_ctrl(100, 1);			//# buzz: rec start
 		event_send(&irec->sObj, APP_REC_START, 0, 0);
-	} else
-		eprintf("Bypass start record!\n");
+	}
 	
 	return SOK;
 }
 
-/* SD 카드에 문제로 인한 종료. 등등 */
+
+/* SD 카드??문제�??�한 종료. ?�등 */
 int app_rec_stop(int buzz)
 {
 	if (irec->evt_rec) {
@@ -337,7 +335,7 @@ int app_rec_exit(void)
 	thread_delete(tObj);
 	
 	//#--- stop message receive thread. 
-	//# 프로세스에서 이미 종료가 되므로 APP_CMD_EXIT를 하면 안됨.
+	//# ?�로?�스?�서 ?��? 종료가 ?��?�?APP_CMD_EXIT�??�면 ?�됨.
 //	tObj = &irec->rObj;
 //	thread_delete(tObj);
 	
