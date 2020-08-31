@@ -580,9 +580,8 @@ static void *THR_file_mng(void *prm)
 				int capacity_full = 0;
 				
 				app_file_update_disk_usage();
-				capacity_full = app_file_check_disk_free_space() ? 0 : 1;
+				capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
 
-				
 				if (app_set->rec_info.overwrite) {
 					/* overwrite ??? ?? ? ? ? full ??? ?? ?? overwrite ??? ?? ?? ? */
 					if (capacity_full) {
@@ -710,9 +709,12 @@ void app_file_update_disk_usage(void)
 	unsigned long percent = 0;
 	unsigned long sum  = ifile->disk_max;
 	unsigned long used = ifile->disk_used;
+	unsigned long long denominator;
 	
-	percent = ((used * 100) / sum);
-		
+	denominator = ((unsigned long long)used * 100);
+	percent = (unsigned long)(denominator / sum);
+	
+//	printf("file manger total %u(KB), used %u(KB), percent %d%%\n", sum, used, percent);	
 	if (percent > DISK_USED_MID)
 		app_leds_mmc_capacity_ctrl(LED_DISK_USAGE_ON_3);	//# x > 66%
 	else if(percent < DISK_USED_MIN )

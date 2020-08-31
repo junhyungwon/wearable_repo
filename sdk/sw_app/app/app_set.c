@@ -723,7 +723,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->rec_info.overwrite = ON;
 
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = OFF ;
+	    pset->rec_info.auto_rec = ON ; //# NEXXONE --> ON
 		
 	if(pset->rec_info.pre_rec != ON && pset->rec_info.pre_rec != OFF)
 	    pset->rec_info.pre_rec = OFF ;
@@ -1044,7 +1044,7 @@ static void app_set_default(int default_type)
 	//# rec information
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
-    app_set->rec_info.auto_rec      = OFF ;
+    app_set->rec_info.auto_rec      = ON ;
 	app_set->rec_info.pre_rec       = OFF ;
 	app_set->rec_info.audio_rec     = OFF ;
 
