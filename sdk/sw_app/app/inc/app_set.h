@@ -248,7 +248,7 @@ typedef struct {
 } app_voip_t; // 66 
 
 typedef struct {
-	app_ch_cfg_t			ch[MAX_CH_NUM+1];
+	app_ch_cfg_t			ch[MAX_CH_NUM]; // 4 + 1
 	app_watchdog_t			wd;
 
 	app_network_dev_t		net_info;	//# network information for device

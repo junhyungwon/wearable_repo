@@ -24,7 +24,7 @@ extern "C" {
 -----------------------------------------------------------------------------*/
 #define CFG_FILE_MMC            "/mmc/cfg/fbx_cfg.ini"
 #define EFAIL                   (-1)
-#define MAX_CH_NUM               4
+#define MAX_CH_NUM               (4+1)
 
 
 #define DEFAULT_FPS				15 // 20 //24
@@ -199,7 +199,7 @@ typedef struct {
 
 
 typedef struct {
-	app_ch_cfg_t			ch[MAX_CH_NUM+1];
+	app_ch_cfg_t			ch[MAX_CH_NUM]; // 4 + 1
 	app_watchdog_t			wd;
 
 	app_network_dev_t		net_info;	//# network information for device
@@ -214,7 +214,10 @@ typedef struct {
     
     app_account_t           account_info;
 
-	char reserved[474]; // 1024 - 164 (ddns) - 66 (time) - 320(account)
+    app_voip_t              voip; // 66
+
+	//char reserved[474]; // 1024 - 164 (ddns) - 66 (time) - 320(account)
+	char reserved[408];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 66(voip)
 } app_set_t;
 
 /*----------------------------------------------------------------------------

@@ -1083,7 +1083,7 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 	
 #if defined(NEXXONE) || defined(NEXX360)
 	// REC 
-	for(ch = 0; ch < MAX_CH_NUM; ch++)
+	for(ch = 0; ch < MODEL_CH_NUM; ch++)
 	{
 		DBG_UDS("[REC] ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
 		if(rec_fps <= DEFAULT_FPS && rec_fps > 0 && app_set->ch[ch].framerate != rec_fps) 
@@ -1113,7 +1113,7 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 
 #else // FITT360
 	// REC index base
-	for(ch = 0; ch < MAX_CH_NUM; ch++)
+	for(ch = 0; ch < MODEL_CH_NUM; ch++)
 	{
 		if(rec_fps < FPS_MAX && rec_fps >= 0 && app_set->ch[ch].framerate != rec_fps) 
 			app_set->ch[ch].framerate = rec_fps ;

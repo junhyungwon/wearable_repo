@@ -93,7 +93,7 @@ int app_rtsptx_start(void)
 //	{
 //		app_msleep(10) ;
 //		retcnt += 1 ;
-//		if(app_cfg->vid_count == MAX_CH_NUM || retcnt == 500)
+//		if(app_cfg->vid_count == MODEL_CH_NUM || retcnt == 500)
 //		{
 //		    break ;
 //		}
@@ -104,7 +104,7 @@ int app_rtsptx_start(void)
     srand(time(NULL)) ;
 #endif
 
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P)
+    if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
     {
 	    streamSet.stream_wi[0] = 1920;
 	    streamSet.stream_he[0] = 1080;
@@ -112,7 +112,7 @@ int app_rtsptx_start(void)
 	    streamSet.stream_he[1] = 1080;
         msg_resol(RESOL_1080P) ;
     }
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P)
+    if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)
     {
 	    streamSet.stream_wi[0] = 1280;
 	    streamSet.stream_he[0] = 720;
@@ -120,7 +120,7 @@ int app_rtsptx_start(void)
 	    streamSet.stream_he[1] = 720;
         msg_resol(RESOL_720P) ;
     }
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_480P)
+    if(app_set->ch[MODEL_CH_NUM].resol == RESOL_480P)
     {
 	    streamSet.stream_wi[0] = 720;
 	    streamSet.stream_he[0] = 480;
@@ -176,11 +176,11 @@ int app_rtsptx_stop_start()
     FILE *fd = NULL;
     char rtsp_cmd[MAX_CHAR_64] = {0, } ;
 
-     if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P)
+     if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
          msg_resol(RESOL_1080P) ;
-     if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P)
+     if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)
          msg_resol(RESOL_720P) ;
-     if(app_set->ch[MAX_CH_NUM].resol == RESOL_480P)
+     if(app_set->ch[MODEL_CH_NUM].resol == RESOL_480P)
          msg_resol(RESOL_480P) ;
 
     fd = popen("killall wis-streamer", "r");
