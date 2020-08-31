@@ -24,16 +24,19 @@
 #define NET_TYPE_DHCP           1
 
 #if defined(NEXXONE)
-	#define MAX_CH_NUM				1
+	#define MODEL_CH_NUM				1
 #elif defined(NEXX360)
-	#define MAX_CH_NUM				4
+	#define MODEL_CH_NUM				4
 #elif defined(FITT360_SECURITY)
-	#define MAX_CH_NUM				4
+	#define MODEL_CH_NUM				4
 #else
     #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
 #endif
 
-#define STM_CH_NUM				MAX_CH_NUM // streaming channel
+#define STM_CH_NUM				MODEL_CH_NUM // streaming channel
+
+#define MAX_CH_NUM	(4+1)   // Regardless of the model Type, the maximum channel size is 4+1.
+						    // Use only for array declarations.
 
 #define MAX_AVI_CNT             4096 //  About 64G / 120Mbyte(1minute)
 
@@ -193,7 +196,7 @@ typedef struct {
 	int num_ch;
 	int disp_dev;		//# DISP_HDMI/DISP_LCD/DISP_TVO
 
-	ch_info_t ich[MAX_CH_NUM + 1];
+	ch_info_t ich[MAX_CH_NUM]; // 4 + 1
 
     int msgqId;
 

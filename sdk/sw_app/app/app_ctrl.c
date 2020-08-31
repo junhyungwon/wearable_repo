@@ -112,9 +112,9 @@ int ctrl_enc_multislice()
 
 // sliceSize = iputHeight * inputHeight * packetsize / macroblocksize * 100
 
-    if(app_set->ch[MAX_CH_NUM].resol == RESOL_720P)
+    if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)
         params.packetSize = 40;  // 5 180bytes   40  hdmi slice size = 1440bytes....
-    else if(app_set->ch[MAX_CH_NUM].resol == RESOL_1080P)
+    else if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
         params.packetSize = 17;  //   17  hdmi slice size = 1387bytes....  18 1468
     else
         params.packetSize = 80;  // 14 189bytes  80  480p  slice size = 1080....
@@ -274,18 +274,18 @@ int ctrl_vid_resolution(int resol_idx)
 
     if(resol_idx == RESOL_480P)
     {     
-		app_set->ch[MAX_CH_NUM].resol = RESOL_720P ;
+		app_set->ch[MODEL_CH_NUM].resol = RESOL_720P ;
     }
     else if(resol_idx == RESOL_720P)
     {
-		app_set->ch[MAX_CH_NUM].resol = RESOL_1080P ;
+		app_set->ch[MODEL_CH_NUM].resol = RESOL_1080P ;
     }
     else if(resol_idx == RESOL_1080P)
     {
-		app_set->ch[MAX_CH_NUM].resol = RESOL_480P ;
+		app_set->ch[MODEL_CH_NUM].resol = RESOL_480P ;
     }   
 
-    Vdis_disp_ctrl_init(app_set->ch[MAX_CH_NUM].resol);
+    Vdis_disp_ctrl_init(app_set->ch[MODEL_CH_NUM].resol);
 
     app_cap_start();    
     if (ret)
@@ -298,7 +298,7 @@ int ctrl_vid_resolution(int resol_idx)
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable
 
-	switch (app_set->ch[MAX_CH_NUM].resol)
+	switch (app_set->ch[MODEL_CH_NUM].resol)
     {
         case  0 :
             sprintf(log, "[APP_CTRL] --- change Display Mode to 480P ---");
@@ -328,7 +328,7 @@ int ctrl_vid_resolution(int resol_idx)
 *****************************************************************************/
 int ctrl_get_resolution()
 {
-    return app_set->ch[MAX_CH_NUM].resol;
+    return app_set->ch[MODEL_CH_NUM].resol;
 }
 
 /*****************************************************************************

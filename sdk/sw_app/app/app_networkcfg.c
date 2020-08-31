@@ -368,14 +368,14 @@ NETWORKCFG *read_cfg_file(char *filename)
                         }
                         if(i == 15)
                         {
-                            for(k = 0; k < MAX_CH_NUM; k++)
+                            for(k = 0; k < MODEL_CH_NUM; k++)
                             {
                                 app_set->ch[k].framerate = lexval ;
                             }
                         }
                         if(i == 16)
                         {
-                            for(k = 0; k < MAX_CH_NUM; k++)
+                            for(k = 0; k < MODEL_CH_NUM; k++)
                             {
                                 app_set->ch[k].quality = lexval ;
                             }

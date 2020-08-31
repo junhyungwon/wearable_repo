@@ -226,7 +226,7 @@ static void *THR_gui(void *prm)
 			}
 		}
 #ifdef OSD_SWVERSION
-        if(!app_set->ch[MAX_CH_NUM].resol)
+        if(!app_set->ch[MODEL_CH_NUM].resol)
         {
             if(app_cfg->ste.b.cradle_eth_ready)
             {
@@ -336,7 +336,7 @@ static void *THR_hdmi(void *prm)
 			break;
 		}
         //# change resolution 720P <----> 480P <-----> 1080P
-        ctrl_vid_resolution(app_set->ch[MAX_CH_NUM].resol);
+        ctrl_vid_resolution(app_set->ch[MODEL_CH_NUM].resol);
 	}
 
 	tObj->active = 0;

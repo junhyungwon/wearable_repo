@@ -122,7 +122,7 @@ static void char_memset(void)
 {
     int i = 0 ;
 
-    for (i = 0; i < MAX_CH_NUM + 1; i++)
+    for (i = 0; i < MODEL_CH_NUM + 1; i++)
     {
         app_set->ch[i].resol = CFG_INVALID ;
         app_set->ch[i].framerate = CFG_INVALID ;
@@ -286,7 +286,7 @@ int DefaultGetMac(char *mac_address)
 int show_all_cfg(app_set_t* pset)
 {
 	int i;
-	for(i=0;i<MAX_CH_NUM+1;i++){
+	for(i=0;i<MODEL_CH_NUM+1;i++){
 		printf("pset->ch[%d].resol     = %d\n", i, pset->ch[i].resol    );
 		printf("pset->ch[%d].framerate = %d\n", i, pset->ch[i].framerate);
 		printf("pset->ch[%d].quality   = %d\n", i, pset->ch[i].quality  );
@@ -413,7 +413,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	int ich=0, channels = 0, check_version = 0, i;
 	int default_fps;
 	
-	channels = MAX_CH_NUM+1;
+	channels = MODEL_CH_NUM+1;
 		
 	sprintf(ver_compare, "%s", FITT360_SW_VER);
 
@@ -449,7 +449,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		//# Encoding cfg per channel
 	    for(ich = 0; ich < channels; ich++)
 	    {
-		    if(ich < MAX_CH_NUM)
+		    if(ich < MODEL_CH_NUM)
 	            pset->ch[ich].resol  = RESOL_720P;
 
 		    pset->ch[ich].motion = OFF;
@@ -469,7 +469,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		    if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
 		        pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
 
-            if(ich == MAX_CH_NUM)
+            if(ich == MODEL_CH_NUM)
             {
 	       	 	//# streaming channel...
                 if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
@@ -485,7 +485,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		//# Encoding cfg per channel
 	    for(ich = 0; ich < channels; ich++)
 	    {
-		    if(ich < MAX_CH_NUM)
+		    if(ich < MODEL_CH_NUM)
 	            pset->ch[ich].resol  = RESOL_720P;
 			else if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
@@ -510,7 +510,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		        pset->ch[ich].quality = DEFAULT_QUALITY;
 			else
 			{
-				if(ich != MAX_CH_NUM)
+				if(ich != MODEL_CH_NUM)
 				{
 				    if(pset->ch[ich].quality == Q_HIGH)
 					    pset->ch[ich].quality = 4000 ; // 4MBPS
@@ -935,7 +935,7 @@ static void app_set_default(int default_type)
 
 #if defined(NEXXONE) || defined(NEXX360)
 	//# Encoding cfg per channel
-	channels = MAX_CH_NUM+1;
+	channels = MODEL_CH_NUM+1;
 
 	for (ich = 0; ich < channels; ich++)
 	{
@@ -948,7 +948,7 @@ static void app_set_default(int default_type)
 	}
 #else
 	/* FITT360 (index ±¸Á¶) */
-	channels = MAX_CH_NUM+1;
+	channels = MODEL_CH_NUM+1;
 
 	for (ich = 0; ich < channels; ich++)
 	{

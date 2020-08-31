@@ -71,12 +71,12 @@ static FILE *jfp = NULL;
 void video_status(void)
 {
     int i, temp, count, ret, vcount = 0;
-	int vstatus[MAX_CH_NUM] = {0,};
+	int vstatus[MODEL_CH_NUM] = {0,};
 
     char msg[128] = {0,};
 
 	/* current maximum video count */
-	Vcap_get_video_status(MAX_CH_NUM, &vstatus[0], &temp);
+	Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
 	/* Fixed */
 	app_cfg->wd_tot |= WD_ENC;
@@ -335,7 +335,7 @@ static int cap_enc_init(VENC_PARAMS_S *vencParams)
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 	int i, channels=0;
 
-	channels = MAX_CH_NUM+1; /* 4 camera + 1 stream */
+	channels = MODEL_CH_NUM+1; /* 4 camera + 1 stream */
 
 	for (i=0; i < channels; i++)
 	{
@@ -351,7 +351,7 @@ static int cap_enc_init(VENC_PARAMS_S *vencParams)
 	{
 		params.frameRate 		= JPEG_FPS;
 		params.inputFrameRate 	= DEFAULT_FPS;
-		params.targetBitRate 	= (app_cfg->ich[MAX_CH_NUM].br * 1000)/DEFAULT_FPS;
+		params.targetBitRate 	= (app_cfg->ich[MODEL_CH_NUM].br * 1000)/DEFAULT_FPS;
 
 		vencParams->encChannelParams[channels].enableAnalyticinfo = 0;
 		Venc_params_set(vencParams, channels, &params, VENC_ALL);
@@ -376,7 +376,7 @@ static void cap_enc_late_init(void)
 {
 	int i, channels=0;
 
-	channels = MAX_CH_NUM+1;
+	channels = MODEL_CH_NUM+1;
 	
 	//#--- set rate control
 	for(i=0; i < channels; i++)
@@ -394,7 +394,7 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 	int idx=0, wi, he, br, channels;
 	app_ch_cfg_t *ch_prm;
 
-	channels = MAX_CH_NUM+1;
+	channels = MODEL_CH_NUM+1;
 
 	for(idx=0; idx<channels; idx++)
 	{
@@ -460,11 +460,11 @@ int app_cap_start(void)
 	Vcap_params_init(&vcapParams);
 	Venc_params_init(&vencParams);
 
-	Vdis_params_init(&vdisParams, app_set->ch[MAX_CH_NUM].resol);  // 0 sd, 1 hd 2 fhd 
+	Vdis_params_init(&vdisParams, app_set->ch[MODEL_CH_NUM].resol);  // 0 sd, 1 hd 2 fhd 
 
 	//#--- init component
 	vsysParams.enableEncode 	= 1; //# if hardware test -> 0
-	vsysParams.enableHDMI		= app_set->ch[MAX_CH_NUM].resol;
+	vsysParams.enableHDMI		= app_set->ch[MODEL_CH_NUM].resol;
     vsysParams.enableMjpeg      = app_cfg->en_jpg;
 	vsysParams.systemUseCase 	= VSYS_USECASE_CAPTURE;
 	vsysParams.decoderHD 		= SYSTEM_DEVICE_VID_DEC_NVP2440H_DRV; //SYSTEM_DEVICE_VID_DEC_PH3100K_DRV;
@@ -478,7 +478,7 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 
 	vsysParams.captMode = CAPT_MODE_720P;
-	vsysParams.numChs = MAX_CH_NUM;
+	vsysParams.numChs = MODEL_CH_NUM;
 
 	app_cfg->num_ch = vsysParams.numChs;
 

@@ -907,7 +907,7 @@ void app_event_set()
 {
     int  i;
 
-    for(i=0; i< MAX_CH_NUM; i++)
+    for(i=0; i< MODEL_CH_NUM; i++)
     {
         app_cfg->evtjpg |= (ON<<i);
 //        app_cfg->evt_send |= (ON<<i);
