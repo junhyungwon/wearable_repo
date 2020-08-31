@@ -22,8 +22,8 @@
  * defines
  ******************************************************************************/
 #define PLAIN 0
-#define XML  1
-#define JSON 2
+#define XML   1
+#define JSON  2
 
 
 #if 0
@@ -441,10 +441,11 @@ void put_json_voip_config(T_CGI_VOIP_CONFIG *p)
 	voip_obj     = json_object_new_object();
 
 	json_object_object_add(voip_obj, "model",  json_object_new_string(MODEL_NAME));
+	json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p->ipaddr));
+	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->port));
 	json_object_object_add(voip_obj, "userid", json_object_new_string(p->userid));
 	json_object_object_add(voip_obj, "passwd", json_object_new_string(p->passwd));
 	json_object_object_add(voip_obj, "peerid", json_object_new_string(p->peerid));
-	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->port));
 
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
