@@ -79,6 +79,7 @@ void video_status(void)
 	Vcap_get_video_status(MAX_CH_NUM, &vstatus[0], &temp);
 	
 	/* Fixed */
+	app_cfg->wd_tot |= WD_ENC;
 	app_leds_cam_ctrl(vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
@@ -89,21 +90,15 @@ void video_status(void)
 
     if (app_cfg->vid_count == 0)
     {
-		app_cfg->wd_tot &= ~WD_ENC; 
         ret = app_rec_state();
         if (ret) {
             sleep(1) ;
             app_rec_stop(1);
         }
-		
 #if defined(FITT360_SECURITY)
         mcu_pwr_off(OFF_NORMAL);
 #endif
-
-    } else {
-		app_cfg->wd_tot |= WD_ENC; 
-	}
-	
+    } 
 }
 
 /*----------------------------------------------------------------------------
@@ -147,7 +142,7 @@ static void proc_vid_cap(void)
 	{
 		/* watchdog clear */
 		app_cfg->wd_flags |= WD_ENC;
-
+		
 		pFullBuf = &fullBufList.bitsBuf[i];
 		captime = (Uint64)((Uint64)pFullBuf->upperTimeStamp<<32|pFullBuf->lowerTimeStamp);
 

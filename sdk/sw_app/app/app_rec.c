@@ -192,7 +192,6 @@ static void *THR_rec_send_msg(void *prm)
 	return NULL;
 }
 
-
 static int _is_enable_rec_start()
 {	
 	//# currently record
@@ -211,7 +210,6 @@ static int _is_enable_rec_start()
 		return EFAIL;
 	}
 
-	
 	/* overwrite 모드가 ?�니�?SD 카드 ?�량??1GB ?�상 ?�을 경우?�만 ?�작 */
 	if (!app_set->rec_info.overwrite && app_file_check_disk_free_space() == EFAIL) {
 		eprintf("Bypass start record!\n");
@@ -220,7 +218,6 @@ static int _is_enable_rec_start()
 
 	return SOK;
 }
-
 
 /*****************************************************************************
 * @brief    record start/stop function
@@ -251,7 +248,6 @@ int app_rec_start(void)
 	
 	return SOK;
 }
-
 
 /* SD 카드??문제�??�한 종료. ?�등 */
 int app_rec_stop(int buzz)
