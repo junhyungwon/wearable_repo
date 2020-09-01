@@ -386,10 +386,10 @@ VideoOpenFileSource
 ::VideoOpenFileSource(UsageEnvironment& env, NETRAInput& input)
   : OpenFileSource(env, input), SerialBook(0), SerialLock(0), StreamFlag(STREAM_GET_VOL),IsStart(1) {
 
- uSecsToDelay = 30000;     // 5ms
- uSecsToDelayMax = 50000;
-// uSecsToDelay = 10000;     // 5ms
-// uSecsToDelayMax = 160000;
+// uSecsToDelay = 30000;     // 5ms
+// uSecsToDelayMax = 50000;
+ uSecsToDelay = 1000;     // 5ms
+ uSecsToDelayMax = 1666;
  srcType = 0;
 
 
