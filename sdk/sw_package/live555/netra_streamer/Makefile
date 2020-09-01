@@ -32,7 +32,7 @@ INCLUDES = -I . \
 	-I$(LIVE_DIR)/netra_streamer/netra_interface \
         $(CMEM_INC)
 
-CFLAGS = $(INCLUDES) -D_LINUX -g -Wall
+CFLAGS = $(INCLUDES) -D_LINUX -g -Wall -D$(PRODUCT_NAME)
 LDFLAGS += -s
 
 LIBS = $(CMEM_LIB)

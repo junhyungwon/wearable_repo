@@ -22,9 +22,16 @@ extern "C" {
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define CFG_FILE_MMC            "/mmc/cfg/fbx_cfg.ini"
 #define EFAIL                   (-1)
 #define MAX_CH_NUM               (4+1)
+
+#if defined(NEXXONE)||defined(NEXX360)
+#define CFG_FILE_MMC            "/mmc/cfg/nexx_cfg.ini"
+#elif defined(FITT360)
+#define CFG_FILE_MMC            "/mmc/cfg/fbx_cfg.ini"
+#else
+#error "Please, check $PRODUCT_NAME"
+#endif
 
 
 #define DEFAULT_FPS				15 // 20 //24
@@ -190,13 +197,38 @@ typedef struct {
 } app_timecfg_t ; // 66 bytes
 
 typedef struct {
+    unsigned char       lv;        // 0:administrator, 1:operator, 2:viewer, 3:guest
+    char                id[32];
+    char                pw[32];
+} app_onvifuser_t; // 65
+
+typedef struct {
+    unsigned char       authtype;      // 0:basic, 1:digest
+    char                id[32];
+    char                pw[32];
+    unsigned char       lv;        // 0:administrator, 1:operator, 2:viewer, 3:guest
+} app_webuser_t; // 66
+
+typedef struct {
     short ON_OFF ;
     unsigned short enctype ; // AES : 0 others : increase no...
     char rtsp_userid[32] ;
     char rtsp_passwd[32] ;
-    char reserved[252] ;
+
+    app_webuser_t           webuser;   //66 
+
+    app_onvifuser_t        onvif; // 65
+
+    char reserved[121] ;
 } app_account_t ;
 
+typedef struct {
+    char  ipaddr[16];
+    short port ;
+    char  userid[16] ;
+    char  passwd[16] ;
+    char  peerid[16] ;
+} app_voip_t; // 66 
 
 typedef struct {
 	app_ch_cfg_t			ch[MAX_CH_NUM]; // 4 + 1
