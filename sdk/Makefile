@@ -420,3 +420,15 @@ sys_all: sys_clean rfs_unzip bigfile_unzip sys fsupdate
 	@echo "--------------------------------------------------------------"
 	@echo -e "\n--- make sys_all done! (`date +'%H:%M:%S'`)---\n"
 
+fw: ubxapp ubifs
+	@echo "----------------------------------------------------------------"
+	@echo "***** Build Firmware (involved make ubxapp && make ubifs) ******"
+	@echo "----------------------------------------------------------------"
+	@cd $(TFTP_HOME) \
+		&& rm -f rfs_fit.ubifs.md5 \
+		&& touch fw_version.txt \
+		&& md5sum rfs_fit.ubifs > rfs_fit.ubifs.md5 \
+		&& tar cvf fitt_firmware_full_N.dat \
+			boot.scr MLO fw_version.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+	@echo -e "\n--- make fw done! (`date +'%H:%M:%S'`)---\n"
+
