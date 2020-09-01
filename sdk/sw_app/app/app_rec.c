@@ -202,11 +202,12 @@ static int _is_enable_rec_start()
 
 	/* ì¹´ë©”???´ìƒ ?ëŠ” SD ì¹´ë“œ ?´ìƒ,, ?ëŠ” ?Œì›¨???…ë°?´íŠ¸ */
 	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
-		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err ) 
+		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err || (app_cfg->vid_count == 0)) 
 	{
 		eprintf("can't record cuz %s %s %s %s\n",
 			app_cfg->ste.b.mmc?"":"no MMC!", app_cfg->ste.b.busy?"system busy":"",
-			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec");
+			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec",
+			(app_cfg->vid_count > 0)?"":"no video detect");
 		return EFAIL;
 	}
 
@@ -241,23 +242,18 @@ int app_rec_start(void)
 	aprintf("Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
-	if (app_cfg->vid_count) {
-        dev_buzz_ctrl(100, 1);			//# buzz: rec start
-		event_send(&irec->sObj, APP_REC_START, 0, 0);
-	}
+    dev_buzz_ctrl(100, 1);			//# buzz: rec start
+	event_send(&irec->sObj, APP_REC_START, 0, 0);
 	
 	return SOK;
 }
+
 
 /* SD ì¹´ë“œ??ë¬¸ì œë¡??¸í•œ ì¢…ë£Œ. ?±ë“± */
 int app_rec_stop(int buzz)
 {
 	if (irec->evt_rec) {
-		if (buzz) {
-			if (app_cfg->vid_count)
-			    dev_buzz_ctrl(100, 2);	//# buzz: rec stop
-		}
-		
+		if (buzz) dev_buzz_ctrl(100, 2);	//# buzz: rec stop
 		event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
 	}
 
