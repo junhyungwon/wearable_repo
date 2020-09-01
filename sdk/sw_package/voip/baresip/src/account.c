@@ -409,8 +409,8 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (err)
 		goto out;
 
-	/* Decode parameters */
-	acc->ptime = 20;
+	/* Decode parameters changed by rupy */
+	acc->ptime = 40; //20;
 	err |= sip_params_decode(acc, &acc->laddr);
 	       answermode_decode(acc, &acc->laddr.params);
 	err |= audio_codecs_decode(acc, &acc->laddr.params);

@@ -116,12 +116,11 @@ int app_main(void)
 
     app_cap_start();
 	app_netmgr_init();
-	
+	/* VOIP와 sound 데이터 공유를 위해서 무조건 start 해야 함 */
+	app_snd_start(); 
+		
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
-
-	if (app_set->rec_info.audio_rec)
-        app_snd_start(); 
 
     if (app_set->rec_info.auto_rec)
         app_rec_start();  //#--- record start

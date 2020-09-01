@@ -556,9 +556,9 @@ static int core_config_template(struct re_printf *pf, const struct config *cfg)
 			  default_cafile(),
 			  cfg->call.local_timeout,
 			  cfg->call.max_calls,
-			  default_audio_device(),
-			  default_audio_device(),
-			  default_audio_device(),
+			  default_audio_device(), /* audip player "alsa,default" */
+			  "alsa,plughw:1,1", /* default_audio_device() audip source "alsa,default" */
+			  default_audio_device(), /* audip alert "alsa,default" */
 			  range_print, &cfg->audio.buffer);
 
 	err |= re_hprintf(pf,
