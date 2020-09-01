@@ -38,6 +38,8 @@ int read_cfg(char *fileName, unsigned char *addr, unsigned int readSize, unsigne
     hndlFile = fopen(fileName, "rb");
 
     if(hndlFile == NULL) {
+		perror("fopen:");
+		printf("fileName:%s\n", fileName);
         retVal = EFAIL;
         goto exit;
     }   

@@ -9,10 +9,10 @@ INCLUDES = -I . \
         -I../netra_interface \
         $(CMEM_INC)
 
-C_FLAGS += -Wall -g
+C_FLAGS += -Wall -g -D$(PRODUCT_NAME)
 AR_FLAGS += -rcus
 
-CC = $(CODEGEN_PREFIX)gcc $(INCLUDES) $(C_FLAGS) -c
+CC = $(CODEGEN_PREFIX)gcc $(INCLUDES) -c
 AR = $(CODEGEN_PREFIX)ar
 
 REL_LIB1 = Netra_interface.a
