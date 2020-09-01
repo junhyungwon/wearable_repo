@@ -1197,17 +1197,45 @@ int ctrl_update_firmware(char *fwpath, char *disk)
 	return 0;
 }
 
+
+/* example for remote update
+ *
+curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
+*/
 int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 {
 	char cmd[256];
     app_leds_fw_update_ctrl();
 
-#if 1
+#if 1 // decompress tar
 	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
 	printf("fwupdate cmd:%s\n", cmd);
 	system(cmd);
 #endif
+
+	// check md5sum
+	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
+	FILE *fp = popen(cmd, "r");
+	if(fp){
+		char line[255]={0};
+		fgets(line, 255, fp);
+		printf("%s\n", line);
+
+		if(NULL == strstr(line, " OK")){
+			pclose(fp);
+			return -1;
+		}
+
+		pclose(fp);
+		// OK, ready to update
+	}
+	else {
+		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+		return -1;
+	}
+	
+	dev_buzz_ctrl(50, 3);		//# buzz: update
 
 	dev_fw_setenv("nand_update", "1", 0);
 
@@ -1232,15 +1260,19 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
  */
 int ctrl_update_firmware_by_cgi(char *fwpath)
 {
-	dev_buzz_ctrl(50, 3);		//# buzz: update
+	int ret = 0;
 
 	if(!app_cfg->ste.b.ftp_run)
 	{ 
 		app_rec_stop(0);
 		//ctrl_update_firmware(fwpath, SD_MOUNT_PATH);
-		temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
+		ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
+
+		if(ret < 0 ) {
+			app_rec_start();
+		}
 	}
-    return 0 ;     
+    return ret ;     
 }
 
 int ctrl_is_live_process(const char *process_name)
