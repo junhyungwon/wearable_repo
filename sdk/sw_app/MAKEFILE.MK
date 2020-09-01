@@ -20,7 +20,6 @@ app_fitt_hw_test:
 	make -fMAKEFILE.MK -C$(APP_DIR)/device MODULE=hw_test $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/hw_test MODULE=hw_test $(TARGET)
 
-
 libs: app_fitt
 
 libs_test: app_fitt_hw_test

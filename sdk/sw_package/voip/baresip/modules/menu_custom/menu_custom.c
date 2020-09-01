@@ -395,7 +395,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		ikey->ste.call_err = 0;
 		break;
 	
-	case UA_EVENT_CALL_REMOTE_SDP:
+	case UA_EVENT_CALL_REMOTE_SDP: /* session description protocol */
 		ikey->play = mem_deref(ikey->play);
 		return;
 		
@@ -433,7 +433,8 @@ static void __call_answer(void)
 	
 	/* Stop any ongoing ring-tones */
 	ikey->play = mem_deref(ikey->play);
-	ua_hold_answer(ua, NULL);
+//	ua_hold_answer(ua, NULL); /* 다중 call 사용 시 */
+	ua_answer(ua, NULL);
 }
 
 static int __register_user(int network, int enable, short port, const char *call_num, const char *server_addr, 
