@@ -65,7 +65,7 @@ typedef struct {
 #define SND_DUP_DEV				"plughw:1,0"  //# --> plughw:1,1
 
 #define SND_PCM_SRATE			8000 //# for baresip
-#define SND_PCM_PTIME			60 //# ms
+#define SND_PCM_PTIME			250 //# fixed 고정해야 함.
 #define SND_PCM_CH				1
 #define SND_PCM_CAP				0
 #define SND_PCM_PLAY			1
@@ -578,12 +578,13 @@ static void *THR_snd_cap(void *prm)
 	{
 		int bytes = 0;
 		
-		if(tObj->cmd == APP_CMD_EXIT) {
+		if (tObj->cmd == APP_CMD_EXIT) {
 			break;
 		}
 
 		bytes = __snd_dev_read(&isnd->snd_in);
 		if(bytes < 0) {
+			eprintf("sound device error!!\n");
 			continue;
 		}
 		
@@ -595,11 +596,10 @@ static void *THR_snd_cap(void *prm)
 		if (app_set->rec_info.audio_rec)
 		{
 			//# audio codec : g.711
-			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, 
-						(unsigned short *)isnd->snd_dup.sampv, bytes);
-
+			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
 			addr = g_mem_get_addr(enc_size, &idx);
 			if(addr == NULL) {
+				eprintf("audio gmem is null\n");
 				continue;
 			}
 
@@ -607,8 +607,10 @@ static void *THR_snd_cap(void *prm)
 			ifr->d_type = CAP_TYPE_AUDIO;
 			ifr->ch = 0;
 			ifr->addr = addr;
+			ifr->offset = (int)addr - g_mem_get_virtaddr();
 			ifr->b_size = enc_size;
-
+			//ifr->t_sec = (Uint32)(captime/1000);
+			//ifr->t_msec = (Uint32)(captime%1000);
 			app_memcpy(addr, enc_buf, enc_size);
 		}
 	}

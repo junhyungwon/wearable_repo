@@ -57,10 +57,10 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on)
 		aviInfo.bEnAudio 			= TRUE;
 		aviInfo.nAudioType			= ENCODING_ULAW;
 		aviInfo.nAudioChannel		= 1;
-		aviInfo.nSamplesPerSec		= 16000; //SND_PCM_SRATE;
-		aviInfo.nAudioBitRate		= 16000; //SND_PCM_SRATE;
+		aviInfo.nSamplesPerSec		= 8000; //SND_PCM_SRATE;
+		aviInfo.nAudioBitRate		= 8000; //SND_PCM_SRATE;
 		aviInfo.nAudioBitPerSample	= 16;
-		aviInfo.nAudioFrameSize		= 2000;
+		aviInfo.nAudioFrameSize		= 2000; //# fixed
 	}
 	
 	favi = LIBAVI_createAvi(filename, &aviInfo);

@@ -259,8 +259,9 @@ static int evt_file_open(stream_info_t *ifr)
 			eprintf("new file open (%s)\n", filename);
 			return EFAIL;
 		}
+		
+		fprintf(stdout, "new filename %s\n", filename);
 /*
-		aprintf("new filename %s\n", filename);
 		if(app_file_add(filename) == EFAIL) {
 			eprintf("file management error!! (%s)\n", filename);
 			return EFAIL;
@@ -326,9 +327,21 @@ static void *THR_rec_evt(void *prm)
 		if (cmd == APP_CMD_EXIT) {
 			break;
 		} 
+		//else if (cmd == APP_CMD_STOP || ( app_set->rec_info.overwrite==OFF && app_cfg->ste.b.disk_full)) {
 		else if (cmd == APP_CMD_STOP) {
 			continue;
 		}
+		
+		#if 0
+		( app_set->rec_info.overwrite==OFF && app_cfg->ste.b.disk_full))
+		if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
+		{
+            if(sz_info.free < (1024*MB)/KB)
+			{
+                continue ;
+			}
+        }
+		#endif
 		
         if (irec->en_pre)
 		    read_idx = search_frame(PRE_REC_SEC);
@@ -355,6 +368,16 @@ static void *THR_rec_evt(void *prm)
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
 				break;
 			}
+			
+			#if 0
+			if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
+		    {
+                if(sz_info.free < (1024*MB)/KB)
+			    {
+                    break ;
+			    }
+            }
+			#endif
 			
 			frame_num = get_valid_frame(read_idx);
 			if (frame_num < 10) {
@@ -439,7 +462,7 @@ static void app_main(void)
 			continue;
 		}
 		
-		printf("[rec process] receive cmd 0x%x\n", cmd);
+		dprintf("[rec process] receive cmd 0x%x\n", cmd);
 		
 		switch(cmd) {
 		case AV_CMD_REC_START:
