@@ -414,147 +414,37 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	int default_fps;
 	
 	channels = MODEL_CH_NUM+1;
-		
-	sprintf(ver_compare, "%s", FITT360_SW_VER);
-
-	if(ver_compare[0] > pset->sys_info.fw_ver[0])
-	{
-        check_version = 1 ;
-	}
-	else
-	{
-		if(ver_compare[2] > pset->sys_info.fw_ver[2])
-            check_version = 1 ;
-		else
-		{
-			if(ver_compare[3] > pset->sys_info.fw_ver[3])
-				check_version = 1 ;
-			else
-			{
-				if(ver_compare[5] > pset->sys_info.fw_ver[5])
-					check_version = 1 ;
-				else
-				{
-					if(ver_compare[6] > pset->sys_info.fw_ver[6])
-					check_version = 1 ;
-				}
-			}
-		}
-	}
-
-	if (!check_version)  // latest
-	{
-        printf("ver_compare[] = %s <=  pset->sys_info.fw_ver[] = %s\n", ver_compare, pset->sys_info.fw_ver) ;
-		
 		//# Encoding cfg per channel
-	    for(ich = 0; ich < channels; ich++)
-	    {
-		    if(ich < MODEL_CH_NUM)
-	            pset->ch[ich].resol  = RESOL_720P;
-
-		    pset->ch[ich].motion = OFF;
-
-		    if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
-                pset->ch[ich].gop = DEFAULT_FPS ;
-
-		    if(pset->ch[ich].framerate <= 0  || pset->ch[ich].framerate > DEFAULT_FPS)
-		        pset->ch[ich].framerate	= DEFAULT_FPS;
-
-            printf("pset->ch[ich].framerate = %d\n",pset->ch[ich].framerate) ;
-            printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
-
-		    if(pset->ch[ich].quality < MIN_BITRATE || pset->ch[ich].quality	> MAX_BITRATE)
-		        pset->ch[ich].quality = DEFAULT_QUALITY;
-		
-		    if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
-		        pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
-
-            if(ich == MODEL_CH_NUM)
-            {
-	       	 	//# streaming channel...
-                if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
-	                pset->ch[ich].resol= RESOL_720P;
-            }
-
-            printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
-		}
-    }
-	else  // old --> current
+	for(ich = 0; ich < channels; ich++)
 	{
-        printf("ver_compare[] = %s >  pset->sys_info.fw_ver[] = %s\n", ver_compare, pset->sys_info.fw_ver) ;
-		//# Encoding cfg per channel
-	    for(ich = 0; ich < channels; ich++)
-	    {
-		    if(ich < MODEL_CH_NUM)
-	            pset->ch[ich].resol  = RESOL_720P;
-			else if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
+	    if(ich < MODEL_CH_NUM)
+	        pset->ch[ich].resol  = RESOL_720P;
+
+		pset->ch[ich].motion = OFF;
+
+		if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
+            pset->ch[ich].gop = DEFAULT_FPS ;
+
+		if(pset->ch[ich].framerate <= 0  || pset->ch[ich].framerate > DEFAULT_FPS)
+		    pset->ch[ich].framerate	= DEFAULT_FPS;
+
+        printf("pset->ch[ich].framerate = %d\n",pset->ch[ich].framerate) ;
+        printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
+
+		if(pset->ch[ich].quality < MIN_BITRATE || pset->ch[ich].quality	> MAX_BITRATE)
+		    pset->ch[ich].quality = DEFAULT_QUALITY;
+		
+		if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
+		    pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
+
+        if(ich == MODEL_CH_NUM)
+        {
+	     	//# streaming channel...
+            if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
+        }
 
-		    pset->ch[ich].motion = OFF;
-
-		    if(pset->ch[ich].gop > DEFAULT_FPS || pset->ch[ich].gop <= 0)
-                pset->ch[ich].gop = DEFAULT_FPS ;
-
-		    if (pset->ch[ich].framerate <= FPS_30  || pset->ch[ich].framerate >= FPS_MAX)
-		        pset->ch[ich].framerate	= DEFAULT_FPS;
-			else
-			{
-			    if (pset->ch[ich].gop == FPS_30) 
-                    pset->ch[ich].gop = 30; 
-			    
-				if (pset->ch[ich].gop == FPS_15) 
-                    pset->ch[ich].gop = 15; 
-			}	
-
-		    if (pset->ch[ich].quality < Q_HIGH || pset->ch[ich].quality >= MAX_QUALITY)
-		        pset->ch[ich].quality = DEFAULT_QUALITY;
-			else
-			{
-				if(ich != MODEL_CH_NUM)
-				{
-				    if(pset->ch[ich].quality == Q_HIGH)
-					    pset->ch[ich].quality = 4000 ; // 4MBPS
-				    if(pset->ch[ich].quality == Q_MID)
-					    pset->ch[ich].quality = 3000 ; 
-				    if(pset->ch[ich].quality == Q_LOW)
-					    pset->ch[ich].quality = 2000 ;
-				}
-				else
-				{
-					if(pset->ch[ich].resol == RESOL_1080P)
-					{
-				        if(pset->ch[ich].quality == Q_HIGH)
-					        pset->ch[ich].quality = 8000 ; // 8MBPS
-				        if(pset->ch[ich].quality == Q_MID)
-					        pset->ch[ich].quality = 6000 ; 
-				        if(pset->ch[ich].quality == Q_LOW)
-					        pset->ch[ich].quality = 4000 ; 
-					}
-					if(pset->ch[ich].resol == RESOL_720P)
-					{
-				        if(pset->ch[ich].quality == Q_HIGH)
-					        pset->ch[ich].quality = 4000 ; // 4MBPS
-				        if(pset->ch[ich].quality == Q_MID)
-					        pset->ch[ich].quality = 3000 ; 
-				        if(pset->ch[ich].quality == Q_LOW)
-					        pset->ch[ich].quality = 2000 ; 
-					}
-					if(pset->ch[ich].resol == RESOL_480P)
-					{
-				        if(pset->ch[ich].quality == Q_HIGH)
-					        pset->ch[ich].quality = 2000 ; // 4MBPS
-				        if(pset->ch[ich].quality == Q_MID)
-					        pset->ch[ich].quality = 1000 ; 
-				        if(pset->ch[ich].quality == Q_LOW)
-					        pset->ch[ich].quality = 512 ; 
-					}
-
-				}
-			}
-
-		    if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
-		        pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
-		}
+        printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
 	}
 
 	//# Watchdog...
@@ -892,6 +782,7 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	app_set_size 	= sizeof(app_set_t);		//# current version cfg_size
 	saved_cfg_size	= get_cfg_size(cfg_path);	//# sd cfg_size (old version)
+
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
 		eprintf("\n #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! #### \n", cfg_path, app_set_size, saved_cfg_size);
