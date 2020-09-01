@@ -21,8 +21,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #include "OnDemandServerMediaSubsession.hh"
 #include <GroupsockHelper.hh>
-#include "Netra_interface.h"
-#include "NETRAInput.hh"
 
 OnDemandServerMediaSubsession
 ::OnDemandServerMediaSubsession(UsageEnvironment& env,
@@ -56,8 +54,6 @@ OnDemandServerMediaSubsession::~OnDemandServerMediaSubsession() {
   }
   delete fDestinationsHashTable;
 }
-
-
 
 char const*
 OnDemandServerMediaSubsession::sdpLines() {
@@ -426,17 +422,9 @@ void OnDemandServerMediaSubsession
   }
 }
 
-
-//char sprop[1024] ;
-
 void OnDemandServerMediaSubsession
 ::setSDPLinesFromRTPSink(RTPSink* rtpSink, FramedSource* inputSource, unsigned estBitrate) {
   if (rtpSink == NULL) return;
-
-  int resolution = get_resolution();
-  char const* sdpresol ;
-
-//  char sprop[1024];
 
   char const* mediaType = rtpSink->sdpMediaType();
   unsigned char rtpPayloadType = rtpSink->rtpPayloadType();
@@ -445,43 +433,12 @@ void OnDemandServerMediaSubsession
   char const* rtcpmuxLine = fMultiplexRTCPWithRTP ? "a=rtcp-mux\r\n" : "";
   char const* rangeLine = rangeSDPLine();
   char const* auxSDPLine = getAuxSDPLine(rtpSink, inputSource);
-
-//  char const* auxSDPLine ;
-//  int sprop_ret = GetSprop(sprop, 0);
-
   if (auxSDPLine == NULL) auxSDPLine = "";
 
-
-  switch(resolution)
-  {
-	  case 2 :                   // 108OP
-		  sdpresol = "a=fmtp:96 1920-1080\r\n";
-		  if(!strcmp(mediaType, "video")) 
-              auxSDPLine = "a=fmtp:96 packetization-mode=1;profile-level-id=640020;sprop-parameter-sets=J2QAKK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAeAIn5ZsgAAB9AAAOphwAAAPQkAAAPQkBe91lAAAAAE=,KP4Briw=\r\n" ;
-          break ;
-	  case 1 :                   // 720P
-		  sdpresol = "a=fmtp:96 1280-720\r\n";
-		  if(!strcmp(mediaType, "video")) 
-              auxSDPLine = "a=fmtp:96 packetization-mode=1;profile-level-id=640020;sprop-parameter-sets=J2QAIK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAUAW6bIAAAfQAADqYcAAAHoSAAAehIF73WUAAAAB,KP4Briw=\r\n" ;
-		  break ;
-	  case 0 :                   // 480P
-		  sdpresol = "a=fmtp:96 720-480\r\n";
-		  if(!strcmp(mediaType, "video")) 
-              auxSDPLine = "a=fmtp:96 packetization-mode=1;profile-level-id=640020;sprop-parameter-sets=J2QAIK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAtD2lSAAAH0AAA6mHAAAD0JAAA9CQXvdZQAAAAE=,KP4Briw=\r\n" ;
-		  break ;
- 
-	  default :
-		  sdpresol = "a=fmtp:96 720-480\r\n";
-		  if(!strcmp(mediaType, "video")) 
-              auxSDPLine = "a=fmtp:96 packetization-mode=1;profile-level-id=640020;sprop-parameter-sets=J2QAIK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAtD2lSAAAH0AAA6mHAAAD0JAAA9CQXvdZQAAAAE=,KP4Briw=\r\n" ;
-		  break ;
-  }
-  
   char const* const sdpFmt =
     "m=%s %u RTP/AVP %d\r\n"
     "c=IN IP4 %s\r\n"
     "b=AS:%u\r\n"
-    "%s"
     "%s"
     "%s"
     "%s"
@@ -492,7 +449,6 @@ void OnDemandServerMediaSubsession
     + strlen(ipAddressStr.val())
     + 20 /* max int len */
     + strlen(rtpmapLine)
-	+ strlen(sdpresol)
     + strlen(rtcpmuxLine)
     + strlen(rangeLine)
     + strlen(auxSDPLine)
@@ -505,7 +461,6 @@ void OnDemandServerMediaSubsession
 	  ipAddressStr.val(), // c= address
 	  estBitrate, // b=AS:<bandwidth>
 	  rtpmapLine, // a=rtpmap:... (if present)
-      sdpresol,
 	  rtcpmuxLine, // a=rtcp-mux:... (if present)
 	  rangeLine, // a=range:... (if present)
 	  auxSDPLine, // optional extra SDP line

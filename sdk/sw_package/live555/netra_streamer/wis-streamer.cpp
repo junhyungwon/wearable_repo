@@ -549,17 +549,14 @@ printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
            rtcpGroupsockVideo->multicastSendOnly();
         }
 	    setVideoRTPSinkBufferSize();
-/*
+
         char BuffStr[200];
 	    extern int GetSprop(void *pBuff, char vType);
-*/
-//        GetSprop(BuffStr,video_type);
 
-        sprintf(BuffStr, "%s","J2QAIK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAtD2lSAAAH0AAA6mHAAAD0JAAA9CQXvdZQAAAAE=,86,KP4Briw=,5") ;
-             
+        GetSprop(BuffStr,video_type);
+
 	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, BuffStr); // hwjun
 
-	    //sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96);
 //	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, 0x42, "h264");	
     }
 
