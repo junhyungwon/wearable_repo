@@ -146,12 +146,12 @@ static void *THR_gps_jack_detect(void *prm)
 		res = gpio_irq_read(GPS_PWR_EN, &val, 1000);
 		if (res == 0) {
 			dprintf("GPS Jack GPIO value %d\n", val);
-			if (app_cfg->ste.b.gps == 0 && val == 1) {
+			if ((app_cfg->ste.b.gps == 0) && (val == 1)) {
 				app_cfg->ste.b.gps = 1;
 				app_cfg->wd_tot |= WD_DEV;
 				event_send(&igps->hObj, APP_CMD_START, 0, 0);
 			} 
-			else if (app_cfg->ste.b.gps == 1 && val == 0)
+			else if ((app_cfg->ste.b.gps == 1) && (val == 0))
 			{
 				app_cfg->ste.b.gps = 0;
 				app_cfg->wd_tot &= ~WD_DEV;
@@ -199,6 +199,7 @@ static void *THR_gps_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
+				app_cfg->wd_flags &= ~WD_DEV; //# for watchdog disable..
 				__gps_send_cmd(GNSS_CMD_GPS_STOP);
 				break;
 			} 
