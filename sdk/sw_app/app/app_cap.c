@@ -76,7 +76,7 @@ void video_status(void)
     char msg[128] = {0,};
 
 	/* current maximum video count */
-	Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
+	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
 	/* Fixed */
 	app_cfg->wd_tot |= WD_ENC;

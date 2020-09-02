@@ -49,12 +49,18 @@ extern "C" {
 typedef struct {
 	long type;
 	int cmd;
-
-	int en_snd; 	//# sound enable
-	int en_pre;     //# pre recording
-	int fr;  		//# frame rate..
-	unsigned int stime;		//# save time
+	
+	//# For video recoder
 	char deviceId[32];
+	int en_pre;     		//# pre recording
+	int fr;  				//# frame rate..
+	unsigned int stime;		//# save time
+	
+	//# for sound recoder
+	int en_snd; 			//# sound enable
+	int snd_ch;				//# sound channel
+	int snd_rate;			//# sampling rate
+	int snd_btime;			//# buffer size
 } to_rec_msg_t;
 
 typedef struct {

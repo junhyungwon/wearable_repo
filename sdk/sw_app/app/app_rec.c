@@ -21,6 +21,7 @@
 #include "app_set.h"
 #include "app_file.h"
 #include "app_util.h"
+#include "app_snd.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -37,6 +38,10 @@ typedef struct {
 	int init;
 	int qid;
 	int evt_rec;			//# 1:recording, 0:idle
+	
+	int snd_ch;				//# sound channel
+	int snd_rate;			//# sampling rate
+	int snd_btime;			//# buffer size
 	
 } app_rec_t;
 
@@ -61,10 +66,16 @@ static int send_msg(int cmd)
 
 	//# rec param
 	//# set the record period.
-	msg.stime = grec_time[app_set->rec_info.period_idx];   //# save time
-	msg.en_snd = app_set->rec_info.audio_rec;  //# sound enable
-	msg.en_pre = app_set->rec_info.pre_rec; //# todo
-	msg.fr = 0;        //# frame rate..
+	msg.stime = grec_time[app_set->rec_info.period_idx];   	//# save time
+	msg.en_snd = app_set->rec_info.audio_rec;  				//# sound enable
+	msg.en_pre = app_set->rec_info.pre_rec; 				//# todo
+	msg.fr = 0;        										//# frame rate..
+	
+	if (cmd == AV_CMD_REC_START) {
+		msg.snd_ch    = irec->snd_ch; 
+		msg.snd_rate  = irec->snd_rate; 
+		msg.snd_btime = irec->snd_btime; 
+	}
 	
 	memcpy(msg.deviceId, app_set->sys_info.deviceId, MAX_CHAR_32);
 	
@@ -149,20 +160,6 @@ static void *THR_rec_send_msg(void *prm)
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
-		/* file ?°ë ˆ?œì—??ê´€ë¦¬í•˜?„ë¡ ë³€ê²?*/
-		//if (cmd == APP_CMD_STOP || app_cfg->ste.b.mmc_err || (app_set->rec_info.overwrite == OFF && app_cfg->ste.b.disk_full)) {
-		//	continue;
-		//}
-		
-		//# move to file task
-		//if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
-		//{
-		//	if(sz_info.free < (1024*MB)/KB)
-		//	{
-		//		break ;
-		//	}
-		//}
-		
 		if (cmd == APP_CMD_EXIT) {
 			/* send exit command to rec process */
 			exit = 1;
@@ -200,7 +197,6 @@ static int _is_enable_rec_start()
 		return EFAIL;
 	}
 
-	/* ì¹´ë©”???´ìƒ ?ëŠ” SD ì¹´ë“œ ?´ìƒ,, ?ëŠ” ?Œì›¨???…ë°?´íŠ¸ */
 	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
 		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err || (app_cfg->vid_count == 0)) 
 	{
@@ -211,7 +207,6 @@ static int _is_enable_rec_start()
 		return EFAIL;
 	}
 
-	/* overwrite ëª¨ë“œê°€ ?„ë‹ˆë©?SD ì¹´ë“œ ?©ëŸ‰??1GB ?´ìƒ ?¨ì„ ê²½ìš°?ë§Œ ?œìž‘ */
 	if (!app_set->rec_info.overwrite && app_file_check_disk_free_space() == EFAIL) {
 		eprintf("Bypass start record!\n");
 		return EFAIL;
@@ -232,9 +227,7 @@ int app_rec_start(void)
 	//# Check the status of recording.
 	if (_is_enable_rec_start() == EFAIL)
 		return EFAIL;
-
 	
-	/* record ?„ë¡œ?¸ìŠ¤ê°€ ?œìž‘?˜ì? ?Šì? ê²½ìš°... */
 	if (!irec->init) {
 		OSA_waitMsecs(50);
 	}
@@ -248,8 +241,6 @@ int app_rec_start(void)
 	return SOK;
 }
 
-
-/* SD ì¹´ë“œ??ë¬¸ì œë¡??¸í•œ ì¢…ë£Œ. ?±ë“± */
 int app_rec_stop(int buzz)
 {
 	if (irec->evt_rec) {
@@ -287,6 +278,11 @@ int app_rec_init(void)
 	
 	//# static config clear - when Variable declaration
 	memset((void *)irec, 0x0, sizeof(app_rec_t));
+	
+	//# set default sound param
+	irec->snd_rate = SND_PCM_SRATE;
+	irec->snd_ch = SND_PCM_CH;
+	irec->snd_btime = SND_PCM_SRATE * SND_PCM_PTIME / 1000;
 	
 	/* start rec process */
 	snprintf(cmd, sizeof(cmd), "/opt/fit/bin/av_rec.out %x &", (int)g_mem_get_phyaddr());
@@ -327,7 +323,6 @@ int app_rec_exit(void)
 	thread_delete(tObj);
 	
 	//#--- stop message receive thread. 
-	//# ?„ë¡œ?¸ìŠ¤?ì„œ ?´ë? ì¢…ë£Œê°€ ?˜ë?ë¡?APP_CMD_EXITë¥??˜ë©´ ?ˆë¨.
 //	tObj = &irec->rObj;
 //	thread_delete(tObj);
 	
