@@ -229,12 +229,9 @@ static void *THR_gps_poll(void *prm)
 				((changed & SPEED_SET) != 0))
 			
 			{
-				/* 1ì´ˆë§ˆ???°ì´?°ê? ?˜ì‹ ??*/
-				/* REPORT_IS ?Œëž˜?¤ê? ?¤ì •?˜ë©´ ëª¨ë“  ?°ì´?°ê? ?˜ì‹ ?œê²ƒ?¼ë¡œ ?ë‹¨ */
 				gps_set_rmc_data(GPS_ENABLED);
 			}
 				
-			/* ?€?°ë ˆ?œë? ?™ìž‘?œí‚¤ê¸??„í•œ ìµœì†Œ?œì˜ delay */
 			delay_msecs(20);
 		} /* while (poll_done == 0) */
 			

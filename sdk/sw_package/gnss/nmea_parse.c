@@ -1564,7 +1564,7 @@ ssize_t nmea_packet_get(int fd, struct gps_lexer_t *lexer)
 			return -1;
 		}
     }  else {
-		#if PACKET_DBG
+		#if 0
 		{
 			char scratchbuf[MAX_PACKET_LENGTH*4+1];
 			dprintf("Read %zd chars to buffer offset %zd (total %zd): %s\n",
