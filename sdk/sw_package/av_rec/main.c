@@ -40,13 +40,17 @@ typedef struct {
 	int init;		/* task init */
 	int qid;
 	
-	int en_snd; 	//# sound enable
 	int en_pre;     //# todo
 	int fr;  		//# frame rate..
 	unsigned int rec_min;
 	
     int rec_first;
     int old_min;
+	
+	int en_snd; 			//# sound enable
+	int snd_ch;				//# sound channel
+	int snd_rate;			//# sampling rate
+	int snd_btime;			//# buffer size
 
 	char deviceId[32];
 	char fname[256];
@@ -107,11 +111,16 @@ static int recv_msg(void)
 		return -1;
 	}
 	
-	irec->en_snd    = msg.en_snd ; 	  //# sound enable
+	irec->en_snd    = msg.en_snd; 	  //# sound enable
 	irec->en_pre    = msg.en_pre;     //# todo
 	irec->fr        = msg.fr;  		  //# frame rate..
 	irec->rec_min   = msg.stime;	  //# save time
 	
+	if (msg.cmd == AV_CMD_REC_START) {
+		irec->snd_ch   = msg.snd_ch;
+		irec->snd_rate = msg.snd_rate;		//# sampling rate
+		irec->snd_btime = msg.snd_btime;	//# buffer size
+	}
 	memcpy(irec->deviceId, msg.deviceId, 32);
 	
 	return msg.cmd;
@@ -254,13 +263,15 @@ static int evt_file_open(stream_info_t *ifr)
         memset(irec->fname, 0, sizeof(irec->fname));
 		sprintf(irec->fname, "%s", filename);
 		
-		irec->fevt = avi_file_open(filename, ifr, irec->en_snd);	//# open new file
+		irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
+						irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
 		if (irec->fevt == NULL) {
 			eprintf("new file open (%s)\n", filename);
 			return EFAIL;
 		}
+		
+		fprintf(stdout, "new filename %s\n", filename);
 /*
-		aprintf("new filename %s\n", filename);
 		if(app_file_add(filename) == EFAIL) {
 			eprintf("file management error!! (%s)\n", filename);
 			return EFAIL;
@@ -326,9 +337,21 @@ static void *THR_rec_evt(void *prm)
 		if (cmd == APP_CMD_EXIT) {
 			break;
 		} 
+		//else if (cmd == APP_CMD_STOP || ( app_set->rec_info.overwrite==OFF && app_cfg->ste.b.disk_full)) {
 		else if (cmd == APP_CMD_STOP) {
 			continue;
 		}
+		
+		#if 0
+		( app_set->rec_info.overwrite==OFF && app_cfg->ste.b.disk_full))
+		if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
+		{
+            if(sz_info.free < (1024*MB)/KB)
+			{
+                continue ;
+			}
+        }
+		#endif
 		
         if (irec->en_pre)
 		    read_idx = search_frame(PRE_REC_SEC);
@@ -355,6 +378,16 @@ static void *THR_rec_evt(void *prm)
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
 				break;
 			}
+			
+			#if 0
+			if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
+		    {
+                if(sz_info.free < (1024*MB)/KB)
+			    {
+                    break ;
+			    }
+            }
+			#endif
 			
 			frame_num = get_valid_frame(read_idx);
 			if (frame_num < 10) {
@@ -439,7 +472,7 @@ static void app_main(void)
 			continue;
 		}
 		
-		printf("[rec process] receive cmd 0x%x\n", cmd);
+		dprintf("[rec process] receive cmd 0x%x\n", cmd);
 		
 		switch(cmd) {
 		case AV_CMD_REC_START:

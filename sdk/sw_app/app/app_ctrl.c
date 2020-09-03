@@ -171,6 +171,7 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 
     params.frameRate = app_cfg->ich[ch].fr;
     params.targetBitRate = app_cfg->ich[ch].br*1000 ;
+    params.intraFrameInterval = app_cfg->ich[ch].fr;  //gop
 
     Venc_setInputFrameRate(ch, DEFAULT_FPS);
 

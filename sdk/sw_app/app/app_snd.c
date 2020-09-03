@@ -64,13 +64,8 @@ typedef struct {
 #define SND_IN_DEV				"plughw:0,0"
 #define SND_DUP_DEV				"plughw:1,0"  //# --> plughw:1,1
 
-#define SND_PCM_SRATE			8000 //# for baresip
-#define SND_PCM_PTIME			60 //# ms
-#define SND_PCM_CH				1
 #define SND_PCM_CAP				0
 #define SND_PCM_PLAY			1
-
-#define BITS_PER_SAMPLE			16
 
 typedef struct {
 	char path[256];			//# pcm virtual name
@@ -235,7 +230,7 @@ static int __snd_prm_init(const char *name, snd_prm_t *prm,
 	 */
 	prm->num_frames = ptime; //# period
 	sampc = rate * ch * ptime / 1000;
-	prm->sampv = (char *)malloc(sampc * BITS_PER_SAMPLE / 8); //# 1sample 16bit..
+	prm->sampv = (char *)malloc(sampc * SND_PCM_BITS / 8); //# 1sample 16bit..
 	if (prm->sampv == NULL)
 		ret = -1;
 	
@@ -401,7 +396,7 @@ static ssize_t __snd_dev_read(snd_prm_t *prm)
 	size_t count = (size_t)prm->num_frames;
 	int hwshift;
 
-	hwshift = prm->channel * (BITS_PER_SAMPLE / 8);
+	hwshift = prm->channel * (SND_PCM_BITS / 8);
 
 	while (count > 0)
 	{
@@ -453,7 +448,7 @@ static ssize_t __snd_dev_write(snd_prm_t *prm, size_t w_samples)
 	size_t period = (size_t)prm->num_frames;
 	int hwshift;
 
-	hwshift = prm->channel * (BITS_PER_SAMPLE / 8); //# 16bit * channel / 8bit
+	hwshift = prm->channel * (SND_PCM_BITS / 8); //# 16bit * channel / 8bit
 
 	if (count < period) {
     	snd_pcm_format_set_silence(SND_PCM_FORMAT_S16_LE, rbuf + (count * hwshift),
@@ -563,7 +558,7 @@ static void *THR_snd_cap(void *prm)
 		return NULL;
 	}
 	
-	si_size  = (read_sz * SND_PCM_CH * (BITS_PER_SAMPLE / 8));
+	si_size  = (read_sz * SND_PCM_CH * (SND_PCM_BITS / 8));
 	/* G.711로 Encoding 시 16bit -> 8bit로 변경됨 */
 	enc_buf = (char *)malloc(si_size/2);
 	if (enc_buf == NULL) {
@@ -578,12 +573,13 @@ static void *THR_snd_cap(void *prm)
 	{
 		int bytes = 0;
 		
-		if(tObj->cmd == APP_CMD_EXIT) {
+		if (tObj->cmd == APP_CMD_EXIT) {
 			break;
 		}
 
 		bytes = __snd_dev_read(&isnd->snd_in);
 		if(bytes < 0) {
+			eprintf("sound device error!!\n");
 			continue;
 		}
 		
@@ -595,11 +591,10 @@ static void *THR_snd_cap(void *prm)
 		if (app_set->rec_info.audio_rec)
 		{
 			//# audio codec : g.711
-			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, 
-						(unsigned short *)isnd->snd_dup.sampv, bytes);
-
+			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
 			addr = g_mem_get_addr(enc_size, &idx);
 			if(addr == NULL) {
+				eprintf("audio gmem is null\n");
 				continue;
 			}
 
@@ -607,8 +602,10 @@ static void *THR_snd_cap(void *prm)
 			ifr->d_type = CAP_TYPE_AUDIO;
 			ifr->ch = 0;
 			ifr->addr = addr;
+			ifr->offset = (int)addr - g_mem_get_virtaddr();
 			ifr->b_size = enc_size;
-
+			//ifr->t_sec = (Uint32)(captime/1000);
+			//ifr->t_msec = (Uint32)(captime%1000);
 			app_memcpy(addr, enc_buf, enc_size);
 		}
 	}

@@ -115,15 +115,12 @@ int app_main(void)
     app_log_write(MSG_LOG_WRITE, msg);
 
     app_cap_start();
-	app_netmgr_init();
-	/* VOIP와 sound 데이터 공유를 위해서 무조건 start 해야 함 */
 	app_snd_start(); 
+	app_netmgr_init();
+	/* VOIP?� sound ?�이??공유�??�해??무조�?start ?�야 ??*/
 		
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
-
-    if (app_set->rec_info.auto_rec)
-        app_rec_start();  //#--- record start
 
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
@@ -155,8 +152,8 @@ int app_main(void)
     }
 	
 	/* 
-	 * baresip가 timer를 이용하는데 앞에서 초기화를 수행하면
-	 * 영향을 받음 가장 나중에 수행해야 함.
+	 * baresip가 timer�??�용?�는???�에??초기?��? ?�행?�면
+	 * ?�향??받음 가???�중???�행?�야 ??
 	 */
 	app_voip_init();
 	dev_buzz_ctrl(80, 2);	//# buzz: power on

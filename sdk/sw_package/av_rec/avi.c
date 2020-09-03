@@ -37,7 +37,7 @@ static unsigned int gmem_addr;
 /*----------------------------------------------------------------------------
  avi file open/close function
 -----------------------------------------------------------------------------*/
-FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on)
+FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int rate, int btime)
 {
     char msg[128] = {0, };
 	AVI_SYSTEM_PARAM aviInfo;
@@ -56,11 +56,11 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on)
 	if (snd_on) {
 		aviInfo.bEnAudio 			= TRUE;
 		aviInfo.nAudioType			= ENCODING_ULAW;
-		aviInfo.nAudioChannel		= 1;
-		aviInfo.nSamplesPerSec		= 16000; //SND_PCM_SRATE;
-		aviInfo.nAudioBitRate		= 16000; //SND_PCM_SRATE;
-		aviInfo.nAudioBitPerSample	= 16;
-		aviInfo.nAudioFrameSize		= 2000;
+		aviInfo.nAudioChannel		= ch;
+		aviInfo.nSamplesPerSec		= rate; //SND_PCM_SRATE;
+		aviInfo.nAudioBitRate		= rate; //SND_PCM_SRATE;
+		aviInfo.nAudioBitPerSample	= 16;   //# fixed 16bits
+		aviInfo.nAudioFrameSize		= btime; //# fixed
 	}
 	
 	favi = LIBAVI_createAvi(filename, &aviInfo);

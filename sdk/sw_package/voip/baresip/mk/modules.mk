@@ -291,15 +291,15 @@ MODULES   += turn
 #MODULES   += aubridge aufile
 #endif
 
-endif 
+endif
 
 ################################################################################
 #ifneq ($(USE_AAC),)
 #MODULES   += aac
 #endif
-ifneq ($(USE_ALSA),)
+#ifneq ($(USE_ALSA),)
 MODULES   += alsa
-endif
+#endif
 #ifneq ($(USE_AMR),)
 #MODULES   += amr
 #endif
@@ -346,9 +346,9 @@ endif
 #ifneq ($(USE_EVDEV),)
 #MODULES   += evdev
 #endif
-ifneq ($(USE_G711),)
+#ifneq ($(USE_G711),)
 MODULES   += g711
-endif
+#endif
 #ifneq ($(USE_G722),)
 #MODULES   += g722
 #endif

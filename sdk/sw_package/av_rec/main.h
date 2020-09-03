@@ -32,19 +32,9 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define APP_TAG		"AVREC"
-
-/* for debugging macro */
-//#define __APP_DEBUG__
-
 #define aprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
 #define eprintf(x...) do { printf(" [AVREC ERR!] %s: ", __func__); printf(x); } while(0)
-
-#ifdef __APP_DEBUG__
 #define dprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
-#else
-#define dprintf(x...)
-#endif
 
 #ifndef TRUE
 #define TRUE 		1

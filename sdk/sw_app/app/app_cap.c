@@ -76,7 +76,7 @@ void video_status(void)
     char msg[128] = {0,};
 
 	/* current maximum video count */
-	Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
+	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
 	/* Fixed */
 	app_cfg->wd_tot |= WD_ENC;
@@ -88,13 +88,18 @@ void video_status(void)
     sprintf(msg, " Camera Detected Count: %d", count );
 	app_log_write(MSG_LOG_WRITE, msg);
 
+	if (app_cfg->ste.b.cap == 0) {
+		app_cfg->ste.b.cap = 1;
+		
+		if (app_cfg->vid_count > 0 && app_set->rec_info.auto_rec)
+			app_rec_start();  //#--- record start
+	}
+	
     if (app_cfg->vid_count == 0)
     {
-        ret = app_rec_state();
-        if (ret) {
-            sleep(1) ;
-            app_rec_stop(1);
-        }
+        sleep(1) ;
+        app_rec_stop(1);
+        
 #if defined(FITT360_SECURITY)
         mcu_pwr_off(OFF_NORMAL);
 #endif
@@ -506,13 +511,8 @@ int app_cap_start(void)
 	Venc_start();
 
 	cap_enc_late_init();
-
-    if (app_cfg->vid_count == 0) {
-		video_status();
-	}
     
 	ctrl_enc_multislice() ; 
-	app_cfg->ste.b.cap = 1;
 
 	aprintf("done!\n");
 
@@ -548,7 +548,7 @@ int app_cap_stop(void)
 }
 
 /*
- * sound capture를 위한 GMEM 메모리 주소 반환
+ * sound capture�??�한 GMEM 메모�?주소 반환
  */
 void *app_cap_get_gmem(void)
 {
