@@ -1199,7 +1199,7 @@ int ctrl_update_firmware(char *fwpath, char *disk)
 }
 
 
-/* example for remote update
+/* example remote update
  *
 curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
 */
@@ -1224,15 +1224,18 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		printf("%s\n", line);
 
 		if(NULL == strstr(line, " OK")){
+
+			//TODO: 실패할 경우, 압축해제한 파일들 처리
 			pclose(fp);
 			return -1;
 		}
 
 		pclose(fp);
-		// OK, ready to update
+		// OK, ready to firmware upgrade
 	}
 	else {
 		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+		//TODO: 실패할 경우, 압축해제한 파일들 처리
 		return -1;
 	}
 	
@@ -1246,7 +1249,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 
 	sync();
 	app_msleep(200);		//# wait for safe
-	printf("fw update ready ! It will restart\n");
+	printf("\nfw update ready ! It will restart\n\n");
 
 	//# for micom exit..
 //	mic_exit_state(OFF_RESET, 0);
