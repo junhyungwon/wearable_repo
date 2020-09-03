@@ -54,7 +54,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define ENABLE_UDS_DEBUG 1
+#define ENABLE_UDS_DEBUG 0
 #if ENABLE_UDS_DEBUG
 #define __D(fmt, args...) {fprintf(stderr, "[APP_UDS_DBG] %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args);}
 #define __D_FUNC_ENTER { __D("[UDSS] Enter >>>>>>>>>\n");}
