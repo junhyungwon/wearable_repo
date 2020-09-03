@@ -32,7 +32,7 @@
 /* 61-64 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 61->RESERVED,               	62->RESERVED,            			63->RESERVED,              			64->RESERVED
 /* 65-68 */		BIT(0), BIT(0), BIT(0), BIT(1),	//# 65->RESERVED,               	66->RESERVED,            			67->RESERVED,              			68[M21]->UART[2]_TXD
 /* 69-72 */		BIT(1), BIT(0), BIT(0), BIT(0),	//# 69[L22]->UART[2]_RXD,       	70[J26]->UART[0]_RXD,    			71[E28]->UART[0]_TXD,      			72[D30]->NC
-/* 73-76 */		BIT(0), BIT(5), BIT(5), BIT(7),	//# 73[D31]->NC,                	74[E31]->I2C2_SCL,       			75[E29]->I2C2_SDA,         			76[E30]->UART1_TXD(GPIO)
+/* 73-76 */		BIT(0), BIT(5), BIT(5), BIT(2),	//# 73[D31]->NC,                	74[E31]->I2C2_SCL,       			75[E29]->I2C2_SDA,         			76[E30]->UART1_TXD
 /* 77-80 */		BIT(2), BIT(1), BIT(1), BIT(0),	//# 77[N26]->UART1_RXD,         	78[D2]->HDMI_SCL,        			79[D1]->HDMI_SDA,          			80[G28]->NC
 /* 81-84 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 81[G29]->NC,                	82[N24]->NC,             			83[J27]->NC,               			84[J28]->NC
 /* 85-88 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 85[J29]->NC,                	86[M29]->NC,             			87[M27]->NC,               			88[N23]->NC

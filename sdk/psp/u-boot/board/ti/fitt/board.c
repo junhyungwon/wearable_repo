@@ -860,7 +860,7 @@ void set_muxconf_regs(void)
 	__raw_writel(0x00060080, 0x48140AB8); /* GP2[02] */
 
 	/* pull-up enable */
-	__raw_writel(0x00060080, 0x4814092C); /* GP1[4]:UART0_DTR.GP1[4] (GPS Detect) */
+	__raw_writel(0x000e0004, 0x4814092C); /* GP1[4]:UART0_DTR.UART1_TXD */
 
 	/* pull-up enable */
 	__raw_writel(0x00060080, 0x48140B6C); /* GP3[12]:VOUT[1]_G_Y_YC[8].GP3[12], pincntl220 */

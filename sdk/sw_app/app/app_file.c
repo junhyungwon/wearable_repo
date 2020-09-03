@@ -31,7 +31,7 @@
  -----------------------------------------------------------------------------*/
 
 #define FILE_LIST_CYCLE         	(100)
-#define FILE_STATE_CHECK_TIME		(1000)		//1sec
+#define FILE_STATE_CHECK_TIME		(60*1000)	//60sec
 #define FILE_STATE_FULL_BEEP_TIME	(5*1000)	//5SEC
 #define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_STATE_CHECK_TIME)
 
@@ -119,9 +119,9 @@ static int _check_threshold_size(app_file_t *pInfo)
 
 	ret = util_disk_info(&idisk, SD_MOUNT_PATH);
 	if (ret != EFAIL) {
-		pInfo->disk_max = ((unsigned long long)idisk.total * 100)/100;
-		pInfo->disk_avail = idisk.avail;
-		
+		pInfo->disk_max 	= idisk.total;
+		pInfo->disk_avail 	= idisk.avail;
+		pInfo->disk_used	= (idisk.total-idisk.avail);
 		dprintf("MAX capacity %ld(KB)\n", pInfo->disk_max);
 		dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
 	} else {
@@ -140,10 +140,11 @@ int app_file_check_disk_free_space(void)
 {
 	unsigned long sum = ifile->disk_max;
 	unsigned long used = ifile->disk_used;
+	unsigned long avail = ifile->disk_avail;
 	int ret = 0;
 	
-	//dprintf("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", (sum - used), used, MIN_THRESHOLD_SIZE);
-	if ((used + MIN_THRESHOLD_SIZE) >= sum) 
+	printf("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", avail, used, MIN_THRESHOLD_SIZE);
+	if ( avail < MIN_THRESHOLD_SIZE ) 
 		ret = -1; /* disk full state */
 	
 	return ret;
@@ -226,10 +227,9 @@ static Uint32 find_first_and_delete(struct list_head *head)
 			return 0;
 			
 		sz = ptr->filesz; /* return file size */
-		FILE_DBG("DELETE FILE : %s\n", ptr->fullname);
+		FILE_DBG("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
 		list_del(&ptr->queue);
 		ifile->file_count--;
-		ifile->disk_used -= sz;
 		free(ptr);
 	}
 
@@ -254,7 +254,6 @@ static int _get_rec_file_head(struct list_head *head, char *path)
 		FILE_DBG("Get List Head FILE : %s\n", ptr->fullname);
 		list_del(&ptr->queue);
 		ifile->file_count--;
-		ifile->disk_used -= sz;
 		free(ptr);
 	}
 
@@ -311,12 +310,11 @@ static int add_node_tail(const char *path, struct list_head *head, unsigned int 
 	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
 
-//	FILE_DBG(" Add List name: %s, size %u\n", path, iSize);
+	//FILE_DBG(" Add List name: %s, size %u\n", path, iSize);
 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add(&ptr->queue, head);
 	ifile->file_count++;
-	ifile->disk_used += iSize;
 
 	return OSA_SOK;
 }
@@ -344,7 +342,6 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add_tail(&ptr->queue, head);
 	ifile->file_count++;
-	ifile->disk_used += iSize;
 	
 	return OSA_SOK;
 }
@@ -354,8 +351,7 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
  * @section  DESC Description
  *	 - desc : files are sorted to ascending. 
  *****************************************************************************/
-static int _create_list(const char *search_path, char *filters,
-					struct list_head *head, unsigned long *size)
+static int _create_list(const char *search_path, char *filters,	struct list_head *head)
 {
 	struct stat statbuf;
 	struct dirent *entry;
@@ -367,7 +363,6 @@ static int _create_list(const char *search_path, char *filters,
 	int i;
 
 	list_info_t *list, *tmp;
-	total = 0;
 	
 	/* add slash */
 	len = strlen(search_path);
@@ -378,14 +373,13 @@ static int _create_list(const char *search_path, char *filters,
 	/* opendir is not required "/" */
 	if ((dp = opendir(__path)) == NULL) {
 		eprintf("cannot open directory : %s\n", __path);
-		*size = 0;
 		return -1;
 	}
 
 	/* get file count */
 	fcount = get_file_count(__path);
 	if (!fcount) {
-		*size = 0; closedir(dp);
+		closedir(dp);
 		FILE_DBG("Empty %s directory\n", __path);
 		return 0;
 	}
@@ -424,15 +418,11 @@ static int _create_list(const char *search_path, char *filters,
 			lstat(tmp->name, &statbuf);
 			len = (statbuf.st_size / KB); /* byte -> KB */
 			add_node_tail(tmp->name, head, len);
-			total += len;
 		}
 	}
 
 	if (list)
 		free(list);
-
-	if (size != NULL)
-		*size = total;
 
 	return 0;
 }
@@ -442,26 +432,11 @@ static int _create_list(const char *search_path, char *filters,
  * @section  DESC Description
  *	 - desc : delete files until del_size reached (or over).
  *****************************************************************************/
-static int _delete_files(unsigned long min_sz)
+static int _delete_files(unsigned long del_sz)
 {
 	struct list_head *head = &ilist;
-	
-	unsigned long sum_sz  = ifile->disk_max;
-	unsigned long used_sz = ifile->disk_used;
-	unsigned long del_sz = 0;
 	unsigned long tmp = 0;
 	unsigned long free_sz;
-	
-	/* Free Space is reserve space (for safe) */
-	if (sum_sz > 0) {
-		free_sz = sum_sz - used_sz;
-		
-		if (min_sz > free_sz)
-			del_sz  = min_sz - free_sz;
-	}
-	
-//	printf("min capacity: %ld(KB)==== free capacity: %ld(KB), DEL: %ld(KB)\n", 
-//					min_sz,  free_sz, del_sz);
 						
 	if (del_sz > 0) 
 	{
@@ -471,13 +446,9 @@ static int _delete_files(unsigned long min_sz)
 			Uint32 fsize;
 			fsize = find_first_and_delete(head);
 			if (!fsize) {
-				/* file ??? 0? ??? ???? */
+				/* file is empty */
 				return -1;
 			}
-				
-			ifile->disk_used -= fsize;
-			FILE_DBG("DELETE FILE : (%d KB)=== tot_size = %ld\n", fsize, 
-						ifile->disk_used);
 			
 			if (tmp >= del_sz)
 				break; /* done!! */
@@ -570,14 +541,19 @@ static void *THR_file_mng(void *prm)
 			break;
 		}
 		
-		//# sd??? ??? file manager  ?? ??.
-		//# ??? sd??? ???? ??? ?.
-		//if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
-        if (app_cfg->ste.b.cap) {
+		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
 			//# file size check and delete -- per 1 min
 	        if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
 			{
 				int capacity_full = 0;
+
+				//# Get Disk MAX Size.
+				if (_check_threshold_size(ifile) < 0) {
+					sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
+					app_log_write(MSG_LOG_WRITE, msg);
+					exit = 1;
+					break;
+				}
 				
 				app_file_update_disk_usage();
 				capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
@@ -587,7 +563,8 @@ static void *THR_file_mng(void *prm)
 					if (capacity_full) {
 						ifile->file_state = FILE_STATE_OVERWRITE;
 						OSA_mutexLock(&ifile->mutex_file);
-						r = _delete_files(MIN_THRESHOLD_SIZE);
+						//1GB - available size = delete size
+						r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
 						OSA_mutexUnlock(&ifile->mutex_file);
 						if (r == EFAIL) {
 							eprintf("Delete file Error!!\n");
@@ -633,7 +610,8 @@ int app_file_init(void)
 	
 	if (app_cfg->ste.b.mmc == 0)
 		return EFAIL;
-	
+
+	 aprintf("Init...\n");
     memset(ifile, 0, sizeof(app_file_t));
 
 	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
@@ -641,14 +619,7 @@ int app_file_init(void)
 
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir(ifile->rec_root);
-	ret = _check_threshold_size(ifile); //# Get Disk MAX Size.
-    if (ret < 0) {
-		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
-		app_log_write(MSG_LOG_WRITE, msg);
-		goto err_ret;	
-	}
-
-	ret = _create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, &ifile->disk_used);
+	ret = _create_list((const char *)ifile->rec_root, AVI_EXT, &ilist);
 	if (ret == EFAIL) 	{
 		eprintf("make file list fail!! \n");
 		goto err_ret;

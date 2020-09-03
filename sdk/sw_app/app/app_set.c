@@ -554,6 +554,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		}
 	}
 
+	pset->sys_info.dev_cam_ch = MODEL_CH_NUM;
+	
 	//# FTP information
 	if(pset->ftp_info.port <= CFG_INVALID)
 		pset->ftp_info.port	= 21;
@@ -929,6 +931,7 @@ static void app_set_default(int default_type)
 
     app_set->sys_info.osd_set = ON ;
     app_set->sys_info.P2P_ON_OFF = ON ;
+	app_set->sys_info.dev_cam_ch = MODEL_CH_NUM;
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 
     strcpy(app_set->sys_info.p2p_passwd, P2P_DEFAULT_PW) ;
 
