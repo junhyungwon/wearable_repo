@@ -32,6 +32,8 @@
     #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
 #endif
 
+#define NEXXONE_DEVICE_ID		1111
+
 #define DEFAULT_GOV				DEFAULT_FPS
 #define MAX_GOV					DEFAULT_FPS
 
@@ -180,7 +182,8 @@ typedef struct {
     char p2p_id[MAX_CHAR_32] ;
     char p2p_passwd[MAX_CHAR_32] ;
 	char uid[MAX_CHAR_32];
-	char reserved[30];
+	int	 dev_cam_ch;		//# NEXXONE: 1, Any others: 4
+	char reserved[26];
 } app_system_t;
 
 typedef struct {
