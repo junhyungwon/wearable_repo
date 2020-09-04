@@ -364,6 +364,9 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 				play_file(&ikey->play, player, 
 						tone, 1, cfg->audio.play_mod, cfg->audio.play_dev);
 			}
+		} else {
+			(void)play_file(&ikey->play, player, 
+					"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
 		}
 		break;
 	

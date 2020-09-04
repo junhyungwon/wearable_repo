@@ -19,6 +19,7 @@
 #include <sys/wait.h>	//# waitpid
 #include <sys/socket.h>
 #include <sys/vfs.h>
+#include <sys/statvfs.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
@@ -139,23 +140,20 @@ int util_mem_copy(void *pDes, void *pSrc, int size)
  ******************************************************************************/
 int util_disk_info(disk_info_t *idisk, const char *path)
 {
+	struct statvfs s;
     int ret;
-/*
-    ret = dev_disk_get_info(idisk);
-    if (ret < 0)
-        return -1;
-*/
-    struct statfs lstatfs ;
 
-	if(statfs(path, &lstatfs) != 0)
-	{
-		eprintf("%s fault\n",path) ;
-		return -1 ;
+	if (statvfs(path, &s) != 0) {
+		eprintf("%s fault\n", path);
+		return -1;
 	}
 
-	idisk->total = lstatfs.f_blocks * (lstatfs.f_bsize/KB) ;
-	idisk->avail = lstatfs.f_bavail * (lstatfs.f_bsize/KB) ;
-	idisk->used = idisk->total - (lstatfs.f_bfree * (lstatfs.f_bsize/KB)) ;
+	idisk->total = (s.f_blocks * (s.f_bsize/KB));
+	idisk->avail = (s.f_bavail * (s.f_bsize/KB));
+	idisk->used =  ((s.f_blocks - s.f_bfree) * (s.f_bsize/KB));
+	
+	//dprintf("cur disk block size %ld frag size %ld\n", s.f_bsize, s.f_frsize);
+	//dprintf("cur disk total %ld(KB), avail %ld(KB), used %ld(KB)\n", idisk->total, idisk->avail, idisk->used);
 
     return 0;
 }
