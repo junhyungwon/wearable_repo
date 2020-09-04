@@ -110,7 +110,7 @@ static size_t get_cfg_size (const char * file_name)
 {
     struct stat sb;
 
-    if (stat(file_name, & sb) != 0) {
+    if (stat(file_name, &sb) != 0) {
         eprintf("Failed the CFG file size.\n");
         return 0;
     }

@@ -320,11 +320,6 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-		mnt_dir = opendir("/mmc/log");
-		if (mnt_dir == NULL) 
-			mkdir("/mmc/log", 0775);
-		else 
-			closedir(mnt_dir) ;
 	}
 
     FW_distinction() ;
