@@ -110,7 +110,7 @@ static void *THR_usb2eth_main(void *prm)
 			
 			case __STAGE_USB2ETH_DHCP_NOTY:
 				netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
-				dprintf("rndis ipaddress %s\n", iusb2eth->ip);
+				dprintf("usb2eth ip is %s\n", iusb2eth->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_USB2ETHER, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_USB2ETHER);
 				break;

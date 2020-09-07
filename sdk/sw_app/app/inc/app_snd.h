@@ -18,7 +18,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define SND_PCM_SRATE			8000 //# for baresip
-#define SND_PCM_PTIME			250 //# fixed °íÁ¤ÇØ¾ß ÇÔ.
+#define SND_PCM_PTIME			250 //# fixed ê³ ì •í•´ì•¼ í•¨.
 #define SND_PCM_CH				1
 #define SND_PCM_BITS			16
 

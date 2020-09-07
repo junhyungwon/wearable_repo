@@ -520,7 +520,7 @@ static void *THR_wlan_cli_main(void *prm)
 			
 			case __STAGE_CLI_DHCP_NOTY:
 				netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-				dprintf("wlan client ip address %s\n", i_cli->ip);
+				dprintf("wlan client ip is %s\n", i_cli->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_WIFI);
 				i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;

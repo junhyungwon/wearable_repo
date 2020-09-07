@@ -411,7 +411,7 @@ static void *THR_log(void *prm)
 * @brief    system log write helper function.
 * @section  [desc]
 *****************************************************************************/
-void app_log_write(int cmd, char* msg)
+void app_log_write(int cmd, char *msg)
 {
 #ifndef SYS_LOG_ENABLE	
 	ucx_msg_info msgBuf;
@@ -449,10 +449,8 @@ void app_log_write(int cmd, char* msg)
 
 	OSA_mutexUnlock(&ilog->mutex_log);
 #else
-	char tmpMsg[128] = {0,};
-	
-	snprintf(tmpMsg, sizeof(tmpMsg), "%s", msg);
-	syslog(LOG_ERR, "%s\n", tmpMsg);
+	if (msg != NULL)
+		syslog(LOG_INFO, "%s\n", msg);
 #endif	
 }
 
