@@ -435,14 +435,14 @@ printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
 	else
 	{
 	    sms->addSubsession(WISH264VideoServerMediaSubsession::createNew(sms->envir(), *H264InputDevice[video_type], H264VideoBitrate));
-/*		
+		
         if(resol == 2)
-		    OutPacketBuffer::maxSize = 800000; // allow for some possibly large H.264 frames
-        if(resol == 1)
-		    OutPacketBuffer::maxSize = 400000; // allow for some possibly large H.264 frames
-        if(resol == 0)
 		    OutPacketBuffer::maxSize = 200000; // allow for some possibly large H.264 frames
-*/
+        if(resol == 1)
+		    OutPacketBuffer::maxSize = 100000; // allow for some possibly large H.264 frames
+        if(resol == 0)
+		    OutPacketBuffer::maxSize = 50000; // allow for some possibly large H.264 frames
+
 	}
 	if (IsSilence == 0)
 	{
@@ -450,29 +450,7 @@ printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
 	}
 
 	rtspServer->addServerMediaSession(sms);
-/*		
-	if(!video_type)
-	{
 
-	    struct in_addr dest;
-		dest.s_addr = chooseRandomIPv4SSMAddress(*env);
-	    const unsigned char ttl = 255;
-        const Port rtpPortVideo(videoRTPPortNum);
-        const Port rtcpPortVideo(videoRTPPortNum+1);
-
-        rtpGroupsockVideo = new Groupsock(*env, dest, rtpPortVideo, ttl);
-        rtcpGroupsockVideo = new Groupsock(*env, dest, rtcpPortVideo, ttl);
-	    setVideoRTPSinkBufferSize();
-
-//	    GetSprop(BuffStr,video_type);
-//        sprintf(BuffStr, "%s","J2QAIK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAtD2lSAAAH0AAA6mHAAAD0JAAA9CQXvdZQAAAAE=,86,KP4Briw=,5") ;
-             
-        sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96) ;
-//	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96 , BuffStr); // hwjun
-//        sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, (u_int8_t const *)"J2QAIK2EBUViuKxUcQgKisVxWKjiECSFITk8nyfk/k/J8nm5s00IEkKQnJ5Pk/J/J+T5PNzZphcqAtD2lSAAAH0AAA6mHAAAD0JAAA9CQXvdZQAAAAE=",86,(u_int8_t const *)"KP4Briw=",5) ;
-
-	}
-*/
 	char *url = rtspServer->rtspURL(sms);
 	if (OverHTTPEnable == 0)
 	{
@@ -498,7 +476,9 @@ printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
 
 	ServerMediaSession * sms = ServerMediaSession::createNew(*env, "all", "all", "ww live test", 0);
 	OutPacketBuffer::maxSize = 200000; // allow for some possibly large H.264 frames
+
 	sms->addSubsession(WW_H264VideoServerMediaSubsession::createNew(sms->envir(), videoSource, video_type));
+
 	rtspServer->addServerMediaSession(sms);
 
 	char * url = rtspServer->rtspURL(sms);
@@ -556,6 +536,7 @@ printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
         GetSprop(BuffStr,video_type);
 
 	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, BuffStr); // hwjun
+        printf("BuffStr = %s\n",BuffStr) ;
 
 //	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, 0x42, "h264");	
     }
