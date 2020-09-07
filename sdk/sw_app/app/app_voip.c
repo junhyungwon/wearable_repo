@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <app_leds.h>
+#include <app_log.h>
 
 #include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
@@ -166,10 +167,23 @@ static void __set_default_account(const char *login, const char *domain, const c
 
 static void __call_register_handler(void)
 {
-	dprintf("baresip user register start.....\n");
+	char msg[256] = {0, };
+	
 	/* create ua and register */
 	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
 			ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
+	
+	if (ivoip->enable_stun) {
+		snprintf(msg, sizeof(msg), "STUN URL %s@%s:%d (pw: %s) ", ivoip->dev_num, ivoip->stun_svr, 
+				ivoip->svr_port, ivoip->passwd);
+	} else {
+		snprintf(msg, sizeof(msg), "URL %s@%s:%d (pw: %s)", ivoip->dev_num, ivoip->server, 
+				ivoip->svr_port, ivoip->passwd);
+	}
+    app_log_write(MSG_LOG_WRITE, msg);
+	
+	dprintf("baresip user register start.....\n");
+	dprintf("%s\n", msg);
 }
 
 static void __call_unregister_handler(void)
@@ -238,11 +252,14 @@ static void __call_status_handler(void)
 		/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
 		if (action == SIPC_STATE_CALL_ESTABLISHED) {
 			app_leds_voip_ctrl(DEV_LED_BLINK);
+			ctrl_swosd_userstr("C", 1);
 		} else {
 			app_leds_voip_ctrl(DEV_LED_ON);
+			ctrl_swosd_userstr("C", 0);
 		}
 	} else {
 		app_leds_voip_ctrl(DEV_LED_OFF);
+		ctrl_swosd_userstr("C", 0);
 	}
 }
 

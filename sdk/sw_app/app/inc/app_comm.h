@@ -63,9 +63,4 @@
 #define dprintf(x...)
 #endif
 
-#ifdef SYS_LOG_ENABLE
-#define dsyslog(x...) do { syslog(LOG_ERR, " [app ] %s: ", __func__); syslog(LOG_ERR, x); } while(0)
-#else
-#define dsyslog(x...) 
-#endif
 #endif	/* _APP_COMM_H_ */

@@ -175,7 +175,7 @@ static void *THR_rndis_main(void *prm)
 			case __STAGE_RNDIS_DHCP_NOTY:
 				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
 				netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
-				dprintf("rndis ipaddress %s\n", irndis->ip);
+				dprintf("rndis ip is %s\n", irndis->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_RNDIS, irndis->ip, irndis->mask, irndis->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_RNDIS);
 				irndis->stage = __STAGE_RNDIS_GET_STATUS;

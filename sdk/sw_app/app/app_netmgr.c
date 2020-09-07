@@ -169,7 +169,7 @@ static void __netmgr_wlan_event_handler(int ste)
 			} else {
 				strcpy(info->passwd, app_set->wifiap.pwd);
 			}
-#if 0			
+			
 			if (app_set->net_info.type == NET_TYPE_STATIC) 
 			{
 				info->dhcp = 0;
@@ -179,10 +179,6 @@ static void __netmgr_wlan_event_handler(int ste)
 			} else {
 				info->dhcp = 1;
 			}
-#else
-			/* static ip not supported??*/
-			info->dhcp = 1;
-#endif			
 			send_msg(NETMGR_CMD_WLAN_CLIENT_START);
 		}
 		
