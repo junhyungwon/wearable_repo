@@ -1,1 +1,0 @@
-cmd_sound/drivers/snd-dummy.ko := /home/jay/mnt/proj/gen3_b2b/fitt360-security_oneeye/sdk/../ti_tools/linux_devkit/bin/arm-arago-linux-gnueabi-ld -EL -r  -T /home/jay/mnt/proj/gen3_b2b/fitt360-security_oneeye/sdk/psp/kernel/scripts/module-common.lds --build-id  -o sound/drivers/snd-dummy.ko sound/drivers/snd-dummy.o sound/drivers/snd-dummy.mod.o

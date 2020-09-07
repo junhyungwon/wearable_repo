@@ -1,1 +1,0 @@
-cmd_sound/drivers/snd-dummy.o := /home/jay/mnt/proj/gen3_b2b/fitt360-security_oneeye/sdk/../ti_tools/linux_devkit/bin/arm-arago-linux-gnueabi-ld -EL    -r -o sound/drivers/snd-dummy.o sound/drivers/dummy.o 
