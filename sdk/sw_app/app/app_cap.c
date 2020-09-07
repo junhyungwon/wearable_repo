@@ -385,7 +385,13 @@ static void cap_enc_late_init(void)
 	for(i=0; i < channels; i++)
     {
 		ctrl_vid_rate(i, app_cfg->ich[i].rc, app_cfg->ich[i].br);
-        ctrl_vid_gop_set(i, app_set->ch[i].gop) ; 
+//        ctrl_vid_gop_set(i, app_set->ch[i].gop) ; 
+
+#if defined(NEXXONE) || defined(NEXX360)
+        ctrl_vid_gop_set(i, app_set->ch[i].framerate) ; 
+#else
+		ctrl_vid_gop_set(i, app_cfg->ich[i].fr);
+#endif
 	}
 
     if (app_cfg->en_jpg)
