@@ -214,7 +214,8 @@ static void *THR_gui(void *prm)
 				wd_detect++;
 				memset(wd_name, 0, sizeof(wd_name));
 				get_wd_name(wd_name);
-				sprintf(msg, " !!! WATCHDOG DETECTED flag[%x]: %s !!!", app_cfg->wd_flags, wd_name);
+				sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
+								app_cfg->wd_tot, wd_name);
 				dprintf("%s\n", msg);
 				if (wd_detect > 10) {
 					/* LED blink */
