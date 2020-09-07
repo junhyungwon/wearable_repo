@@ -78,8 +78,6 @@ void video_status(void)
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
-	/* Fixed */
-	app_cfg->wd_tot |= WD_ENC;
 	app_leds_cam_ctrl(vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
@@ -485,8 +483,8 @@ int app_cap_start(void)
 	vsysParams.captMode = CAPT_MODE_720P;
 	vsysParams.numChs = MODEL_CH_NUM;
 
+	app_cfg->wd_tot |= WD_ENC; /* Fixed */
 	app_cfg->num_ch = vsysParams.numChs;
-
 	if (capt_param_init(&vcapParams) == EFAIL) {
 		eprintf("Failed initialize capture parameters!!\n");
 		return EFAIL;
@@ -548,7 +546,7 @@ int app_cap_stop(void)
 }
 
 /*
- * sound capture�??�한 GMEM 메모�?주소 반환
+ * sound captureë¥??„í•œ GMEM ë©”ëª¨ë¦?ì£¼ì†Œ ë°˜í™˜
  */
 void *app_cap_get_gmem(void)
 {
