@@ -2922,15 +2922,6 @@ sdk/psp/kernel/sound/drivers/vx/.built-in.o.cmd
 sdk/psp/kernel/sound/drivers/vx/built-in.o
 sdk/psp/kernel/sound/drivers/vx/modules.builtin
 sdk/psp/kernel/sound/drivers/vx/modules.order
-sdk/psp/kernel/sound/drivers/.dummy.o.cmd
-sdk/psp/kernel/sound/drivers/.snd-dummy.ko.cmd
-sdk/psp/kernel/sound/drivers/.snd-dummy.mod.o.cmd
-sdk/psp/kernel/sound/drivers/.snd-dummy.o.cmd
-sdk/psp/kernel/sound/drivers/dummy.o
-sdk/psp/kernel/sound/drivers/snd-dummy.ko
-sdk/psp/kernel/sound/drivers/snd-dummy.mod.c
-sdk/psp/kernel/sound/drivers/snd-dummy.mod.o
-sdk/psp/kernel/sound/drivers/snd-dummy.o
 sdk/psp/kernel/sound/i2c/.built-in.o.cmd
 sdk/psp/kernel/sound/i2c/built-in.o
 sdk/psp/kernel/sound/i2c/modules.builtin

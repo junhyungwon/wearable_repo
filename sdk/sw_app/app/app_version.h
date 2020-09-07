@@ -24,12 +24,7 @@
 
 #define TCX_MODEL   			MODEL_NAME
 
-#if SW_RELEASE
-#define FITT360_SW_VER      "2.04.00Ns"
-#else
-#define FITT360_SW_VER		"2.04.00.Ds"
-#endif
-
-#define FITT360_HW_VER		"Rev.0.3"
+#define FITT360_SW_VER      	"0.90.00" 	//# alpha version
+#define FITT360_HW_VER			"Rev.0.3"
 
 #endif	/* _APP_VERSION_H_ */

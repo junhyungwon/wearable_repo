@@ -126,6 +126,7 @@ static void *THR_gps_jack_detect(void *prm)
 	gpio_irq_init(GPS_PWR_EN, GPIO_IRQ_BOTH);
 	
 	if (!gpio_get_value(GPS_PWR_EN, &val)) {
+		dprintf("GPS Jack GET value %d\n", val);
 		if (val == 1) {
 			app_cfg->ste.b.gps = 1;
             app_cfg->wd_tot |= WD_DEV;
@@ -384,7 +385,7 @@ static void *THR_gps_recv_msg(void *prm)
 			send_gps_data();
 			
 			//# debugging
-			#if 1	
+			#if 0	
 			dprintf("GPS POLL(%d)- DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
 					igps->r_data.gps_fixed, igps->r_data.gtm.tm_year+1900, igps->r_data.gtm.tm_mon+1, 
 					igps->r_data.gtm.tm_mday, igps->r_data.gtm.tm_hour, igps->r_data.gtm.tm_min, 
