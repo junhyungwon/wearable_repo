@@ -119,7 +119,6 @@ typedef struct _av_data
 int func_get_mem( void *pdata, int *resol, char *name );
 int GetAVData(unsigned int channel, unsigned int field, int serial, AV_DATA * ptr );
 int NetraInterfaceExit();
-int get_resolution() ;
 
 /* @} */
 

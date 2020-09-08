@@ -31,7 +31,6 @@
 #include "WISPCMAudioServerMediaSubsession.hh"
 #include <NetraDrvMsg.h>
 #include <Netra_interface.h>
-#include <app_set.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <GroupsockHelper.hh>
@@ -245,8 +244,6 @@ CHECK_CPU_END:
 	return ret;
 }
 
-extern int GetSprop(void *pBuff, char vType);
-char BuffStr[200];
 int main(int argc, char** argv) {
   init_signals();
   setpriority(PRIO_PROCESS, 0, 0);
@@ -257,21 +254,8 @@ int main(int argc, char** argv) {
   char rtsp_username[32] = {0, } ; 
   char rtsp_password[32] = {0, } ; 
 
-  
-/*
-  if( GetSampleRate() == 16000 )
-  {
-	audioOutputBitrate = 128000;
-	audioSamplingFrequency = 16000;
-  }
-  else
-  {
-	audioOutputBitrate = 64000;
-	audioSamplingFrequency = 8000;
-  }
-*/
-	audioOutputBitrate = 128000;
-	audioSamplingFrequency = 16000;
+  audioOutputBitrate = 128000;
+  audioSamplingFrequency = 16000;
  
   if(argc < 2)
   {
@@ -289,11 +273,6 @@ int main(int argc, char** argv) {
      }
   }
 
-//printf("rtsp_port = %d\n",rtsp_port) ;
-//printf("rtsp_username = %s\n",rtsp_username) ;
-//printf("rtsp_password = %s\n",rtsp_password) ;
-
-printf("RTSP audio sampling Frequency = %d\n",audioSamplingFrequency) ;
   // Begin by setting up our usage environment:
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
   UsageEnvironment* env = BasicUsageEnvironment::createNew(*scheduler);
@@ -396,16 +375,10 @@ printf("RTSP audio sampling Frequency = %d\n",audioSamplingFrequency) ;
 	}
 
   UserAuthenticationDatabase* authDB = NULL;
-  ret = get_account_open(rtsp_username, rtsp_password) ;
     
-printf("ret = %d...........rtsp_username = %s\n",ret ,rtsp_username) ;
-printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
-  if(!ret)
-  {
-      authDB = new UserAuthenticationDatabase;
-      authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
+  authDB = new UserAuthenticationDatabase;
+  authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
 //      authDB->addUserRecord("linkflow", "1"); // replace these with real strings  
-  }
    
   // Create the RTSP server:
   RTSPServer* rtspServer = NULL;
@@ -529,14 +502,7 @@ printf("ret = %d...........rtsp_password = %s\n",ret,rtsp_password) ;
            rtcpGroupsockVideo->multicastSendOnly();
         }
 	    setVideoRTPSinkBufferSize();
-
-        char BuffStr[200];
-	    extern int GetSprop(void *pBuff, char vType);
-
-        GetSprop(BuffStr,video_type);
-
-	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, BuffStr); // hwjun
-        printf("BuffStr = %s\n",BuffStr) ;
+	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96); // hwjun
 
 //	    sinkVideo = H264VideoRTPSink::createNew(*env, rtpGroupsockVideo,96, 0x42, "h264");	
     }

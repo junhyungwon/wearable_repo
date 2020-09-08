@@ -24,7 +24,6 @@ static int shmem_id;
 #define USE_GMEM
 #define SHMEM_KEY	(0x4321)
 
-int resolution ;
 
 /**
  * @brief Interface for getting Audio/Video data between processes
@@ -648,10 +647,6 @@ int init_g_mem(int phyaddr, int size)
 	return gmem_addr;
 }
 
-int get_resolution() 
-{
-    return resolution ;
-}
 
 /**
  * @brief Setup the memory for getting audio / video data
@@ -666,7 +661,6 @@ int get_resolution()
 int func_get_mem( void *pdata, int *resol, char *name )
 {
 	MSG_MEM mem_info = GetPhyMem(resol, name);
-    resolution = *resol ;
 	
 //	if(mem_info.addr == 0){
 	if(mem_info.size == 0){

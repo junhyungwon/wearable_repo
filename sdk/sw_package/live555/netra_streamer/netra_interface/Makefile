@@ -17,7 +17,7 @@ AR = $(CODEGEN_PREFIX)ar
 
 REL_LIB1 = Netra_interface.a
 
-REL_OBJ1 = NetraDrvMsg.o Netra_interface.o sem_util.o msg_util.o app_set.o
+REL_OBJ1 = NetraDrvMsg.o Netra_interface.o sem_util.o msg_util.o
 
 all:  $(REL_LIB1)
 
@@ -34,9 +34,6 @@ Netra_interface.o: Netra_interface.c Netra_interface.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
 sem_util.o: sem_util.c sem_util.h
-	$(CC) $(C_FLAGS) -o $@ $<
-
-app_set.o: app_set.c app_set.h
 	$(CC) $(C_FLAGS) -o $@ $<
 
 clean:
