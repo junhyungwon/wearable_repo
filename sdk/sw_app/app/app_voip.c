@@ -229,6 +229,14 @@ static void __call_event_handler(void)
 		send_msg(SIPC_CMD_SIP_STOP, NULL);
 		break;
 	
+	case SIPC_STATE_CALL_LOCAL_SDP:
+		/*
+		* 전화 송신 전 SDP 데이터 전송. 
+		* 네트워크에 문제가 발생했을 경우 이 상태에서 중지됨. 
+		*/ 
+		send_msg(SIPC_CMD_SIP_STOP, NULL);
+		break;
+		
 	case SIPC_STATE_CALL_STOP:
 		/*
 		* IDLE 상태와 구분이 필요한지 확인해야 함.

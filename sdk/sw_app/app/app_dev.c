@@ -217,45 +217,32 @@ static void *THR_dev(void *prm)
 			break;
 		}
 
-        if(app_cfg->ste.b.cap)
-        {
-        	//# check mmc card
-			mmc = dev_ste_mmc();
-			if (mmc != app_cfg->ste.b.mmc) {
-				app_cfg->ste.b.mmc = mmc;
-				dprintf("SD Card %s\n", mmc?"insert":"remove");
-				aprintf("done! will restart\n");
-				app_rec_stop(0);
-//				mic_exit_state(OFF_RESET, 0);
-//				app_main_ctrl(APP_CMD_EXIT, 0, 0);
-				mcu_pwr_off(OFF_RESET);
-			}
-
-		    rkey = chk_rec_key();
-		    if (rkey == KEY_SHORT) 
-            {		
+		//# check mmc card
+		mmc = dev_ste_mmc();
+		if (mmc != app_cfg->ste.b.mmc) {
+			app_cfg->ste.b.mmc = mmc;
+			//dprintf("SD Card %s\n", mmc?"insert":"remove");
+			aprintf("done! will restart\n");
+			app_rec_stop(0);
+			mcu_pwr_off(OFF_RESET);
+		}
+		
+		if (!app_cfg->ste.b.ftp_run)
+		{	
+			//# For button enable, when camera didn't connected 
+			rkey = chk_rec_key();
+			if (rkey == KEY_SHORT) {		
 				/* Short KEY */
-				if (!app_cfg->ste.b.ftp_run)
-				{
-					app_voip_event_noty();
-				}	
-		    } 
-			else if(rkey == KEY_LONG) 
-			{	//# sw update
-                if(!app_cfg->ste.b.ftp_run)
-				{
-			        dev_buzz_ctrl(50, 3);		//# buzz: update
-			 	    //# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-                    //# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함. 
-                    if (ctrl_sw_update(SD_MOUNT_PATH) == 0) {
-                        //# for micom exit..
-                        //	mic_exit_state(OFF_RESET, 0);
-                        //	app_main_ctrl(APP_CMD_EXIT, 0, 0);
-                        mcu_pwr_off(OFF_RESET);
-                     }
-                }     
-		    }
-        }
+				app_voip_event_noty();
+			} else if (rkey == KEY_LONG) {	//# sw update
+				dev_buzz_ctrl(50, 3);		//# buzz: update
+				//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
+				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함. 
+				if (ctrl_sw_update(SD_MOUNT_PATH) == 0) {
+					mcu_pwr_off(OFF_RESET);
+				}
+			}
+		}	
 		app_msleep(TIME_DEV_CYCLE);
 	}
 

@@ -193,7 +193,7 @@ static void *THR_gui(void *prm)
             break;
         }
 
-		//# watchdog
+		//# ------------------- watchdog handler --------------------------------------
 		if ((wd_cycle != 0) && (wd_cycle % UI_WATCHDOG_TIME == 0))
 		{
 			//if (app_cfg->wd_flags == WD_TOT)
@@ -226,6 +226,7 @@ static void *THR_gui(void *prm)
 					app_log_write(MSG_LOG_SHUTDOWN, msg);
 			}
 		}
+		//# ------------------ End of watchdog ----------------------------------------------------
 #ifdef OSD_SWVERSION
         if(!app_set->ch[MODEL_CH_NUM].resol)
         {
@@ -249,6 +250,8 @@ static void *THR_gui(void *prm)
             }
         }
 #endif
+#if 0
+		//# wis-stream keep alive....
 		if (app_cfg->ste.b.rtsptx) 
 		{
 			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
@@ -261,8 +264,9 @@ static void *THR_gui(void *prm)
 				igui->tmr_cnt++;
 			}
 		}
+#endif
 		
-		/* VOIP 이 시작 안된 경우 */
+		//# ----------------- VOIP Handler -----------------------------------------------------
 		if (!app_cfg->ste.b.voip) 
 		{
 			/* 유선망은 제외 USB 네트워크 */
@@ -291,6 +295,12 @@ static void *THR_gui(void *prm)
 				app_cfg->ste.b.voip = 0;
 				app_voip_stop();
 			}
+		}
+		//# -------------- End of VOIP ----------------------------------------------------------------
+		//# -------------- Network Manager ------------------------------------------------------------
+		if (app_cfg->ste.b.cradle_eth_run && app_cfg->ste.b.usbnet_run)
+		{
+			/* eth와 usb 동시에 사용할 경우 우선 순위가 usb에 주어져야 함 */
 		}
 		
 		tObj->cmd = 0;
