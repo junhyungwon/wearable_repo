@@ -401,6 +401,13 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	case UA_EVENT_CALL_REMOTE_SDP: /* session description protocol */
 		ikey->play = mem_deref(ikey->play);
 		return;
+	
+	case UA_EVENT_CALL_LOCAL_SDP: /* ??? */
+		ikey->ste.call_ste = SIPC_STATE_CALL_LOCAL_SDP;
+		ikey->ste.call_dir = 0;
+		ikey->ste.call_reg = 0;
+		ikey->ste.call_err = 0;
+		break;
 		
 	case UA_EVENT_CALL_TRANSFER:
 	case UA_EVENT_CALL_TRANSFER_FAILED:
@@ -411,7 +418,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		return;
 	
 	default:
-		warning("unknown ua_event %x\n", (int)ev);
+		warning("unknown ua_event 0x%x\n", (int)ev);
 		return;
 	}
 	
@@ -730,8 +737,8 @@ static int module_init(void)
 //	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
 //  amixer cset numid=31 80%	
 //	__execlp("/usr/bin/amixer cset numid=17 50%");
-	__execlp("/usr/bin/amixer cset numid=1 80% > /dev/null");
-	__execlp("/usr/bin/amixer cset numid=31 50% > /dev/null");
+	__execlp("/usr/bin/amixer cset numid=1 70% > /dev/null");
+	__execlp("/usr/bin/amixer cset numid=31 60% > /dev/null");
 		
 	return 0;
 }

@@ -52,6 +52,7 @@ extern "C" {
 #define SIPC_STATE_CALL_RINGING			2 /* 전화 송신 중 */
 #define SIPC_STATE_CALL_ESTABLISHED		3 /* 전화 연결 됨 (송/수신 포함) */
 #define SIPC_STATE_CALL_STOP			4 /* 전화 종료. (연결이 안돼서 자동으로 종료되는 것도 포함) */
+#define SIPC_STATE_CALL_LOCAL_SDP		5 /* 전화 걸기 위해서 SDP 데이터 전송 */
 
 #define SIPC_DATA_SZ					128
 
