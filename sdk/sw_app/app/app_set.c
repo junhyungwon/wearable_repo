@@ -110,7 +110,7 @@ static size_t get_cfg_size (const char * file_name)
 {
     struct stat sb;
 
-    if (stat(file_name, & sb) != 0) {
+    if (stat(file_name, &sb) != 0) {
         eprintf("Failed the CFG file size.\n");
         return 0;
     }
@@ -840,7 +840,7 @@ static void app_set_default(int default_type)
 		app_set->ch[ich].gop 	    = DEFAULT_FPS;
 	}
 #else
-	/* FITT360 (index ±¸Á¶) */
+	/* FITT360 (index Â±Â¸ÃÂ¶) */
 	channels = MODEL_CH_NUM+1;
 
 	for (ich = 0; ich < channels; ich++)

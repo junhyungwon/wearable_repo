@@ -112,7 +112,7 @@ static void *THR_cradle_eth_main(void *prm)
 			case __STAGE_CRADLE_ETH_DHCP_NOTY:
 				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
 				netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
-				dprintf("rndis ipaddress %s", icradle->ip);
+				dprintf("cradle ip is %s\n", icradle->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_CRADLE, icradle->ip, icradle->mask, icradle->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_CRADLE);
 				icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;

@@ -2893,6 +2893,15 @@ sdk/psp/kernel/sound/drivers/.built-in.o.cmd
 sdk/psp/kernel/sound/drivers/built-in.o
 sdk/psp/kernel/sound/drivers/modules.builtin
 sdk/psp/kernel/sound/drivers/modules.order
+sdk/psp/kernel/sound/drivers/.aloop.o.cmd
+sdk/psp/kernel/sound/drivers/.snd-aloop.ko.cmd
+sdk/psp/kernel/sound/drivers/.snd-aloop.mod.o.cmd
+sdk/psp/kernel/sound/drivers/.snd-aloop.o.cmd
+sdk/psp/kernel/sound/drivers/aloop.o
+sdk/psp/kernel/sound/drivers/snd-aloop.ko
+sdk/psp/kernel/sound/drivers/snd-aloop.mod.c
+sdk/psp/kernel/sound/drivers/snd-aloop.mod.o
+sdk/psp/kernel/sound/drivers/snd-aloop.o
 sdk/psp/kernel/sound/drivers/mpu401/.built-in.o.cmd
 sdk/psp/kernel/sound/drivers/mpu401/built-in.o
 sdk/psp/kernel/sound/drivers/mpu401/modules.builtin

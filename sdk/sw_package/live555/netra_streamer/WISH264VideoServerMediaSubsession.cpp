@@ -105,7 +105,7 @@ char const *WISH264VideoServerMediaSubsession ::getAuxSDPLine(RTPSink *rtpSink, 
 	if (fAuxSDPLine != NULL)
 		return fAuxSDPLine; // it's already been set up (for a previous client)
 
-#if 1
+#if 0
 	// Note: For MPEG-4 video buffer, the 'config' information isn't known
 	// until we start reading the Buffer.  This means that "rtpSink"s
 	// "auxSDPLine()" will be NULL initially, and we need to start reading

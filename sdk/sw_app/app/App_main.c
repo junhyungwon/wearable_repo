@@ -117,7 +117,6 @@ int app_main(void)
     app_cap_start();
 	app_snd_start(); 
 	app_netmgr_init();
-	/* VOIP?€ sound ?°ì´??ê³µìœ ë¥??„í•´??ë¬´ì¡°ê±?start ?´ì•¼ ??*/
 		
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
@@ -151,10 +150,6 @@ int app_main(void)
         app_p2p_init() ;
     }
 	
-	/* 
-	 * baresipê°€ timerë¥??´ìš©?˜ëŠ”???ì—??ì´ˆê¸°?”ë? ?˜í–‰?˜ë©´
-	 * ?í–¥??ë°›ìŒ ê°€???˜ì¤‘???˜í–‰?´ì•¼ ??
-	 */
 	app_voip_init();
 	dev_buzz_ctrl(80, 2);	//# buzz: power on
 
@@ -320,11 +315,6 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-		mnt_dir = opendir("/mmc/log");
-		if (mnt_dir == NULL) 
-			mkdir("/mmc/log", 0775);
-		else 
-			closedir(mnt_dir) ;
 	}
 
     FW_distinction() ;
