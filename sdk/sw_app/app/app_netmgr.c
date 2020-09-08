@@ -170,7 +170,7 @@ static void __netmgr_wlan_event_handler(int ste)
 				strcpy(info->passwd, app_set->wifiap.pwd);
 			}
 			
-			if (app_set->net_info.type == NET_TYPE_STATIC) 
+			if (app_set->net_info.wtype == NET_TYPE_STATIC) 
 			{
 				info->dhcp = 0;
 				strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
@@ -235,11 +235,11 @@ static void __netmgr_usb2eth_event_handler(int ste)
 	if (ste) {
 		/* usb2eth 장치가 연결되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 1;
-		if (app_set->net_info.type == NET_TYPE_STATIC) {
+		if (app_set->net_info.wtype == NET_TYPE_STATIC) {
 			info->dhcp = 0;
-			strcpy(info->ip_address, app_set->net_info.eth_ipaddr);
-			strcpy(info->mask_address, app_set->net_info.eth_netmask);
-			strcpy(info->gw_address, app_set->net_info.eth_gateway);
+			strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
+			strcpy(info->mask_address, app_set->net_info.wlan_netmask);
+			strcpy(info->gw_address, app_set->net_info.wlan_gateway);
 		} else {
 			info->dhcp = 1;
 		}
