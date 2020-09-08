@@ -523,7 +523,7 @@ static void *THR_file_mng(void *prm)
 {
 	app_thr_obj *tObj = &ifile->fObj;
 
-	int cmd, exit=0;
+	int cmd, exit=0, fcheck = 0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME; // A©øA¨ö ¨öAAU¢¯¢®¨ù¡© CHECK START CI¥ì¥ì¡¤I
 	char msg[MAX_CHAR_255] = {0,};
 	int r = 0;
@@ -542,6 +542,18 @@ static void *THR_file_mng(void *prm)
 		}
 		
 		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
+            if(!fcheck)
+			{
+				if (_check_threshold_size(ifile) < 0) {
+					sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
+					app_log_write(MSG_LOG_WRITE, msg);
+				}
+				
+				app_file_update_disk_usage();
+				fcheck = 1 ;
+			}
+
+
 			//# file size check and delete -- per 1 min
 	        if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
 			{
