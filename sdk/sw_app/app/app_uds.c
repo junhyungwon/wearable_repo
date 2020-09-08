@@ -241,7 +241,7 @@ static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)
 	return -1;
 }
 
-static int setHostname(int fromDHCP, char *hname)
+static int onvif_setHostname(int fromDHCP, char *hname)
 {
 	DBG_UDS("fromDHCP:%d, hostname:%s\n", fromDHCP, hname);
 
@@ -255,7 +255,7 @@ static int setHostname(int fromDHCP, char *hname)
 		char strcmd[128]={0};
 		sprintf(strcmd, "/bin/hostname %s", hname);
 
-		//execl("/bin/hostname", "/bin/hostname", hname, NULL); // 이거 사용하면 즉사.
+		//execl("/bin/hostname", "/bin/hostname", hname, NULL); // 이거 사용하면 則死.
 		//system(wbuf);
 
 		FILE *fp = popen(strcmd, "r");
@@ -1551,7 +1551,7 @@ void *myFunc(void *arg)
 				// TODO verify hostname RFC1123???, 
 				// 이건 클라이언트(onvifserver or CGI)에서 첵크하고 미리 보낼것..onvifserver 모듈 참고.
 				if(strlen(str)>1){
-					setHostname(fromDHCP, str);
+					onvif_setHostname(fromDHCP, str);
 				}
 			}
 			else {
