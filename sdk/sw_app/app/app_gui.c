@@ -297,12 +297,6 @@ static void *THR_gui(void *prm)
 			}
 		}
 		//# -------------- End of VOIP ----------------------------------------------------------------
-		//# -------------- Network Manager ------------------------------------------------------------
-		if (app_cfg->ste.b.cradle_eth_run && app_cfg->ste.b.usbnet_run)
-		{
-			/* eth와 usb 동시에 사용할 경우 우선 순위가 usb에 주어져야 함 */
-		}
-		
 		tObj->cmd = 0;
 		wd_cycle += UI_CYCLE_TIME;
 		app_msleep(UI_CYCLE_TIME);
