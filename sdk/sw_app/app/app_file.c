@@ -224,7 +224,7 @@ static Uint32 find_first_and_delete(struct list_head *head)
 	if (ptr != NULL)
 	{
 		if (delete_file(ptr->fullname) < 0)
-			return 0;
+			return -1;
 			
 		sz = ptr->filesz; /* return file size */
 		FILE_DBG("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
@@ -445,7 +445,10 @@ static int _delete_files(unsigned long del_sz)
 		{
 			Uint32 fsize;
 			fsize = find_first_and_delete(head);
-			if (!fsize) {
+			/*
+			 * 0??? ??? ?? ???.
+			 */ 
+			if (fsize < 0) {
 				/* file is empty */
 				return -1;
 			}
@@ -548,11 +551,9 @@ static void *THR_file_mng(void *prm)
 					sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
 					app_log_write(MSG_LOG_WRITE, msg);
 				}
-				
 				app_file_update_disk_usage();
 				fcheck = 1 ;
 			}
-
 
 			//# file size check and delete -- per 1 min
 	        if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
@@ -579,6 +580,8 @@ static void *THR_file_mng(void *prm)
 						r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
 						OSA_mutexUnlock(&ifile->mutex_file);
 						if (r == EFAIL) {
+							sprintf(msg, "[APP_FILE] !! Delete file Error...reboot!!");
+							app_log_write(MSG_LOG_WRITE, msg);
 							eprintf("Delete file Error!!\n");
 							app_cfg->ste.b.mmc_err = 1;
 							app_rec_stop(ON);
@@ -617,24 +620,23 @@ static void *THR_file_mng(void *prm)
 *****************************************************************************/
 int app_file_init(void)
 {
-	char msg[MAX_CHAR_128];
+	char msg[MAX_CHAR_128]={0,};
 	int ret = SOK, status;
 	
-	if (app_cfg->ste.b.mmc == 0)
-		return EFAIL;
-
-	 aprintf("Init...\n");
     memset(ifile, 0, sizeof(app_file_t));
-
-	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
+	
 	ifile->file_state = FILE_STATE_NORMAL;
+	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
 
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir(ifile->rec_root);
 	ret = _create_list((const char *)ifile->rec_root, AVI_EXT, &ilist);
 	if (ret == EFAIL) 	{
-		eprintf("make file list fail!! \n");
-		goto err_ret;
+		sprintf(msg, "make file list fail!!");
+    	app_log_write(MSG_LOG_WRITE, msg);
+		eprintf("%s\n", msg);
+		app_cfg->ste.b.mmc_err = 1;
+		return ret;
     }
 	
     //#--- create normal record thread
@@ -646,15 +648,11 @@ int app_file_init(void)
 		return -1;
 	}
 	
-	//# ??? ?? ? watchdog ???
+	/* watchdog file enable */
 	app_cfg->wd_tot |= WD_FILE;
 	aprintf("... done!\n");
 	
 	return 0;
-	
-err_ret:
-	app_cfg->ste.b.mmc_err = 1;
-	return EFAIL;
 }
 
 /*****************************************************************************
@@ -749,7 +747,6 @@ int get_ftp_send_file(char *path)
 	if (ret < 0)
 		return 0;
 		
-	/* ??? ?? 0? ?? ?? ?? */	
 	return (1);
 }
 
