@@ -1000,7 +1000,6 @@ void ctrl_reset_nand_update(void)
 	}
 }
 
-
 #define FW_EXT       ".dat"
 
 static char* _findFirmware(char* root)
@@ -1029,9 +1028,7 @@ static char* _findFirmware(char* root)
 	globfree(&globbuf);
 
 	return NULL;
-
 }
-
 
 static int _unpack_N_type_check(char* pFile, char* root, int* type, int* release)
 {
@@ -1050,7 +1047,6 @@ static int _unpack_N_type_check(char* pFile, char* root, int* type, int* release
 
 	return SOK;
 }
-
 
 /*****************************************************************************
 * @brief    Firmware update
@@ -1221,7 +1217,6 @@ int ctrl_update_firmware(char *fwpath, char *disk)
 	return 0;
 }
 
-
 /* example remote update
  *
 curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
@@ -1354,8 +1349,6 @@ int ctrl_is_live_process(const char *process_name)
     return is_live;
 }
 
-
-
 void ctrl_out_copy(void)
 {
 	char path[32] = {0, };
@@ -1377,5 +1370,3 @@ void ctrl_out_copy(void)
 		mcu_pwr_off(OFF_RESET);
 	}
 }
-
-
