@@ -197,7 +197,14 @@ int app_rtsptx_stop_start()
     pclose(fd);
     sleep(1);
 
-    sprintf(rtsp_cmd, "%s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port) ;
+	if(app_set->account_info.ON_OFF)
+    {
+	    sprintf(rtsp_cmd, "%s %d %s %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd) ;
+    }
+	else
+	{
+	    sprintf(rtsp_cmd, "%s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port) ;
+	}
 
     fd = popen(rtsp_cmd, "r");
     if (fd == NULL) {
