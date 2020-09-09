@@ -317,6 +317,9 @@ int main(int argc, char **argv)
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 	}
 
+	//app_fit.out copy and reboot
+	ctrl_out_copy();
+
     FW_distinction() ;
 
 	//#--- system init

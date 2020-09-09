@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <glob.h>
 
 #include "ti_vsys.h"
 #include "ti_vcap.h"
@@ -757,7 +758,7 @@ void ctrl_swosd_userstr(char *str, int draw)
 #define FW_CTAG     5   //# L(lte) N(wifi) B(basic)
 #define F_RELEASE   "release"
 #define FW_DIR      "/mmc/fw_version.txt"
-
+#define FW_UBIFS	"/mmc/rfs_fit.ubifs"
 #define FW_PACKAGE_NONE		0
 #define FW_PACKAGE_BIN		1
 #define FW_PACKAGE_FULL		2
@@ -982,23 +983,74 @@ void ctrl_reset_nand_update(void)
 {
 	int i;
 	char cmd[MAX_CHAR_255] = {0,};
-	
+
 	//# delete full updated file
 	if(dev_fw_printenv("nand_update") == 2)
 	{
         if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
 		{
-  		    if(0 == access("/mmc/MLO", 0)) {
-			    for(i=0; i<NUM_FULL_UPFILES; i++) {
-				    sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
-				    util_sys_exec(cmd);
-			    }
+		    for(i=0; i<NUM_FULL_UPFILES; i++) {
+			    sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
+				printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n",full_upfiles[i]);
+			    util_sys_exec(cmd);
 		    }
 		}
 		
 		dev_fw_setenv("nand_update", "0", 0);
 	}
 }
+
+
+#define FW_EXT       ".dat"
+
+static char* _findFirmware(char* root)
+{
+	char path[255];
+	static char extPath[255];
+	glob_t globbuf;
+
+	memset(&globbuf, 0, sizeof(glob_t));
+
+	sprintf(path, "%s/*%s", root, FW_EXT);
+	if(glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0)
+	{
+		if(globbuf.gl_pathc > 0)
+		{
+			strcpy(extPath,globbuf.gl_pathv[0]);
+			globfree(&globbuf);
+			return extPath;
+		}
+	}
+	else
+	{
+		eprintf("Not found firmware file: %s\n",root);
+	}
+
+	globfree(&globbuf);
+
+	return NULL;
+
+}
+
+
+static int _unpack_N_type_check(char* pFile, char* root, int* type, int* release)
+{
+	char buf[256];
+	
+	sprintf(buf, "tar xvf %s -C %s", pFile, root);
+	system(buf);
+	sleep(3);
+
+	if(-1 == access(FW_DIR, 0)) {
+		return EFAIL;
+	}
+
+	*release = _is_firmware_for_release();
+	*type	 = (0 == access(FW_UBIFS, 0)) ? FW_PACKAGE_FULL : FW_PACKAGE_BIN;
+
+	return SOK;
+}
+
 
 /*****************************************************************************
 * @brief    Firmware update
@@ -1008,87 +1060,58 @@ void ctrl_reset_nand_update(void)
 int ctrl_sw_update(char *disk)
 {
 	char cmd[256], fname[256], firmware_name[128];
+	char msg[128];
+	char* pFile = NULL;
 	int type, ret = 0;
-
+	int release = 1;
+	
 	aprintf("start...\n");
-
 	app_cfg->ste.b.busy = 1;
-	type = _chk_update_file(disk, firmware_name);
-	if (type == FW_PACKAGE_NONE) {
-		eprintf("no update file!\n");
-		app_cfg->ste.b.busy = 0;
-		//# Reboot를 하지 않기 위해서 리턴값을 -1에서 0으로 변경
-        return -1;
+	pFile = _findFirmware(disk);
+	if(pFile == NULL) {
+		sprintf(msg, "Firmware file is not exist !!!");
+		app_log_write(MSG_LOG_WRITE, msg);
+		printf("%s\n", msg);
+        return EFAIL;
 	}
-
+	app_cfg->ste.b.busy = 0;
+	
     ret = app_rec_state();
     if (ret) {
         sleep(1) ;
         app_rec_stop(1);
     }
-//	app_file_exit();
 
-    sprintf(fname, "%s/%s", disk, firmware_name);  // FULL UPDATE FILE
-#if 0    
-    //# to verify update file checksum.
-    ret = _chk_firmware_checksum(fname);
-    if (ret) {
-        eprintf("failed to verify firmware checksum!\n");
-		app_cfg->ste.b.busy = 0;
-		return -1;
+	//# unpack fw file and type check, release/debug and update full or binary only
+	if (_unpack_N_type_check(pFile, disk, &type, &release) == EFAIL){
+		sprintf(msg, "It is not firmware file !!!");
+		app_log_write(MSG_LOG_WRITE, msg);
+		printf("%s\n", msg);
+        ret = EFAIL;
+		goto fw_exit;
+	}
+	
+	//# LED work for firmware update.
+	app_leds_fw_update_ctrl();
+	
+	dev_fw_setenv("nand_update", "1", 0);
+	app_log_write( MSG_LOG_WRITE, "Full version Firmware update done....");
+
+	aprintf("done! will restart\n");
+	ret = SOK;
+	
+fw_exit:
+
+	if(release) // RELEASE Version .. --> update file delete
+    { 
+	    sprintf(cmd, "rm -rf %s", pFile);
+	    system(cmd);
     }
-#endif
-	if(type == FW_PACKAGE_FULL)		//# full update
-	{
-		//# extract update file
-		sprintf(cmd, "tar xvf %s -C %s", fname, disk);
-		system(cmd);
-		sleep(3);	//# wait tar done
-
-        if(!_is_firmware_type_check())
-        {
-		    sprintf(cmd, "rm -rf %s", fname);
-		    system(cmd);
-            return -1 ;
-        }
-
-	    app_leds_fw_update_ctrl();
-		dev_fw_setenv("nand_update", "1", 0);
-
-        if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
-        { 
-		    sprintf(cmd, "rm -rf %s", fname);
-		    system(cmd);
-        }
-
-		app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Full version Firmware update done....");
-	}
-	else if(type == FW_PACKAGE_BIN)
-	{
-	    app_leds_fw_update_ctrl();
-
-		//# extract update file
-		sprintf(cmd, "tar xvf %s -C %s", fname, disk);
-		system(cmd);
-		sleep(2);	//# wait tar done
-
-		//# update files
-		sprintf(fname, "%s/update/rfs", disk);
-		if(0 == access(fname, 0)) {
-			sprintf(cmd, "cp -rfa %s/* /", fname);
-			system(cmd);
-		}
-
-		//# delete update directory
-		sprintf(cmd, "rm -rf %s/update", disk);
-		system(cmd);
-	}
 
 	sync();
-	app_msleep(200);		//# wait for safe
-	aprintf("done! will restart\n");
+	app_msleep(200);		//# wait for safe	
 
-	return 0;
+	return ret;
 }
 
 void fitt360_reboot()
@@ -1330,3 +1353,29 @@ int ctrl_is_live_process(const char *process_name)
 
     return is_live;
 }
+
+
+
+void ctrl_out_copy(void)
+{
+	char path[32] = {0, };
+	char cmd[255] = {0, };
+
+	sprintf(path, "/mmc/app_fitt.out");
+	if(0 == access(path, 0)) // existence only
+	{
+		printf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
+		sprintf(cmd, "cp %s /opt/fit/bin/.", path);
+		util_sys_exec(cmd);
+		
+		sprintf(cmd, "rm %s", path);
+		util_sys_exec(cmd);
+
+		sync();
+		OSA_waitMsecs(300);
+		
+		mcu_pwr_off(OFF_RESET);
+	}
+}
+
+
