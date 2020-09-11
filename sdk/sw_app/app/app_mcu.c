@@ -28,6 +28,7 @@
 #include "app_ctrl.h"
 #include "app_gui.h"
 #include "app_voip.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -87,7 +88,7 @@ void mcu_pwr_off(int type)
 
 	OSA_mutexLock(&imcu->mutex_3delay);
 
-//	dev_buzz_ctrl(80, 2);	//# buzz: pwr off
+//	app_buzz_ctrl(80, 2);	//# buzz: pwr off
 
 //	mic_exit_state(OFF_NORMAL, 0) ;
 	mic_exit_state(type, 0) ;
@@ -155,7 +156,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if(c_volt_chk) {
 			c_volt_chk--;
 			if(c_volt_chk == 0) {
-	            dev_buzz_ctrl(80, 2);	//# buzz: pwr off
+	            app_buzz_ctrl(80, 2);	//# buzz: pwr off
 				eprintf("low power detect(%d, %d)!\n", ibatt, ebatt);
                 sprintf(msg, "Peek Low Voltage Detected ");
                 app_log_write(MSG_LOG_SHUTDOWN, msg);
@@ -228,7 +229,7 @@ static void *THR_micom(void *prm)
 				short key_type = msg.data[0];
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
 				if (key_type == PSW_EVT_LONG) {
-					dev_buzz_ctrl(80, 2);	//# buzz: pwr off
+					app_buzz_ctrl(80, 2);	//# buzz: pwr off
 					sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
 					app_log_write( MSG_LOG_SHUTDOWN, log);
 					dprintf("%s\n", log);

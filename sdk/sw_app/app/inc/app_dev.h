@@ -57,6 +57,5 @@ void app_dev_exit(void);
 
 int dev_ste_mmc(void);
 int dev_ste_key(int gio);
-void dev_buzz_ctrl(int time, int cnt);
 
 #endif	/* _APP_DEV_H_ */

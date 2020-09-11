@@ -22,6 +22,7 @@
 #include "app_file.h"
 #include "app_util.h"
 #include "app_snd.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -85,7 +86,6 @@ static int send_msg(int cmd)
 static int recv_msg(void)
 {
 	to_main_msg_t msg;
-	int size;
 	
 	//# blocking
 	if (Msg_Rsv(irec->qid, REC_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_main_msg_t)) < 0)
@@ -104,7 +104,6 @@ static int recv_msg(void)
 *****************************************************************************/
 static void *THR_rec_recv_msg(void *prm)
 {
-	app_thr_obj *tObj = &irec->rObj;
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
@@ -200,7 +199,7 @@ static int _is_enable_rec_start()
 	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
 		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err || (app_cfg->vid_count == 0)) 
 	{
-		eprintf("can't record cuz %s %s %s %s\n",
+		eprintf("can't record cuz %s %s %s %s %s\n",
 			app_cfg->ste.b.mmc?"":"no MMC!", app_cfg->ste.b.busy?"system busy":"",
 			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec",
 			(app_cfg->vid_count > 0)?"":"no video detect");
@@ -235,7 +234,7 @@ int app_rec_start(void)
 	aprintf("Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
-    dev_buzz_ctrl(100, 1);			//# buzz: rec start
+    app_buzz_ctrl(100, 1);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_START, 0, 0);
 	
 	return SOK;
@@ -244,7 +243,7 @@ int app_rec_start(void)
 int app_rec_stop(int buzz)
 {
 	if (irec->evt_rec) {
-		if (buzz) dev_buzz_ctrl(100, 2);	//# buzz: rec stop
+		if (buzz) app_buzz_ctrl(100, 2);	//# buzz: rec stop
 		event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
 	}
 

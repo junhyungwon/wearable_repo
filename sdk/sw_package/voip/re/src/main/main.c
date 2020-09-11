@@ -68,10 +68,10 @@
   - Look at howto optimise main loop
  */
 
-#if !defined (RELEASE) && !defined (MAIN_DEBUG)
-#define MAIN_DEBUG 1  /**< Enable main loop debugging */
-#endif
-
+//#if !defined (RELEASE) && !defined (MAIN_DEBUG)
+//#define MAIN_DEBUG 1  /**< Enable main loop debugging */
+//#endif
+#define MAIN_DEBUG 0  /**< disable main loop debugging-->rupy */
 
 /** Main loop values */
 enum {
