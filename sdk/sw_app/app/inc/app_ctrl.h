@@ -69,5 +69,6 @@ void fitt360_reboot() ;
 int ctrl_update_firmware(char *fwpath, char *disk);
 int ctrl_update_firmware_by_cgi(char *path);
 int ctrl_is_live_process(const char *process_name);
+void ctrl_out_copy(void);
 
 #endif	/* _APP_CTRL_H_ */

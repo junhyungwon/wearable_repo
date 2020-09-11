@@ -68,10 +68,9 @@
   - Look at howto optimise main loop
  */
 
-//#if !defined (RELEASE) && !defined (MAIN_DEBUG)
-//#define MAIN_DEBUG 1  /**< Enable main loop debugging */
-//#endif
-#define MAIN_DEBUG 0  /**< disable main loop debugging-->rupy */
+#if !defined (RELEASE) && !defined (MAIN_DEBUG)
+#define MAIN_DEBUG 1  /**< Enable main loop debugging */
+#endif
 
 /** Main loop values */
 enum {
@@ -242,9 +241,9 @@ static void fd_handler(struct re *re, int fd, int flags)
 	diff = (uint32_t)(tmr_jiffies() - tick);
 
 	if (diff > MAX_BLOCKING) {
-		DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
-			      diff, MAX_BLOCKING,
-			      re->fhs[fd].fh, re->fhs[fd].arg);
+	//	DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
+	//		      diff, MAX_BLOCKING,
+	//		      re->fhs[fd].fh, re->fhs[fd].arg);
 	}
 }
 #endif
