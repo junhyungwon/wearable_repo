@@ -30,11 +30,11 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
  -----------------------------------------------------------------------------*/
-
 #define FILE_LIST_CYCLE         	(100)
+#define FILE_STATE_CHECK_BEEP		(1000)		//1sec
 #define FILE_STATE_CHECK_TIME		(60*1000)	//60sec
 #define FILE_STATE_FULL_BEEP_TIME	(5*1000)	//5SEC
-#define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_STATE_CHECK_TIME)
+#define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_STATE_CHECK_BEEP)
 
 #if FREC_TEST
 	#define MIN_THRESHOLD_SIZE 	    (100*MB)/KB		//# 100MB
@@ -129,8 +129,8 @@ static int _check_threshold_size(app_file_t *pInfo)
  *****************************************************************************/
 int app_file_check_disk_free_space(void)
 {
-	unsigned long sum = ifile->disk_max;
-	unsigned long used = ifile->disk_used;
+//	unsigned long sum = ifile->disk_max;
+//	unsigned long used = ifile->disk_used;
 	unsigned long avail = ifile->disk_avail;
 	int ret = 0;
 	
@@ -350,7 +350,7 @@ static int _create_list(const char *search_path, char *filters,	struct list_head
 	DIR *dp;
 	
 	size_t index, fcount;
-	size_t len, total;
+	size_t len;
 	int i;
 
 	list_info_t *list, *tmp;
@@ -427,7 +427,6 @@ static int _delete_files(unsigned long del_sz)
 {
 	struct list_head *head = &ilist;
 	unsigned long tmp = 0;
-	unsigned long free_sz;
 						
 	if (del_sz > 0) 
 	{
@@ -481,7 +480,7 @@ static void _check_overwite_full_led(int file_state)
 		break;
 	case FILE_STATE_FULL:
 		full_interval++;
-		if ((full_interval %= CNT_BEEP_FULL) == 0) {
+		if ((full_interval % CNT_BEEP_FULL) == 0) {
 			printf("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");				
 			app_buzz_ctrl(80, 1);
 			full_interval = 0;
@@ -649,7 +648,7 @@ int app_file_init(void)
 void app_file_exit(void)
 {
 	app_thr_obj *tObj = &ifile->fObj;
-	int ret = 0,status;
+	int status;
 	
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while (tObj->active)

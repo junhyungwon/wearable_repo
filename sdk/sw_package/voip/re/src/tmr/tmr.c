@@ -70,8 +70,8 @@ static void call_handler(tmr_h *th, void *arg)
 	diff = (uint32_t)(tmr_jiffies() - tick);
 
 	if (diff > MAX_BLOCKING) {
-		DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
-			      diff, MAX_BLOCKING, th, arg);
+	//	DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
+	//		      diff, MAX_BLOCKING, th, arg);
 	}
 }
 #endif
