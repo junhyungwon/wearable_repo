@@ -192,6 +192,15 @@ static int __get_rndis_type(void)
 }
 	
 //---------------------------- UI CALL HELPER --------------------------------------------------
+#if 0
+static int print_handler(const char *p, size_t size, void *arg)
+{
+	(void)arg;
+
+	return 1 == fwrite(p, size, 1, stderr) ? 0 : ENOMEM;
+}
+#endif
+
 static const char *translate_errorcode(uint16_t scode)
 {
 	switch (scode) {
@@ -282,6 +291,7 @@ static void check_registrations(void)
 static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			     struct call *call, const char *prm, void *arg)
 {
+//	static struct re_printf pf_stderr = {print_handler, NULL};
 	struct player *player = baresip_player();
 	uint16_t err_code = 0;
 	struct config *cfg;
@@ -368,6 +378,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			(void)play_file(&ikey->play, player, 
 					"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
 		}
+		
+		//re_debug(&pf_stderr, NULL);
 		break;
 	
 	case UA_EVENT_REGISTER_OK:
@@ -472,10 +484,9 @@ static int __register_user(int network, int enable, short port, const char *call
 	} else {
 		strcpy(devname, "eth1");
 	}
-	info("current usb network name is %s\n",devname);
+	
 	net_set_ifname(net, (const char *)devname);
 	sys_msleep(500); /* wait 0.5s */
-	
 	//######## IP-CHANGE-HANDLER #######################################
 	net_check(net);
 	info("IP-address changed: %j\n", net_laddr_af(net, AF_INET));
@@ -655,31 +666,27 @@ static void *THR_sipc_main(void *prm)
 			continue;
 		}
 		
+//		info("received command is 0x%x\n", cmd);
 		switch (cmd) {
 		case SIPC_CMD_SIP_REGISTER_UA:
-			info("baresip register user!\n");
 			/* 계정을 등록 */
 			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.ua_uri, 
 					ikey->uri.pbx_uri, ikey->uri.passwd, ikey->uri.stun_uri);
 			break;
 		
 		case SIPC_CMD_SIP_UNREGISTER_UA:
-			info("baresip unregister user!\n");
 			__unregister_user();
 			break;
 			
 		case SIPC_CMD_SIP_START:
-			info("baresip peer number %s\n", ikey->uri.peer_uri);
 			__dialer_user(ikey->uri.peer_uri);
 			break;
 		
 		case SIPC_CMD_SIP_ANSWER:
-			info("baresip call answer\n");
 			__call_answer();
 			break;
 			
 		case SIPC_CMD_SIP_STOP:
-			info("baresip call stop!\n");
 			__call_stop();
 			break;	
 		

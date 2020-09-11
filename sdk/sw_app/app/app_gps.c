@@ -29,6 +29,7 @@
 #include "app_util.h"
 #include "app_gps.h"
 #include "app_process.h"
+#include "app_buzz.h"
 
 #include "gnss_ipc_cmd_defs.h"
 
@@ -337,7 +338,6 @@ static void send_gps_data()
 *****************************************************************************/
 static void *THR_gps_recv_msg(void *prm)
 {
-	app_thr_obj *tObj = &igps->rObj;
 	int exit = 0, cmd;
 	int sync_time = 1;
 	
@@ -378,7 +378,7 @@ static void *THR_gps_recv_msg(void *prm)
 			{
 				app_sys_time(&igps->r_data.gtm);
 				sync_time = 0;
-				dev_buzz_ctrl(100, 3);	//# gps time sync
+				app_buzz_ctrl(100, 3);	//# gps time sync
 			}
 
 			//Send to client

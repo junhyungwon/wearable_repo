@@ -19,12 +19,14 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <app_leds.h>
-#include <app_log.h>
 
 #include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
+#include "app_main.h"
 #include "app_voip.h"
+#include "app_leds.h"
+#include "app_log.h"
+#include "app_ctrl.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -254,18 +256,37 @@ static void __call_status_handler(void)
 	int is_reg = ivoip->st.call_reg;
 	int errcode = ivoip->st.call_err;
 	int action = ivoip->st.call_ste;
+
+//	dprintf("call status is %x\n", action);
 	
 	/* BLINK 상태 확인이 필요함 */
-	if (is_reg) {
-		/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
-		if (action == SIPC_STATE_CALL_ESTABLISHED) {
+	if (is_reg) 
+	{
+		switch (action) {
+		case SIPC_STATE_CALL_ESTABLISHED:
+			/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
 			app_leds_voip_ctrl(DEV_LED_BLINK);
 			ctrl_swosd_userstr("C", 1);
-		} else {
+			if (app_cfg->ste.b.voip_buzz)
+				app_cfg->ste.b.voip_buzz = 0;
+			break;
+			
+		case SIPC_STATE_CALL_INCOMING:
+			/* buzzer output enable */
+			if (app_cfg->ste.b.voip_buzz == 0) {
+				app_cfg->ste.b.voip_buzz = 1;
+			}
+			break;
+		
+		default:
 			app_leds_voip_ctrl(DEV_LED_ON);
 			ctrl_swosd_userstr("C", 0);
+			if (app_cfg->ste.b.voip_buzz)
+				app_cfg->ste.b.voip_buzz = 0;
+			break;	
 		}
-	} else {
+	} 
+	else {
 		app_leds_voip_ctrl(DEV_LED_OFF);
 		ctrl_swosd_userstr("C", 0);
 	}

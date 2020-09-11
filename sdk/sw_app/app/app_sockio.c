@@ -221,7 +221,6 @@ int CSock_init()
     }
 
     // ddns thread
-
     if(app_set->ddns_info.ON_OFF)
     {
         tObj = &inet->ddnsObj ;

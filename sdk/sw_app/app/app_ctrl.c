@@ -40,6 +40,7 @@
 #include "app_rtsptx.h"
 #include "app_file.h"
 #include "app_mcu.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -109,7 +110,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 int ctrl_enc_multislice()
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int ch = 4;
+    int ch = 1;
 
 // sliceSize = iputHeight * inputHeight * packetsize / macroblocksize * 100
 
@@ -271,7 +272,7 @@ int ctrl_vid_resolution(int resol_idx)
 
     app_cap_stop() ;
 
-    dev_buzz_ctrl(100, 1);
+    app_buzz_ctrl(100, 1);
     app_msleep(200);
 
     if(resol_idx == RESOL_480P)
@@ -407,14 +408,15 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
 			sprintf(log, "[APP] --- Wireless ipaddress changed System Restart ---");
-					
+			app_log_write(MSG_LOG_SHUTDOWN, log);		
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");	
+			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");
+			app_log_write(MSG_LOG_SHUTDOWN, log);	
 		}
 	}	
 	
@@ -424,8 +426,8 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 		sleep(1);
 		app_rec_stop(1);
 	}
+	
 	app_file_exit();
-	app_log_write( MSG_LOG_SHUTDOWN, log);
     app_set_write();
 
 //    mic_exit_state(OFF_RESET, 0);
@@ -1115,16 +1117,14 @@ void fitt360_reboot()
     int ret ;
 
     ret = app_rec_state();
-    if(ret)
-    {
+    if(ret) {
         sleep(1) ;
         app_rec_stop(1);
     }
+	
     app_file_exit();
-
     app_set_write();
-
-    dev_buzz_ctrl(80, 2);
+    app_buzz_ctrl(80, 2);
 	
 //    mic_exit_state(OFF_RESET, 0);
 //    app_main_ctrl(APP_CMD_EXIT, 0, 0);
@@ -1257,7 +1257,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		return -1;
 	}
 	
-	dev_buzz_ctrl(50, 3);		//# buzz: update
+	app_buzz_ctrl(50, 3);		//# buzz: update
 
 	dev_fw_setenv("nand_update", "1", 0);
 

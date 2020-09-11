@@ -106,7 +106,7 @@ static char *find_reset(void) //setting default file search
 	return NULL;
 }
 
-static size_t get_cfg_size (const char * file_name)
+static size_t get_cfg_size (const char *file_name)
 {
     struct stat sb;
 
@@ -404,14 +404,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
 {
     char enc_ID[32] = {0, } ;
     char enc_Passwd[32] = {0, } ;
-    char dec_ID[32] = {0, } ;
-    char dec_Passwd[32] = {0, } ;
     char MacAddr[12]  ;
     char compbuff[32];
-	char ver_compare[16] ;
 
-	int ich=0, channels = 0, check_version = 0, i;
-	int default_fps;
+	int ich=0, channels = 0;
 	
 	channels = MODEL_CH_NUM+1;
 		//# Encoding cfg per channel
@@ -744,7 +740,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
-
 }
 
 static void app_set_version_read(void)
@@ -760,7 +755,8 @@ static int cfg_read(int is_mmc, char* cfg_path)
 {
     int readSize=0, app_set_size=0;
     int saved_cfg_size=0;
-
+	char msg[MAX_CHAR_255]={0,};
+	
 	if(is_mmc){
 		if (!app_cfg->ste.b.mmc || app_cfg->ste.b.mmc_err) {
 			eprintf("#### NO INSERTED SD CARD !! ####\n");
@@ -787,7 +783,9 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
-		eprintf("\n #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! #### \n", cfg_path, app_set_size, saved_cfg_size);
+		snprintf(msg, sizeof(msg), " #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####", cfg_path, app_set_size, saved_cfg_size);
+		app_log_write(MSG_LOG_WRITE, msg);
+		eprintf("%s\n", msg);
 		return EFAIL;
 	}
 	else{
@@ -810,15 +808,15 @@ static void app_set_default(int default_type)
     char MacAddr[12] ;
     char enc_ID[32] = {0, } ;
     char enc_Passwd[32] = {0, } ;
-
-    char dec_ID[32] = {0, } ;
-    char dec_Passwd[32] = {0, } ;
-
+	char msg[MAX_CHAR_255]={0,};
+	
     app_set_t tmp_set ;
 
 	int ich=0, channels = 0;
-
-	printf(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
+	
+	snprintf(msg, sizeof(msg), " [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s", MODEL_NAME);
+	app_log_write(MSG_LOG_WRITE, msg);
+	dprintf("%s\n", msg);
 
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;
@@ -926,7 +924,7 @@ static void app_set_default(int default_type)
         strncpy(app_set->sys_info.deviceId, MacAddr, 12);
     }
     else {
-        printf( "Fatal error: Failed to get local host's MAC address\n" );
+        eprintf( "Fatal error: Failed to get local host's MAC address\n" );
     }
 
     app_set->sys_info.osd_set = ON ;
@@ -1189,7 +1187,7 @@ int app_set_web_password(char *id, char *pw, int lv, int authtype)
 
 		return 0;
 	}
-	aprintf(" Can't set %s's password\n", id);
+	eprintf(" Can't set %s's password\n", id);
 
 	return -1;
 }
@@ -1203,7 +1201,7 @@ int app_set_onvif_password(char *id, char *pw, int lv)
 
 		return 0;
 	}
-	aprintf("ONVIF Can't set %s's password to %s\n", id, pw);
+	eprintf("ONVIF Can't set %s's password to %s\n", id, pw);
 
 	return -1;
 }
