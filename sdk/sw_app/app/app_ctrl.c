@@ -112,18 +112,15 @@ int ctrl_vid_rate(int ch, int rc, int br)
 int ctrl_enc_multislice()
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int ch = 1;
-
-// sliceSize = iputHeight * inputHeight * packetsize / macroblocksize * 100
 
     if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)
-        params.packetSize = 40;  // 5 180bytes   40  hdmi slice size = 1440bytes....
+        params.packetSize = 12 ;  // --> slice count 8
     else if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
-        params.packetSize = 17;  //   17  hdmi slice size = 1387bytes....  18 1468
+        params.packetSize = 10 ;  // -- slice count 10
     else
-        params.packetSize = 80;  // 14 189bytes  80  480p  slice size = 1080....
+        params.packetSize = 16 ;  // -- slice count 7
 
-    Venc_setDynamicParam(ch, 0, &params, VENC_PACKETSIZE);
+    Venc_setDynamicParam(MODEL_CH_NUM, 0, &params, VENC_PACKETSIZE);
 
     return SOK ;
 }
