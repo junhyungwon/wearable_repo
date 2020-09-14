@@ -22,20 +22,30 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 
+#define ENC_JPEG 0
+#define ENC_MPEG 1
+#define ENC_H264 2
+
 #if defined(NEXXONE)
-    #define DEFAULT_FPS				30
+	#define MAX_FPS					30
 #elif defined(NEXX360)
-    #define DEFAULT_FPS				15
+    #define MAX_FPS		    		15
 #elif defined(FITT360_SECURITY)
-    #define DEFAULT_FPS				15
+    #define MAX_FPS		    		15
 #else
     #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
 #endif
 
 #define NEXXONE_DEVICE_ID		1111
 
+#define MAX_GOV					MAX_FPS
+#define DEFAULT_FPS				MAX_FPS
 #define DEFAULT_GOV				DEFAULT_FPS
-#define MAX_GOV					DEFAULT_FPS
+
+#define MIN_FPS 1
+#define MAX_BITRATE 8000 // Kbps
+#define MIN_BITRATE 512  // Kbps
+
 
 #define FTP_HOUR_MIN            0
 #define FTP_HOUR_MAX            24
@@ -251,7 +261,7 @@ typedef struct {
 } app_voip_t; // 66 
 
 typedef struct {
-	app_ch_cfg_t			ch[MAX_CH_NUM]; // 4 + 1
+	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1
 	app_watchdog_t			wd;
 
 	app_network_dev_t		net_info;	//# network information for device

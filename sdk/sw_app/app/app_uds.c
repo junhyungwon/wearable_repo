@@ -54,7 +54,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define ENABLE_UDS_DEBUG 0
+#define ENABLE_UDS_DEBUG 1
 #if ENABLE_UDS_DEBUG
 #define __D(fmt, args...) {fprintf(stderr, "[APP_UDS_DBG] %s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, ##args);}
 #define __D_FUNC_ENTER { __D("[UDSS] Enter >>>>>>>>>\n");}
@@ -80,6 +80,138 @@ static pthread_t  	g_tid;              // uds task id
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbps, int fps, int ei, int gov)
+{
+	if (enctype == ENC_JPEG) // JPEG
+	{   // 480->720->1080->480 
+		// 1. 셋팅할 값은 720, 현재 720이 아닐때, 480일때의 물리버튼 눌림이벤트를 전달한다.
+		if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
+			ctrl_vid_resolution(RESOL_480P); 
+		// 2. 셋팅할 값은 1080, 현재 1080이 아닐때, 720일때의 물리버튼 눌림이벤트를 전달한다.
+		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
+			ctrl_vid_resolution(RESOL_720P);
+		// 3. 셋팅할 값은 480, 현재 480이 아닐때, 1080일때의 물리버튼 눌림이벤트를 전달한다.
+		else if (h == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
+			ctrl_vid_resolution(RESOL_1080P);
+	}
+	else if (enctype == ENC_H264) // H264
+	{
+		if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
+			ctrl_vid_resolution(RESOL_480P);
+		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
+			ctrl_vid_resolution(RESOL_720P);
+		else if (h == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
+			ctrl_vid_resolution(RESOL_1080P);
+
+#if defined(NEXXONE) || defined(NEXX360)
+		if (kbps > 0 && kbps <= MAX_BITRATE) //
+		{
+			int newKbps = 0;
+			if (kbps <= 750) newKbps = 512;
+			else if (kbps <= 1500) newKbps = 1000;
+			else if (kbps <= 2500) newKbps = 2000;
+			else if (kbps <= 3500) newKbps = 3000;
+			else if (kbps <= 4500) newKbps = 4000;
+			else if (kbps <= 5500) newKbps = 5000;
+			else if (kbps <= 6500) newKbps = 6000;
+			else if (kbps <= 7500) newKbps = 7000;
+			else newKbps = 8000;
+
+			if (app_set->ch[STM_CH_NUM].quality != newKbps)
+				ctrl_vid_bitrate(STM_CH_NUM, newKbps);
+		}
+
+		if (fps > 0 && fps < MAX_FPS) //
+		{
+			if (app_set->ch[STM_CH_NUM].framerate != fps)
+				ctrl_vid_framerate(STM_CH_NUM, fps);
+		}
+
+		gov = fps;
+
+		if (gov != 0)
+		{
+			if (gov <= MAX_GOV && gov > 0)
+			{
+				if (app_set->ch[STM_CH_NUM].gop != gov)
+					ctrl_vid_gop_set(STM_CH_NUM, gov);
+			}
+		}
+#else // defined(FITT360_SECURITY)
+		if (kbps != 0) //
+		{
+			if (app_set->ch[STM_CH_NUM].resol == RESOL_1080P) // FHD Streaming
+			{
+				if (kbps > 7000)
+					kbps = 0; //  HIGH 0 --> 8000Kbps
+				else if (kbps <= 7000 && kbps > 5000)
+					kbps = 1; //  MID  1 --> 6000Kbps
+				else if (kbps <= 5000)
+					kbps = 2; //  LOW  2 --> 4000Kbps
+				else
+					kbps = 2;
+			}
+			else if (app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD Streaming
+			{
+				if (kbps > 3500)
+					kbps = 0; //  HIGH 0 --> 4000Kbps
+				else if (kbps <= 3500 && kbps > 2500)
+					kbps = 1; //  MID  1 --> 3000Kbps
+				else if (kbps <= 2500)
+					kbps = 2; //  LOW  2 --> 2000Kbps
+				else
+					kbps = 2;
+			}
+			else
+			{
+				if (kbps > 1500)
+					kbps = 0; //  HIGH 0 --> 2000Kbps
+				else if (kbps <= 1500 && kbps > 800)
+					kbps = 1; //  MID  1 --> 1000Kbps
+				else if (kbps <= 800)
+					kbps = 2; //  LOW  2 --> 512Kbps
+				else
+					kbps = 2;
+			}
+
+			if (app_set->ch[STM_CH_NUM].quality != kbps)
+				ctrl_vid_bitrate(STM_CH_NUM, kbps);
+		}
+
+		if (fps != 0) //
+		{
+			if (fps > 12)
+				fps = 0; // HIGH 0 -> 15fps
+			else if (fps <= 12 && fps > 8)
+				fps = 1; // MID 1 -> 10fps
+			else if (fps <= 8)
+				fps = 2; // LOW 2 -> 5fps
+			else
+				fps = 0;
+
+			if (app_set->ch[STM_CH_NUM].framerate != fps)
+				ctrl_vid_framerate(STM_CH_NUM, fps);
+		}
+
+		if (gov != 0)
+		{
+			if (gov <= DEFAULT_FPS && gov > 0)
+			{
+				if (app_set->ch[STM_CH_NUM].gop != gov)
+					ctrl_vid_gop_set(STM_CH_NUM, gov);
+			}
+		}
+#endif
+
+
+	}
+	else
+	{
+		DBG_UDS("Not supported Encoding:%d\n", enctype);
+	}
+	return 0;
+}
+
 static int  onvif_get_gateway(const char *devName, char *out_gw)
 {
 	int ret = -1;
@@ -919,31 +1051,25 @@ unsigned long prefix2mask(int prefix)
 }
 
 /*
- * if param VideoEncoding is 0, jpeg
- * if param VideoEncoding is 2, h264
+ * deprecated, if param VideoEncoding is 0, jpeg
+ * deprecated, if param VideoEncoding is 2, h264
  */
-static int getResolution(int VideoEncoding, int *w, int *h)
+static int onvif_getResolution(int VideoEncoding, int *w, int *h)
 {
-	if(VideoEncoding == 0) {
-		*w = 720;
-		*h = 480;
-		return 0;
-	}
-
-    if(app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD
-	{
-		*w = 1280;
-		*h = 720;
-	}
     if(app_set->ch[STM_CH_NUM].resol == RESOL_1080P) // FHD
 	{
 		*w = 1920;
 		*h = 1080;
 	}
-    if(app_set->ch[STM_CH_NUM].resol == RESOL_480P) // SD
+    else if(app_set->ch[STM_CH_NUM].resol == RESOL_480P) // SD
 	{
 		*w = 720;
 		*h = 480;
+	}
+    else // default 720p if(app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD
+	{
+		*w = 1280;
+		*h = 720;
 	}
 
 	return 0;
@@ -968,9 +1094,7 @@ static int getResolutionIdx(int ch)
 // else return recording information.
 static int getKbps(int ch)
 {
-	int br = 0;
-	
-	br = app_set->ch[ch].quality;
+	int br = app_set->ch[ch].quality;
 	return br;
 }
 
@@ -1535,7 +1659,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetHostname") == 0)
-		{
+		{// ONVIF
 			sprintf(wbuf, "[APP_UDS] --- Set Hostname ---");
 			//app_log_write(MSG_LOG_WRITE, wbuf);
 
@@ -2043,26 +2167,26 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetVideoEncoderConfiguration") == 0){
 			// Onvifserver uses this command
-			sprintf(wbuf, "[APP_UDS] --- GetVideoEncoderConfiguration---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			//sprintf(wbuf, "[APP_UDS] --- GetVideoEncoderConfiguration---");
+			//app_log_write(MSG_LOG_WRITE, wbuf);
 
-			// read Encoding Type
+			// Read Encoding Type
 			ret = read(cs_uds, rbuf, sizeof rbuf);
-			DBG_UDS("read:%s, ret=%d\n", rbuf, ret);
 			if(ret > 0){
-				DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
+				DBG_UDS("GetVideoEncoderConfiguration ret:%d, rbuf:%s\n", ret, rbuf);
 				int VideoEncoding=atoi(rbuf); // 0:jpeg, 2:h264
 
 				char strOptions[128] = {0};
 				int w=0, h=0;
 				int kbps=0;
 				int fps=0, ei=0, gop=0;
-				getResolution(VideoEncoding, &w,&h);
+				onvif_getResolution(VideoEncoding, &w,&h);
 				kbps = getKbps(STM_CH_NUM);
-				gop  = getGop(STM_CH_NUM);
-				ei   = 1; // fixed
+				gop  = getGop( STM_CH_NUM);
+				ei   = 1; // Fixed, ei means, Interval at which images are encoded and transmitted. 
+				          // (A value of 1 means that every frame is encoded, a value of 2 means that every 2nd frame is encoded ...)
 				fps  = getFps(STM_CH_NUM);
-				sprintf(strOptions, "w=%d,h=%d,kbps=%d,fps=%d,ei=%d,gov=%d", 
+				sprintf(strOptions, "%d %d %d %d %d %d", 
 						w, h, kbps, fps, ei, gop);
 
 				ret = write(cs_uds, strOptions, sizeof strOptions);
@@ -2073,10 +2197,9 @@ void *myFunc(void *arg)
 					perror("failed write: ");
 				}
 			} else {
-				DBG_UDS("ret:%d, ", ret);
-				perror("failed write: ");
+				DBG_UDS("GetVideoEncoderConfiguration ret:%d, ", ret);
+				perror("failed read: ");
 			}
-
 		}
 		else if (strcmp(rbuf, "GetOperationConfiguration") == 0){
 			sprintf(wbuf, "[APP_UDS] --- GetOperationConfiguration---");
@@ -2148,129 +2271,14 @@ void *myFunc(void *arg)
 			{
 				int encoding=-1; // 0:JPEG, 2:H264
 				int rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov; // if these have zero, do not need to set. ei means encodingInterval
-				sscanf(rbuf, "%d width=%d,height=%d,kbps=%d,fps=%d,ei=%d,gov=%d", &encoding, &rcv_width, &rcv_height, &rcv_kbps, &rcv_fps, &rcv_ei, &rcv_gov);
-				DBG_UDS("encoding:%d, width=%d,height=%d,kbps=%d,fps=%d,ei=%d,gov=%d\n", encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov);
 
-				if(encoding == 0){
-					if(rcv_height == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
-						ctrl_vid_resolution(RESOL_480P);
-					else if(rcv_height == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
-						ctrl_vid_resolution(RESOL_720P);
-					else if(rcv_height == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
-						ctrl_vid_resolution(RESOL_1080P);
-				}
-				else if(encoding == 2) {
+				// ENCType width height kbps fps ei gov
+				sscanf(rbuf, "%d %d %d %d %d %d %d", 
+					&encoding, &rcv_width, &rcv_height, &rcv_kbps, &rcv_fps, &rcv_ei, &rcv_gov);
+				DBG_UDS("SetVideoEncoderConfiguration:Enc:%d, width:%d,height=%d,kbps=%d,fps=%d,ei=%d,gov=%d\n", 
+					encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov);
 
-#if defined(NEXXONE) || defined(NEXX360)
-					if(rcv_kbps > 0) // 
-					{
-						if(rcv_kbps > 512 && rcv_kbps <= 750) rcv_kbps = 512 ;                
-						else if(rcv_kbps <= 1500) rcv_kbps = 1000 ;              
-						else if(rcv_kbps <= 2500) rcv_kbps = 2000 ;               
-						else if(rcv_kbps <= 3500) rcv_kbps = 3000 ;                 
-						else if(rcv_kbps <= 4500) rcv_kbps = 4000 ;   
-						else if(rcv_kbps <= 5500) rcv_kbps = 5000 ;  
-						else if(rcv_kbps <= 6500) rcv_kbps = 6000 ;         
-						else if(rcv_kbps <= 7500) rcv_kbps = 7000 ;          
-						else if(rcv_kbps <= 8000) rcv_kbps = 8000 ;             
-						else  rcv_kbps = 4000 ; // default value
-				
-						if(app_set->ch[STM_CH_NUM].quality != rcv_kbps)
-							ctrl_vid_bitrate(STM_CH_NUM, rcv_kbps);
-					}
-
-					if(rcv_fps != 0) // 
-					{
-						if(app_set->ch[STM_CH_NUM].framerate != rcv_fps)
-							ctrl_vid_framerate(STM_CH_NUM, rcv_fps);
-					}
-
-					if(rcv_gov != 0 )
-					{
-						if(rcv_gov <= MAX_GOV && rcv_gov > 0)
-						{
-							if(app_set->ch[STM_CH_NUM].gop != rcv_gov)
-								ctrl_vid_gop_set(STM_CH_NUM, rcv_gov) ;  
-						}
-					}
-#else // defined(FITT360_SECURITY)
-					if(rcv_kbps != 0) // 
-					{
-						if(app_set->ch[STM_CH_NUM].resol == RESOL_1080P) // FHD Streaming
-						{
-							if(rcv_kbps > 7000)
-								rcv_kbps = 0 ;               //  HIGH 0 --> 8000Kbps   
-							else if(rcv_kbps <= 7000 && rcv_kbps > 5000)
-								rcv_kbps = 1 ;               //  MID  1 --> 6000Kbps   
-							else if(rcv_kbps <= 5000)
-								rcv_kbps = 2 ;               //  LOW  2 --> 4000Kbps   
-							else
-								rcv_kbps = 2 ;
-
-						}
-						else if(app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD Streaming
-						{
-							if(rcv_kbps > 3500)
-								rcv_kbps = 0 ;               //  HIGH 0 --> 4000Kbps     
-							else if(rcv_kbps <= 3500 && rcv_kbps > 2500)
-								rcv_kbps = 1 ;               //  MID  1 --> 3000Kbps   
-							else if(rcv_kbps <= 2500)
-								rcv_kbps = 2 ;               //  LOW  2 --> 2000Kbps   
-							else
-								rcv_kbps = 2 ;
-						}
-						else 
-						{
-							if(rcv_kbps > 1500)
-								rcv_kbps = 0 ;               //  HIGH 0 --> 2000Kbps   
-							else if(rcv_kbps <= 1500 && rcv_kbps > 800)
-								rcv_kbps = 1 ;               //  MID  1 --> 1000Kbps   
-							else if(rcv_kbps <= 800)
-								rcv_kbps = 2 ;               //  LOW  2 --> 512Kbps   
-							else
-								rcv_kbps = 2 ;
-
-						}
-
-						if(app_set->ch[STM_CH_NUM].quality != rcv_kbps)
-							ctrl_vid_bitrate(STM_CH_NUM, rcv_kbps);
-					}
-
-					if(rcv_fps != 0) // 
-					{
-						if(rcv_fps > 12)
-							rcv_fps = 0 ;                   // HIGH 0 -> 15fps 
-						else if(rcv_fps <= 12 && rcv_fps > 8)
-							rcv_fps = 1 ;                   // MID 1 -> 10fps
-						else if(rcv_fps <= 8)
-							rcv_fps = 2 ;                   // LOW 2 -> 5fps
-						else
-							rcv_fps = 0 ;
-
-						if(app_set->ch[STM_CH_NUM].framerate != rcv_fps)
-							ctrl_vid_framerate(STM_CH_NUM, rcv_fps);
-					}
-
-					if(rcv_gov != 0 )
-					{
-						if(rcv_gov <= DEFAULT_FPS && rcv_gov > 0)
-						{
-							if(app_set->ch[STM_CH_NUM].gop != rcv_gov)
-								ctrl_vid_gop_set(STM_CH_NUM, rcv_gov) ;  
-						}
-					}
-#endif
-					 
-					if(rcv_height == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
-						ctrl_vid_resolution(RESOL_480P);
-					else if(rcv_height == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
-						ctrl_vid_resolution(RESOL_720P);
-					else if(rcv_height == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
-						ctrl_vid_resolution(RESOL_1080P);
-				}
-				else {
-					DBG_UDS("Not supported Encoding:%d\n", encoding);
-				}
+				onvif_setVideoEncoderConfiguration(encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov);
 
 			} else {
 				DBG_UDS("ret:%d, ", ret);

@@ -35,8 +35,10 @@
 
 #define STM_CH_NUM				MODEL_CH_NUM // streaming channel
 
-#define MAX_CH_NUM	(4+1)   // Regardless of the model Type, the maximum channel size is 4+1.
-						    // Use only for array declarations.
+#define MAX_CAM_NUM 	4		// 총 카메라 개수
+#define MAX_STM_NUM 	1	    // 총 스트리밍 개수
+#define TOT_CH_INFO		(MAX_CAM_NUM+MAX_STM_NUM)      // 총 채널 정보, 모델명과 무관하게, 채널정보는 동일한 사이즈로 생성한다. 4+1
+						       // Use only for array declarations.
 
 #define MAX_AVI_CNT             4096 //  About 64G / 120Mbyte(1minute)
 
@@ -196,7 +198,7 @@ typedef struct {
 	int num_ch;
 	int disp_dev;		//# DISP_HDMI/DISP_LCD/DISP_TVO
 
-	ch_info_t ich[MAX_CH_NUM]; // 4 + 1
+	ch_info_t ich[TOT_CH_INFO]; // 4 + 1
 
     int msgqId;
 
