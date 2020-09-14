@@ -40,16 +40,19 @@
 #include "app_rtsptx.h"
 #include "app_file.h"
 #include "app_mcu.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define FLOOR_ALIGN(val, align)  (((val) / (align)) * (align))
+#define FW_EXT       			".dat"
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-
+static const char *fw_app_name  = "/mmc/app_fitt.out";
+static const char *fw_full_name = "/mmc/fitt_firmware_full_N.dat";
+	
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -109,18 +112,15 @@ int ctrl_vid_rate(int ch, int rc, int br)
 int ctrl_enc_multislice()
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int ch = 4;
-
-// sliceSize = iputHeight * inputHeight * packetsize / macroblocksize * 100
 
     if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)
-        params.packetSize = 40;  // 5 180bytes   40  hdmi slice size = 1440bytes....
+        params.packetSize = 12 ;  // --> slice count 8
     else if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
-        params.packetSize = 17;  //   17  hdmi slice size = 1387bytes....  18 1468
+        params.packetSize = 10 ;  // -- slice count 10
     else
-        params.packetSize = 80;  // 14 189bytes  80  480p  slice size = 1080....
+        params.packetSize = 16 ;  // -- slice count 7
 
-    Venc_setDynamicParam(ch, 0, &params, VENC_PACKETSIZE);
+    Venc_setDynamicParam(MODEL_CH_NUM, 0, &params, VENC_PACKETSIZE);
 
     return SOK ;
 }
@@ -265,13 +265,13 @@ int ctrl_vid_resolution(int resol_idx)
     Vdis_disp_ctrl_exit();
 
     ret = app_rec_state() ;
- 
-    if(ret)
+    if (ret) {
         app_rec_stop(1);
-
+		sleep(1); /* wait for file close */
+	}
+	
     app_cap_stop() ;
-
-    dev_buzz_ctrl(100, 1);
+    app_buzz_ctrl(100, 1);
     app_msleep(200);
 
     if(resol_idx == RESOL_480P)
@@ -290,13 +290,11 @@ int ctrl_vid_resolution(int resol_idx)
     Vdis_disp_ctrl_init(app_set->ch[MODEL_CH_NUM].resol);
 
     app_cap_start();    
-    if (ret)
-    {
+    if (ret) {
         app_rec_start();
     }
 
     app_rtsptx_stop_start() ;
-
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable
 
@@ -317,7 +315,7 @@ int ctrl_vid_resolution(int resol_idx)
             break ;
     }
 
-    app_log_write( MSG_LOG_WRITE, log );
+    app_log_write(MSG_LOG_WRITE, log);
     app_cfg->ste.b.nokey = 0;
 
     return SOK ;
@@ -407,31 +405,28 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
 			sprintf(log, "[APP] --- Wireless ipaddress changed System Restart ---");
-					
+			app_log_write(MSG_LOG_SHUTDOWN, log);		
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");	
+			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");
+			app_log_write(MSG_LOG_SHUTDOWN, log);	
 		}
 	}	
 	
 	app_set->net_info.type = net_type;
 	ret = app_rec_state();	
 	if (ret) {
-		sleep(1);
 		app_rec_stop(1);
+		sleep(1); /* wait for file close */
 	}
 	app_file_exit();
-	app_log_write( MSG_LOG_SHUTDOWN, log);
     app_set_write();
 
-//    mic_exit_state(OFF_RESET, 0);
-//    app_main_ctrl(APP_CMD_EXIT, 0, 0);
-
-	mcu_pwr_off(OFF_RESET) ;
+	app_mcu_pwr_off(OFF_RESET);
     return SOK ;
 }
 
@@ -449,8 +444,8 @@ int ctrl_set_gateway(const char *gw)
 
     ret = app_rec_state();
     if (ret) {
-        sleep(1);
         app_rec_stop(1);
+		sleep(1); /* wait for file close */
     }
     app_file_exit();
 
@@ -458,10 +453,7 @@ int ctrl_set_gateway(const char *gw)
     app_log_write( MSG_LOG_SHUTDOWN, log );
     app_set_write();
 
-//    mic_exit_state(OFF_RESET, 0);
-//    app_main_ctrl(APP_CMD_EXIT, 0, 0);
-
-	mcu_pwr_off(OFF_RESET);
+	app_mcu_pwr_off(OFF_RESET);
 
     return SOK;
 }
@@ -753,30 +745,13 @@ void ctrl_swosd_userstr(char *str, int draw)
 /*----------------------------------------------------------------------------
  firmware update
 -----------------------------------------------------------------------------*/
-#define FW_FILE_NUM 8
-#define FW_TYPE     0   //# "normal" or "debug"
-#define FW_CTAG     5   //# L(lte) N(wifi) B(basic)
-#define F_RELEASE   "release"
-#define FW_DIR      "/mmc/fw_version.txt"
-#define FW_UBIFS	"/mmc/rfs_fit.ubifs"
-#define FW_PACKAGE_NONE		0
-#define FW_PACKAGE_BIN		1
-#define FW_PACKAGE_FULL		2
+#define FW_FILE_NUM 		8
+#define FW_TYPE     		0   //# "normal" or "debug"
+#define F_RELEASE   		"release"
+#define FW_DIR      		"/mmc/fw_version.txt"
+#define FW_UBIFS			"/mmc/rfs_fit.ubifs"
 
-// #define F_LTE_UPDATE	    "fitt_firmware_L.dat"
-// #define F_LTE_UPDATE_FULL	"fitt_firmware_full_L.dat"  // support LTE
-#define FITT_WIRELESS_UPDATE	    "fitt_firmware_N.dat"
-#define FITT_WIRELESS_UPDATE_FULL	"fitt_firmware_full_N.dat"  // support WIRELESS
-#define FITT_UPDATE 	        "fitt_firmware_B.dat"
-#define FITT_UPDATE_FULL	    "fitt_firmware_full_B.dat"   // basic
-
-#define NEXX_WIRELESS_UPDATE	    "nexx_firmware_N.dat"
-#define NEXX_WIRELESS_UPDATE_FULL	"nexx_firmware_full_N.dat"  // support WIRELESS
-#define NEXX_UPDATE 	        "nexx_firmware_B.dat"
-#define NEXX_UPDATE_FULL	    "nexx_firmware_full_B.dat"   // basic
-
-#define NUM_FULL_UPFILES		8
-static char *full_upfiles[NUM_FULL_UPFILES] = {
+static char *full_upfiles[FW_FILE_NUM] = {
 	"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
 	"uImage_fit", "rfs_fit.ubifs", "mcu_fitt.txt"
 };
@@ -784,132 +759,9 @@ static char *full_upfiles[NUM_FULL_UPFILES] = {
 typedef struct {
     char item[8];
     char value[8];
-//    char CTAG[8];
 } fw_version_t;
 
 //------------------------------------------------------//
-static int _is_supported_wireless()
-{
-	int ret = TYPE_BASIC;  
-
-    if(0 == access("/opt/fit/distinction" ,0))  // WIFI + LTE
-    {
-        ret = TYPE_WIRELESS ;
-    }
-
-    return ret ;
-}
-
-static int _chk_update_file(char *disk, char *firmware_name)
-{
-	char fname[128];
-    char fw_fulltype[128] ;
-    char fw_type[128] ;
-    char msg[128] = {0, } ;
-
-    int ret = 0;
-
-    ret = _is_supported_wireless() ;
-
-    if(ret > TYPE_BASIC) // exist fw_distinction  --> wireless model
-    {
-         // WIRELESS 2.xx.xxN
-        sprintf(fw_fulltype, "%s",FITT_WIRELESS_UPDATE_FULL) ;
-        sprintf(fw_type, "%s",FITT_WIRELESS_UPDATE) ;
-         
-    }
-    else // BASIC 2.xx.xxB
-    {
-        sprintf(fw_fulltype, "%s",FITT_UPDATE_FULL) ;
-        sprintf(fw_type, "%s",FITT_UPDATE) ;
-    }
-
-	//# update files check
-	sprintf(fname, "%s/%s", disk, fw_fulltype);
-    sprintf(firmware_name, "%s", fw_fulltype) ;
-	if(0 == access(fname, 0)) {
-		return FW_PACKAGE_FULL;
-	}
-
-	sprintf(fname, "%s/%s", disk, fw_type);
-    sprintf(firmware_name, "%s", fw_type) ;
-	if(0 == access(fname, 0)) {
-		return FW_PACKAGE_BIN;
-	}
-
-    if(ret > TYPE_BASIC) // exist fw_distinction  --> wireless model
-    {
-         // WIRELESS 2.xx.xxN
-        sprintf(fw_fulltype, "%s",NEXX_WIRELESS_UPDATE_FULL) ;
-        sprintf(fw_type, "%s",NEXX_WIRELESS_UPDATE) ;
-         
-    }
-    else // BASIC 2.xx.xxB
-    {
-        sprintf(fw_fulltype, "%s",NEXX_UPDATE_FULL) ;
-        sprintf(fw_type, "%s",NEXX_UPDATE) ;
-    }
-
-	//# update files check
-	sprintf(fname, "%s/%s", disk, fw_fulltype);
-    sprintf(firmware_name, "%s", fw_fulltype) ;
-	if(0 == access(fname, 0)) {
-		return FW_PACKAGE_FULL;
-	}
-
-	sprintf(fname, "%s/%s", disk, fw_type);
-    sprintf(firmware_name, "%s", fw_type) ;
-	if(0 == access(fname, 0)) {
-		return FW_PACKAGE_BIN;
-    }
-
-    sprintf(msg, "[APP_CTRL] !!! firmware update file is not exist !!!");
-    app_log_write(MSG_LOG_WRITE, msg);
-
-	return FW_PACKAGE_NONE;
-}
-
-static int _is_firmware_type_check(void)
-{
-    fw_version_t fw[FW_FILE_NUM];
-    FILE *F_fw;
-    int i=0, ret = FALSE;
-
-    F_fw = fopen(FW_DIR, "r");
-    if (F_fw != NULL) {
-        while (!feof(F_fw)) {
-            fscanf(F_fw,"%s %s", fw[i].item, fw[i].value);
-            i++;        
-
-            if (i == FW_FILE_NUM)
-                break;          
-        }       
-        fclose(F_fw);
-
-        switch(_is_supported_wireless())
-        {
-            case TYPE_BASIC :  
-
-                if (strcmp(fw[FW_CTAG].value, "B") == 0) {
-                    printf("\n UPDATE FILE Basic!!\n");
-                    ret = TRUE;
-                }
-                break ;
-
-            case TYPE_WIRELESS :
-                if (strcmp(fw[FW_CTAG].value, "N") == 0) {
-                    printf("\n UPDATE FILE Wireless!!\n");
-                    ret = TRUE;
-                }
-                break ;
-
-            default :
-                break ;
-        }
-    }
-    return ret ;
-}
-
 static int _is_firmware_for_release(void)
 {
     fw_version_t fw[FW_FILE_NUM];
@@ -979,37 +831,15 @@ static int _chk_firmware_checksum(const char *filename)
 }
 #endif
 
-void ctrl_reset_nand_update(void)
-{
-	int i;
-	char cmd[MAX_CHAR_255] = {0,};
-
-	//# delete full updated file
-	if(dev_fw_printenv("nand_update") == 2)
-	{
-        if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
-		{
-		    for(i=0; i<NUM_FULL_UPFILES; i++) {
-			    sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
-				printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n",full_upfiles[i]);
-			    util_sys_exec(cmd);
-		    }
-		}
-		
-		dev_fw_setenv("nand_update", "0", 0);
-	}
-}
-
-#define FW_EXT       ".dat"
-
-static char* _findFirmware(char* root)
+static char *_findFirmware(const char* root)
 {
 	char path[255];
 	static char extPath[255];
 	glob_t globbuf;
 
 	memset(&globbuf, 0, sizeof(glob_t));
-
+	
+	//# /mmc/*.dat scanning
 	sprintf(path, "%s/*%s", root, FW_EXT);
 	if(glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0)
 	{
@@ -1030,20 +860,23 @@ static char* _findFirmware(char* root)
 	return NULL;
 }
 
-static int _unpack_N_type_check(char* pFile, char* root, int* type, int* release)
+static int _unpack_N_check(const char* pFile, const char* root, int* release)
 {
-	char buf[256];
+	char buf[256]={0,};
 	
 	sprintf(buf, "tar xvf %s -C %s", pFile, root);
 	system(buf);
-	sleep(3);
+	/* change 3--> 1*/
+	sleep(1/*3*/);
 
 	if(-1 == access(FW_DIR, 0)) {
+		memset(buf, 0, sizeof(buf));
+		sprintf(buf, "Failed to read %s!!!", FW_DIR);
+		app_log_write(MSG_LOG_WRITE, buf);
 		return EFAIL;
 	}
 
 	*release = _is_firmware_for_release();
-	*type	 = (0 == access(FW_UBIFS, 0)) ? FW_PACKAGE_FULL : FW_PACKAGE_BIN;
 
 	return SOK;
 }
@@ -1053,15 +886,16 @@ static int _unpack_N_type_check(char* pFile, char* root, int* type, int* release
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-int ctrl_sw_update(char *disk)
+static int _sw_update(const char *disk)
 {
-	char cmd[256], fname[256], firmware_name[128];
-	char msg[128];
-	char* pFile = NULL;
-	int type, ret = 0;
+	char cmd[256]={0,};
+	char msg[128]={0,};
+	char *pFile = NULL;
+	int ret = 0;
 	int release = 1;
 	
 	aprintf("start...\n");
+	
 	app_cfg->ste.b.busy = 1;
 	pFile = _findFirmware(disk);
 	if(pFile == NULL) {
@@ -1072,14 +906,10 @@ int ctrl_sw_update(char *disk)
 	}
 	app_cfg->ste.b.busy = 0;
 	
-    ret = app_rec_state();
-    if (ret) {
-        sleep(1) ;
-        app_rec_stop(1);
-    }
-
 	//# unpack fw file and type check, release/debug and update full or binary only
-	if (_unpack_N_type_check(pFile, disk, &type, &release) == EFAIL){
+	// pFile = /mmc/xxxxxx.dat
+	// disk  = /mmc
+	if (_unpack_N_check((const char *)pFile, (const char *)disk, &release) == EFAIL) {
 		sprintf(msg, "It is not firmware file !!!");
 		app_log_write(MSG_LOG_WRITE, msg);
 		printf("%s\n", msg);
@@ -1089,132 +919,23 @@ int ctrl_sw_update(char *disk)
 	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
-	
 	dev_fw_setenv("nand_update", "1", 0);
-	app_log_write( MSG_LOG_WRITE, "Full version Firmware update done....");
+	app_log_write(MSG_LOG_WRITE, "Full version Firmware update done....");
 
 	aprintf("done! will restart\n");
 	ret = SOK;
 	
 fw_exit:
-
-	if(release) // RELEASE Version .. --> update file delete
+	if (release) // RELEASE Version .. --> update file delete
     { 
 	    sprintf(cmd, "rm -rf %s", pFile);
 	    system(cmd);
     }
 
 	sync();
-	app_msleep(200);		//# wait for safe	
+	app_msleep(500);		//# wait for safe	
 
 	return ret;
-}
-
-void fitt360_reboot()
-{
-    int ret ;
-
-    ret = app_rec_state();
-    if(ret)
-    {
-        sleep(1) ;
-        app_rec_stop(1);
-    }
-    app_file_exit();
-
-    app_set_write();
-
-    dev_buzz_ctrl(80, 2);
-	
-//    mic_exit_state(OFF_RESET, 0);
-//    app_main_ctrl(APP_CMD_EXIT, 0, 0);
-
-	mcu_pwr_off(OFF_RESET);
-}
-
-int ctrl_update_firmware(char *fwpath, char *disk)
-{
-	char cmd[256], fname[256], firmware_name[128];
-	int type, ret;
-
-	aprintf("start...\n");
-
-	app_cfg->ste.b.busy = 1;
-	type = _chk_update_file(fwpath, firmware_name);
-	if(type == FW_PACKAGE_NONE) {
-		eprintf("no update file!\n");
-		app_cfg->ste.b.busy = 0;
-		return -1;
-	}
-
-    ret = app_rec_state();
-    if(ret)
-    {
-        sleep(1) ;
-        app_rec_stop(1);
-    }
-//	app_file_exit();
-
-	if(type==FW_PACKAGE_FULL)		//# full update
-	{
-		//# extract update file
-	    sprintf(fname, "%s/%s", fwpath, firmware_name);  // FULL UPDATE FILE
-		sprintf(cmd, "tar xvf %s -C %s", fname, disk);
-		system(cmd);
-		sleep(3);	//# wait tar done
-
-        if(!_is_firmware_type_check())
-        {
-            sprintf(cmd, "rm -rf %s", fname);
-            system(cmd);
-            
-	        app_cfg->ste.b.busy = 0;
-
-            return -1 ;
-        }
-
-	    app_leds_fw_update_ctrl();
-		dev_fw_setenv("nand_update", "1", 0);
-
-        if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
-        { 
-		    sprintf(cmd, "rm -rf %s", fname);
-		    system(cmd);
-        }
-
-		app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Full version Firmware update done....");
-	}
-	else if(type == FW_PACKAGE_BIN)
-	{
-	    app_leds_fw_update_ctrl();
-		//# extract update file
-		sprintf(fname, "%s/%s", fwpath, firmware_name);   // UPDATE FILE
-		sprintf(cmd, "tar xvf %s -C %s", fname, disk);
-		system(cmd);
-		sleep(2);	//# wait tar done
-
-		//# update files
-		sprintf(fname, "%s/update/rfs", disk);
-		if(0 == access(fname, 0)) {
-			sprintf(cmd, "cp -rfa %s/* /", fname);
-			system(cmd);
-		}
-
-		//# delete update directory
-		sprintf(cmd, "rm -rf %s/update", disk);
-		system(cmd);
-	}
-
-	sync();
-	app_msleep(200);		//# wait for safe
-	aprintf("done! will restart\n");
-
-	//# for micom exit..
-//	mic_exit_state(OFF_RESET, 0);
-//	app_main_ctrl(APP_CMD_EXIT, 0, 0);
-
-	mcu_pwr_off(OFF_RESET);
-	return 0;
 }
 
 /* example remote update
@@ -1224,8 +945,17 @@ curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192
 int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 {
 	char cmd[256];
+	int ret;
+	
     app_leds_fw_update_ctrl();
-
+	
+	/* recording stop */
+	ret = app_rec_state();
+	if (ret) {
+		app_rec_stop(1);
+		sleep(1); /* wait for file close */
+	}
+	
 #if 1 // decompress tar
 	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
@@ -1257,7 +987,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		return -1;
 	}
 	
-	dev_buzz_ctrl(50, 3);		//# buzz: update
+	app_buzz_ctrl(50, 3);		//# buzz: update
 
 	dev_fw_setenv("nand_update", "1", 0);
 
@@ -1269,11 +999,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	app_msleep(200);		//# wait for safe
 	printf("\nfw update ready ! It will restart\n\n");
 
-	//# for micom exit..
-//	mic_exit_state(OFF_RESET, 0);
-//	app_main_ctrl(APP_CMD_EXIT, 0, 0);
-
-	mcu_pwr_off(OFF_RESET);
+	app_mcu_pwr_off(OFF_RESET);
 	return 0;
 }
 
@@ -1286,17 +1012,85 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 
 	if(!app_cfg->ste.b.ftp_run)
 	{ 
-		app_rec_stop(0);
-		//ctrl_update_firmware(fwpath, SD_MOUNT_PATH);
 		ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
-
-		if(ret < 0 ) {
+		if (ret < 0 ) {
 			app_rec_start();
 		}
 	}
     return ret ;     
 }
 
+/*
+ * if /mmc/app_fitt.out is exist, copy app_fitt.out to /opt/fit/bin/.
+ * if /mmc/fitt_firmware_full_N.dat is exist, firmware update...
+ */
+void ctrl_auto_update(void)
+{
+	char path[64] = {0, };
+	char cmd[255] = {0, };
+	int ret;
+		
+	/* sw update is executed, before recording start.. */
+    ret = app_rec_state();
+    if (ret) {
+        app_rec_stop(0);
+		sleep(1); /* wait for file close */
+    }
+
+	/* First, full firmware check.. */
+	memset(path, 0, sizeof(path));
+	sprintf(path, fw_full_name);
+	if(0 == access(path, 0)) 
+	{
+		app_buzz_ctrl(50, 3);		//# buzz: update
+		//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
+		if (_sw_update(SD_MOUNT_PATH) == 0) {
+			app_mcu_pwr_off(OFF_RESET);
+		}
+	}
+	
+	memset(path, 0, sizeof(path));
+	sprintf(path, fw_app_name);
+	if(0 == access(path, 0)) // existence only
+	{
+		dprintf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
+		sprintf(cmd, "cp %s /opt/fit/bin/.", path);
+		util_sys_exec(cmd);
+		
+		sprintf(cmd, "rm %s", path);
+		util_sys_exec(cmd);
+
+		sync();
+		OSA_waitMsecs(300);
+		app_mcu_pwr_off(OFF_RESET);
+	}
+}
+
+void ctrl_reset_nand_update(void)
+{
+	int i;
+	char cmd[MAX_CHAR_255] = {0,};
+
+	//# delete full updated file
+	if(dev_fw_printenv("nand_update") == 2)
+	{
+        if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
+		{
+		    for(i=0; i<FW_FILE_NUM; i++) {
+			    sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
+				printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n",full_upfiles[i]);
+			    util_sys_exec(cmd);
+		    }
+		}
+		
+		dev_fw_setenv("nand_update", "0", 0);
+	}
+}
+
+//########################### End of Firmware Update ############################################
+/*
+ * testing live555 process 
+ */  
 int ctrl_is_live_process(const char *process_name)
 {   
     DIR* pdir;
@@ -1324,7 +1118,6 @@ int ctrl_is_live_process(const char *process_name)
             continue;
 
         sprintf(path, "/proc/%s/status", pinfo->d_name);
-
         fp = fopen(path, "rt");
         if(fp)
         {
@@ -1340,7 +1133,7 @@ int ctrl_is_live_process(const char *process_name)
         }
         else
         {
-            printf("Can't read file [%s]\n", path);
+            dprintf("Can't read file [%s]\n", path);
         }
     }
 
@@ -1349,24 +1142,22 @@ int ctrl_is_live_process(const char *process_name)
     return is_live;
 }
 
-void ctrl_out_copy(void)
+/*
+ * record stop and reboot.
+ */
+void fitt360_reboot(void)
 {
-	char path[32] = {0, };
-	char cmd[255] = {0, };
+    int ret = 0;
 
-	sprintf(path, "/mmc/app_fitt.out");
-	if(0 == access(path, 0)) // existence only
-	{
-		printf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
-		sprintf(cmd, "cp %s /opt/fit/bin/.", path);
-		util_sys_exec(cmd);
-		
-		sprintf(cmd, "rm %s", path);
-		util_sys_exec(cmd);
-
-		sync();
-		OSA_waitMsecs(300);
-		
-		mcu_pwr_off(OFF_RESET);
-	}
+    ret = app_rec_state();
+    if(ret) {
+        app_rec_stop(1);
+		sleep(1);
+    }
+	
+    app_file_exit();
+    app_set_write();
+    app_buzz_ctrl(80, 2);
+	
+	app_mcu_pwr_off(OFF_RESET);
 }

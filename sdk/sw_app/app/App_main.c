@@ -50,6 +50,7 @@
 #include "app_gps.h"
 #include "app_netmgr.h"
 #include "app_ipinstall.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -87,6 +88,28 @@ static void main_thread_exit(void)
 
 	//#--- stop thread
 	thread_delete(tObj);
+}
+
+static void app_setdns(void)
+{
+   	FILE *fp = NULL ;
+   	char buffer[64]= {0,};
+	
+//   sprintf(buffer, "%s", "nameserver 8.8.8.8") ;
+
+	fp = fopen("/etc/resolv.conf","w") ;
+	if (fp != NULL)
+	{
+		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server1) ;
+		fwrite(buffer, strlen(buffer), 1, fp);
+		app_log_write(MSG_LOG_WRITE, buffer);
+		
+		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server2) ;
+		fwrite(buffer, strlen(buffer), 1, fp);
+		app_log_write(MSG_LOG_WRITE, buffer);
+		
+		fclose(fp);
+	}
 }
 
 /*****************************************************************************
@@ -151,7 +174,7 @@ int app_main(void)
     }
 	
 	app_voip_init();
-	dev_buzz_ctrl(80, 2);	//# buzz: power on
+	app_buzz_ctrl(80, 2);	//# buzz: power on
 
 	while(!exit)
 	{
@@ -245,41 +268,6 @@ int app_cfg_init(void)
 	return ret;
 }
 
-static int FW_distinction()
-{
-// wireless version
-    FILE *fp = NULL;
-
-    if(0 == access("/opt/fit/lte_distinction" ,0))  // remove lte distinction 
-    {
-        remove("/opt/fit/lte_distinction") ;
-    }
-
-    fp = fopen("/opt/fit/distinction","w") ;
-    fclose(fp);
-
-    return 0;
-}
-
-void app_setdns()
-{
-   FILE *fp = NULL ;
-   char buffer[64] ;
-
-//   sprintf(buffer, "%s", "nameserver 8.8.8.8") ;
-
-   fp = fopen("/etc/resolv.conf","w") ;
-   if(fp)
-   {
-       sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server1) ;
-       fwrite(buffer, strlen(buffer), 1, fp) ;
-	   sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server2) ;
-	   fwrite(buffer, strlen(buffer), 1, fp) ;
-       fclose(fp) ;
-   }
-
-}
-
 /*****************************************************************************
 * @brief    main function
 * @section  [desc]
@@ -304,10 +292,11 @@ int main(int argc, char **argv)
 	mmc_state = app_cfg_init();
     app_setdns() ;  // set resolv.conf
 	app_mcu_init();
-
+	app_buzz_init(); //# buzzer mutex init..
+	
 	if (mmc_state < 0) {
 		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
-		dev_buzz_ctrl(100, 1);
+		app_buzz_ctrl(100, 1);
 		app_msleep(5000);
 		mic_exit_state(OFF_NORMAL, 0);
 		app_msleep(100);
@@ -315,12 +304,11 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+		/* copy app_fitt.out or full update */
+		ctrl_auto_update();
+		/* remove update files */
+		ctrl_reset_nand_update();
 	}
-
-	//app_fit.out copy and reboot
-	ctrl_out_copy();
-
-    FW_distinction() ;
 
 	//#--- system init
 	ret = main_thread_init();
@@ -332,7 +320,7 @@ int main(int argc, char **argv)
 
 	//# start log system
     app_ipins_init();
-
+	
 #ifndef SYS_LOG_ENABLE
 	app_log_init();
 #endif	
@@ -347,7 +335,6 @@ int main(int argc, char **argv)
 	}
 
 	app_gps_init();
-	ctrl_reset_nand_update();
 	
 	//#--- app main ----------
 	app_main();
@@ -365,7 +352,8 @@ int main(int argc, char **argv)
 	app_mcu_exit();		//# will power off after 200mS
 	app_dev_exit();
 	app_gui_exit();
-
+	app_buzz_exit();
+	
 	if(app_set->srv_info.ON_OFF)
         app_fms_exit();
 

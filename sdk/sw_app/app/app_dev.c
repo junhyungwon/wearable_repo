@@ -16,7 +16,6 @@
 
 #include "dev_gpio.h"
 #include "dev_accel.h"
-#include "dev_buzzer.h"
 #include "dev_common.h"
 #include "dev_disk.h"
 #include "dev_gps.h"
@@ -35,6 +34,7 @@
 #include "app_gui.h"
 #include "app_process.h"
 #include "app_voip.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -142,25 +142,6 @@ int dev_ste_key(int gio)
 	return status;
 }
 
-/*****************************************************************************
-* @brief    buzzer control
-* @section  [param] time: ms
-*****************************************************************************/
-void dev_buzz_ctrl(int time, int cnt)
-{
-	while (1)
-	{
-		dev_buzzer_enable(1);
-		app_msleep(time);
-		dev_buzzer_enable(0);
-		cnt--;
-		if(cnt == 0) {
-			break;
-		}
-		app_msleep(time);
-	}
-}
-
 static int cnt_key=0, ste_key=KEY_NONE;
 static int chk_rec_key(void)
 {
@@ -204,7 +185,7 @@ static int chk_rec_key(void)
 static void *THR_dev(void *prm)
 {
     app_thr_obj *tObj = &idev->devObj;
-	int ret, exit=0;
+	int exit=0;
 	int mmc, rkey, cmd;
 
 	aprintf("enter...\n");
@@ -213,7 +194,7 @@ static void *THR_dev(void *prm)
 	while(!exit)
 	{
 		cmd = tObj->cmd;
-		if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
+		if (cmd == APP_CMD_STOP) {
 			break;
 		}
 
@@ -222,9 +203,9 @@ static void *THR_dev(void *prm)
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
 			//dprintf("SD Card %s\n", mmc?"insert":"remove");
-			aprintf("done! will restart\n");
+			aprintf("done! will restart!\n");
 			app_rec_stop(0);
-			mcu_pwr_off(OFF_RESET);
+			app_mcu_pwr_off(OFF_RESET);
 		}
 		
 		if (!app_cfg->ste.b.ftp_run)
@@ -235,12 +216,15 @@ static void *THR_dev(void *prm)
 				/* Short KEY */
 				app_voip_event_noty();
 			} else if (rkey == KEY_LONG) {	//# sw update
-				dev_buzz_ctrl(50, 3);		//# buzz: update
-				//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함. 
-				if (ctrl_sw_update(SD_MOUNT_PATH) == 0) {
-					mcu_pwr_off(OFF_RESET);
-				}
+				//# record start/stop
+				if (!app_cfg->ste.b.ftp_run) 
+				{     
+					if (app_rec_state()) {
+						app_rec_stop(1);
+					} else {
+						app_rec_start();
+					}
+				} 
 			}
 		}	
 		app_msleep(TIME_DEV_CYCLE);
@@ -259,7 +243,6 @@ static void *THR_dev(void *prm)
 int app_dev_init(void)
 {
 	app_thr_obj *tObj;
-	int status;
 
 	//# static config clear - when Variable declaration
 	memset((void *)idev, 0x0, sizeof(app_dev_t));

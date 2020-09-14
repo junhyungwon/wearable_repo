@@ -334,8 +334,8 @@ static int __snd_dev_init(const char *pcm_name, snd_prm_t *prm)
 	snd_pcm_hw_params_get_period_size(hw_params, &period_size, 0);
 	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
 
-	dprintf(" ALSA Period Size %ld\n", period_size);
-	dprintf(" ALSA Buffer Size %ld\n", buffer_size);
+//	dprintf(" ALSA Period Size %ld\n", period_size);
+//	dprintf(" ALSA Buffer Size %ld\n", buffer_size);
 
 	/* prepare for audio device */
 	err = snd_pcm_prepare(handle);
@@ -417,7 +417,7 @@ static ssize_t __snd_dev_read(snd_prm_t *prm)
 
 			case -EPIPE:
 				snd_pcm_prepare(handle);
-				dprintf(" pcm overrun(count = %d)!!\n", count);
+				//dprintf(" pcm overrun(count = %d)!!\n", count);
 				break;
 
 			default:
@@ -463,10 +463,10 @@ static ssize_t __snd_dev_write(snd_prm_t *prm, size_t w_samples)
 
 		r = snd_pcm_writei(handle, rbuf, count);
 		if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
-			dprintf("pcm write wait(100ms)!!\n");
+			//dprintf("pcm write wait(100ms)!!\n");
 			snd_pcm_wait(handle, 100);
 		} else if (r == -EPIPE) {
-			dprintf("pcm write underrun!!\n");
+			//dprintf("pcm write underrun!!\n");
 			ret = snd_pcm_prepare(handle);
 			if (ret < 0) {
 				dprintf("Failed to prepare handle %p\n", handle);

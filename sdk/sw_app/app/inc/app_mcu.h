@@ -31,8 +31,6 @@ int app_mcu_exit(void);
 int app_mcu_start(void);
 void app_mcu_stop(void);
 void app_mcu_wd_keep_alive(void);
-
-void mcu_pwr_off(int type);
-
+void app_mcu_pwr_off(int type);
 
 #endif	/* _APP_MCU_H_ */

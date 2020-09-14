@@ -25,6 +25,7 @@
 #include "app_ctrl.h"
 #include "app_set.h"
 #include "app_comm.h"
+#include "app_decrypt.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro

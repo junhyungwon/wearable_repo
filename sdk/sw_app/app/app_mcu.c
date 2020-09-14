@@ -28,6 +28,7 @@
 #include "app_ctrl.h"
 #include "app_gui.h"
 #include "app_voip.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -58,50 +59,42 @@ typedef struct {
 static app_mcu_t mcu_obj;
 static app_mcu_t *imcu=&mcu_obj;
 
-static void delay_3sec_exit()
+static void delay_3sec_exit(void)
 {
 	struct timeval t1, t2;
 	int tgap=0;
 
-	if(app_cfg->ste.b.mmc){
-
-		gettimeofday(&t1, NULL);
-        while(tgap < MAX_TIME_GAP && (imcu->val.ibatt > IBATT_MIN || imcu->val.ebatt > EBATT_MIN)) {
-			gettimeofday(&t2, NULL);
-			tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
-			OSA_waitMsecs(1);
-        }
+	gettimeofday(&t1, NULL);
+	while (tgap < MAX_TIME_GAP && (imcu->val.ibatt > IBATT_MIN || imcu->val.ebatt > EBATT_MIN)) {
 		gettimeofday(&t2, NULL);
-
-		printf(" [app] msec[%ld] >>>>>>>> DELAY EXIT  <<<<<<< \n",
-				((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000)));
+		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
+		OSA_waitMsecs(1);
 	}
+	gettimeofday(&t2, NULL);
+
+	printf(" [app] msec[%ld] >>>>>>>> DELAY EXIT  <<<<<<< \n",
+			((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000)));
 
 	mic_msg_exit();
 }
 
-void mcu_pwr_off(int type)
+void app_mcu_pwr_off(int type)
 {
 	if(imcu == NULL)
 		return;
 
 	OSA_mutexLock(&imcu->mutex_3delay);
 
-//	dev_buzz_ctrl(80, 2);	//# buzz: pwr off
-
-//	mic_exit_state(OFF_NORMAL, 0) ;
-	mic_exit_state(type, 0) ;
-	app_cfg->ste.b.pwr_off = 1;
-	
-	app_rec_stop(0);
-//	app_rec_exit();
+#ifdef SYS_LOG_ENABLE
+	system("/etc/init.d/S30logging stop");
+#else	
 	app_log_exit();
+#endif
+	mic_exit_state(type, 0);
+	app_cfg->ste.b.pwr_off = 1;
 
 	delay_3sec_exit();
-
 	OSA_mutexUnlock(&imcu->mutex_3delay);
-	
-//	app_main_ctrl(APP_CMD_EXIT, 0, 0);
 }
 
 /*----------------------------------------------------------------------------
@@ -154,13 +147,16 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	if(ibatt < IBATT_MIN && ebatt < EBATT_MIN) {
 		if(c_volt_chk) {
 			c_volt_chk--;
-			if(c_volt_chk == 0) {
-	            dev_buzz_ctrl(80, 2);	//# buzz: pwr off
+			if(c_volt_chk == 0) 
+			{
+				/* add rupy */
+				app_rec_stop(0);
+	            app_buzz_ctrl(80, 2);	//# buzz: pwr off
 				eprintf("low power detect(%d, %d)!\n", ibatt, ebatt);
                 sprintf(msg, "Peek Low Voltage Detected ");
                 app_log_write(MSG_LOG_SHUTDOWN, msg);
 
-				mcu_pwr_off(OFF_NORMAL);
+				app_mcu_pwr_off(OFF_NORMAL);
 				return 1;
 			}
 		} else {
@@ -227,24 +223,19 @@ static void *THR_micom(void *prm)
 			{
 				short key_type = msg.data[0];
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
-				if (key_type == PSW_EVT_LONG) {
-					dev_buzz_ctrl(80, 2);	//# buzz: pwr off
+				if (key_type == PSW_EVT_LONG) 
+				{
+					//# add rupy
+					app_rec_stop(0);
+					app_buzz_ctrl(80, 2);	//# buzz: pwr off
 					sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
 					app_log_write( MSG_LOG_SHUTDOWN, log);
 					dprintf("%s\n", log);
 					app_set_write();
-					mcu_pwr_off(OFF_NORMAL);
+					app_mcu_pwr_off(OFF_NORMAL);
 					exit = 1;
 				} else {
-					//# record start/stop
-					if (!app_cfg->ste.b.ftp_run) 
-					{     
-						if (app_rec_state()) {
-							app_rec_stop(1);
-						} else {
-							app_rec_start();
-						}
-					} 
+					/* volume control */
 				}
 				break;
 			}
@@ -289,7 +280,7 @@ int app_mcu_start(void)
     status = OSA_mutexCreate(&(imcu->mutex_3delay));
 	OSA_assert(status == OSA_SOK);
 	
-	//#--- create dio thread
+	//#--- create mcu thread
 	app_cfg->wd_tot |= WD_MICOM;
 	tObj = &imcu->cObj;
 	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL) < 0) {

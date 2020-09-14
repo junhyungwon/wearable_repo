@@ -17,13 +17,15 @@
 #include "draw_text.h"
 #include "app_version.h"
 #include "dev_gfx.h"
+
+#include "netmgr_ipc_cmd_defs.h"
+#include "sipc_ipc_cmd_defs.h"
 #include "app_ctrl.h"
 #include "app_set.h"
 #include "app_rtsptx.h"
 #include "app_netmgr.h"
 #include "app_voip.h"
-#include "netmgr_ipc_cmd_defs.h"
-#include "sipc_ipc_cmd_defs.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -34,7 +36,9 @@
 #define UI_STREAMER_TIME		(2000)
 #define CNT_STREAMER_CHECK		(UI_STREAMER_TIME/UI_CYCLE_TIME)
 
+/* (60s - 10)*1000 */
 #define WD_LOG_TIMEOUT			((TIME_WATCHDOG-10)*1000) //# watcho dog log wrtite time out (ms)
+/* 50000 / 1500 = 33 */
 #define WD_LOG_CNT				(WD_LOG_TIMEOUT / UI_WATCHDOG_TIME)
 
 #define WD_ENC_NAME				"ENCODER "
@@ -217,11 +221,12 @@ static void *THR_gui(void *prm)
 				sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
 								app_cfg->wd_tot, wd_name);
 				dprintf("%s\n", msg);
-				if (wd_detect > 10) {
+				if ((wd_detect > 10) && (pre_wd == 0)) {
 					/* LED blink */
 					app_leds_sys_error_ctrl();
-					pre_wd = 1 ;
+					pre_wd = 1;
 				}
+				
 				if (wd_detect == WD_LOG_CNT)
 					app_log_write(MSG_LOG_SHUTDOWN, msg);
 			}
@@ -295,6 +300,11 @@ static void *THR_gui(void *prm)
 				app_cfg->ste.b.voip = 0;
 				app_voip_stop();
 			}
+		}
+		
+		/* VOIP Buzzer */
+		if (app_cfg->ste.b.voip_buzz) {
+			app_buzz_ctrl(100, 2);
 		}
 		//# -------------- End of VOIP ----------------------------------------------------------------
 		tObj->cmd = 0;

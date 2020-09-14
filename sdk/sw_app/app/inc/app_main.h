@@ -177,6 +177,7 @@ typedef union {
 		unsigned int prerec_state  		: 1; 	// record state before using FTP
 		unsigned int nokey  	   		: 1; 	// prevent key
 		unsigned int voip  				: 1; 	// voip start/stop
+		unsigned int voip_buzz			: 1;    // voip buzzer enable/disable
 	} b;
 	unsigned int w;
 } app_state;

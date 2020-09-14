@@ -25,15 +25,16 @@
 #include "app_dev.h"
 #include "app_set.h"
 #include "app_file.h"
+#include "app_buzz.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
  -----------------------------------------------------------------------------*/
-
 #define FILE_LIST_CYCLE         	(100)
+#define FILE_STATE_CHECK_BEEP		(1000)		//1sec
 #define FILE_STATE_CHECK_TIME		(60*1000)	//60sec
 #define FILE_STATE_FULL_BEEP_TIME	(5*1000)	//5SEC
-#define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_STATE_CHECK_TIME)
+#define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_STATE_CHECK_BEEP)
 
 #if FREC_TEST
 	#define MIN_THRESHOLD_SIZE 	    (100*MB)/KB		//# 100MB
@@ -43,16 +44,6 @@
 	#define FILE_LIST_CHECK_TIME    (60*1000)   	//1min	
 #endif
 
-/*------------------------------------------------------------------*/
-#define FILE_DEBUG (1)
-#if FILE_DEBUG
-#define FILE_DBG(msg, args...) printf("[FILE] - (%d):" msg, __LINE__, ##args)
-#define FILE_ERR(msg, args...) printf("[FILE] - (%d):\t%s:" msg, __LINE__, __FUNCTION__, ##args)
-#else
-#define FILE_DBG(msg, args...) ((void)0)
-#define FILE_ERR(msg, args...) ((void)0)
-#endif
-/*------------------------------------------------------------------*/
 typedef struct {
 	char name[FILE_MAX_PATH_LEN];
 	Uint32 size;  /* ?? ? ? */
@@ -122,8 +113,8 @@ static int _check_threshold_size(app_file_t *pInfo)
 		pInfo->disk_max 	= idisk.total;
 		pInfo->disk_avail 	= idisk.avail;
 		pInfo->disk_used	= (idisk.total-idisk.avail);
-		dprintf("MAX capacity %ld(KB)\n", pInfo->disk_max);
-		dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
+//		dprintf("MAX capacity %ld(KB)\n", pInfo->disk_max);
+//		dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
 	} else {
 		eprintf("%s fault!!\n", SD_MOUNT_PATH);
 	}
@@ -138,12 +129,12 @@ static int _check_threshold_size(app_file_t *pInfo)
  *****************************************************************************/
 int app_file_check_disk_free_space(void)
 {
-	unsigned long sum = ifile->disk_max;
-	unsigned long used = ifile->disk_used;
+//	unsigned long sum = ifile->disk_max;
+//	unsigned long used = ifile->disk_used;
 	unsigned long avail = ifile->disk_avail;
 	int ret = 0;
 	
-	printf("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", avail, used, MIN_THRESHOLD_SIZE);
+//	dprintf("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", avail, used, MIN_THRESHOLD_SIZE);
 	if ( avail < MIN_THRESHOLD_SIZE ) 
 		ret = -1; /* disk full state */
 	
@@ -172,7 +163,7 @@ static Uint32 get_file_count(const char *dpath)
 	} else
 		count = 0;
 
-	FILE_DBG("%u files in %s path\n", count, dpath);
+//	dprintf("%u files in %s path\n", count, dpath);
 
 	return count;
 }
@@ -227,7 +218,7 @@ static Uint32 find_first_and_delete(struct list_head *head)
 			return -1;
 			
 		sz = ptr->filesz; /* return file size */
-		FILE_DBG("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
+		dprintf("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
 		list_del(&ptr->queue);
 		ifile->file_count--;
 		free(ptr);
@@ -251,7 +242,7 @@ static int _get_rec_file_head(struct list_head *head, char *path)
 		sprintf(path, "%s", ptr->fullname);
 		sz = ptr->filesz; /* return file size */
 		
-		FILE_DBG("Get List Head FILE : %s\n", ptr->fullname);
+		dprintf("Get List Head FILE : %s\n", ptr->fullname);
 		list_del(&ptr->queue);
 		ifile->file_count--;
 		free(ptr);
@@ -287,7 +278,7 @@ static void display_node(struct list_head *head)
 
 	__list_for_each(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
-		FILE_DBG("name %s \n", ptr->fullname);
+		dprintf("name %s \n", ptr->fullname);
 	}
 }
 #endif
@@ -310,7 +301,7 @@ static int add_node_tail(const char *path, struct list_head *head, unsigned int 
 	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
 
-	//FILE_DBG(" Add List name: %s, size %u\n", path, iSize);
+	//dprintf(" Add List name: %s, size %u\n", path, iSize);
 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add(&ptr->queue, head);
@@ -337,7 +328,7 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
 	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
 
-//	FILE_DBG(" Add List name: %s, size %u(KB)\n", path, iSize);
+//	dprintf(" Add List name: %s, size %u(KB)\n", path, iSize);
 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add_tail(&ptr->queue, head);
@@ -359,7 +350,7 @@ static int _create_list(const char *search_path, char *filters,	struct list_head
 	DIR *dp;
 	
 	size_t index, fcount;
-	size_t len, total;
+	size_t len;
 	int i;
 
 	list_info_t *list, *tmp;
@@ -380,7 +371,7 @@ static int _create_list(const char *search_path, char *filters,	struct list_head
 	fcount = get_file_count(__path);
 	if (!fcount) {
 		closedir(dp);
-		FILE_DBG("Empty %s directory\n", __path);
+		dprintf("Empty %s directory\n", __path);
 		return 0;
 	}
 
@@ -436,7 +427,6 @@ static int _delete_files(unsigned long del_sz)
 {
 	struct list_head *head = &ilist;
 	unsigned long tmp = 0;
-	unsigned long free_sz;
 						
 	if (del_sz > 0) 
 	{
@@ -444,10 +434,8 @@ static int _delete_files(unsigned long del_sz)
 		while (!list_empty(head))
 		{
 			Uint32 fsize;
+			
 			fsize = find_first_and_delete(head);
-			/*
-			 * 0??? ??? ?? ???.
-			 */ 
 			if (fsize < 0) {
 				/* file is empty */
 				return -1;
@@ -480,7 +468,7 @@ static void _check_overwite_full_led(int file_state)
 			if (app_rec_state()) {
 				printf("@@@@@@@@@@@@@@@@@@FILE_STATE_OVERWRITE@@@@@@@@@@@@@@@@@@@\n");				
 				app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
-				dev_buzz_ctrl(80, 1);
+				app_buzz_ctrl(80, 1);
 				once_over_beep = 1;
 			}
 		} else {
@@ -492,9 +480,9 @@ static void _check_overwite_full_led(int file_state)
 		break;
 	case FILE_STATE_FULL:
 		full_interval++;
-		if ((full_interval %= CNT_BEEP_FULL) == 0) {
+		if ((full_interval % CNT_BEEP_FULL) == 0) {
 			printf("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");				
-			dev_buzz_ctrl(80, 1);
+			app_buzz_ctrl(80, 1);
 			full_interval = 0;
 		}
 		
@@ -527,7 +515,7 @@ static void *THR_file_mng(void *prm)
 	app_thr_obj *tObj = &ifile->fObj;
 
 	int cmd, exit=0, fcheck = 0;
-	unsigned int f_cycle=FILE_LIST_CHECK_TIME; // A©øA¨ö ¨öAAU¢¯¢®¨ù¡© CHECK START CI¥ì¥ì¡¤I
+	unsigned int f_cycle=FILE_LIST_CHECK_TIME;
 	char msg[MAX_CHAR_255] = {0,};
 	int r = 0;
 	
@@ -572,7 +560,6 @@ static void *THR_file_mng(void *prm)
 				capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
 
 				if (app_set->rec_info.overwrite) {
-					/* overwrite ??? ?? ? ? ? full ??? ?? ?? overwrite ??? ?? ?? ? */
 					if (capacity_full) {
 						ifile->file_state = FILE_STATE_OVERWRITE;
 						OSA_mutexLock(&ifile->mutex_file);
@@ -589,7 +576,6 @@ static void *THR_file_mng(void *prm)
 						}
 					}
 				} else {
-					/* overwrite ??? ?? ???? ?? ?? */
 					if (capacity_full) {
 						app_rec_stop(OFF); /* buzzer off */
 						ifile->file_state = FILE_STATE_FULL;
@@ -662,7 +648,7 @@ int app_file_init(void)
 void app_file_exit(void)
 {
 	app_thr_obj *tObj = &ifile->fObj;
-	int ret = 0,status;
+	int status;
 	
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while (tObj->active)
@@ -695,7 +681,7 @@ void app_file_update_disk_usage(void)
 	denominator = ((unsigned long long)used * 100);
 	percent = (unsigned long)(denominator / sum);
 	
-//	printf("file manger total %u(KB), used %u(KB), percent %d%%\n", sum, used, percent);	
+//	dprintf("file manger total %u(KB), used %u(KB), percent %d%%\n", sum, used, percent);	
 	if (percent > DISK_USED_MID)
 		app_leds_mmc_capacity_ctrl(LED_DISK_USAGE_ON_3);	//# x > 66%
 	else if(percent < DISK_USED_MIN )
@@ -726,7 +712,7 @@ int app_file_add_list(const char *pathname, int size)
 	
 	OSA_mutexLock(&ifile->mutex_file);	
 	add_node_tail(pathname, &ilist, (unsigned int)size);
-//	FILE_DBG("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
+//	dprintf("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
 	OSA_mutexUnlock(&ifile->mutex_file);
 
 	return SOK;

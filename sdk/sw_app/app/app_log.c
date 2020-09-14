@@ -99,6 +99,7 @@ Declares a function prototype
 /*----------------------------------------------------------------------------
 local function
 -----------------------------------------------------------------------------*/
+#ifndef SYS_LOG_ENABLE
 /*****************************************************************************
  * @brief	 filelist create/delete function
  * @section  DESC Description
@@ -408,53 +409,6 @@ static void *THR_log(void *prm)
 }
 
 /*****************************************************************************
-* @brief    system log write helper function.
-* @section  [desc]
-*****************************************************************************/
-void app_log_write(int cmd, char *msg)
-{
-#ifndef SYS_LOG_ENABLE	
-	ucx_msg_info msgBuf;
-	struct tm 	ts;
-	time_t tm1;
-	int ret;
-
-	char dtime[MAX_CHAR_32];
-
-#ifndef USE_LOG_FILE
-	return;
-#endif
-
-	if(!app_cfg->ste.b.log)
-		return;
-
-	OSA_mutexLock(&ilog->mutex_log);
-	memset(&msgBuf, 0, sizeof(ucx_msg_info));
-
-	time(&tm1);
-	localtime_r(&tm1, &ts);
-
-	strftime(dtime, sizeof(dtime), "%Y:%2m:%2d:%2H:%2M:%2S", &ts);
-
-	msgBuf.msgDes	= MSG_TYPE_LOG;
-	msgBuf.msgSrc	= MSG_TYPE_UCX;
-	msgBuf.msgCmd	= cmd;
-	msgBuf.msgParm1 = 0;
-	msgBuf.msgParm2 = 0;
-	msgBuf.msgParm3 = 0;
-	if(msg != NULL)
-		sprintf(msgBuf.msgstr, "[%s]	%s", dtime, msg);
-
-	ret = msgsnd(app_cfg->msgqId, &msgBuf, sizeof(ucx_msg_info)-sizeof(long), 0);
-
-	OSA_mutexUnlock(&ilog->mutex_log);
-#else
-	if (msg != NULL)
-		syslog(LOG_INFO, "%s\n", msg);
-#endif	
-}
-
-/*****************************************************************************
 * @brief    system log thread start/stop
 * @section  [desc]
 *****************************************************************************/
@@ -517,3 +471,52 @@ void app_log_exit(void)
 
 	aprintf("..done!\n");
 }
+
+/*****************************************************************************
+* @brief    system log write helper function.
+* @section  [desc]
+*****************************************************************************/
+void app_log_write(int cmd, char *msg)
+{
+	ucx_msg_info msgBuf;
+	struct tm 	ts;
+	time_t tm1;
+	int ret;
+
+	char dtime[MAX_CHAR_32];
+
+#ifndef USE_LOG_FILE
+	return;
+#endif
+
+	if(!app_cfg->ste.b.log)
+		return;
+
+	OSA_mutexLock(&ilog->mutex_log);
+	memset(&msgBuf, 0, sizeof(ucx_msg_info));
+
+	time(&tm1);
+	localtime_r(&tm1, &ts);
+
+	strftime(dtime, sizeof(dtime), "%Y:%2m:%2d:%2H:%2M:%2S", &ts);
+
+	msgBuf.msgDes	= MSG_TYPE_LOG;
+	msgBuf.msgSrc	= MSG_TYPE_UCX;
+	msgBuf.msgCmd	= cmd;
+	msgBuf.msgParm1 = 0;
+	msgBuf.msgParm2 = 0;
+	msgBuf.msgParm3 = 0;
+	if(msg != NULL)
+		sprintf(msgBuf.msgstr, "[%s]	%s", dtime, msg);
+
+	ret = msgsnd(app_cfg->msgqId, &msgBuf, sizeof(ucx_msg_info)-sizeof(long), 0);
+
+	OSA_mutexUnlock(&ilog->mutex_log);
+}
+#else
+void app_log_write(int cmd, char *msg)
+{
+	if (msg != NULL)
+		syslog(LOG_INFO, "%s\n", msg);
+}
+#endif
