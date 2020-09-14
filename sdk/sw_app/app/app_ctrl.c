@@ -137,45 +137,36 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
     int br ;
+#if defined(NEXXONE) || defined(NEXX360)
+    app_set->ch[ch].framerate = framerate ;
+    app_cfg->ich[ch].fr = framerate;
+#else
     app_ch_cfg_t *ch_prm;
 	
     switch(framerate)
     {
         case FPS_30 :
-            sprintf(msg, "FPS_30") ; 
             app_set->ch[ch].framerate = FPS_30 ;
             break ;
         case FPS_15 :
-            sprintf(msg, "FPS_15") ; 
             app_set->ch[ch].framerate = FPS_15 ;
             break ;
         case FPS_5 :
-            sprintf(msg, "FPS_5") ; 
             app_set->ch[ch].framerate = FPS_5 ;
             break ;
         default :
-            sprintf(msg, "FPS_30") ;
             app_set->ch[ch].framerate = FPS_30 ;
             printf("ctrl vid framerate default %s\n",msg) ;
             break ;
     }
-
-    ch_prm = &app_set->ch[ch];
-    sprintf(log, "[APP_CTRL] --- ch = %d set vid framerate %s ---",ch, msg);
-    app_log_write( MSG_LOG_WRITE, log );
-
-    br = get_bitrate_val(app_set->ch[ch].quality, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
     
-    // resol 1080P 0, 720P 1, 480P 2
-    app_cfg->ich[ch].br = (br * framerate)/DEFAULT_FPS;
     app_cfg->ich[ch].fr = get_fps_val(ch_prm->framerate);
 
+#endif
+
     params.frameRate = app_cfg->ich[ch].fr;
-    params.targetBitRate = app_cfg->ich[ch].br*1000 ;
-    params.intraFrameInterval = app_cfg->ich[ch].fr;  //gop
 
     Venc_setInputFrameRate(ch, DEFAULT_FPS);
-
     Venc_setDynamicParam(ch, 0, &params, VENC_FRAMERATE);
 
     return SOK ;
@@ -192,6 +183,10 @@ int ctrl_vid_bitrate(int ch, int bitrate)
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
     int br;
 
+#if defined(NEXXONE) || defined(NEXX360)
+    app_set->ch[ch].quality = bitrate;
+	br = bitrate ;
+#else
     app_ch_cfg_t *ch_prm;
 
     ch_prm = &app_set->ch[ch];
@@ -199,18 +194,15 @@ int ctrl_vid_bitrate(int ch, int bitrate)
     switch(bitrate)
     {
         case Q_HIGH :
-            sprintf(msg, "HIGH") ;
             app_set->ch[ch].quality = Q_HIGH;
             break ;
 
         case Q_MID :
-            sprintf(msg, "MID") ;
             app_set->ch[ch].quality = Q_MID;
 
             break ;
 
         case Q_LOW :
-            sprintf(msg, "LOW") ;
             app_set->ch[ch].quality = Q_LOW;
             break ;
 
@@ -219,11 +211,9 @@ int ctrl_vid_bitrate(int ch, int bitrate)
             break ;
     }
 
-    sprintf(log, "[APP_CTRL] --- ch %d set vid bitrate %s ---",ch,  msg);
-    app_log_write( MSG_LOG_WRITE, log );
-
     br = get_bitrate_val(bitrate, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
-    
+#endif
+
 	// resol 480P 0 720P 1 1080P 2
     app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
 
@@ -274,20 +264,9 @@ int ctrl_vid_resolution(int resol_idx)
     app_buzz_ctrl(100, 1);
     app_msleep(200);
 
-    if(resol_idx == RESOL_480P)
-    {     
-		app_set->ch[MODEL_CH_NUM].resol = RESOL_720P ;
-    }
-    else if(resol_idx == RESOL_720P)
-    {
-		app_set->ch[MODEL_CH_NUM].resol = RESOL_1080P ;
-    }
-    else if(resol_idx == RESOL_1080P)
-    {
-		app_set->ch[MODEL_CH_NUM].resol = RESOL_480P ;
-    }   
+	app_set->ch[MODEL_CH_NUM].resol = resol_idx;
 
-    Vdis_disp_ctrl_init(app_set->ch[MODEL_CH_NUM].resol);
+    Vdis_disp_ctrl_init(resol_idx);
 
     app_cap_start();    
     if (ret) {
@@ -298,28 +277,61 @@ int ctrl_vid_resolution(int resol_idx)
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable
 
-	switch (app_set->ch[MODEL_CH_NUM].resol)
-    {
-        case  0 :
-            sprintf(log, "[APP_CTRL] --- change Display Mode to 480P ---");
-            break ;
-        case  1 :
-            sprintf(log, "[APP_CTRL] --- change Display Mode to 720P ---");
-            break ;
-        case  2 :
-            sprintf(log, "[APP_CTRL] --- change Display Mode to 1080P ---");
-            break ;
-
-        default :
-            sprintf(log, "[APP_CTRL] --- change Display Mode to 480P ---");
-            break ;
-    }
-
-    app_log_write(MSG_LOG_WRITE, log);
     app_cfg->ste.b.nokey = 0;
 
     return SOK ;
 }
+
+/*****************************************************************************
+* @brief    set full video setting function
+* @section  DESC Description
+*   - desc
+*****************************************************************************/
+int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
+{
+	int ret = 0 ;
+	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
+
+	params.frameRate = fps ;
+	params.targetBitRate = (bitrate * fps)/DEFAULT_FPS;
+	params.intraFrameInterval = gop ;
+
+	Venc_setInputFrameRate(ch, DEFAULT_FPS) ;
+	Venc_setDynamicParam(ch, 0, &params, VENC_FRAMERATE) ;
+
+	Vdis_disp_ctrl_exit() ;
+
+	ret = app_rec_state() ;
+
+	if(ret)
+	{
+		app_rec_stop(1) ;
+		sleep(1) ;
+	}
+
+	app_cap_stop();
+
+	app_buzz_ctrl(100, 1) ;
+	app_msleep(200) ;
+  
+	app_set->ch[MODEL_CH_NUM].resol = resol ;
+
+	Vdis_disp_ctrl_init(resol) ;
+	app_cap_start() ;
+	if(ret)
+	{
+		app_rec_start() ;
+	}
+    
+	app_rtsptx_stop_start() ;
+
+    if(!app_set->sys_info.osd_set)
+		ctrl_swosd_enable(STE_DTIME, 0, 0) ; // osd disable
+
+	return SOK ;
+    
+}
+
 
 /*****************************************************************************
 * @brief    get resolution function

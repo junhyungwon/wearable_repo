@@ -42,6 +42,8 @@ int ctrl_vid_rate(int ch, int rc, int br);		//# runtime
 int ctrl_vid_gop_set(int ch, int gop) ;                 //# runtime 
 int ctrl_jpg_quality(int ch, int value);		//# runtime
 int ctrl_vid_resolution(int resol) ;                    //# runtime 
+int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop) ;
+
 
 int ctrl_set_port(int http_port, int https_port, int rtsp_port) ; //# runtime
 int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet) ;
