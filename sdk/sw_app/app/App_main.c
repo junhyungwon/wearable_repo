@@ -304,10 +304,11 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+		/* copy app_fitt.out or full update */
+		ctrl_auto_update();
+		/* remove update files */
+		ctrl_reset_nand_update();
 	}
-
-	//app_fit.out copy and reboot
-	ctrl_out_copy();
 
 	//#--- system init
 	ret = main_thread_init();
@@ -334,7 +335,6 @@ int main(int argc, char **argv)
 	}
 
 	app_gps_init();
-	ctrl_reset_nand_update();
 	
 	//#--- app main ----------
 	app_main();

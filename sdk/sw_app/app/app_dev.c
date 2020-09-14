@@ -194,7 +194,7 @@ static void *THR_dev(void *prm)
 	while(!exit)
 	{
 		cmd = tObj->cmd;
-		if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
+		if (cmd == APP_CMD_STOP) {
 			break;
 		}
 
@@ -203,9 +203,9 @@ static void *THR_dev(void *prm)
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
 			//dprintf("SD Card %s\n", mmc?"insert":"remove");
-			aprintf("done! will restart\n");
+			aprintf("done! will restart!\n");
 			app_rec_stop(0);
-			mcu_pwr_off(OFF_RESET);
+			app_mcu_pwr_off(OFF_RESET);
 		}
 		
 		if (!app_cfg->ste.b.ftp_run)
@@ -216,12 +216,15 @@ static void *THR_dev(void *prm)
 				/* Short KEY */
 				app_voip_event_noty();
 			} else if (rkey == KEY_LONG) {	//# sw update
-				app_buzz_ctrl(50, 3);		//# buzz: update
-				//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함. 
-				if (ctrl_sw_update(SD_MOUNT_PATH) == 0) {
-					mcu_pwr_off(OFF_RESET);
-				}
+				//# record start/stop
+				if (!app_cfg->ste.b.ftp_run) 
+				{     
+					if (app_rec_state()) {
+						app_rec_stop(1);
+					} else {
+						app_rec_start();
+					}
+				} 
 			}
 		}	
 		app_msleep(TIME_DEV_CYCLE);

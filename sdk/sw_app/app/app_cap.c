@@ -95,11 +95,14 @@ void video_status(void)
 	
     if (app_cfg->vid_count == 0)
     {
-        sleep(1) ;
-        app_rec_stop(1);
-        
+		ret = app_rec_state();
+		if (ret) {
+        	app_rec_stop(1);
+			sleep(1); /* wait for file close */
+		}
+		
 #if defined(FITT360_SECURITY)
-        mcu_pwr_off(OFF_NORMAL);
+        app_mcu_pwr_off(OFF_NORMAL);
 #endif
     } 
 }
@@ -318,8 +321,10 @@ static void vid_cap_stop(void)
 	app_thr_obj *tObj;
 
     //#--- recording stop
-    if(app_rec_state()) 
+    if (app_rec_state()) {
         app_rec_stop(1);
+		sleep(1); /* wait for file close */
+	}
 
 	//#--- stop thread
 	tObj = &icap->vObj;
