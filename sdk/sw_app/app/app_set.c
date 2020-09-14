@@ -1079,16 +1079,12 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
 	    app_set_write();
 
         ret = app_rec_state();
-        if (ret)
-        {
-            sleep(1);
+        if (ret) {
             app_rec_stop(1);
+			sleep(1); /* wait for file close */
         }
 
-//        mic_exit_state(OFF_RESET, 0);
-//        app_main_ctrl(APP_CMD_EXIT, 0, 0);
-
-		mcu_pwr_off(OFF_RESET);
+		app_mcu_pwr_off(OFF_RESET);
     } 
 }
 

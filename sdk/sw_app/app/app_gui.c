@@ -38,7 +38,7 @@
 
 /* (60s - 10)*1000 */
 #define WD_LOG_TIMEOUT			((TIME_WATCHDOG-10)*1000) //# watcho dog log wrtite time out (ms)
-/* 50s */
+/* 50000 / 1500 = 33 */
 #define WD_LOG_CNT				(WD_LOG_TIMEOUT / UI_WATCHDOG_TIME)
 
 #define WD_ENC_NAME				"ENCODER "

@@ -200,7 +200,7 @@ static void *THR_gps_main(void *prm)
 			app_cfg->wd_flags |= WD_DEV;
 			
 			cmd = tObj->cmd;
-			if (cmd == APP_CMD_STOP || app_cfg->ste.b.pwr_off) {
+			if (cmd == APP_CMD_STOP) {
 				app_cfg->wd_flags &= ~WD_DEV; //# for watchdog disable..
 				__gps_send_cmd(GNSS_CMD_GPS_STOP);
 				break;
