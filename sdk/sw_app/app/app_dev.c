@@ -215,17 +215,10 @@ static void *THR_dev(void *prm)
 			if (rkey == KEY_SHORT) {		
 				/* Short KEY */
 				app_voip_event_noty();
-			} else if (rkey == KEY_LONG) {	//# sw update
-				//# record start/stop
-				if (!app_cfg->ste.b.ftp_run) 
-				{     
-					if (app_rec_state()) {
-						app_rec_stop(1);
-					} else {
-						app_rec_start();
-					}
-				} 
-			}
+			} else if (rkey == KEY_LONG) {	
+				/* volume control */
+				app_voip_set_play_volume();
+			} 
 		}	
 		app_msleep(TIME_DEV_CYCLE);
 	}

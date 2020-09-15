@@ -17,9 +17,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "dev_sound.h"
 #include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
 #include "app_main.h"
@@ -34,8 +36,8 @@
 #define SIPC_BIN_STR		"/opt/fit/bin/baresip.out"
 /* IPV4 Only */
 #define SIPC_CMD_STR		"/opt/fit/bin/baresip.out -4 &" 
-
 #define SIP_ACCOUNT_PATH	"/root/.baresip"
+#define SIP_VOLUME_CONF		"/usr/share/sound.conf"
 
 typedef struct {
 	app_thr_obj rObj; 	/* sip receive object */
@@ -43,6 +45,7 @@ typedef struct {
 	
 	int init;
 	int qid;
+	int snd_level;		/* sound level */
 	
 	short svr_port;
 	int enable_stun;
@@ -61,11 +64,23 @@ typedef struct {
 	
 } app_voip_t;
 
+typedef enum {
+	SND_LEVEL_LOW = 0,
+	SND_LEVEL_MID,
+	SND_LEVEL_HIGH
+
+} SND_AIC3X_LEVEL;
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
 static app_voip_t t_voip;
 static app_voip_t *ivoip = &t_voip;
+
+/* aic3x audio codec output volume percentage */
+static int __aic3x_output_level[3] = {
+	60, 80, 100 	
+};
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -167,10 +182,73 @@ static void __set_default_account(const char *login, const char *domain, const c
 }
 #endif
 
+static int __get_voip_play_volume(int *level)
+{
+	FILE *f = NULL;
+	int res = 0;
+	char buf[256 + 1] = {0,};
+	char tbuf[2];
+	
+	res = access(SIP_VOLUME_CONF, R_OK|W_OK);
+    if ((res == 0) || (errno == EACCES)) 
+	{
+		f = fopen(SIP_VOLUME_CONF, "r");
+		if (f != NULL) 
+		{
+			while (fgets(buf, sizeof(buf), f) != NULL)
+			{
+				char *s;
+				int val;
+
+				s = strstr(buf, "level=");
+				if (s != NULL) {
+					s += 6; /* level=X */
+					tbuf[0] = s[0];
+					tbuf[1] = '\0';
+					
+					val = atoi(tbuf); /* ex) 1 */
+					fclose(f);
+					*level = val;
+					
+					//dprintf("level = %d\n", *level);
+					return 0;
+				}
+			}
+		}
+    }
+	
+	eprintf("couldn't open %s\n", SIP_VOLUME_CONF);
+	return -1;	
+}
+
+static void __set_voip_play_volume(int level)
+{
+	int res = 0;
+	FILE *f = NULL;
+	
+	res = access(SIP_VOLUME_CONF, R_OK|W_OK);
+    if ((res == 0) || (errno == EACCES)) {
+		/* delete file */
+      	unlink(SIP_VOLUME_CONF); 
+    }
+	
+	f = fopen(SIP_VOLUME_CONF, "wb");
+	if (f != NULL) {
+		fprintf(f, "level=%d\n", level);
+		fflush(f);
+		fclose(f);
+		chmod(SIP_VOLUME_CONF, 0660);
+	} 
+	else {
+		eprintf("couldn't create %s config file\n", SIP_VOLUME_CONF);
+	}
+}
+
 static void __call_register_handler(void)
 {
 	char msg[256] = {0, };
 	
+	dprintf("baresip user register start.....\n");
 	/* create ua and register */
 	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
 			ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
@@ -184,7 +262,6 @@ static void __call_register_handler(void)
 	}
     app_log_write(MSG_LOG_WRITE, msg);
 	
-	dprintf("baresip user register start.....\n");
 	dprintf("%s\n", msg);
 }
 
@@ -351,7 +428,7 @@ static void *THR_voip_recv_msg(void *prm)
 		
 		switch (cmd) {
 		case SIPC_CMD_SIP_READY:
-			ivoip->init = 1; /* from record process */
+			ivoip->init = 1;
 			break;
 		
 		case SIPC_CMD_SIP_GET_STATUS:
@@ -385,9 +462,22 @@ int app_voip_init(void)
 {
 	app_thr_obj *tObj;
 	struct stat sb;
-	int status;
+	int status, percent;
 	
 	memset(ivoip, 0, sizeof(app_voip_t));
+	
+	/* alsa volume */
+//	amixer cset numid=17 50% # DAC_L1 to HPLOUT Volume Control
+//	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
+	status = __get_voip_play_volume(&status);
+	if (status < 0) {
+		/* set default level */
+		ivoip->snd_level = SND_LEVEL_LOW;
+	} else {
+		ivoip->snd_level = status;
+	}
+	percent = __aic3x_output_level[ivoip->snd_level];	
+	dev_snd_set_aic3x_volume(SND_VOLUME_P, percent);
 	
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
@@ -506,4 +596,39 @@ void app_voip_event_noty(void)
 	OSA_mutexLock(&ivoip->lock);
 	event_send(tObj, APP_CMD_NOTY, 0, 0);
 	OSA_mutexUnlock(&ivoip->lock);
+}
+
+/*****************************************************************************
+* @brief    voip playback volume control
+*   - desc
+*****************************************************************************/
+void app_voip_set_play_volume(void)
+{
+	int level = ivoip->snd_level;
+	int percent;
+	
+	/* baresip didn't execute, return */
+	if (ivoip->init == 0)
+		return;
+		
+	level++;
+	/* round */
+	if (level > SND_LEVEL_HIGH)
+		level = SND_LEVEL_LOW;
+	else if (level < SND_LEVEL_LOW) /* ??? */
+		level = SND_LEVEL_LOW;
+	
+	percent = __aic3x_output_level[level];	
+	dev_snd_set_aic3x_volume(SND_VOLUME_P, percent);
+	ivoip->snd_level = level;
+}
+
+/*****************************************************************************
+* @brief    save to storage playback volume 
+*   - desc
+*****************************************************************************/
+void app_voip_save_config(void)
+{
+	int level = ivoip->snd_level;
+	__set_voip_play_volume(level);
 }

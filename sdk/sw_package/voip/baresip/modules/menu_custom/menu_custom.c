@@ -79,107 +79,6 @@ static void net_change_handler(void *arg)
 
 	
 #endif
-//##############################################################################################
-static int __execlp(const char *arg)
-{
-    int numArg, i, j, k;
-    int len, status;
-
-    char exArg[10][64];
-	pid_t chId;
-	pid_t pid_child;
-
-    if (arg[0] == '\0')
-        return 0;
-
-    j = 0; 	k = 0;
-	len = strlen(arg);
-
-    for (i = 0; i < len; i++) {
-        if (arg[i] == ' ') {
-		    exArg[j][k] = '\0';
-		    j ++; k = 0;
-		} else {
-		    exArg[j][k] = arg[i];
-		    k ++;
-		}
-	}
-
-    if (exArg[j][k - 1] == '\n') {
-	    exArg[j][k - 1] = '\0';
-	} else {
-	    exArg[j][k] = '\0';
-	}
-
-	numArg = j + 1;
-	if (numArg > 10) {
-	    warning("The no of arguments are greater than 10" \
-	    		"calling standard system function...\n");
-	    return (system(arg));
-	}
-
-    chId = fork();
-	if (chId == 0) {
-	    // child process
-	    switch (numArg) {
-	    case 1:
-	        execlp(exArg[0],exArg[0],NULL);
-	        break;
-	    case 2:
-	        execlp(exArg[0],exArg[0],exArg[1],NULL);
-	        break;
-	    case 3:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],NULL);
-	        break;
-	    case 4:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],NULL);
-	        break;
-	    case 5:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               NULL);
-	        break;
-	    case 6:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],NULL);
-	        break;
-	    case 7:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],NULL);
-	        break;
-	    case 8:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],exArg[7],NULL);
-	        break;
-	    case 9:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],exArg[7],exArg[8],NULL);
-	        break;
-	    case 10:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],exArg[7],exArg[8],exArg[9],NULL);
-	        break;
-		}
-        warning("execlp failed...\n");
-	    return -1;
-	} else if (chId < 0) {
-		warning("Failed to create child process\n");
-		return -1;
-	} else {
-		/* parent process */
-		/* wait for the completion of the child process */
-		/* 3th option WNOHANG->non-block 0->block */
-		pid_child = waitpid(chId, &status, 0);
-		#if 0
-		if (WIFEXITED(status))
-			info("Chiled exited with the code %d\n", WEXITSTATUS(status));
-		else
-			warning("Child terminated abnormally..\n");
-		#endif	
-	}
-
-    return 0;
-}
-
 static int __get_rndis_type(void) 
 {
 	int res = 1; /* default usb0 */
@@ -738,14 +637,6 @@ static int module_init(void)
 	err = uag_event_register(ua_event_handler, NULL);
 	if (err)
 		return err;
-	
-	/* alsa volume */
-//	amixer cset numid=17 50% # DAC_L1 to HPLOUT Volume Control
-//	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
-//  amixer cset numid=31 80%	
-//	__execlp("/usr/bin/amixer cset numid=17 50%");
-	__execlp("/usr/bin/amixer cset numid=1 70% > /dev/null");
-	__execlp("/usr/bin/amixer cset numid=31 60% > /dev/null");
 		
 	return 0;
 }

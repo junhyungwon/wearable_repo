@@ -41,6 +41,7 @@
 #include "app_file.h"
 #include "app_mcu.h"
 #include "app_buzz.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -442,9 +443,10 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 		app_rec_stop(1);
 		sleep(1); /* wait for file close */
 	}
+	
 	app_file_exit();
+	app_voip_save_config(); /* save voip volume */
     app_set_write();
-
 	app_mcu_pwr_off(OFF_RESET);
     return SOK ;
 }
@@ -470,8 +472,8 @@ int ctrl_set_gateway(const char *gw)
 
     sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
     app_log_write( MSG_LOG_SHUTDOWN, log );
-    app_set_write();
-
+    app_voip_save_config(); /* save voip volume */
+	app_set_write();
 	app_mcu_pwr_off(OFF_RESET);
 
     return SOK;
@@ -1175,6 +1177,7 @@ void fitt360_reboot(void)
     }
 	
     app_file_exit();
+	app_voip_save_config(); /* save voip volume */
     app_set_write();
     app_buzz_ctrl(80, 2);
 	
