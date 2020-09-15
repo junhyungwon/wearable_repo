@@ -96,47 +96,34 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 	}
 	else if (enctype == ENC_H264) // H264
 	{
-		if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
-			ctrl_vid_resolution(RESOL_480P);
-		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
-			ctrl_vid_resolution(RESOL_720P);
-		else if (h == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
-			ctrl_vid_resolution(RESOL_1080P);
+		int newRes=app_set->ch[STM_CH_NUM].resol;
+		if (h == 720  && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
+			newRes = RESOL_720P;
+		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
+			newRes = RESOL_1080P;
+		else if (h == 480  && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
+			newRes = RESOL_480P;
+
+		int newKbps = app_set->ch[STM_CH_NUM].quality;
+		if (kbps <= 750) newKbps = 512;
+		else if (kbps <= 1500) newKbps = 1000;
+		else if (kbps <= 2500) newKbps = 2000;
+		else if (kbps <= 3500) newKbps = 3000;
+		else if (kbps <= 4500) newKbps = 4000;
+		else if (kbps <= 5500) newKbps = 5000;
+		else if (kbps <= 6500) newKbps = 6000;
+		else if (kbps <= 7500) newKbps = 7000;
+		else newKbps = 8000;
+			
+		if ( newRes  != app_set->ch[STM_CH_NUM].resol 
+		  || newKbps != app_set->ch[STM_CH_NUM].quality
+	      //|| gov != app_set->ch[STM_CH_NUM].gop // gov eq fps
+		  || fps != app_set->ch[STM_CH_NUM].framerate)
 
 #if defined(NEXXONE) || defined(NEXX360)
-		if (kbps > 0 && kbps <= MAX_BITRATE) //
-		{
-			int newKbps = 0;
-			if (kbps <= 750) newKbps = 512;
-			else if (kbps <= 1500) newKbps = 1000;
-			else if (kbps <= 2500) newKbps = 2000;
-			else if (kbps <= 3500) newKbps = 3000;
-			else if (kbps <= 4500) newKbps = 4000;
-			else if (kbps <= 5500) newKbps = 5000;
-			else if (kbps <= 6500) newKbps = 6000;
-			else if (kbps <= 7500) newKbps = 7000;
-			else newKbps = 8000;
+		DBG_UDS("STM_CH_NUM=%d, newRes=%d, newKbps=%d,fps=%d, gov=%d\n",STM_CH_NUM, newRes, newKbps,fps, gov);
+		ctrl_full_vid_setting(STM_CH_NUM, newRes, newKbps, fps, fps);
 
-			if (app_set->ch[STM_CH_NUM].quality != newKbps)
-				ctrl_vid_bitrate(STM_CH_NUM, newKbps);
-		}
-
-		if (fps > 0 && fps < MAX_FPS) //
-		{
-			if (app_set->ch[STM_CH_NUM].framerate != fps)
-				ctrl_vid_framerate(STM_CH_NUM, fps);
-		}
-
-		gov = fps;
-
-		if (gov != 0)
-		{
-			if (gov <= MAX_GOV && gov > 0)
-			{
-				if (app_set->ch[STM_CH_NUM].gop != gov)
-					ctrl_vid_gop_set(STM_CH_NUM, gov);
-			}
-		}
 #else // defined(FITT360_SECURITY)
 		if (kbps != 0) //
 		{
@@ -202,7 +189,6 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 			}
 		}
 #endif
-
 
 	}
 	else
@@ -1380,8 +1366,8 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkInterface") == 0){
-			//sprintf(wbuf, "[APP_UDS] --- GetNetworkInterfaces ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			sprintf(wbuf, "[APP_UDS] --- GetNetworkInterfaces ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
 
 			// read interface name, interface의 이름을 확인합니다.
 			char iface[128]={0};
@@ -1429,8 +1415,8 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkProtocols") == 0){
-			//sprintf(wbuf, "[APP_UDS] --- GetNetworkProtocols ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			sprintf(wbuf, "[APP_UDS] --- GetNetworkProtocols ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
 
 			// http, https, rtsp 의 순으로 보냅니다.
 			// 구조체 형식으로 보내지 않으면, 데이터 크기, 개수 변경시 뒈짐
@@ -2001,7 +1987,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkConfiguration") == 0) {
-			//sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration ---");
+			sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration ---");
 			//app_log_write(MSG_LOG_WRITE, wbuf);
 			{
 				/* start init */
