@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <alsa/asoundlib.h>
 
+#include "dev_sound.h"
 #include "app_comm.h"
 #include "app_main.h"
 #include "app_gmem.h"
@@ -633,6 +634,10 @@ int app_snd_start(void)
 	g_mem_info_t *imem;
 	
 	memset(isnd, 0, sizeof(app_snd_t));
+	
+	/* set capture volume */
+	//# "/usr/bin/amixer cset numid=31 60% > /dev/null"
+	dev_snd_set_aic3x_volume(SND_VOLUME_C, 60);
 	
 	/* GMEM Address 가져온다 */
 	imem = (g_mem_info_t *)app_cap_get_gmem();

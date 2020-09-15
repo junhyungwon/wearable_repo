@@ -231,11 +231,20 @@ static void *THR_micom(void *prm)
 					sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
 					app_log_write( MSG_LOG_SHUTDOWN, log);
 					dprintf("%s\n", log);
+					app_voip_save_config(); /* save voip volume */
 					app_set_write();
 					app_mcu_pwr_off(OFF_NORMAL);
 					exit = 1;
 				} else {
-					/* volume control */
+					//# record start/stop
+					if (!app_cfg->ste.b.ftp_run) 
+					{     
+						if (app_rec_state()) {
+							app_rec_stop(1);
+						} else {
+							app_rec_start();
+						}
+					} 
 				}
 				break;
 			}

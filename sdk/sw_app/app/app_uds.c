@@ -1366,8 +1366,8 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkInterface") == 0){
-			sprintf(wbuf, "[APP_UDS] --- GetNetworkInterfaces ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			//sprintf(wbuf, "[APP_UDS] --- GetNetworkInterfaces ---");
+			//app_log_write(MSG_LOG_WRITE, wbuf);
 
 			// read interface name, interface의 이름을 확인합니다.
 			char iface[128]={0};
@@ -1415,8 +1415,8 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkProtocols") == 0){
-			sprintf(wbuf, "[APP_UDS] --- GetNetworkProtocols ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			//sprintf(wbuf, "[APP_UDS] --- GetNetworkProtocols ---");
+			//app_log_write(MSG_LOG_WRITE, wbuf);
 
 			// http, https, rtsp 의 순으로 보냅니다.
 			// 구조체 형식으로 보내지 않으면, 데이터 크기, 개수 변경시 뒈짐
@@ -1987,7 +1987,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration ---");
+			//sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration ---");
 			//app_log_write(MSG_LOG_WRITE, wbuf);
 			{
 				/* start init */
