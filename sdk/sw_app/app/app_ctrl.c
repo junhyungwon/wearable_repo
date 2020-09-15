@@ -289,44 +289,51 @@ int ctrl_vid_resolution(int resol_idx)
 *****************************************************************************/
 int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 {
-	int ret = 0 ;
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
 	params.frameRate = fps ;
-	params.targetBitRate = (bitrate * fps)/DEFAULT_FPS;
-	params.intraFrameInterval = gop ;
+	params.targetBitRate = ((bitrate * fps)/DEFAULT_FPS)*1000;
+	params.intraFrameInterval = fps ;  // fps == gop
+	app_set->ch[ch].framerate = fps;
+	app_set->ch[ch].quality = bitrate;
 
 	Venc_setInputFrameRate(ch, DEFAULT_FPS) ;
+	Venc_setDynamicParam(ch, 0, &params, VENC_BITRATE) ;
+	Venc_setDynamicParam(ch, 0, &params, VENC_IPRATIO) ;
 	Venc_setDynamicParam(ch, 0, &params, VENC_FRAMERATE) ;
 
-	Vdis_disp_ctrl_exit() ;
-
-	ret = app_rec_state() ;
-
-	if(ret)
+	if (app_set->ch[ch].resol != resol)
 	{
-		app_rec_stop(1) ;
-		sleep(1) ;
+		int ret = 0;
+		Vdis_disp_ctrl_exit();
+
+		ret = app_rec_state();
+
+		if (ret)
+		{
+			app_rec_stop(1);
+			sleep(1);
+		}
+
+		app_cap_stop();
+
+		app_buzz_ctrl(100, 1);
+		app_msleep(200);
+
+		app_set->ch[ch].resol = resol;
+
+		Vdis_disp_ctrl_init(resol);
+		app_cap_start();
+		if (ret)
+		{
+			app_rec_start();
+		}
+
+		app_rtsptx_stop_start();
+
+		if (!app_set->sys_info.osd_set)
+			ctrl_swosd_enable(STE_DTIME, 0, 0); // osd disable
 	}
-
-	app_cap_stop();
-
-	app_buzz_ctrl(100, 1) ;
-	app_msleep(200) ;
-  
-	app_set->ch[MODEL_CH_NUM].resol = resol ;
-
-	Vdis_disp_ctrl_init(resol) ;
-	app_cap_start() ;
-	if(ret)
-	{
-		app_rec_start() ;
-	}
-    
-	app_rtsptx_stop_start() ;
-
-    if(!app_set->sys_info.osd_set)
-		ctrl_swosd_enable(STE_DTIME, 0, 0) ; // osd disable
 
 	return SOK ;
     

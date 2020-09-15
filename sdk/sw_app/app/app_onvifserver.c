@@ -366,7 +366,15 @@ int app_onvif_init_config()
 		// product information
 		fputs("	<information>\n", fp);
 		fputs("		<Manufacturer>LinkFlow</Manufacturer>\n", fp);
-		fputs("		<Model>Fitt360</Model>\n", fp);
+#if defined(NEXXONE)
+		fputs("		<Model>NEXXONE</Model>\n", fp);
+#elif defined(NEXX360)
+		fputs("		<Model>NEXX360</Model>\n", fp);
+#elif defined(FITT360_SECURITY)
+		fputs("		<Model>FITT360 Security</Model>\n", fp);
+#else
+#error "Check Model Name"
+#endif
 		{            
 			sprintf(str, "		<FirmwareVersion>%s</FirmwareVersion>\n", app_set->sys_info.fw_ver);
 			fputs(str, fp);
@@ -399,12 +407,24 @@ int app_onvif_init_config()
 		fputs("			<height>720</height>\n", fp);
 		fputs("			<quality>5</quality>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
+#if defined(NEXXONE)
+		fputs("			<framerate>30</framerate>\n", fp);
+#elif defined(NEXX360)
 		fputs("			<framerate>15</framerate>\n", fp);
+#elif defined(FITT360_SECURITY)
+		fputs("			<framerate>15</framerate>\n", fp);
+#endif
+		fputs("			<bitrate_limit>8000</bitrate_limit>\n", fp);
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
-		fputs("			<bitrate_limit>4000</bitrate_limit>\n", fp);
 		fputs("			<encoding>H264</encoding>\n", fp);
 		fputs("			<h264>\n", fp);
+#if defined(NEXXONE)
+        fputs("				<gov_length>30</gov_length>\n", fp);
+#elif defined(NEXX360)
         fputs("				<gov_length>15</gov_length>\n", fp);
+#elif defined(FITT360_SECURITY)
+        fputs("				<gov_length>15</gov_length>\n", fp);
+#endif
 		fputs("				<h264_profile>High</h264_profile>\n", fp);
 		fputs("			</h264>\n", fp);
 		fputs("		</video_encoder>\n", fp);
@@ -440,8 +460,14 @@ int app_onvif_init_config()
 		fputs("			<width>720</width>\n", fp);
 		fputs("			<height>480</height>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
+#if defined(NEXXONE)
+		fputs("			<framerate>30</framerate>\n", fp);
+#elif defined(NEXX360)
 		fputs("			<framerate>15</framerate>\n", fp);
-		fputs("			<bitrate_limit>512</bitrate_limit>\n", fp);
+#elif defined(FITT360_SECURITY)
+		fputs("			<framerate>15</framerate>\n", fp);
+#endif
+		fputs("			<bitrate_limit>4000</bitrate_limit>\n", fp);
 		fputs("			<quality>5</quality>\n", fp);
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
 #if 0 // H264
