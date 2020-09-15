@@ -180,7 +180,6 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 	int ret = 0;
 	char phrase[256];
 	
-	
 	FILE *config;
 
 	if (ssid == NULL)
