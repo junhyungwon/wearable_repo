@@ -293,9 +293,10 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 
 	params.frameRate = fps ;
 	params.targetBitRate = ((bitrate * fps)/DEFAULT_FPS)*1000;
-	params.intraFrameInterval = fps ;  // fps == gop
+	params.intraFrameInterval = gop ;
 	app_set->ch[ch].framerate = fps;
 	app_set->ch[ch].quality = bitrate;
+    app_set->ch[ch].gop = gop ;
 
 	Venc_setInputFrameRate(ch, DEFAULT_FPS) ;
 	Venc_setDynamicParam(ch, 0, &params, VENC_BITRATE) ;
