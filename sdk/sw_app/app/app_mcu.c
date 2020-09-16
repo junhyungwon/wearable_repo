@@ -228,6 +228,7 @@ static void *THR_micom(void *prm)
 					//# add rupy
 					app_rec_stop(0);
 					app_buzz_ctrl(80, 2);	//# buzz: pwr off
+					app_file_save_flist(); /* save file list */
 					sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
 					app_log_write( MSG_LOG_SHUTDOWN, log);
 					dprintf("%s\n", log);
