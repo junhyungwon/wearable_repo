@@ -151,6 +151,8 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 			{
 				/* add rupy */
 				app_rec_stop(0);
+				app_file_save_flist(); /* save file list */
+				app_voip_save_config(); /* save voip volume */
 	            app_buzz_ctrl(80, 2);	//# buzz: pwr off
 				eprintf("low power detect(%d, %d)!\n", ibatt, ebatt);
                 sprintf(msg, "Peek Low Voltage Detected ");
@@ -237,6 +239,10 @@ static void *THR_micom(void *prm)
 					app_mcu_pwr_off(OFF_NORMAL);
 					exit = 1;
 				} else {
+					#ifdef VOIP_CTRL_PWR_KEY
+					/* volume control */
+					app_voip_set_play_volume();
+					#else
 					//# record start/stop
 					if (!app_cfg->ste.b.ftp_run) 
 					{     
@@ -245,7 +251,8 @@ static void *THR_micom(void *prm)
 						} else {
 							app_rec_start();
 						}
-					} 
+					}
+					#endif 
 				}
 				break;
 			}
