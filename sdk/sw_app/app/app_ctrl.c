@@ -445,6 +445,7 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 		sleep(1); /* wait for file close */
 	}
 	
+	app_file_save_flist(); /* save file list */
 	app_file_exit();
 	app_voip_save_config(); /* save voip volume */
     app_set_write();
@@ -469,11 +470,13 @@ int ctrl_set_gateway(const char *gw)
         app_rec_stop(1);
 		sleep(1); /* wait for file close */
     }
+	
+	app_file_save_flist(); /* save file list */
+	app_voip_save_config(); /* save voip volume */
     app_file_exit();
 
     sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
     app_log_write( MSG_LOG_SHUTDOWN, log );
-    app_voip_save_config(); /* save voip volume */
 	app_set_write();
 	app_mcu_pwr_off(OFF_RESET);
 
@@ -977,6 +980,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		app_rec_stop(1);
 		sleep(1); /* wait for file close */
 	}
+	app_file_save_flist(); /* save file list */
 	
 #if 1 // decompress tar
 	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
@@ -1016,7 +1020,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	sync();
 
 	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Temp version Firmware update done....");
-
+	
 	sync();
 	app_msleep(200);		//# wait for safe
 	printf("\nfw update ready ! It will restart\n\n");
@@ -1052,13 +1056,6 @@ void ctrl_auto_update(void)
 	char cmd[255] = {0, };
 	int ret;
 		
-	/* sw update is executed, before recording start.. */
-    ret = app_rec_state();
-    if (ret) {
-        app_rec_stop(0);
-		sleep(1); /* wait for file close */
-    }
-
 	/* First, full firmware check.. */
 	memset(path, 0, sizeof(path));
 	sprintf(path, fw_full_name);
@@ -1177,8 +1174,9 @@ void fitt360_reboot(void)
 		sleep(1);
     }
 	
+	app_file_save_flist(); /* save file list */
+	app_voip_save_config(); /* save voip volume */	
     app_file_exit();
-	app_voip_save_config(); /* save voip volume */
     app_set_write();
     app_buzz_ctrl(80, 2);
 	

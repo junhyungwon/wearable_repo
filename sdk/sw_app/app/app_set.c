@@ -1083,7 +1083,11 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
             app_rec_stop(1);
 			sleep(1); /* wait for file close */
         }
-
+		/* added by rupy */
+		app_file_save_flist(); /* save file list */
+		app_voip_save_config(); /* save voip volume */
+		sync();
+		
 		app_mcu_pwr_off(OFF_RESET);
     } 
 }
