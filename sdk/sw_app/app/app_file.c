@@ -44,6 +44,8 @@
 	#define FILE_LIST_CHECK_TIME    (60*1000)   	//1min	
 #endif
 
+#define VIDEO_LIST_PATH				"/mmc/video.lst"
+
 typedef struct {
 	char name[FILE_MAX_PATH_LEN];
 	Uint32 size;  /* ?? ? ? */
@@ -60,9 +62,9 @@ struct disk_list {
 typedef struct {
 	OSA_MutexHndl mutex_file ;
 	app_thr_obj fObj;
-
+	
+	size_t file_count;  /* total files for ftp send */
 	int	file_state;
-	int file_count;  /* total files for ftp send */
 	
 	char rec_root[MAX_CHAR_32];
 	
@@ -338,45 +340,77 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
 }
 
 /*****************************************************************************
+ * @brief	 delete files
+ * @section  DESC Description
+ *	 - desc : delete files until del_size reached (or over).
+ *****************************************************************************/
+static int _delete_files(unsigned long del_sz)
+{
+	struct list_head *head = &ilist;
+	unsigned long tmp = 0;
+						
+	if (del_sz > 0) 
+	{
+		/* delete the oldest file (list) */
+		while (!list_empty(head))
+		{
+			Uint32 fsize;
+			
+			fsize = find_first_and_delete(head);
+			if (fsize < 0) {
+				/* file is empty */
+				return -1;
+			}
+			
+			if (tmp >= del_sz)
+				break; /* done!! */
+			
+			tmp += fsize;
+			OSA_waitMsecs(5);
+		}
+	}
+	
+	return 0;
+}
+
+/*****************************************************************************
  * @brief	 make the linked-list with searched files (.avi)
  * @section  DESC Description
  *	 - desc : files are sorted to ascending. 
  *****************************************************************************/
-static int _create_list(const char *search_path, char *filters,	struct list_head *head)
+static int __create_list(const char *search_path, char *filters, struct list_head *head)
 {
 	struct stat statbuf;
 	struct dirent *entry;
-	char __path[1024] = {};
+	char __path[256] = {0,};
 	DIR *dp;
 	
-	size_t index, fcount;
-	size_t len;
+	size_t index, len, cnt;
 	int i;
 
 	list_info_t *list, *tmp;
 	
 	/* add slash */
-	len = strlen(search_path);
+	len = strlen(search_path); //# /mmc/DCIM
 	strncpy(__path, search_path, len);
 	if (search_path[len - 1] != '/')
-		strcat(__path, "/");
-
+		strcat(__path, "/"); //# /mmc/DCIM/
+	
+	/* get file count */
+	cnt = get_file_count((const char *)ifile->rec_root);
+	if (cnt == 0) {
+		eprintf("empty directiory. skipping video list!\n");
+		return -1;
+	}
+		
 	/* opendir is not required "/" */
 	if ((dp = opendir(__path)) == NULL) {
 		eprintf("cannot open directory : %s\n", __path);
 		return -1;
 	}
 
-	/* get file count */
-	fcount = get_file_count(__path);
-	if (!fcount) {
-		closedir(dp);
-		dprintf("Empty %s directory\n", __path);
-		return 0;
-	}
-
 	index = 0;
-	list = (list_info_t *)malloc(sizeof(list_info_t) * fcount);
+	list = (list_info_t *)malloc(sizeof(list_info_t) * cnt);
 
 	/* traverse directory (assume -> subdir isn't existed) */
 	tmp = list;
@@ -418,36 +452,90 @@ static int _create_list(const char *search_path, char *filters,	struct list_head
 	return 0;
 }
 
-/*****************************************************************************
- * @brief	 delete files
- * @section  DESC Description
- *	 - desc : delete files until del_size reached (or over).
- *****************************************************************************/
-static int _delete_files(unsigned long del_sz)
+/* avi list loads from /usr/share/video.lst */
+static int __load_file_list(const char *path, struct list_head *head)
 {
-	struct list_head *head = &ilist;
-	unsigned long tmp = 0;
-						
-	if (del_sz > 0) 
-	{
-		/* delete the oldest file (list) */
-		while (!list_empty(head))
-		{
-			Uint32 fsize;
-			
-			fsize = find_first_and_delete(head);
-			if (fsize < 0) {
-				/* file is empty */
-				return -1;
-			}
-			
-			if (tmp >= del_sz)
-				break; /* done!! */
-			
-			tmp += fsize;
-			OSA_waitMsecs(5);
-		}
+	list_info_t *list, *tmp;
+	FILE *f = NULL;
+	int count=0, i;
+	
+	f = fopen(path, "r");
+	if (f == NULL) {
+		eprintf("failed to open %s!\n", path);
+		return -1;
 	}
+	
+	fread(&count, sizeof(int), 1, f);  //# total file count
+	dprintf("file count is %d in video list\n", count);
+	
+	if (count == 0) {
+		eprintf("invalid video list!!\n");
+		return -1;
+	}
+	
+	//# memory alloc
+	list = (list_info_t *)malloc(sizeof(list_info_t) * count);
+	if (list == NULL) {
+		eprintf("failed to allocate memory with file list!\n");
+		fclose(f);
+		return -1;
+	}
+	
+	fread(list, sizeof(list_info_t)*count, 1, f);
+	
+	/* add linked list */
+	tmp = list;
+	for (i = 0; i < count; i++, tmp++) 
+	{
+		size_t len;
+		
+		len = tmp->size; /* byte -> KB */
+		//("name is %s, size %u(KB) loaded from video list\n", tmp->name, len);
+		add_node_tail(tmp->name, head, len);
+	}
+		
+	fclose(f);
+	if (list)
+		free(list);
+	
+	return 0;
+}
+
+/* avi list save to /usr/share/video.lst */
+static int __save_file_list(const char *path, struct list_head *head, size_t count)
+{
+	struct list_head *iter;
+	struct disk_list *ptr;
+	list_info_t info;
+	
+	FILE *f = NULL;
+	int res, i;
+	size_t index;
+	
+	res = access(path, R_OK|W_OK);
+    if ((res == 0) || (errno == EACCES)) {
+		/* delete file */
+      	unlink(path); 
+    }
+	
+	f = fopen(path, "w");
+	if (f == NULL) {
+		eprintf("failed to open %s!\n", path);
+		return -1;
+	}
+	
+	index = count;
+	fwrite(&index, sizeof(size_t), 1, f);    //# total file count
+//	dprintf("%d files save in video list\n", count);
+	
+	__list_for_each(iter, head) {
+		ptr = list_entry(iter, struct disk_list, queue);
+		strcpy(info.name, ptr->fullname);
+		info.size = ptr->filesz;
+		//dprintf("saved name %s, size %u in video list!\n", ptr->fullname, ptr->filesz);
+		fwrite(&info, sizeof(list_info_t), 1, f);
+	}
+	fclose(f);
 	
 	return 0;
 }
@@ -607,23 +695,26 @@ static void *THR_file_mng(void *prm)
 int app_file_init(void)
 {
 	char msg[MAX_CHAR_128]={0,};
-	int ret = SOK, status;
+	int res, status;
 	
     memset(ifile, 0, sizeof(app_file_t));
 	
 	ifile->file_state = FILE_STATE_NORMAL;
 	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
-
+	
 	//#-- create directories such as DCIM, ufs
-	_check_rec_dir(ifile->rec_root);
-	ret = _create_list((const char *)ifile->rec_root, AVI_EXT, &ilist);
-	if (ret == EFAIL) 	{
-		sprintf(msg, "make file list fail!!");
-    	app_log_write(MSG_LOG_WRITE, msg);
-		eprintf("%s\n", msg);
-		app_cfg->ste.b.mmc_err = 1;
-		return ret;
-    }
+	_check_rec_dir((const char *)ifile->rec_root);
+	res = __load_file_list(VIDEO_LIST_PATH, &ilist);
+	if (res < 0) {
+		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist);
+		if (status == EFAIL) 	{
+			sprintf(msg, "make file list fail!!");
+			app_log_write(MSG_LOG_WRITE, msg);
+			eprintf("%s\n", msg);
+			app_cfg->ste.b.mmc_err = 1;
+			return status;
+		}
+	}
 	
     //#--- create normal record thread
 	status = OSA_mutexCreate(&(ifile->mutex_file));
@@ -771,7 +862,7 @@ int delete_ftp_send_file(char *path)
 *****************************************************************************/
 int get_recorded_file_count(void)
 {
-	return (ifile->file_count); 
+	return (int)(ifile->file_count); 
 }
 
 /*****************************************************************************
@@ -782,4 +873,17 @@ int get_recorded_file_count(void)
 int get_write_status(void)
 {
 	return ifile->file_state; 
+}
+
+/*****************************************************************************
+* @brief    save to file list
+* @section 
+  - desc :  - overwrite mode or not
+*****************************************************************************/
+int app_file_save_flist(void)
+{
+	int res;
+	
+	res = __save_file_list(VIDEO_LIST_PATH, &ilist, ifile->file_count);
+	return res;
 }
