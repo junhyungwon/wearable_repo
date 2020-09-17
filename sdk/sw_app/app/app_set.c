@@ -35,6 +35,8 @@
 #include "app_base64.h"
 #include "app_mcu.h"
 #include "app_rec.h"
+#include "app_file.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro

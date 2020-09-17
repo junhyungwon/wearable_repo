@@ -19,6 +19,7 @@
 
 #include "sipc_ipc_cmd_defs.h"
 #include "msg.h"
+#include "alsa_mixer.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -51,6 +52,11 @@ typedef struct {
 static key_config_t key_obj_t;
 static key_config_t *ikey = &key_obj_t;
 static char ui_buf[2048];
+
+/* aic3x audio codec output volume percentage */
+static int __aic3x_output_level[3] = {
+	60, 80, 100 	
+};
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -277,7 +283,6 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			(void)play_file(&ikey->play, player, 
 					"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
 		}
-		
 		//re_debug(&pf_stderr, NULL);
 		break;
 	
@@ -358,16 +363,21 @@ static void __call_answer(void)
 	ua_answer(ua, NULL);
 }
 
-static int __register_user(int network, int enable, short port, const char *call_num, const char *server_addr, 
+static int __register_user(int network, int enable, short port, int level, const char *call_num, const char *server_addr, 
 			const char *passwd, const char *stun_domain)
 {
 	struct network *net = baresip_network();
 	char devname[16] = {0,};
 	
 	struct ua *ua = NULL;
-	int err = 0;
+	int err = 0, percent;
 	struct account *acc;
 	
+	/* set alsa output level */
+	percent = __aic3x_output_level[level];	
+	alsa_mixer_set_volume(SND_VOLUME_P, percent);
+	dprintf("set voip default sound volume %d(percent)!\n", percent);
+
 	memset(ui_buf, 0, sizeof(ui_buf));
 	memset(devname, 0, sizeof(devname));
 	
@@ -471,6 +481,28 @@ static int __dialer_user(const char *call_num)
 	return err;
 }
 
+static void __set_sound_volume(void)
+{
+	//	static struct re_printf pf_stderr = {print_handler, NULL};
+	struct player *player = baresip_player();
+	int level = ikey->uri.spk_lv;
+	int percent;
+	struct config *cfg;
+	
+	cfg = conf_config();
+	
+	percent = __aic3x_output_level[level];	
+	alsa_mixer_set_volume(SND_VOLUME_P, percent);
+	
+	if (ikey->ste.call_ste == SIPC_STATE_CALL_IDLE) {
+		/* Stop any ongoing ring-tones */
+		ikey->play = mem_deref(ikey->play);
+		(void)play_file(&ikey->play, player, 
+						"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
+	}
+	info("set sound volume done!!\n");
+}
+
 static int send_msg(int cmd, int state, int dir, int reg, int err)
 {
 	to_sipc_main_msg_t msg;
@@ -510,10 +542,14 @@ static int recv_msg(void)
 		ikey->uri.en_stun = msg.uri.en_stun;
 		ikey->uri.port = msg.uri.port;
 		ikey->uri.net_if = msg.uri.net_if;
+		ikey->uri.spk_lv = msg.uri.spk_lv;
 	} 
 	else if (msg.cmd == SIPC_CMD_SIP_START) {
 		memset(ikey->uri.peer_uri, 0, sizeof(ikey->uri.peer_uri));
 		strcpy(ikey->uri.peer_uri, msg.uri.peer_uri);
+	}
+	else if (msg.cmd == SIPC_CMD_SIP_SET_SOUND) {
+		ikey->uri.spk_lv = msg.uri.spk_lv;
 	}
 	
 	return msg.cmd;
@@ -569,7 +605,7 @@ static void *THR_sipc_main(void *prm)
 		switch (cmd) {
 		case SIPC_CMD_SIP_REGISTER_UA:
 			/* 계정을 등록 */
-			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.ua_uri, 
+			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.spk_lv, ikey->uri.ua_uri, 
 					ikey->uri.pbx_uri, ikey->uri.passwd, ikey->uri.stun_uri);
 			break;
 		
@@ -589,6 +625,10 @@ static void *THR_sipc_main(void *prm)
 			__call_stop();
 			break;	
 		
+		case SIPC_CMD_SIP_SET_SOUND:
+			__set_sound_volume();
+			break;
+			
 		case SIPC_CMD_SIP_EXIT:
 			/* 프로그램 종료 */
 			done = 1;
