@@ -198,13 +198,6 @@ static int submit_settings_qcgi()
 		t.onvif.enable = enable_onvif;
 		t.p2p.enable = enable_p2p;
 
-        // check voip values
-		CGI_DBG("voip.ipaddr:%s\n", t.voip.ipaddr);
-		CGI_DBG("voip.port  :%d\n", t.voip.port);
-		CGI_DBG("voip.userid:%s\n", t.voip.userid);
-		CGI_DBG("voip.passwd:%s\n", t.voip.passwd);
-		CGI_DBG("voip.peerid:%s\n", t.voip.peerid);
-
         ret = sysctl_message(UDS_SET_SERVERS_CONFIG, (void*)&t, sizeof t );
         CGI_DBG("ret:%d\n", ret);
         if(0 > ret) {

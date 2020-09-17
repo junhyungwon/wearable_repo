@@ -1,3 +1,5 @@
+remote_update.sh
+sw_package/web/update_htmls.sh
 bin/fw_version.txt
 bin/rfs_fit.ubifs.md5
 sdk/sw_app/module/live555/BasicUsageEnvironment/*.o

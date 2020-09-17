@@ -410,7 +410,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	int ich=0, channels = 0;
 	
 	channels = MODEL_CH_NUM+1;
-		//# Encoding cfg per channel
+	//# Encoding cfg per channel
 	for(ich = 0; ich < channels; ich++)
 	{
 	    if(ich < MODEL_CH_NUM)
