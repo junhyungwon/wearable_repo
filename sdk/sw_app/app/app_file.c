@@ -44,7 +44,7 @@
 	#define FILE_LIST_CHECK_TIME    (60*1000)   	//1min	
 #endif
 
-#define VIDEO_LIST_PATH				"/mmc/video.lst"
+#define VIDEO_LIST_NAME				"video.lst"
 
 typedef struct {
 	char name[FILE_MAX_PATH_LEN];
@@ -695,16 +695,19 @@ static void *THR_file_mng(void *prm)
 int app_file_init(void)
 {
 	char msg[MAX_CHAR_128]={0,};
+	char flist_path[256]={0,};
 	int res, status;
 	
     memset(ifile, 0, sizeof(app_file_t));
 	
 	ifile->file_state = FILE_STATE_NORMAL;
 	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
-	
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir((const char *)ifile->rec_root);
-	res = __load_file_list(VIDEO_LIST_PATH, &ilist);
+	
+	/* set file list path */
+	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
+	res = __load_file_list((const char *)flist_path, &ilist);
 	if (res < 0) {
 		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist);
 		if (status == EFAIL) 	{
@@ -882,8 +885,11 @@ int get_write_status(void)
 *****************************************************************************/
 int app_file_save_flist(void)
 {
+	char flist_path[256]={0,};
 	int res;
 	
-	res = __save_file_list(VIDEO_LIST_PATH, &ilist, ifile->file_count);
+	/* set file list path */
+	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
+	res = __save_file_list(flist_path, &ilist, ifile->file_count);
 	return res;
 }
