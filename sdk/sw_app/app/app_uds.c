@@ -122,7 +122,7 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 
 #if defined(NEXXONE) || defined(NEXX360)
 		DBG_UDS("STM_CH_NUM=%d, newRes=%d, newKbps=%d,fps=%d, gov=%d\n",STM_CH_NUM, newRes, newKbps,fps, gov);
-		ctrl_full_vid_setting(STM_CH_NUM, newRes, newKbps, fps, fps);
+		ctrl_full_vid_setting(STM_CH_NUM, newRes, newKbps, fps, gov);
 
 #else // defined(FITT360_SECURITY)
 		if (kbps != 0) //
@@ -2159,7 +2159,7 @@ void *myFunc(void *arg)
 			// Read Encoding Type
 			ret = read(cs_uds, rbuf, sizeof rbuf);
 			if(ret > 0){
-				DBG_UDS("GetVideoEncoderConfiguration ret:%d, rbuf:%s\n", ret, rbuf);
+				DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 				int VideoEncoding=atoi(rbuf); // 0:jpeg, 2:h264
 
 				char strOptions[128] = {0};
@@ -2183,7 +2183,7 @@ void *myFunc(void *arg)
 					perror("failed write: ");
 				}
 			} else {
-				DBG_UDS("GetVideoEncoderConfiguration ret:%d, ", ret);
+				DBG_UDS("ret:%d\n", ret);
 				perror("failed read: ");
 			}
 		}

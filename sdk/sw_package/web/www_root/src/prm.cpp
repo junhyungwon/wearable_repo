@@ -181,7 +181,6 @@ int put_json_all_config()
 		//json_object_object_add(recordobj, "desc",  json_object_new_string("Video Quality for Recording"));
 		json_object_object_add(camera_obj, "record", recordobj);
 
-
 		// streaming info
 		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
 #if defined(NEXXONE)||defined(NEXX360)

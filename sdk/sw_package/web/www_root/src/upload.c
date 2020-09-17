@@ -51,10 +51,12 @@ int main(int argc, char **argv)
 	char  filepath[128];
 	ssize_t count=0;
 
+	/*
 	CGI_DBG("filename    = %s\n", filename);
 	CGI_DBG("filelength  = %d\n", filelength);
 	CGI_DBG("contenttype = %s\n", contenttype);
 	CGI_DBG("savepath    = %s\n", savepath);
+	*/
 
 	if (filename == NULL || filelength < 1 || savepath == NULL) {
 		//CGI_DBG("Select File, Please....\n");

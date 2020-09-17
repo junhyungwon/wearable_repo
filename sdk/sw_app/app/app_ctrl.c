@@ -143,7 +143,7 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
     app_cfg->ich[ch].fr = framerate;
 #else
     app_ch_cfg_t *ch_prm;
-	
+
     switch(framerate)
     {
         case FPS_30 :
@@ -160,9 +160,7 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
             printf("ctrl vid framerate default %s\n",msg) ;
             break ;
     }
-    
     app_cfg->ich[ch].fr = get_fps_val(ch_prm->framerate);
-
 #endif
 
     params.frameRate = app_cfg->ich[ch].fr;
@@ -1029,22 +1027,6 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	return 0;
 }
 
-/*
- * @param : fwpath : full path (maybe /tmp/rfs_fit.ubifs)
- */
-int ctrl_update_firmware_by_cgi(char *fwpath)
-{
-	int ret = 0;
-
-	if(!app_cfg->ste.b.ftp_run)
-	{ 
-		ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
-		if (ret < 0 ) {
-			app_rec_start();
-		}
-	}
-    return ret ;     
-}
 
 /*
  * if /mmc/app_fitt.out is exist, copy app_fitt.out to /opt/fit/bin/.
@@ -1160,6 +1142,24 @@ int ctrl_is_live_process(const char *process_name)
 
     return is_live;
 }
+
+/*
+ * @param : fwpath : full path (maybe /tmp/rfs_fit.ubifs)
+ */
+int ctrl_update_firmware_by_cgi(char *fwpath)
+{
+	int ret = 0;
+
+	if(!app_cfg->ste.b.ftp_run)
+	{ 
+		ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
+		if (ret < 0 ) {
+			app_rec_start();
+		}
+	}
+    return ret ;     
+}
+
 
 /*
  * record stop and reboot.
