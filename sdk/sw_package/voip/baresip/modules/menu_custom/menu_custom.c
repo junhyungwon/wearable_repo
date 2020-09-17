@@ -376,7 +376,7 @@ static int __register_user(int network, int enable, short port, int level, const
 	/* set alsa output level */
 	percent = __aic3x_output_level[level];	
 	alsa_mixer_set_volume(SND_VOLUME_P, percent);
-	dprintf("set voip default sound volume %d(percent)!\n", percent);
+	dprintf("set voip default sound volume %d,%d(percent)!\n", level, percent);
 
 	memset(ui_buf, 0, sizeof(ui_buf));
 	memset(devname, 0, sizeof(devname));
@@ -493,6 +493,7 @@ static void __set_sound_volume(void)
 	
 	percent = __aic3x_output_level[level];	
 	alsa_mixer_set_volume(SND_VOLUME_P, percent);
+	dprintf("set sound volume %d,%d(percent)!\n", level, percent);
 	
 	if (ikey->ste.call_ste == SIPC_STATE_CALL_IDLE) {
 		/* Stop any ongoing ring-tones */
@@ -500,7 +501,6 @@ static void __set_sound_volume(void)
 		(void)play_file(&ikey->play, player, 
 						"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
 	}
-	info("set sound volume done!!\n");
 }
 
 static int send_msg(int cmd, int state, int dir, int reg, int err)
