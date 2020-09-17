@@ -45,6 +45,7 @@ extern "C" {
 #define SIPC_CMD_SIP_GET_STATUS			(0x705) /* main--> baresip call Status */
 #define SIPC_CMD_SIP_REGISTER_UA		(0x706) /* set user agent account */
 #define SIPC_CMD_SIP_UNREGISTER_UA		(0x707) /* unset user agent account */
+#define SIPC_CMD_SIP_SET_SOUND			(0x708) /* set sound volume */
 
 /* baresip 상태와 동일한 이름으로 정의함 */
 #define SIPC_STATE_CALL_IDLE			0
@@ -63,6 +64,7 @@ extern "C" {
 typedef struct {
 	int en_stun;					/* enable stun server */
 	int net_if;						/* network interface type */
+	int spk_lv;						/* speaker output level */
 	
 	short port;						/* SIP port */
 	

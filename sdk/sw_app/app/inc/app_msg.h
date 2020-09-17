@@ -44,6 +44,7 @@ typedef enum {
 	//# for thread
 	APP_CMD_START = 0x01,
 	APP_CMD_STOP,
+	APP_CMD_PAUSE,
 	APP_CMD_NOTY,
 	APP_CMD_EXIT,
 

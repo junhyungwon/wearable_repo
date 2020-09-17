@@ -41,6 +41,7 @@
 #include "app_file.h"
 #include "app_mcu.h"
 #include "app_buzz.h"
+#include "app_voip.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -291,9 +292,10 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 
 	params.frameRate = fps ;
 	params.targetBitRate = ((bitrate * fps)/DEFAULT_FPS)*1000;
-	params.intraFrameInterval = fps ;  // fps == gop
+	params.intraFrameInterval = gop ;
 	app_set->ch[ch].framerate = fps;
 	app_set->ch[ch].quality = bitrate;
+    app_set->ch[ch].gop = gop ;
 
 	Venc_setInputFrameRate(ch, DEFAULT_FPS) ;
 	Venc_setDynamicParam(ch, 0, &params, VENC_BITRATE) ;
@@ -440,9 +442,11 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 		app_rec_stop(1);
 		sleep(1); /* wait for file close */
 	}
+	
+	app_file_save_flist(); /* save file list */
 	app_file_exit();
+	app_voip_save_config(); /* save voip volume */
     app_set_write();
-
 	app_mcu_pwr_off(OFF_RESET);
     return SOK ;
 }
@@ -464,12 +468,14 @@ int ctrl_set_gateway(const char *gw)
         app_rec_stop(1);
 		sleep(1); /* wait for file close */
     }
+	
+	app_file_save_flist(); /* save file list */
+	app_voip_save_config(); /* save voip volume */
     app_file_exit();
 
     sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
     app_log_write( MSG_LOG_SHUTDOWN, log );
-    app_set_write();
-
+	app_set_write();
 	app_mcu_pwr_off(OFF_RESET);
 
     return SOK;
@@ -972,6 +978,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		app_rec_stop(1);
 		sleep(1); /* wait for file close */
 	}
+	app_file_save_flist(); /* save file list */
 	
 #if 1 // decompress tar
 	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
@@ -1011,7 +1018,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	sync();
 
 	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Temp version Firmware update done....");
-
+	
 	sync();
 	app_msleep(200);		//# wait for safe
 	printf("\nfw update ready ! It will restart\n\n");
@@ -1031,13 +1038,6 @@ void ctrl_auto_update(void)
 	char cmd[255] = {0, };
 	int ret;
 		
-	/* sw update is executed, before recording start.. */
-    ret = app_rec_state();
-    if (ret) {
-        app_rec_stop(0);
-		sleep(1); /* wait for file close */
-    }
-
 	/* First, full firmware check.. */
 	memset(path, 0, sizeof(path));
 	sprintf(path, fw_full_name);
@@ -1174,6 +1174,8 @@ void fitt360_reboot(void)
 		sleep(1);
     }
 	
+	app_file_save_flist(); /* save file list */
+	app_voip_save_config(); /* save voip volume */	
     app_file_exit();
     app_set_write();
     app_buzz_ctrl(80, 2);

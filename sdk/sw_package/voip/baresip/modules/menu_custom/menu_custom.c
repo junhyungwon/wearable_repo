@@ -19,6 +19,7 @@
 
 #include "sipc_ipc_cmd_defs.h"
 #include "msg.h"
+#include "alsa_mixer.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -52,6 +53,11 @@ static key_config_t key_obj_t;
 static key_config_t *ikey = &key_obj_t;
 static char ui_buf[2048];
 
+/* aic3x audio codec output volume percentage */
+static int __aic3x_output_level[3] = {
+	60, 80, 100 	
+};
+
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -79,107 +85,6 @@ static void net_change_handler(void *arg)
 
 	
 #endif
-//##############################################################################################
-static int __execlp(const char *arg)
-{
-    int numArg, i, j, k;
-    int len, status;
-
-    char exArg[10][64];
-	pid_t chId;
-	pid_t pid_child;
-
-    if (arg[0] == '\0')
-        return 0;
-
-    j = 0; 	k = 0;
-	len = strlen(arg);
-
-    for (i = 0; i < len; i++) {
-        if (arg[i] == ' ') {
-		    exArg[j][k] = '\0';
-		    j ++; k = 0;
-		} else {
-		    exArg[j][k] = arg[i];
-		    k ++;
-		}
-	}
-
-    if (exArg[j][k - 1] == '\n') {
-	    exArg[j][k - 1] = '\0';
-	} else {
-	    exArg[j][k] = '\0';
-	}
-
-	numArg = j + 1;
-	if (numArg > 10) {
-	    warning("The no of arguments are greater than 10" \
-	    		"calling standard system function...\n");
-	    return (system(arg));
-	}
-
-    chId = fork();
-	if (chId == 0) {
-	    // child process
-	    switch (numArg) {
-	    case 1:
-	        execlp(exArg[0],exArg[0],NULL);
-	        break;
-	    case 2:
-	        execlp(exArg[0],exArg[0],exArg[1],NULL);
-	        break;
-	    case 3:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],NULL);
-	        break;
-	    case 4:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],NULL);
-	        break;
-	    case 5:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               NULL);
-	        break;
-	    case 6:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],NULL);
-	        break;
-	    case 7:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],NULL);
-	        break;
-	    case 8:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],exArg[7],NULL);
-	        break;
-	    case 9:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],exArg[7],exArg[8],NULL);
-	        break;
-	    case 10:
-	        execlp(exArg[0],exArg[0],exArg[1],exArg[2],exArg[3],exArg[4],
-	               exArg[5],exArg[6],exArg[7],exArg[8],exArg[9],NULL);
-	        break;
-		}
-        warning("execlp failed...\n");
-	    return -1;
-	} else if (chId < 0) {
-		warning("Failed to create child process\n");
-		return -1;
-	} else {
-		/* parent process */
-		/* wait for the completion of the child process */
-		/* 3th option WNOHANG->non-block 0->block */
-		pid_child = waitpid(chId, &status, 0);
-		#if 0
-		if (WIFEXITED(status))
-			info("Chiled exited with the code %d\n", WEXITSTATUS(status));
-		else
-			warning("Child terminated abnormally..\n");
-		#endif	
-	}
-
-    return 0;
-}
-
 static int __get_rndis_type(void) 
 {
 	int res = 1; /* default usb0 */
@@ -378,7 +283,6 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			(void)play_file(&ikey->play, player, 
 					"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
 		}
-		
 		//re_debug(&pf_stderr, NULL);
 		break;
 	
@@ -459,16 +363,21 @@ static void __call_answer(void)
 	ua_answer(ua, NULL);
 }
 
-static int __register_user(int network, int enable, short port, const char *call_num, const char *server_addr, 
+static int __register_user(int network, int enable, short port, int level, const char *call_num, const char *server_addr, 
 			const char *passwd, const char *stun_domain)
 {
 	struct network *net = baresip_network();
 	char devname[16] = {0,};
 	
 	struct ua *ua = NULL;
-	int err = 0;
+	int err = 0, percent;
 	struct account *acc;
 	
+	/* set alsa output level */
+	percent = __aic3x_output_level[level];	
+	alsa_mixer_set_volume(SND_VOLUME_P, percent);
+	dprintf("set voip default sound volume %d(percent)!\n", percent);
+
 	memset(ui_buf, 0, sizeof(ui_buf));
 	memset(devname, 0, sizeof(devname));
 	
@@ -572,6 +481,28 @@ static int __dialer_user(const char *call_num)
 	return err;
 }
 
+static void __set_sound_volume(void)
+{
+	//	static struct re_printf pf_stderr = {print_handler, NULL};
+	struct player *player = baresip_player();
+	int level = ikey->uri.spk_lv;
+	int percent;
+	struct config *cfg;
+	
+	cfg = conf_config();
+	
+	percent = __aic3x_output_level[level];	
+	alsa_mixer_set_volume(SND_VOLUME_P, percent);
+	
+	if (ikey->ste.call_ste == SIPC_STATE_CALL_IDLE) {
+		/* Stop any ongoing ring-tones */
+		ikey->play = mem_deref(ikey->play);
+		(void)play_file(&ikey->play, player, 
+						"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
+	}
+	info("set sound volume done!!\n");
+}
+
 static int send_msg(int cmd, int state, int dir, int reg, int err)
 {
 	to_sipc_main_msg_t msg;
@@ -611,10 +542,14 @@ static int recv_msg(void)
 		ikey->uri.en_stun = msg.uri.en_stun;
 		ikey->uri.port = msg.uri.port;
 		ikey->uri.net_if = msg.uri.net_if;
+		ikey->uri.spk_lv = msg.uri.spk_lv;
 	} 
 	else if (msg.cmd == SIPC_CMD_SIP_START) {
 		memset(ikey->uri.peer_uri, 0, sizeof(ikey->uri.peer_uri));
 		strcpy(ikey->uri.peer_uri, msg.uri.peer_uri);
+	}
+	else if (msg.cmd == SIPC_CMD_SIP_SET_SOUND) {
+		ikey->uri.spk_lv = msg.uri.spk_lv;
 	}
 	
 	return msg.cmd;
@@ -670,7 +605,7 @@ static void *THR_sipc_main(void *prm)
 		switch (cmd) {
 		case SIPC_CMD_SIP_REGISTER_UA:
 			/* 계정을 등록 */
-			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.ua_uri, 
+			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.spk_lv, ikey->uri.ua_uri, 
 					ikey->uri.pbx_uri, ikey->uri.passwd, ikey->uri.stun_uri);
 			break;
 		
@@ -690,6 +625,10 @@ static void *THR_sipc_main(void *prm)
 			__call_stop();
 			break;	
 		
+		case SIPC_CMD_SIP_SET_SOUND:
+			__set_sound_volume();
+			break;
+			
 		case SIPC_CMD_SIP_EXIT:
 			/* 프로그램 종료 */
 			done = 1;
@@ -738,14 +677,6 @@ static int module_init(void)
 	err = uag_event_register(ua_event_handler, NULL);
 	if (err)
 		return err;
-	
-	/* alsa volume */
-//	amixer cset numid=17 50% # DAC_L1 to HPLOUT Volume Control
-//	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
-//  amixer cset numid=31 80%	
-//	__execlp("/usr/bin/amixer cset numid=17 50%");
-	__execlp("/usr/bin/amixer cset numid=1 70% > /dev/null");
-	__execlp("/usr/bin/amixer cset numid=31 60% > /dev/null");
 		
 	return 0;
 }

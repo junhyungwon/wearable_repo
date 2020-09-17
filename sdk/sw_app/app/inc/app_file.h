@@ -47,6 +47,6 @@ int delete_ftp_send_file(char *path);
 int get_recorded_file_count(void);
 int get_write_status(void);
 int app_file_check_disk_free_space(void);
-
+int app_file_save_flist(void);
 
 #endif	/* _APP_FILE_H_ */

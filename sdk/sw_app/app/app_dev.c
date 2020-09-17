@@ -215,7 +215,8 @@ static void *THR_dev(void *prm)
 			if (rkey == KEY_SHORT) {		
 				/* Short KEY */
 				app_voip_event_noty();
-			} else if (rkey == KEY_LONG) {	//# sw update
+			} else if (rkey == KEY_LONG) {	
+				#ifdef VOIP_CTRL_PWR_KEY
 				//# record start/stop
 				if (!app_cfg->ste.b.ftp_run) 
 				{     
@@ -224,8 +225,12 @@ static void *THR_dev(void *prm)
 					} else {
 						app_rec_start();
 					}
-				} 
-			}
+				}
+				#else
+				/* volume control */
+				app_voip_set_play_volume();
+				#endif
+			} 
 		}	
 		app_msleep(TIME_DEV_CYCLE);
 	}
