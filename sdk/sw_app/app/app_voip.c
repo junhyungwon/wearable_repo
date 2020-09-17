@@ -474,22 +474,21 @@ int app_voip_init(void)
 {
 	app_thr_obj *tObj;
 	struct stat sb;
-	int status, percent;
+	int percent, lv;
+	int status;
 	
 	memset(ivoip, 0, sizeof(app_voip_t));
 	
 	/* alsa volume */
 //	amixer cset numid=17 50% # DAC_L1 to HPLOUT Volume Control
 //	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
-	status = __get_voip_play_volume(&status);
+	status = __get_voip_play_volume(&lv);
 	if (status < 0) {
 		/* set default level */
 		ivoip->snd_level = SND_LEVEL_HIGH;
 	} else {
-		ivoip->snd_level = status;
+		ivoip->snd_level = lv;
 	}
-//	percent = __aic3x_output_level[ivoip->snd_level];	
-//	dev_snd_set_aic3x_volume(SND_VOLUME_P, percent);
 	
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
@@ -566,7 +565,7 @@ void app_voip_start(int net_type, int enable_stun, short server_port, const char
 		strcpy(ivoip->stun_svr, stun_server);
 		
 	if (server_port < 0)
-		ivoip->svr_port = 5060; //# set default port
+		ivoip->svr_port = 6060; //# set default port
 	else
 		ivoip->svr_port = server_port;
 	
@@ -646,4 +645,5 @@ void app_voip_save_config(void)
 {
 	int level = ivoip->snd_level;
 	__set_voip_play_volume(level);
+	dprintf("last sound level %d saved!\n", level);
 }
