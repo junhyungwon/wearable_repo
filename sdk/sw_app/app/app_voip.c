@@ -98,13 +98,15 @@ static int send_msg(int cmd, const char *uri)
 	
 	if (cmd == SIPC_CMD_SIP_START) {
 		strcpy(msg.uri.peer_uri, uri);
+	} else if (cmd == SIPC_CMD_SIP_SET_SOUND) {
+		msg.uri.spk_lv = ivoip->snd_level;
 	}
 	
 	return Msg_Send(ivoip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
 
 /* account 파일을 사용할 경우 이 명령을 필요없음 */
-static int send_ua_msg(int cmd, int net, int enable, short port, const char *login, 
+static int send_ua_msg(int cmd, int net, int enable, short port, int snd_lv, const char *login, 
 			const char *domain, const char *pass, const char *stun_domain)
 {
 	to_sipc_msg_t msg;
@@ -124,6 +126,7 @@ static int send_ua_msg(int cmd, int net, int enable, short port, const char *log
 	msg.uri.en_stun = enable;
 	msg.uri.port = port;
 	msg.uri.net_if = net;
+	msg.uri.spk_lv = snd_lv;
 	
 	return Msg_Send(ivoip->qid, (void *)&msg, sizeof(to_sipc_msg_t));
 }
@@ -251,7 +254,7 @@ static void __call_register_handler(void)
 	dprintf("baresip user register start.....\n");
 	/* create ua and register */
 	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
-			ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
+			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
 		snprintf(msg, sizeof(msg), "STUN URL %s@%s:%d (pw: %s) ", ivoip->dev_num, ivoip->stun_svr, 
@@ -328,6 +331,13 @@ static void __call_event_handler(void)
 	}
 }
 
+static void __call_snd_volume_handler(void)
+{
+	dprintf("call volume is %x\n", ivoip->snd_level);
+	
+	send_msg(SIPC_CMD_SIP_SET_SOUND, NULL);
+}
+
 static void __call_status_handler(void)
 {
 	int is_reg = ivoip->st.call_reg;
@@ -393,6 +403,8 @@ static void *THR_voip_main(void *prm)
 			__call_event_handler();
 		} else if (cmd == APP_CMD_STOP) {
 			__call_unregister_handler();
+		} else if (cmd == APP_CMD_PAUSE) {
+			__call_snd_volume_handler();
 		}
 	}
 	
@@ -472,12 +484,12 @@ int app_voip_init(void)
 	status = __get_voip_play_volume(&status);
 	if (status < 0) {
 		/* set default level */
-		ivoip->snd_level = SND_LEVEL_LOW;
+		ivoip->snd_level = SND_LEVEL_HIGH;
 	} else {
 		ivoip->snd_level = status;
 	}
-	percent = __aic3x_output_level[ivoip->snd_level];	
-	dev_snd_set_aic3x_volume(SND_VOLUME_P, percent);
+//	percent = __aic3x_output_level[ivoip->snd_level];	
+//	dev_snd_set_aic3x_volume(SND_VOLUME_P, percent);
 	
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
@@ -604,12 +616,13 @@ void app_voip_event_noty(void)
 *****************************************************************************/
 void app_voip_set_play_volume(void)
 {
+	app_thr_obj *tObj = &ivoip->eObj;
 	int level = ivoip->snd_level;
-	int percent;
 	
-	/* baresip didn't execute, return */
-	if (ivoip->init == 0)
+	if (!ivoip->st.call_reg) {
+		eprintf("Not registered!\n");
 		return;
+	}
 		
 	level++;
 	/* round */
@@ -618,9 +631,11 @@ void app_voip_set_play_volume(void)
 	else if (level < SND_LEVEL_LOW) /* ??? */
 		level = SND_LEVEL_LOW;
 	
-	percent = __aic3x_output_level[level];	
-	dev_snd_set_aic3x_volume(SND_VOLUME_P, percent);
 	ivoip->snd_level = level;
+	
+	OSA_mutexLock(&ivoip->lock);
+	event_send(tObj, APP_CMD_PAUSE, 0, 0);
+	OSA_mutexUnlock(&ivoip->lock);
 }
 
 /*****************************************************************************
