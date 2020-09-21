@@ -83,16 +83,17 @@ static pthread_t  	g_tid;              // uds task id
 static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbps, int fps, int ei, int gov)
 {
 	if (enctype == ENC_JPEG) // JPEG
-	{   // 480->720->1080->480 
-		// 1. 셋팅할 값은 720, 현재 720이 아닐때, 480일때의 물리버튼 눌림이벤트를 전달한다.
+	{
+		int newRes=app_set->ch[STM_CH_NUM].resol;
 		if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
-			ctrl_vid_resolution(RESOL_480P); 
-		// 2. 셋팅할 값은 1080, 현재 1080이 아닐때, 720일때의 물리버튼 눌림이벤트를 전달한다.
+			newRes = RESOL_720P;
 		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
-			ctrl_vid_resolution(RESOL_720P);
-		// 3. 셋팅할 값은 480, 현재 480이 아닐때, 1080일때의 물리버튼 눌림이벤트를 전달한다.
+			newRes = RESOL_1080P;
 		else if (h == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
-			ctrl_vid_resolution(RESOL_1080P);
+			newRes = RESOL_480P;
+
+		if (newRes != app_set->ch[STM_CH_NUM].resol)
+			ctrl_vid_resolution(newRes);
 	}
 	else if (enctype == ENC_H264) // H264
 	{
