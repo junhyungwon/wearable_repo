@@ -727,15 +727,16 @@ static void cfg_param_check_nexx(app_set_t *pset)
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
 	
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
-		strcpy(pset->voip.ipaddr, "0.0.0.0");
+		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
 
-	if(pset->voip.port <= CFG_INVALID) pset->voip.port	= 9999;
+	if(pset->voip.port <= CFG_INVALID)
+		pset->voip.port = PBX_SERVER_PORT;
 
 	if((int)pset->voip.userid[0] == CHAR_INVALID || (int)pset->voip.userid[0] == 0)
 		strcpy(pset->voip.userid, "");
 
 	if((int)pset->voip.passwd[0]  == CHAR_INVALID || (int)pset->voip.passwd[0] == 0)
-		strcpy(pset->voip.passwd, "");
+		strcpy(pset->voip.passwd, PBX_SERVER_PW);
 
 	if((int)pset->voip.peerid[0] == CHAR_INVALID || (int)pset->voip.peerid[0] == 0)
 		strcpy(pset->voip.peerid, "");
@@ -1002,10 +1003,10 @@ static void app_set_default(int default_type)
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
 
-    strcpy(app_set->voip.ipaddr, "0.0.0.0");
-    app_set->voip.port = 9999;
+    strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);
+    app_set->voip.port = PBX_SERVER_PORT;
+    strcpy(app_set->voip.passwd, PBX_SERVER_PW);
 	memset((void*)app_set->voip.userid, 0x00, sizeof(app_set->voip.userid));
-	memset((void*)app_set->voip.passwd, 0x00, sizeof(app_set->voip.passwd));
 	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
 }
 
