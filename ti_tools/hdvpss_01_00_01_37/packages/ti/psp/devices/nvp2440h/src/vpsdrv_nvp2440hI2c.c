@@ -369,7 +369,7 @@ static int nvp2440h_sensor_init(int idx)
 	//# mirror 0:VH, 1:V, 2:H, 3:off (for 3100k)
 	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
 	val = 0x03; //0x01
-	if (val != 0x00) 
+	if ((val == 0x03) || (val == 0x01)) 
 	{
 		recnt = WRITE_RETRY_CNT;
 		while (recnt--) {
@@ -392,7 +392,29 @@ static int nvp2440h_sensor_init(int idx)
 				Task_sleep(50);
 			}
 		}
-	} 
+	} else {
+		recnt = WRITE_RETRY_CNT;
+		while (recnt--) {
+			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, val);
+			if (FVID2_SOK == ret) {
+				break;
+			} else {
+				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+				Task_sleep(50);
+			}
+		}
+		
+		recnt = WRITE_RETRY_CNT;
+		while (recnt--) {
+			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x0183, 0xAA);
+			if (FVID2_SOK == ret) {
+				break;
+			} else {
+				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+				Task_sleep(50);
+			}
+		}
+	}
 
 	/* deserializer lock check */
 	locked = max927x_check_lock(idx);
