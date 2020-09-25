@@ -24,7 +24,7 @@
 #define NVP2440H_I2C_ID		2
 
 //# for partron 0x66, afo 0x7F
-#define NVP2440H_I2C_ADDR	0x7F //0x66 //0x7F //# 0xxFE
+#define NVP2440H_I2C_ADDR	0x66 //0x7F //# 0xxFE
 
 /* NVP2440H Command List */
 #define NVP2440H_CMD_ISP_REG_WRITE			0x02
