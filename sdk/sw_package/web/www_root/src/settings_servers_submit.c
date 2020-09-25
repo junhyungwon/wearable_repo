@@ -134,17 +134,19 @@ static int submit_settings_qcgi()
         if (str != NULL) {
             sprintf(t.voip.ipaddr, "%s", str);
         }
+        /* Port, Password는 default로 사용합니다.
         str= req->getstr(req, "txt_voip_port", false);
         if (str != NULL) {
             t.voip.port = atoi(str);
         }
-        str= req->getstr(req, "txt_voip_id", false);
-        if (str != NULL) {
-            sprintf(t.voip.userid, "%s", str);
-        }
         str= req->getstr(req, "txt_voip_pw", false);
         if (str != NULL) {
             sprintf(t.voip.passwd, "%s", str);
+        }
+        */
+        str= req->getstr(req, "txt_voip_id", false);
+        if (str != NULL) {
+            sprintf(t.voip.userid, "%s", str);
         }
         str= req->getstr(req, "txt_voip_peerid", false);
         if (str != NULL) {

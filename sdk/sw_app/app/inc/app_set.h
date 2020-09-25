@@ -63,6 +63,10 @@
 #define MAX_BITRATE            8000
 #define DEFAULT_QUALITY        4000
 
+#define PBX_SERVER_ADDR         "52.78.124.88"
+#define PBX_SERVER_PORT         6060
+#define PBX_SERVER_PW           "9999"
+
 typedef enum {
 	RATE_CTRL_VBR,
 	RATE_CTRL_CBR,
