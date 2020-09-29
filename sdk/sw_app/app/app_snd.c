@@ -88,6 +88,7 @@ typedef struct {
 	snd_prm_t snd_dup;   //# duplicate real sound
 	
 	g_mem_info_t *imem;
+	int snd_rec_enable;
 	
 } app_snd_t;
 
@@ -589,7 +590,7 @@ static void *THR_snd_cap(void *prm)
 		/* VOIP를 사용할 경우에만 copy ?? */
 		__snd_dev_write(&isnd->snd_dup, bytes/2); 
 		
-		if (app_set->rec_info.audio_rec)
+		if (isnd->snd_rec_enable)
 		{
 			//# audio codec : g.711
 			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
@@ -635,6 +636,8 @@ int app_snd_start(void)
 	
 	memset(isnd, 0, sizeof(app_snd_t));
 	
+	/* set audio record enable */
+	isnd->snd_rec_enable = app_set->rec_info.audio_rec;
 	/* set capture volume */
 	//# "/usr/bin/amixer cset numid=31 60% > /dev/null"
 	dev_snd_set_aic3x_volume(SND_VOLUME_C, 60);

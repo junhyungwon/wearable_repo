@@ -24,6 +24,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+//#define DBG_CALL_STAT
 #define UA_PREFIX				"/uanew" /* long command 사용*/
 #define DIAL_PREFIX				"/dial" /* long command 사용*/
 
@@ -63,28 +64,6 @@ static int __aic3x_output_level[3] = {
 -----------------------------------------------------------------------------*/
 static int send_msg(int cmd, int state, int dir, int reg, int err);
 
-#if 0
-if (net_interface) {
-		struct config *theconf = conf_config();
-
-		str_ncpy(theconf->net.ifname, net_interface,
-			 sizeof(theconf->net.ifname));
-	}
-net_change(baresip_network(), 60, net_change_handler, NULL);
-
-void net_force_change(struct network *net)
-static void net_change_handler(void *arg)
-{
-	(void)arg;
-
-	info("IP-address changed: %j\n",
-	     net_laddr_af(baresip_network(), AF_INET));
-
-	(void)uag_reset_transp(true, true);
-}
-
-	
-#endif
 static int __get_rndis_type(void) 
 {
 	int res = 1; /* default usb0 */
@@ -97,7 +76,7 @@ static int __get_rndis_type(void)
 }
 	
 //---------------------------- UI CALL HELPER --------------------------------------------------
-#if 0
+#ifdef DBG_CALL_STAT
 static int print_handler(const char *p, size_t size, void *arg)
 {
 	(void)arg;
@@ -129,6 +108,7 @@ static char have_active_calls(void)
 	return 0;
 }
 
+#ifdef DBG_CALL_STAT
 static void tmrstat_handler(void *arg)
 {
 	struct call *call;
@@ -153,7 +133,6 @@ static void update_callstatus(void)
 		tmr_cancel(&ikey->tmr_stat);
 }
 
-#if 0
 static int call_reinvite(struct re_printf *pf, void *unused)
 {
 	(void)pf;
@@ -181,8 +160,7 @@ static void check_registrations(void)
 	n = list_count(uag_list());
 
 	/* We are ready */
-	ui_output(baresip_uis(),
-		  "\x1b[32mAll %u useragent%s registered successfully!"
+	info( "\x1b[32mAll %u useragent%s registered successfully!"
 		  " (%u ms)\x1b[;m\n",
 		  n, n==1 ? "" : "s",
 		  (uint32_t)(tmr_jiffies() - ikey->start_ticks));
@@ -236,8 +214,6 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 			play_file(&ikey->play, player, "ring.wav", -1,
 					cfg->audio.alert_mod, cfg->audio.alert_dev);
 		}
-		//if (ikey->bell)
-			//alert_start(0);
 		break;
 	
 	case UA_EVENT_CALL_RINGING:
@@ -395,7 +371,7 @@ static int __register_user(int network, int enable, short port, int level, const
 	}
 	
 	net_set_ifname(net, (const char *)devname);
-	sys_msleep(500); /* wait 0.5s */
+	delay_msecs(500); /* wait 0.5s */
 	//######## IP-CHANGE-HANDLER #######################################
 	net_check(net);
 	info("IP-address changed: %j\n", net_laddr_af(net, AF_INET));
@@ -493,13 +469,14 @@ static void __set_sound_volume(void)
 	
 	percent = __aic3x_output_level[level];	
 	alsa_mixer_set_volume(SND_VOLUME_P, percent);
-	dprintf("set sound volume %d,%d(percent)!\n", level, percent);
 	
 	if (ikey->ste.call_ste == SIPC_STATE_CALL_IDLE) {
 		/* Stop any ongoing ring-tones */
 		ikey->play = mem_deref(ikey->play);
 		(void)play_file(&ikey->play, player, 
 						"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
+		delay_msecs(1000);
+		ikey->play = mem_deref(ikey->play);				
 	}
 }
 
@@ -563,6 +540,7 @@ static void *THR_sipc_poll(void *prm)
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
+	(void)prm;
 	while(!done)
 	{
 		cmd = event_wait(tObj);
@@ -587,6 +565,7 @@ static void *THR_sipc_main(void *prm)
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
+	(void)prm;
 	
 	/* message queue init */
 	ikey->qid = Msg_Init(SIPC_MSG_KEY);

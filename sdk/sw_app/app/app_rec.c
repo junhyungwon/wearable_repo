@@ -199,10 +199,11 @@ static int _is_enable_rec_start()
 	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
 		app_cfg->ste.b.busy || app_cfg->ste.b.mmc_err || (app_cfg->vid_count == 0)) 
 	{
-		eprintf("can't record cuz %s %s %s %s %s\n",
+		eprintf("can't record cuz %s %s %s %s %s %s\n",
 			app_cfg->ste.b.mmc?"":"no MMC!", app_cfg->ste.b.busy?"system busy":"",
 			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec",
-			(app_cfg->vid_count > 0)?"":"no video detect");
+			(app_cfg->vid_count > 0)?"":"no video detect",
+			app_cfg->ste.b.mmc_err?"err MMC":"");
 		return EFAIL;
 	}
 

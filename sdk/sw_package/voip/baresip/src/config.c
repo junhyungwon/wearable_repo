@@ -29,7 +29,7 @@ static struct config core_config = {
 
 	/** Call config */
 	{
-		120,
+		20, /*120, local_time_out */
 		4
 	},
 

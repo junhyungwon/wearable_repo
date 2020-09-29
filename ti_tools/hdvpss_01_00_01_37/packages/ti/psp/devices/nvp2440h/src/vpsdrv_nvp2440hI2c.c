@@ -368,24 +368,51 @@ static int nvp2440h_sensor_init(int idx)
 
 	//# mirror 0:VH, 1:V, 2:H, 3:off (for 3100k)
 	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
-	if(idx == 0) {
-		val = 0x03;
-	} else if(idx == 1) {
-		val = 0x03;
-	} else if(idx == 2) {
-		val = 0x03;//0x01; //0x01;
-	} else if(idx == 3) {
-		val = 0x03;//0x01; //0x01;
-	}
-
-	recnt = WRITE_RETRY_CNT;
-	while (recnt--) {
-		ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, val);
-		if (FVID2_SOK == ret) {
-			break;
-		} else {
-			eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
-			Task_sleep(50);
+	val = 0x03; //0x01
+	if ((val == 0x03) || (val == 0x01)) 
+	{
+		recnt = WRITE_RETRY_CNT;
+		while (recnt--) {
+			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, val);
+			if (FVID2_SOK == ret) {
+				break;
+			} else {
+				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+				Task_sleep(50);
+			}
+		}
+		
+		recnt = WRITE_RETRY_CNT;
+		while (recnt--) {
+			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x0183, 0xc2);
+			if (FVID2_SOK == ret) {
+				break;
+			} else {
+				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+				Task_sleep(50);
+			}
+		}
+	} else {
+		recnt = WRITE_RETRY_CNT;
+		while (recnt--) {
+			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, val);
+			if (FVID2_SOK == ret) {
+				break;
+			} else {
+				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+				Task_sleep(50);
+			}
+		}
+		
+		recnt = WRITE_RETRY_CNT;
+		while (recnt--) {
+			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x0183, 0xAA);
+			if (FVID2_SOK == ret) {
+				break;
+			} else {
+				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+				Task_sleep(50);
+			}
 		}
 	}
 

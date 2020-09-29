@@ -400,7 +400,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	cnt = get_file_count((const char *)ifile->rec_root);
 	if (cnt == 0) {
 		eprintf("empty directiory. skipping video list!\n");
-		return -1;
+		return 0;
 	}
 		
 	/* opendir is not required "/" */
@@ -714,7 +714,6 @@ int app_file_init(void)
 			sprintf(msg, "make file list fail!!");
 			app_log_write(MSG_LOG_WRITE, msg);
 			eprintf("%s\n", msg);
-			app_cfg->ste.b.mmc_err = 1;
 			return status;
 		}
 	}
