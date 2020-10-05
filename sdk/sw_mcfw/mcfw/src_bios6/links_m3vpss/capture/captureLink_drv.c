@@ -686,10 +686,12 @@ Int32 CaptureLink_drvCreateInst(CaptureLink_Obj * pObj, UInt16 instId)
 	 * 0x1BDDB6DB,0x1BDDBDDB,0x3BDDBDDB,0x1EF7BDEF,0x1F7DF7DF,
 	 * 0x1F7FF7DF,0x1F7FF7FF,0x1FFFF7FF,0x1FFFFFFF,0x3FFFFFFF
 	 */
-	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0);
+#if defined(LF_SYS_NEXXONE_VOIP)	
+	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0);				//# nexxone 30fps
+#else	
 //	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0x24924924);		//# 30fps->20fps
-//	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0x2AAAAAAA);		//# 19fps->15fps
-
+	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0x2AAAAAAA);		//# 19fps->15fps
+#endif
     pInst->videoDecoderHandle = NULL;
 
 	#ifdef SYSTEM_USE_VIDEO_DECODER

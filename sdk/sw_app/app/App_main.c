@@ -44,13 +44,16 @@
 #include "app_p2p.h"
 #include "app_web.h"
 #include "app_encrypt.h"
-#include "app_voip.h"
 #include "app_snd.h"
 #include "app_fms.h"
 #include "app_gps.h"
 #include "app_netmgr.h"
 #include "app_ipinstall.h"
 #include "app_buzz.h"
+
+#if SYS_CONFIG_VOIP
+#include "app_voip.h"
+#endif
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -139,8 +142,10 @@ int app_main(void)
 
     app_cap_start();
 	app_snd_start(); 
+
+#if SYS_CONFIG_NET	
 	app_netmgr_init();
-		
+#endif		
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
 
@@ -172,8 +177,10 @@ int app_main(void)
         app_p2p_start() ;
         app_p2p_init() ;
     }
-	
+
+#if SYS_CONFIG_VOIP	
 	app_voip_init();
+#endif	
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
 	while(!exit)
@@ -210,7 +217,9 @@ int app_main(void)
     }
     
 	app_tsync_exit() ;
+#if SYS_CONFIG_NET	
 	app_netmgr_exit();
+#endif	
 	app_mcu_stop();
 	tObj->active = 0;
 
@@ -304,8 +313,10 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+		#ifdef NEXXONE
 		/* copy app_fitt.out or full update */
 		ctrl_auto_update();
+		#endif
 		/* remove update files */
 		ctrl_reset_nand_update();
 	}
@@ -361,7 +372,9 @@ int main(int argc, char **argv)
         app_ftp_exit();
 
     app_ipins_exit();
+#if SYS_CONFIG_VOIP	
 	app_voip_exit(); /* voip exit */
+#endif	
 	app_gps_exit();
 	
 	g_mem_exit();

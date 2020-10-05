@@ -41,7 +41,10 @@
 #include "app_file.h"
 #include "app_mcu.h"
 #include "app_buzz.h"
+
+#if SYS_CONFIG_VOIP
 #include "app_voip.h"
+#endif
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -339,7 +342,6 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
     
 }
 
-
 /*****************************************************************************
 * @brief    get resolution function
 * @section  DESC Description
@@ -445,7 +447,9 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 	
 	app_file_save_flist(); /* save file list */
 	app_file_exit();
+#if SYS_CONFIG_VOIP	
 	app_voip_save_config(); /* save voip volume */
+#endif	
     app_set_write();
 	app_mcu_pwr_off(OFF_RESET);
     return SOK ;
@@ -470,7 +474,9 @@ int ctrl_set_gateway(const char *gw)
     }
 	
 	app_file_save_flist(); /* save file list */
+#if SYS_CONFIG_VOIP
 	app_voip_save_config(); /* save voip volume */
+#endif
     app_file_exit();
 
     sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
@@ -1160,7 +1166,6 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
     return ret ;     
 }
 
-
 /*
  * record stop and reboot.
  */
@@ -1175,7 +1180,9 @@ void fitt360_reboot(void)
     }
 	
 	app_file_save_flist(); /* save file list */
+#if SYS_CONFIG_VOIP
 	app_voip_save_config(); /* save voip volume */	
+#endif
     app_file_exit();
     app_set_write();
     app_buzz_ctrl(80, 2);

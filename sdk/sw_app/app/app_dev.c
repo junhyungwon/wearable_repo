@@ -33,9 +33,11 @@
 #include "app_mcu.h"
 #include "app_gui.h"
 #include "app_process.h"
-#include "app_voip.h"
 #include "app_buzz.h"
 
+#if SYS_CONFIG_VOIP
+#include "app_voip.h"
+#endif
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -210,8 +212,9 @@ static void *THR_dev(void *prm)
 		
 		if (!app_cfg->ste.b.ftp_run)
 		{	
-			//# For button enable, when camera didn't connected 
 			rkey = chk_rec_key();
+			#if defined(NEXXONE)
+			//# For button enable, when camera didn't connected 
 			if (rkey == KEY_SHORT) {		
 				/* Short KEY */
 				app_voip_event_noty();
@@ -230,7 +233,26 @@ static void *THR_dev(void *prm)
 				/* volume control */
 				app_voip_set_play_volume();
 				#endif
-			} 
+			}
+			#else
+			/* NEXX360, Fitt360 */
+			if (rkey == KEY_SHORT) {
+				if (app_rec_state()) {
+					app_rec_stop(1);
+				} else {
+					app_rec_start();
+				}
+			} else if (rkey == KEY_LONG) {
+				/* record stop */
+				if (app_rec_state()) {
+					app_rec_stop(1);
+					sleep(1); /* for file close */
+				}
+				//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
+				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함.
+				ctrl_auto_update(); 
+			}
+			#endif /* end of #if defined(NEXXONE) */
 		}	
 		app_msleep(TIME_DEV_CYCLE);
 	}

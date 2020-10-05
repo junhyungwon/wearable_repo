@@ -89,6 +89,7 @@ static int __aic3x_output_level[3] = {
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+#if SYS_CONFIG_VOIP
 static int send_msg(int cmd, const char *uri)
 {
 	to_sipc_msg_t msg;
@@ -647,3 +648,4 @@ void app_voip_save_config(void)
 	__set_voip_play_volume(level);
 	dprintf("last sound level %d saved!\n", level);
 }
+#endif /* end of #ifdef SYS_CONFIG_VOIP */

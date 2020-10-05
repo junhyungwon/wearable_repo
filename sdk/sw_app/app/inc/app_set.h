@@ -21,47 +21,33 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define ENC_JPEG 					0
+#define ENC_MPEG 					1
+#define ENC_H264 					2
 
-#define ENC_JPEG 0
-#define ENC_MPEG 1
-#define ENC_H264 2
+#define MAX_GOV						MAX_FPS
+#define DEFAULT_FPS					MAX_FPS
+#define DEFAULT_GOV					DEFAULT_FPS
 
-#if defined(NEXXONE)
-	#define MAX_FPS					30
-#elif defined(NEXX360)
-    #define MAX_FPS		    		15
-#elif defined(FITT360_SECURITY)
-    #define MAX_FPS		    		15
-#else
-    #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
-#endif
+#define MIN_FPS 					1
+#define MAX_BITRATE 				8000 // Kbps
+#define MIN_BITRATE 				512  // Kbps
 
-#define NEXXONE_DEVICE_ID		1111
+#define FTP_HOUR_MIN            	0
+#define FTP_HOUR_MAX            	24
+#define FTP_HOUR_DEFAULT       	 	3
+#define SERVER_URL_SIZE         	128
 
-#define MAX_GOV					MAX_FPS
-#define DEFAULT_FPS				MAX_FPS
-#define DEFAULT_GOV				DEFAULT_FPS
+#define CFG_INVALID     			-1
+#define CHAR_INVALID            	255
+#define CHAR_MEMSET     			0x00
 
-#define MIN_FPS 1
-#define MAX_BITRATE 8000 // Kbps
-#define MIN_BITRATE 512  // Kbps
+#define PARTIAL_RESET          		0
+#define FULL_RESET             		1
 
-
-#define FTP_HOUR_MIN            0
-#define FTP_HOUR_MAX            24
-#define FTP_HOUR_DEFAULT        3
-#define SERVER_URL_SIZE         128
-
-#define CFG_INVALID     		-1
-#define CHAR_INVALID            255
-#define CHAR_MEMSET     		0x00
-
-#define PARTIAL_RESET          0
-#define FULL_RESET             1
-
-#define MIN_BITRATE            512
-#define MAX_BITRATE            8000
-#define DEFAULT_QUALITY        4000
+#define MIN_BITRATE            		512
+#define MAX_BITRATE            		8000
+#define DEFAULT_QUALITY        		4000
 
 #define PBX_SERVER_ADDR         "52.78.124.88"
 #define PBX_SERVER_PORT         6060

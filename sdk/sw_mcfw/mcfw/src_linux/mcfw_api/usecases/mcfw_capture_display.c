@@ -38,21 +38,29 @@
 #define	dprintf(x...) printf(" [mcfw_api] "	x);
 //#define dprintf(x...)
 
+#if defined(LF_SYS_NEXXONE_VOIP)
+#define VPS_FPS				30
 static int vid_port[] = {
 	SYSTEM_CAPTURE_INST_VIP1_PORTB,		//# (1)
 	SYSTEM_CAPTURE_INST_VIP0_PORTA,		//# (4)
 	SYSTEM_CAPTURE_INST_VIP1_PORTA,		//# (2)
 	SYSTEM_CAPTURE_INST_VIP0_PORTB,		//# (3)
-//  display 3<--> 4 change
-//	SYSTEM_CAPTURE_INST_VIP1_PORTB,		//# (1)
-//	SYSTEM_CAPTURE_INST_VIP0_PORTA,		//# (4)
-//	SYSTEM_CAPTURE_INST_VIP0_PORTB,		//# (3)
-//	SYSTEM_CAPTURE_INST_VIP1_PORTA,		//# (2)
 };
+#else
+#define VPS_FPS				15
+static int vid_port[] = {
+//  display 3<--> 4 change
+	SYSTEM_CAPTURE_INST_VIP1_PORTB,		//# (1)
+	SYSTEM_CAPTURE_INST_VIP0_PORTA,		//# (4)
+	SYSTEM_CAPTURE_INST_VIP0_PORTB,		//# (3)
+	SYSTEM_CAPTURE_INST_VIP1_PORTA,		//# (2)
+};
+#endif
 
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+#if defined(LF_SYS_NEXXONE_VOIP) 
 static void	capture_link_params_init(CaptureLink_CreateParams *capturePrm, int num_ch)
 {
 	CaptureLink_VipInstParams	*pCaptureInstPrm;
@@ -86,6 +94,67 @@ static void	capture_link_params_init(CaptureLink_CreateParams *capturePrm, int n
 		pCaptureOutPrm->outQueId			= 0;
 	}
 }
+#else
+static void	capture_link_params_init(CaptureLink_CreateParams *capturePrm, int num_ch, int mode)
+{
+	CaptureLink_VipInstParams	*pCaptureInstPrm;
+	CaptureLink_OutParams		*pCaptureOutPrm;
+	int i;
+
+	CaptureLink_CreateParams_Init(capturePrm);
+
+	capturePrm->tilerEnable		= FALSE;
+	capturePrm->numBufsPerCh	= NUM_CAPTURE_BUFFERS;
+	capturePrm->enableSdCrop	= FALSE;
+	capturePrm->isPalMode		= FALSE;
+	capturePrm->numVipInst		= num_ch;
+
+	for(i=0; i<num_ch; i++)
+	{
+		pCaptureInstPrm		= &capturePrm->vipInst[i];
+		switch (i) {
+		case 0 :
+			pCaptureInstPrm->vipInstId	= SYSTEM_CAPTURE_INST_VIP1_PORTB ;
+			break ;
+		case 1 :
+			pCaptureInstPrm->vipInstId	= SYSTEM_CAPTURE_INST_VIP0_PORTA ;
+			break ;
+		case 2 :
+			if(mode) {
+				 // fitt360
+				pCaptureInstPrm->vipInstId  = SYSTEM_CAPTURE_INST_VIP1_PORTA ;
+			} else
+				pCaptureInstPrm->vipInstId  = SYSTEM_CAPTURE_INST_VIP0_PORTB ;
+			break ;
+		case 3 :
+			if(mode) {
+				 // fitt360
+				pCaptureInstPrm->vipInstId			= SYSTEM_CAPTURE_INST_VIP0_PORTB ;
+			} else 
+				pCaptureInstPrm->vipInstId			= SYSTEM_CAPTURE_INST_VIP1_PORTA ;
+
+			break ;
+
+		default :
+			break ;
+		}
+
+		pCaptureInstPrm->videoDecoderId		= gVsysModuleContext.vsysConfig.decoderHD;
+		pCaptureInstPrm->captureMode		= SYSTEM_CAPTURE_MODE_SINGLE_CH_NON_MUX_EMBEDDED_SYNC;
+		pCaptureInstPrm->inDataFormat		= SYSTEM_DF_YUV422P;
+		pCaptureInstPrm->standard			= SYSTEM_STD_720P_60;
+		pCaptureInstPrm->serdesEQ			= gVsysModuleContext.vsysConfig.serdesEQ;
+		pCaptureInstPrm->numOutput			= 1;
+
+		pCaptureOutPrm						= &pCaptureInstPrm->outParams[0];
+		pCaptureOutPrm->dataFormat			= SYSTEM_DF_YUV422I_YUYV;//SYSTEM_DF_YUV420SP_UV;
+		pCaptureOutPrm->scEnable			= FALSE;
+		pCaptureOutPrm->scOutWidth			= 1280;
+		pCaptureOutPrm->scOutHeight			= 720;
+		pCaptureOutPrm->outQueId			= 0;
+	}
+}
+#endif
 
 static void	nsf_link_params_init(NsfLink_CreateParams *nsfPrm)
 {
@@ -94,8 +163,8 @@ static void	nsf_link_params_init(NsfLink_CreateParams *nsfPrm)
 	nsfPrm->tilerEnable			= FALSE;
 	nsfPrm->numOutQue			= 1;
 	nsfPrm->numBufsPerCh		= NUM_NSF_BUFFERS;
-	nsfPrm->inputFrameRate		= 30;
-	nsfPrm->outputFrameRate		= 30;
+	nsfPrm->inputFrameRate		= VPS_FPS;
+	nsfPrm->outputFrameRate		= VPS_FPS;
 }
 
 static void	null_link_params_init(NullLink_CreateParams *nullPrm, UInt32 prev_id, UInt32 prev_que_id)
@@ -183,7 +252,7 @@ static void	enc_link_params_init(EncLink_CreateParams *encPrm)
 			pLinkDynPrm->interFrameInterval		= 1;
 			pLinkDynPrm->mvAccuracy				= 0;
 //			pLinkDynPrm->inputFrameRate			= pDynPrm->inputFrameRate;
-			pLinkDynPrm->inputFrameRate			= 30;
+			pLinkDynPrm->inputFrameRate			= VPS_FPS;
 			pLinkDynPrm->qpMin					= 0;
 			pLinkDynPrm->qpMax					= 0;
 			pLinkDynPrm->qpInit					= 0;
@@ -371,7 +440,11 @@ static void display_link_delete(void)
 * @section	DESC Description
 *	- desc : HD 2ch, D1 8ch
 *****************************************************************************/
+#if defined(LF_SYS_NEXXONE_VOIP)
 void mcfw_capture_display_init(void)
+#else
+void mcfw_capture_display_init(int mode)
+#endif
 {
 	CaptureLink_CreateParams		capturePrm;
 	DeiLink_CreateParams			deiPrm;
@@ -398,7 +471,11 @@ void mcfw_capture_display_init(void)
 	//# Capture link
 	//#-------------------------------------------
 	//#--- capture link params
+	#if defined(LF_SYS_NEXXONE_VOIP)
 	capture_link_params_init(&capturePrm, num_ch);
+	#else
+	capture_link_params_init(&capturePrm, num_ch, mode);
+	#endif
 	capturePrm.outQueParams[0].nextLink	= gVcapModuleContext.nsfId[0];
 
 	//#--- nsf link params
@@ -434,7 +511,6 @@ void mcfw_capture_display_init(void)
         nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_1;
         nsfPrm1.inQueParams.prevLinkQueId    = 1;
 		
-		
         if(gVsysModuleContext.vsysConfig.enableMjpeg)
         {
             nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2;
@@ -445,7 +521,6 @@ void mcfw_capture_display_init(void)
 	        dupPrm2.notifyNextLink				= TRUE;
 	        dupPrm2.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
 	        dupPrm2.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;  
-
 
             mergePrm0.numInQue = 3;
 		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
@@ -494,10 +569,7 @@ void mcfw_capture_display_init(void)
         }
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
-
-
 	    //#--- encoder link
-
 		if(gVsysModuleContext.vsysConfig.enableEncode) {
 	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
 
@@ -521,8 +593,6 @@ void mcfw_capture_display_init(void)
         swMsPrm.inQueParams.prevLinkQueId   = 1;
 	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_1;
 //      swMsPrm.outQueParams.nextLink       = gVdisModuleContext.displayId[VDIS_DEV_SD];
-
-        
 
         dupPrm1.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 	    dupPrm1.inQueParams.prevLinkQueId	= 0;
@@ -596,7 +666,6 @@ void mcfw_capture_display_init(void)
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
 	    //#--- encoder link
-
 		if(gVsysModuleContext.vsysConfig.enableEncode) {
 	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
 
