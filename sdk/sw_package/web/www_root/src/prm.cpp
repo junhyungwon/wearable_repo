@@ -377,7 +377,7 @@ int put_json_all_config()
 		}
 
 		json_object_object_add(system_obj, "model", json_object_new_string(p.model));
-		json_object_object_add(system_obj, "fwver.", json_object_new_string(p.fwver));
+		json_object_object_add(system_obj, "fwver", json_object_new_string(p.fwver));
 		json_object_object_add(system_obj, "devid", json_object_new_string(p.devid));
 		json_object_object_add(system_obj, "uid", json_object_new_string(p.uid));
 

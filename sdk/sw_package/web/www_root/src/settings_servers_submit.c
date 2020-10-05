@@ -121,6 +121,7 @@ static int submit_settings_qcgi()
 			CGI_DBG("str:%s\n", str);
             enable_onvif = atoi(str);
         }
+
         str= req->getstr(req, "txt_onvif_id", false);
         if (str != NULL) {
             sprintf(t.onvif.id, "%s", str);
@@ -130,6 +131,7 @@ static int submit_settings_qcgi()
             sprintf(t.onvif.pw, "%s", str);
         }
 
+#if defined(NEXXONE) || defined(NEXX360)
         str= req->getstr(req, "txt_voip_ip", false);
         if (str != NULL) {
             sprintf(t.voip.ipaddr, "%s", str);
@@ -153,7 +155,6 @@ static int submit_settings_qcgi()
             sprintf(t.voip.peerid, "%s", str);
         }
 
-#if defined(NEXXONE) || defined(NEXX360)
 		str= req->getstr(req, "p2p_enable", false);
 		if (str != NULL) {
 			enable_p2p = atoi(str);
