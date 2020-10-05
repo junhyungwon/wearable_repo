@@ -37,7 +37,7 @@ typedef struct TAG_GPSPACKET {
 	char gps_LAT[16] ;
 	char gps_LOT[16] ;
 	char gps_Dir[16] ;
-
+	char deviceid[32] ;
 } GPSPACKET ;
 #pragma pack()
 

@@ -542,6 +542,7 @@ int app_leds_sys_normal_ctrl(void)
 				break ;
 		}
 	}
+    app_leds_gps_ctrl(LED_GPS_OFF) ;
 
     app_file_update_disk_usage() ;
 	if(app_rec_state())

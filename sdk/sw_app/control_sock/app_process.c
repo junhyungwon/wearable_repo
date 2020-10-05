@@ -135,6 +135,7 @@ void gpsdata_send(void *data)
     sprintf(Gpspacket.gps_LAT, "%10.7f", Gpsdata->lat);
     sprintf(Gpspacket.gps_LOT, "%10.7f", Gpsdata->lot);
     sprintf(Gpspacket.gps_Dir, "%3.2f", Gpsdata->dir);
+	sprintf(Gpspacket.deviceid, "%s", app_set->sys_info.deviceId) ;
 
 	memcpy(m_SendBuffer, &Gpspacket, GPSPACKET_SIZE) ;
 
