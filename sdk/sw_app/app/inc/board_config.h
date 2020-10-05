@@ -23,37 +23,52 @@
 #	define NEXX360						
 #	define MODEL_NAME					"NEXX360"
 #	define MODEL_CH_NUM					4
+#	define STREAM_CH_NUM				4
+#	define JPEG_CH_NUM					5
 #	define MAX_FPS						15
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_GPS				1
 #elif defined(LF_SYS_NEXX360)
 #	define NEXX360
 #	define MODEL_NAME					"NEXX360"
 #	define MODEL_CH_NUM					4
+#	define STREAM_CH_NUM				4
+#	define JPEG_CH_NUM					5
 #	define MAX_FPS						15	
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_GPS				0
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
 #	define MODEL_NAME					"NEXXONE"
 #	define MODEL_CH_NUM					1
+#	define STREAM_CH_NUM				1
+#	define JPEG_CH_NUM					2
 #	define MAX_FPS						30	
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_GPS				0
 #elif defined(LF_SYS_FITT360)
 #	define FITT360_SECURITY
 #	define MODEL_NAME					"FITT360 Security"
 #	define MODEL_CH_NUM					4
+#	define STREAM_CH_NUM				4
+#	define JPEG_CH_NUM					5
 #	define MAX_FPS						30
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_GPS				0
 #elif defined(LF_SYS_FITT360_BASIC)
 #	define FITT360_SECURITY
 #	define MODEL_NAME					"FITT360 Security"
 #	define MODEL_CH_NUM					4
+#	define STREAM_CH_NUM				4
+#	define JPEG_CH_NUM					5
 #	define MAX_FPS						30
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_NET				0
+#	define SYS_CONFIG_GPS				0
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif

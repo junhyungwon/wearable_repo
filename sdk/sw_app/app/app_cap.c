@@ -187,7 +187,7 @@ static void proc_vid_cap(void)
             if(app_cfg->ste.b.rtsptx)
             {
 				/* ch == 1 --> streaming */
-                if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == 1)
+                if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == STREAM_CH_NUM)
                 {
 					captime += 8 ;
 
@@ -215,7 +215,7 @@ static void proc_vid_cap(void)
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
 				/* ch == 2 --> JPEG  */
-                else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == 2)
+                else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == JPEG_CH_NUM)
                 {
 					FILE *jpeg_f = NULL;
 //                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          

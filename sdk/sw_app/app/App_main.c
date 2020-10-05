@@ -344,9 +344,9 @@ int main(int argc, char **argv)
 	if (app_file_init() == SOK) {
 		app_rec_init();
 	}
-
+#if SYS_CONFIG_GPS	
 	app_gps_init();
-	
+#endif	
 	//#--- app main ----------
 	app_main();
 	//#-----------------------
@@ -374,9 +374,10 @@ int main(int argc, char **argv)
     app_ipins_exit();
 #if SYS_CONFIG_VOIP	
 	app_voip_exit(); /* voip exit */
-#endif	
+#endif
+#if SYS_CONFIG_GPS	
 	app_gps_exit();
-	
+#endif	
 	g_mem_exit();
 	mcfw_linux_exit();
 	main_thread_exit();
