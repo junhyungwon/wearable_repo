@@ -40,8 +40,7 @@ AR_OPTS=-rc
 LD_OPTS=-lpthread -lstdc++ -lm
 
 DEFINE += $(IPNC_RDK_CFLAGS)
-DEFINE += -D$(UBX_TARGET)
-DEFINE += -D$(WIFI_TYPE)_DEV
+DEFINE += -DLF_SYS_$(SYSTEM_PLATFORM)
 
 FILES=$(subst ./, , $(foreach dir,.,$(wildcard $(dir)/*.c)) )
 
@@ -55,4 +54,3 @@ INCLUDE+=$(COMMON_INC)
 INCLUDE+=$(MODULE_INC)
 
 endif # ifndef $(COMMON_HEADER_MK)
-

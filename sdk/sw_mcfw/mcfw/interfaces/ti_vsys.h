@@ -351,7 +351,12 @@ Int32 Vsys_init(VSYS_PARAMS_S * pContext);
 
     \return ERROR_NONE on success
 */
+#if defined(LF_SYS_NEXXONE_VOIP)
 Int32 Vsys_create(void);
+#else
+/* nexx360-->fitt360-->1 */
+Int32 Vsys_create(int mode);
+#endif
 
 /**
     \brief Delete and de-init processing block's based on sub-system configuration

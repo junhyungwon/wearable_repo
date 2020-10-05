@@ -13,6 +13,13 @@ endif
 #####################################################################################
 # CONFIGURATION
 #####################################################################################
+#--- Select SYSTEM PLATFORM -------------------------------
+#SYSTEM_PLATFORM := FITT360_BASIC
+#SYSTEM_PLATFORM := FITT360
+SYSTEM_PLATFORM := NEXX360
+#SYSTEM_PLATFORM := NEXX360_VOIP
+#SYSTEM_PLATFORM := NEXXONE_VOIP
+######################################################################################
 
 #--- Build Type (debug/release)
 APP_BUILD_CFG 	 := debug
@@ -21,33 +28,14 @@ APP_BUILD_CFG 	 := debug
 RDK_BOARD_TYPE := DM8107_UBX
 #-------------------------------------------------
 
-########### MODEL NAME ########### 
-#MODEL_NAME := "FITT360 Security"
-#MODEL_NAME := "NEXX360"
-MODEL_NAME := "NEXXONE"
-
-#공백사용하지 마세요~ ""요것도 사용금지, 대문자사용
-#PRODUCT_NAME := FITT360_SECURITY
-#PRODUCT_NAME := NEXX360
-PRODUCT_NAME := NEXXONE
-
-#TYPE 1 NETWORK VERSION
-MODEL_TYPE := 1
-#TYPE 0 BASIC VERSION
-#MODEL_TYPE := 0
-#################################
-
 #--- UBX Target
 UBX_TARGET := UBX_CAR
 
 #--- Default platform
 PLATFORM := ti810x-evm
 
-#--- System platform (psp)
+#--- PSP Target
 SYSTEM_CFG := fit
-
-#--- Wi-Fi Feature (YES/NO)
-USE_WIFI  := YES
 
 #--- Filesystem Mode
 FS_CFG := ubifs
@@ -61,7 +49,7 @@ else
     MEMORY_256MB := NO
 endif
 
-#--- ISP Feature (YES/NO)
+#--- ISP Feature (Fixed)
 USE_ISP := NO
 
 #--- Image Sensor (IMGS_SONY_IMX122/IMGS_MICRON_AR0331)
@@ -75,6 +63,67 @@ TILER_ENABLE := NO
 
 #--- Teardown method (YES/NO)
 TEARDOWN_LOAD_UNLOAD := YES
+
+ifeq ($(SYSTEM_PLATFORM), FITT360_BASIC)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = NO
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP := NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER := AFO
+	#---- Device MODEL NAME
+	MODEL_NAME   := "FITT360 Security"
+	#---- Device PRODUCT NAME
+	PRODUCT_NAME := FITT360_SECURITY
+endif
+ifeq ($(SYSTEM_PLATFORM), FITT360)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP := NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER := AFO
+	#---- Device MODEL NAME
+	MODEL_NAME := "FITT360 Security"
+	#---- Device PRODUCT NAME
+	PRODUCT_NAME := FITT360_SECURITY
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXX360)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP := NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER := AFO
+	#---- Device MODEL NAME
+	MODEL_NAME   := "NEXX360"
+	#---- Device PRODUCT NAME
+	PRODUCT_NAME := NEXX360
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXX360_VOIP)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP = YES
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER  = AFO
+	#---- Device MODEL NAME
+	MODEL_NAME   := "NEXX360"
+	#---- Device PRODUCT NAME
+	PRODUCT_NAME := NEXX360
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP = YES
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER  = PARTRON
+	#---- Device MODEL NAME
+	MODEL_NAME   := "NEXXONE"
+	#---- Device MODEL NAME
+	PRODUCT_NAME := NEXXONE
+endif
 
 ################################################################################
 ################################################################################
@@ -260,11 +309,13 @@ export TARGET_FS_DIR
 export TEARDOWN_LOAD_UNLOAD
 export APP_DIR
 export APP_INC_DIR
-export USE_ISP
 export UBX_TARGET
+export SYSTEM_PLATFORM
+export USE_ISP
 export USE_WIFI
+export USE_VOIP
+export CAM_MANUFACTURER
 export MODEL_NAME
-export MODEL_TYPE
 export PRODUCT_NAME
 export EXTERNAL_PACKAGE
 export SYSROOT

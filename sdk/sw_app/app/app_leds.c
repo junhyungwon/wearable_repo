@@ -240,6 +240,7 @@ int app_leds_gps_ctrl(int ste)
  * connection OK --> GREEN
  * connection fail --> RED
 -----------------------------------------------------------------------------*/
+#ifdef NEXXONE
 int app_leds_cam_ctrl(int ste)
 {
 	int ret = 0;
@@ -283,6 +284,39 @@ int app_leds_voip_ctrl(int ste)
 
 	return ret;
 }
+#else
+int app_leds_cam_ctrl(int no, int ste)
+{
+	int ret = 0;
+	int index = 0;
+
+	/* don't control for update */
+	if (app_cfg->ste.b.busy) {
+		return 0;
+	}
+
+	switch (no) {
+	case 0:
+		index = LED_IDX_CAM1; break;
+	case 1:
+		index = LED_IDX_CAM2; break;
+	case 2:
+		index = LED_IDX_CAM3; break;
+	case 3:
+		index = LED_IDX_CAM4; break;
+	default:
+		eprintf("invalid camera led index (%d)\n", no);
+		return -1;
+	}
+
+	ret = leds_ctrl(index, ste?DEV_LED_ON:DEV_LED_OFF);
+	if (ret < 0) {
+		eprintf("failed camera led control (%d)\n", index);
+	}
+
+	return ret;
+}
+#endif
 
 /*----------------------------------------------------------------------------
  LED SD card (insert/remove) control.

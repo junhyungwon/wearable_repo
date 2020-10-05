@@ -367,11 +367,13 @@ static int DM81XX_SWOSD_setWinParam(SWOSD_Hndl *osdHndl, int idx, int height, in
 	bmpWinPrm.bmpWinAddrUV = SWOSD_NULL;
 	*/
 
-//	xoffset = 96;
-//	yoffset = 48;
-
+#if defined(LF_SYS_NEXXONE_VOIP)
 	xoffset = 32;
 	yoffset = 16;
+#else	
+	xoffset = 96;
+	yoffset = 48;
+#endif
 
 	//# win0 position - date/time
 	win = OSDWIN_0;

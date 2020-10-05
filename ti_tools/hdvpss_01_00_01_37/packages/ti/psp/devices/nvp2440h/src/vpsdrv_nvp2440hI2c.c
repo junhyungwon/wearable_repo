@@ -24,7 +24,11 @@
 #define NVP2440H_I2C_ID		2
 
 //# for partron 0x66, afo 0x7F
-#define NVP2440H_I2C_ADDR	0x66 //0x7F //# 0xxFE
+#if defined(LF_SYS_NEXXONE_VOIP)
+#define NVP2440H_I2C_ADDR	0x66 //# 0xcc
+#else
+#define NVP2440H_I2C_ADDR	0x7F //# 0xFE
+#endif
 
 /* NVP2440H Command List */
 #define NVP2440H_CMD_ISP_REG_WRITE			0x02
@@ -368,7 +372,20 @@ static int nvp2440h_sensor_init(int idx)
 
 	//# mirror 0:VH, 1:V, 2:H, 3:off (for 3100k)
 	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
+	#if defined(LF_SYS_NEXXONE_VOIP)
 	val = 0x03; //0x01
+	#else
+	if(idx == 0) {
+		val = 0x00;
+	} else if(idx == 1) {
+		val = 0x00;
+	} else if(idx == 2) {
+		val = 0x00;//0x01; //0x01;
+	} else if(idx == 3) {
+		val = 0x00;//0x01; //0x01;
+	}
+	#endif
+	
 	if ((val == 0x03) || (val == 0x01)) 
 	{
 		recnt = WRITE_RETRY_CNT;

@@ -27,8 +27,11 @@
 #include "app_file.h"
 #include "app_ctrl.h"
 #include "app_gui.h"
-#include "app_voip.h"
 #include "app_buzz.h"
+
+#if SYS_CONFIG_VOIP
+#include "app_voip.h"
+#endif
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -152,8 +155,10 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 				/* add rupy */
 				app_rec_stop(0);
 				app_file_save_flist(); /* save file list */
+				#if SYS_CONFIG_VOIP
 				app_voip_save_config(); /* save voip volume */
-	            app_buzz_ctrl(80, 2);	//# buzz: pwr off
+	            #endif
+				app_buzz_ctrl(80, 2);	//# buzz: pwr off
 				eprintf("low power detect(%d, %d)!\n", ibatt, ebatt);
                 sprintf(msg, "Peek Low Voltage Detected ");
                 app_log_write(MSG_LOG_SHUTDOWN, msg);
@@ -234,7 +239,9 @@ static void *THR_micom(void *prm)
 					sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
 					app_log_write( MSG_LOG_SHUTDOWN, log);
 					dprintf("%s\n", log);
+					#if SYS_CONFIG_VOIP
 					app_voip_save_config(); /* save voip volume */
+					#endif
 					app_set_write();
 					app_mcu_pwr_off(OFF_NORMAL);
 					exit = 1;

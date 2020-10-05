@@ -13,6 +13,7 @@
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
+#include "board_config.h"
 #include "app_msg.h"
 #include "app_log.h"
 #include "app_leds.h"
@@ -23,24 +24,13 @@
 #define NET_TYPE_STATIC 		0
 #define NET_TYPE_DHCP           1
 
-#if defined(NEXXONE)
-	#define MODEL_CH_NUM				1
-#elif defined(NEXX360)
-	#define MODEL_CH_NUM				4
-#elif defined(FITT360_SECURITY)
-	#define MODEL_CH_NUM				4
-#else
-    #error "Invalid PRODUCT_NAME, check PRODUCT_NAME(exported) in Rules.make file, and add -D$(PRODUCT_NAME) to CFLAGS in current Makefile."
-#endif
-
 #define STM_CH_NUM				MODEL_CH_NUM // streaming channel
 
-#define MAX_CAM_NUM 	4		// 총 카메라 개수
-#define MAX_STM_NUM 	1	    // 총 스트리밍 개수
-#define TOT_CH_INFO		(MAX_CAM_NUM+MAX_STM_NUM)      // 총 채널 정보, 모델명과 무관하게, 채널정보는 동일한 사이즈로 생성한다. 4+1
+#define MAX_CAM_NUM 			4		// 총 카메라 개수
+#define MAX_STM_NUM 			1	    // 총 스트리밍 개수
+#define TOT_CH_INFO				(MAX_CAM_NUM+MAX_STM_NUM)      // 총 채널 정보, 모델명과 무관하게, 채널정보는 동일한 사이즈로 생성한다. 4+1
 						       // Use only for array declarations.
 
-#define MAX_CH_NUM				MAX_CAM_NUM
 #define MAX_AVI_CNT             4096 //  About 64G / 120Mbyte(1minute)
 
 #define MAX_CHAR_10             10

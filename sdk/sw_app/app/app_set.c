@@ -1088,7 +1088,9 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
         }
 		/* added by rupy */
 		app_file_save_flist(); /* save file list */
+		#if SYS_CONFIG_VOIP
 		app_voip_save_config(); /* save voip volume */
+		#endif
 		sync();
 		
 		app_mcu_pwr_off(OFF_RESET);

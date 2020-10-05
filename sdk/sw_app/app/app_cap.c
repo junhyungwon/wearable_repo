@@ -78,12 +78,21 @@ void video_status(void)
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
+#ifdef NEXXONE
 	app_leds_cam_ctrl(vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
-	app_cfg->vid_count = vcount ;
-
-    sprintf(msg, " Camera Detected Count: %d", count );
+#else
+	for (i = 0; i < count; i++)
+    {
+		/* cam led on/off */
+		app_leds_cam_ctrl(i, vstatus[i]);
+		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
+        vcount += vstatus[i] ;
+	}
+#endif
+	app_cfg->vid_count = vcount;
+    sprintf(msg, " Camera Detected Count: %d", count);
 	app_log_write(MSG_LOG_WRITE, msg);
 
 	if (app_cfg->ste.b.cap == 0) {
@@ -511,7 +520,13 @@ int app_cap_start(void)
 	vid_cap_start();
 
 	//#--- start component
+#if defined(NEXX360)
+	Vsys_create(0);
+#elif defined(FITT360_SECURITY)
+	Vsys_create(1);
+#elif defined(NEXXONE)	
 	Vsys_create();
+#endif	
 	Vsys_datetime_init();	//# m3 Date/Time init
 
 	Vcap_start();
