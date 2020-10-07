@@ -141,7 +141,7 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
     int br ;
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
     app_set->ch[ch].framerate = framerate ;
     app_cfg->ich[ch].fr = framerate;
 #else
@@ -185,7 +185,7 @@ int ctrl_vid_bitrate(int ch, int bitrate)
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
     int br;
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
     app_set->ch[ch].quality = bitrate;
 	br = bitrate ;
 #else

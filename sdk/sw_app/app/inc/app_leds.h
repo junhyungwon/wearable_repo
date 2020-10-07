@@ -72,7 +72,7 @@ int app_leds_sys_normal_ctrl(void);
 int app_leds_sys_error_ctrl(void);
 int app_leds_eth_status_ctrl(int ste);
 
-#ifdef NEXXONE
+#if defined(NEXXONE) || defined(NEXX360W)
 int app_leds_cam_ctrl(int ste);
 int app_leds_voip_ctrl(int ste);
 #else

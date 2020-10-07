@@ -114,7 +114,7 @@ static void __netmgr_wlan_event_handler(int ste)
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
 	info = (netmgr_shm_request_info_t *)databuf;
 	
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
 	if (app_cfg->vid_count == 0) {
 		//mode = 1; /* AP Mode :TODO */			
 	}

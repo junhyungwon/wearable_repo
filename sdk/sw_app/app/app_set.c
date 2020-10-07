@@ -827,7 +827,7 @@ static void app_set_default(int default_type)
     if (!default_type)
         memcpy(&tmp_set, app_set, sizeof(app_set_t)) ;
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	//# Encoding cfg per channel
 	channels = MODEL_CH_NUM+1;
 
@@ -974,7 +974,7 @@ static void app_set_default(int default_type)
     app_set->time_info.daylight_saving = 0 ;
     app_set->time_info.timesync_type = 1 ;
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	app_set->account_info.ON_OFF = ON;
 #else
 	app_set->account_info.ON_OFF = OFF;
@@ -1053,7 +1053,7 @@ int app_set_open(void)
 	 *            MMC  : --> /mmc/cfg/nexx_cfg.ini
 	 *            NAND : --> /media/nand/cfg/nexx_cfg.ini 
 	 */
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
 		ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
 #else
@@ -1108,7 +1108,7 @@ int app_set_write(void)
 			chmod(CFG_DIR_MMC, 0775);
 		}
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
 #else
 		snprintf(path, sizeof(path), "%s", CFG_FILE_MMC);
@@ -1127,7 +1127,7 @@ int app_set_write(void)
 	
 	memset(path, 0, sizeof(path));
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
 #else
 	snprintf(path, sizeof(path), "%s", CFG_FILE_NAND);

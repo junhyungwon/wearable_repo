@@ -19,9 +19,9 @@
 /*
  * LF_SYS_XXXX is defines in sw_mcfw/makerules/common_header_a8.mk
  */ 
-#if defined(LF_SYS_NEXX360_VOIP)
-#	define NEXX360						
-#	define MODEL_NAME					"NEXX360"
+#if defined(LF_SYS_NEXX360W)
+#	define NEXX360W						
+#	define MODEL_NAME					"NEXX360W"
 #	define MODEL_CH_NUM					4
 #	define STREAM_CH_NUM				4
 #	define JPEG_CH_NUM					5
@@ -29,9 +29,9 @@
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_NET				1
 #	define SYS_CONFIG_GPS				1
-#elif defined(LF_SYS_NEXX360)
-#	define NEXX360
-#	define MODEL_NAME					"NEXX360"
+#elif defined(LF_SYS_NEXX360B)
+#	define NEXX360B
+#	define MODEL_NAME					"NEXX360B"
 #	define MODEL_CH_NUM					4
 #	define STREAM_CH_NUM				4
 #	define JPEG_CH_NUM					5

@@ -16,9 +16,9 @@ endif
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := FITT360_BASIC
 #SYSTEM_PLATFORM := FITT360
-SYSTEM_PLATFORM := NEXX360
-#SYSTEM_PLATFORM := NEXX360_VOIP
-#SYSTEM_PLATFORM := NEXXONE_VOIP
+#SYSTEM_PLATFORM := NEXX360B
+#SYSTEM_PLATFORM := NEXX360W
+SYSTEM_PLATFORM := NEXXONE_VOIP
 ######################################################################################
 
 #--- Build Type (debug/release)
@@ -71,10 +71,6 @@ ifeq ($(SYSTEM_PLATFORM), FITT360_BASIC)
 	USE_VOIP := NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER := AFO
-	#---- Device MODEL NAME
-	MODEL_NAME   := "FITT360 Security"
-	#---- Device PRODUCT NAME
-	PRODUCT_NAME := FITT360_SECURITY
 endif
 ifeq ($(SYSTEM_PLATFORM), FITT360)
 	#--- Select Wi-Fi method (YES/NO)
@@ -83,34 +79,22 @@ ifeq ($(SYSTEM_PLATFORM), FITT360)
 	USE_VOIP := NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER := AFO
-	#---- Device MODEL NAME
-	MODEL_NAME := "FITT360 Security"
-	#---- Device PRODUCT NAME
-	PRODUCT_NAME := FITT360_SECURITY
 endif
-ifeq ($(SYSTEM_PLATFORM), NEXX360)
+ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP := NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER := AFO
-	#---- Device MODEL NAME
-	MODEL_NAME   := "NEXX360"
-	#---- Device PRODUCT NAME
-	PRODUCT_NAME := NEXX360
 endif
-ifeq ($(SYSTEM_PLATFORM), NEXX360_VOIP)
+ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = YES
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = AFO
-	#---- Device MODEL NAME
-	MODEL_NAME   := "NEXX360"
-	#---- Device PRODUCT NAME
-	PRODUCT_NAME := NEXX360
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#--- Select Wi-Fi method (YES/NO)
@@ -119,10 +103,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	USE_VOIP = YES
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = PARTRON
-	#---- Device MODEL NAME
-	MODEL_NAME   := "NEXXONE"
-	#---- Device MODEL NAME
-	PRODUCT_NAME := NEXXONE
 endif
 
 ################################################################################
@@ -315,7 +295,5 @@ export USE_ISP
 export USE_WIFI
 export USE_VOIP
 export CAM_MANUFACTURER
-export MODEL_NAME
-export PRODUCT_NAME
 export EXTERNAL_PACKAGE
 export SYSROOT

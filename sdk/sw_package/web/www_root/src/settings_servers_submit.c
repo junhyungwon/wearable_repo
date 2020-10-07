@@ -131,7 +131,7 @@ static int submit_settings_qcgi()
             sprintf(t.onvif.pw, "%s", str);
         }
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
         str= req->getstr(req, "txt_voip_ip", false);
         if (str != NULL) {
             sprintf(t.voip.ipaddr, "%s", str);
@@ -181,7 +181,7 @@ static int submit_settings_qcgi()
 		}
 #endif
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 		if(enable_p2p == -1){
 			CGI_DBG("Invalid Parameter:enable_p2p\n");
 			return ERR_INVALID_PARAM;
