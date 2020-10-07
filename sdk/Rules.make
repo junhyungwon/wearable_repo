@@ -17,8 +17,8 @@ endif
 #SYSTEM_PLATFORM := FITT360_BASIC
 #SYSTEM_PLATFORM := FITT360
 #SYSTEM_PLATFORM := NEXX360B
-#SYSTEM_PLATFORM := NEXX360W
-SYSTEM_PLATFORM := NEXXONE_VOIP
+SYSTEM_PLATFORM := NEXX360W
+#SYSTEM_PLATFORM := NEXXONE_VOIP
 ######################################################################################
 
 #--- Build Type (debug/release)
