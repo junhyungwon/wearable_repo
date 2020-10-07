@@ -121,7 +121,7 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 	      //|| gov != app_set->ch[STM_CH_NUM].gop // gov eq fps
 		  || fps != app_set->ch[STM_CH_NUM].framerate)
 
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 		DBG_UDS("STM_CH_NUM=%d, newRes=%d, newKbps=%d,fps=%d, gov=%d\n",STM_CH_NUM, newRes, newKbps,fps, gov);
 		ctrl_full_vid_setting(STM_CH_NUM, newRes, newKbps, fps, gov);
 
@@ -843,7 +843,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 #endif
 
 	// p2p
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
 		app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
 		isChanged++;
@@ -1192,7 +1192,7 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 {
 	int ch=0;
 	
-#if defined(NEXXONE) || defined(NEXX360)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	// REC 
 	for(ch = 0; ch < MODEL_CH_NUM; ch++)
 	{

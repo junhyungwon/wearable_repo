@@ -22,7 +22,7 @@
 #define SW_RELEASE					1
 #define TCX_MODEL   				MODEL_NAME
 
-#if defined(NEXX360)
+#if defined(NEXX360B) || defined(NEXX360W)
 #if SW_RELEASE
 #if SYS_CONFIG_NET
 #	define FITT360_SW_VER      		"2.06.00N"

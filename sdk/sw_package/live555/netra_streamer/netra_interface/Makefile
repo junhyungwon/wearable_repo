@@ -9,7 +9,7 @@ INCLUDES = -I . \
         -I../netra_interface \
         $(CMEM_INC)
 
-C_FLAGS += -Wall -g -D$(PRODUCT_NAME)
+C_FLAGS += -Wall -g
 AR_FLAGS += -rcus
 
 CC = $(CODEGEN_PREFIX)gcc $(INCLUDES) -c
