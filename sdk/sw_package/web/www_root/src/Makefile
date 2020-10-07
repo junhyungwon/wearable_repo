@@ -9,11 +9,11 @@ WID=www-data
 INC += -I. -I../srclib
 COMPILE_OPTS =		-g -c
 COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
-COMPILE_OPTS +=		
 C =			c
 CC =			$(CROSS_COMPILE)gcc
 CPP =			$(CROSS_COMPILE)cpp
 GPP =			$(CROSS_COMPILE)g++
+GPPFLAGS =		$(COMPILE_OPTS)
 CFLAGS =		$(COMPILE_OPTS)
 CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1
 LINK =			$(CROSS_COMPILE)g++
@@ -50,21 +50,21 @@ $(info *********** INFO ./cgi-bin directory exist.)
 endif
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(INC) -o "$@" "$<"
+	$(CC) -c $(CFLAGS) $(INC) -o $@ $<
 
 .cpp.o:
-	$(GPP) -c $(CFLAGS) $(INC) -o "$@" "$<"
+	$(GPP) -c $(CFLAGS) $(INC) -o $@ $<
 
 all: clean $(OBJC) $(OBJGPP)
 
 $(OBJC):%.o: %.c $(HEADER)
 	@echo Linking $@ from ...
-	$(CC) -o cgi-bin/$*.cgi $(INC) $(LDFLAGS) $(LIBS) $^ 
+	$(CC) -D$(SYSTEM_PLATFORM) $(INC) $(LDFLAGS) $(LIBS) $^ -o cgi-bin/$*.cgi 
 #	$(CC) -o $@ $(INC) $(LDFLAGS) $(LIBS) $<
 
 $(OBJGPP):%.o: %.cpp $(HEADER)
 	@echo Linking $@ from ...
-	$(GPP) -o cgi-bin/$*.cgi $(INC) $(LDFLAGS) $(LIBS) $^ 
+	$(GPP) -D$(SYSTEM_PLATFORM) $(INC) $(LDFLAGS) $(LIBS) $^  -o cgi-bin/$*.cgi
 
 clean:
 #	$(RM) $(OBJC)
