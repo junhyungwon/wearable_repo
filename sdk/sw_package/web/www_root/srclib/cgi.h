@@ -44,6 +44,21 @@
 #endif
 
 
+#if defined(FITT360_BASIC)
+#define MODEL_NAME "FITT360 Security"
+#elif defined(FITT360)
+#define MODEL_NAME "FITT360 Security"
+#elif defined(NEXX360B)
+#define MODEL_NAME "NEXX360B"
+#elif defined(NEXX360W)
+#define MODEL_NAME "NEXX360W"
+#elif defined(NEXXONE_VOIP)
+#define NEXXONE
+#define MODEL_NAME "NEXXONE"
+#endif
+
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

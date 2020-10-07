@@ -8,7 +8,7 @@ WID=www-data
 
 INC += -I. -I../include
 COMPILE_OPTS =		-g -c
-COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t
+COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t  -D$(SYSTEM_PLATFORM)
 #COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
 C =			c
 CC =			$(CROSS_COMPILE)gcc

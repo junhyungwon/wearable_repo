@@ -25,8 +25,8 @@ VAR_RUN_DIR = $(TARGET_PATH)/var/run
 HAVE_VAR_RUN_DIR = $(shell if [ -e $(VAR_RUN_DIR) ]; then echo 1; else echo 0; fi;)
 ifeq ($(HAVE_VAR_RUN_DIR),0)
 $(shell sudo mkdir -p $(VAR_RUN_DIR))
-endif
-
+endif 
+ 
 # file system의 /opt/fit/bin directory 생성, 여기서 할 일은 아닌것 같은데...
 OPT_BIN_DIR = $(TARGET_PATH)/opt/fit/bin
 HAVE_OPT_BIN_DIR = $(shell if [ -e $(OPT_BIN_DIR) ]; then echo 1; else echo 0; fi;)
@@ -37,20 +37,12 @@ else
 endif
 
 #모델명 첵크 
-ifeq ($(strip $(MODEL_NAME)),)
-$(info *****************************************************************)
-$(info MODEL_NAME is empty!!!. Please, check MODEL_NAME in webRules.make)
-$(info *****************************************************************)
 all:
-	exit 0
-else
-all:
-	cd srclib; $(MAKE)
-	cd default; $(MAKE)
-	cd src; $(MAKE)
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root/srclib
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root/default
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root/src
 	make install
 	echo $(MAKE)
-endif
 
 clean:
 	-cd srclib; make clean;

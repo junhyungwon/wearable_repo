@@ -8,12 +8,14 @@ WID=www-data
 ################################################################################
 
 INC += -I. -I../../include
+
 COMPILE_OPTS =		-g -c
-COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
+COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -D$(SYSTEM_PLATFORM)
 C =			c
 CC =			$(CROSS_COMPILE)gcc
 CPP =			$(CROSS_COMPILE)cpp
 GPP =			$(CROSS_COMPILE)g++
+GPPFLAGS =		$(COMPILE_OPTS)
 CFLAGS =		$(COMPILE_OPTS)
 CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall
 LINK =			$(CROSS_COMPILE)g++

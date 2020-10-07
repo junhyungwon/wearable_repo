@@ -26,6 +26,7 @@ static int submit_settings_qcgi()
 
         T_CGI_SERVERS_CONFIG t;
 		memset(&t, 0, sizeof t);
+        t.voip.port = 6060;
 
 		int  bs_enable=-1;
 		int  ms_enable=-1;
