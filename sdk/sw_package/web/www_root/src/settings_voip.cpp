@@ -21,6 +21,7 @@ int main()
 
 	printf("<voip>\n");
 	printf("<model>%s</model>\n", MODEL_NAME);
+	printf("<private_network_only>%s</private_network_only>\n", t.private_network_only);
 	printf("<ip>%s</ip>\n", t.ipaddr);
 	printf("<port>%d</port>\n", t.port);
 	printf("<id>%s</id>\n",     t.userid);

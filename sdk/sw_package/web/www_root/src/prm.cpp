@@ -357,6 +357,7 @@ int put_json_all_config()
 #endif
 		
 		// voip
+		json_object_object_add(voip_obj, "private_network_only", json_object_new_int(p.voip.private_network_only));
 		json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p.voip.ipaddr));
 		json_object_object_add(voip_obj, "port",   json_object_new_int(   p.voip.port));
 		json_object_object_add(voip_obj, "userid", json_object_new_string(p.voip.userid));
@@ -440,6 +441,7 @@ void put_json_voip_config(T_CGI_VOIP_CONFIG *p)
 	voip_obj     = json_object_new_object();
 
 	json_object_object_add(voip_obj, "model",  json_object_new_string(MODEL_NAME));
+	json_object_object_add(voip_obj, "private_network_only", json_object_new_int(p->private_network_only));
 	json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p->ipaddr));
 	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->port));
 	json_object_object_add(voip_obj, "userid", json_object_new_string(p->userid));
@@ -577,6 +579,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(myobj, "p2p", p2p_obj);
 
 	// voip
+	json_object_object_add(voip_obj, "private_network_only", json_object_new_int(p->voip.private_network_only));
 	json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p->voip.ipaddr));
 	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->voip.port));
 	json_object_object_add(voip_obj, "userid", json_object_new_string(p->voip.userid));

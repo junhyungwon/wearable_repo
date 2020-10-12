@@ -248,7 +248,8 @@ typedef struct {
     char  userid[MAX_CHAR_16] ;
     char  passwd[MAX_CHAR_16] ;
     char  peerid[MAX_CHAR_16] ;
-} app_voip_t; // 66 
+    short private_network_only;
+} app_voip_t; // 68 
 
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1
@@ -266,10 +267,10 @@ typedef struct {
     
     app_account_t           account_info;
 
-    app_voip_t              voip; // 66
+    app_voip_t              voip; // 68
 
 	//char reserved[474]; // 1024 - 164 (ddns) - 66 (time) - 320(account)
-	char reserved[408];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 66(voip)
+	char reserved[406];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip)
 } app_set_t;
 
 /*----------------------------------------------------------------------------

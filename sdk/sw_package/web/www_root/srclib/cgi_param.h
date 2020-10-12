@@ -58,6 +58,7 @@ typedef struct _tagCgiP2pServerConfig {
 }T_CGI_P2PSERVER_CONFIG;
 
 typedef struct _tagCgiVoipConfig{
+    unsigned short private_network_only;
     char ipaddr[16];
     unsigned short  port;
     char userid[16];

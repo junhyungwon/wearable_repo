@@ -631,6 +631,7 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	// voip
+	t->private_network_only = app_set->voip.private_network_only;
 	t->port   = app_set->voip.port;
 	strcpy(t->ipaddr, app_set->voip.ipaddr);
 	strcpy(t->userid, app_set->voip.userid);
@@ -646,7 +647,12 @@ int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	int isChanged=0;
+
 	// voip config
+	if(app_set->voip.private_network_only!= t->private_network_only){
+		app_set->voip.private_network_only = t->private_network_only;
+		isChanged++;
+	}
 	if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
 		strcpy(app_set->voip.ipaddr,t->ipaddr);
 		isChanged++;
@@ -714,6 +720,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 	// voip
 	t->voip.port   = app_set->voip.port;
+	t->voip.private_network_only   = app_set->voip.private_network_only;
 	strcpy(t->voip.ipaddr, app_set->voip.ipaddr);
 	strcpy(t->voip.userid, app_set->voip.userid);
 	strcpy(t->voip.passwd, app_set->voip.passwd);
@@ -851,6 +858,10 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 #endif
 
 	// voip config
+	if(app_set->voip.private_network_only != t->voip.private_network_only){
+		app_set->voip.private_network_only = t->voip.private_network_only;
+		isChanged++;
+	}
 	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
 		strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
 		isChanged++;

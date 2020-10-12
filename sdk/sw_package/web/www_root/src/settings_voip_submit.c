@@ -27,7 +27,11 @@ static int submit_settings_qcgi()
         T_CGI_VOIP_CONFIG t;
 		memset(&t, 0, sizeof t);
 
-        char * str= req->getstr(req, "txt_voip_ip", false);
+        char * str= req->getstr(req, "voipo_private_network_only", false);
+        if (str != NULL) {
+            t.private_network_only = atoi(str);
+        }
+        str= req->getstr(req, "txt_voip_ip", false);
         if (str != NULL) {
             sprintf(t.ipaddr, "%s", str);
         }
