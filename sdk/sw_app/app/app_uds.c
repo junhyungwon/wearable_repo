@@ -121,76 +121,8 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 	      //|| gov != app_set->ch[STM_CH_NUM].gop // gov eq fps
 		  || fps != app_set->ch[STM_CH_NUM].framerate)
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 		DBG_UDS("STM_CH_NUM=%d, newRes=%d, newKbps=%d,fps=%d, gov=%d\n",STM_CH_NUM, newRes, newKbps,fps, gov);
 		ctrl_full_vid_setting(STM_CH_NUM, newRes, newKbps, fps, gov);
-
-#else // defined(FITT360_SECURITY)
-		if (kbps != 0) //
-		{
-			if (app_set->ch[STM_CH_NUM].resol == RESOL_1080P) // FHD Streaming
-			{
-				if (kbps > 7000)
-					kbps = 0; //  HIGH 0 --> 8000Kbps
-				else if (kbps <= 7000 && kbps > 5000)
-					kbps = 1; //  MID  1 --> 6000Kbps
-				else if (kbps <= 5000)
-					kbps = 2; //  LOW  2 --> 4000Kbps
-				else
-					kbps = 2;
-			}
-			else if (app_set->ch[STM_CH_NUM].resol == RESOL_720P) // HD Streaming
-			{
-				if (kbps > 3500)
-					kbps = 0; //  HIGH 0 --> 4000Kbps
-				else if (kbps <= 3500 && kbps > 2500)
-					kbps = 1; //  MID  1 --> 3000Kbps
-				else if (kbps <= 2500)
-					kbps = 2; //  LOW  2 --> 2000Kbps
-				else
-					kbps = 2;
-			}
-			else
-			{
-				if (kbps > 1500)
-					kbps = 0; //  HIGH 0 --> 2000Kbps
-				else if (kbps <= 1500 && kbps > 800)
-					kbps = 1; //  MID  1 --> 1000Kbps
-				else if (kbps <= 800)
-					kbps = 2; //  LOW  2 --> 512Kbps
-				else
-					kbps = 2;
-			}
-
-			if (app_set->ch[STM_CH_NUM].quality != kbps)
-				ctrl_vid_bitrate(STM_CH_NUM, kbps);
-		}
-
-		if (fps != 0) //
-		{
-			if (fps > 12)
-				fps = 0; // HIGH 0 -> 15fps
-			else if (fps <= 12 && fps > 8)
-				fps = 1; // MID 1 -> 10fps
-			else if (fps <= 8)
-				fps = 2; // LOW 2 -> 5fps
-			else
-				fps = 0;
-
-			if (app_set->ch[STM_CH_NUM].framerate != fps)
-				ctrl_vid_framerate(STM_CH_NUM, fps);
-		}
-
-		if (gov != 0)
-		{
-			if (gov <= DEFAULT_FPS && gov > 0)
-			{
-				if (app_set->ch[STM_CH_NUM].gop != gov)
-					ctrl_vid_gop_set(STM_CH_NUM, gov);
-			}
-		}
-#endif
-
 	}
 	else
 	{
@@ -628,6 +560,7 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 	return -1;
 }
 
+#if SYS_CONFIG_VOIP
 int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	// voip
@@ -677,6 +610,7 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 	return isChanged;
 	// 웹에서 apply,누르면 restart는 하는걸로...
 }
+#endif
 
 int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 {
@@ -718,6 +652,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	
 	t->p2p.enable = app_set->sys_info.P2P_ON_OFF;
 
+#if SYS_CONFIG_VOIP
 	// voip
 	t->voip.port   = app_set->voip.port;
 	t->voip.private_network_only   = app_set->voip.private_network_only;
@@ -725,7 +660,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->voip.userid, app_set->voip.userid);
 	strcpy(t->voip.passwd, app_set->voip.passwd);
 	strcpy(t->voip.peerid, app_set->voip.peerid);
-
+#endif
 	return 0;
 }
 
@@ -849,14 +784,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	}
 #endif
 
-	// p2p
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
 		app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
 		isChanged++;
 	}
-#endif
 
+#if SYS_CONFIG_VOIP
 	// voip config
 	if(app_set->voip.private_network_only != t->voip.private_network_only){
 		app_set->voip.private_network_only = t->voip.private_network_only;
@@ -882,7 +815,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		strcpy(app_set->voip.peerid, t->voip.peerid);
 		isChanged++;
 	}
-	
+#endif	
 	return isChanged;
 	// restart 후에 적용됨. 2019년 8월 22일, 웹에서 apply,누르면 restart는 하는걸로...
 }
@@ -1203,7 +1136,6 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 {
 	int ch=0;
 	
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	// REC 
 	for(ch = 0; ch < MODEL_CH_NUM; ch++)
 	{
@@ -1233,39 +1165,6 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 	}
 	DBG_UDS("[STM] ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
 
-#else // FITT360
-	// REC index base
-	for(ch = 0; ch < MODEL_CH_NUM; ch++)
-	{
-		if(rec_fps < FPS_MAX && rec_fps >= 0 && app_set->ch[ch].framerate != rec_fps) 
-			app_set->ch[ch].framerate = rec_fps ;
-		if(rec_bps < MAX_QUALITY && rec_bps >= 0 && app_set->ch[ch].quality != rec_bps)
-			app_set->ch[ch].quality = rec_bps ;
-		if(rec_gop <= DEFAULT_FPS && rec_gop > 0 && app_set->ch[ch].gop != rec_gop) 
-			app_set->ch[ch].gop = rec_gop ;
-		if(rec_rc != app_set->ch[ch].rate_ctrl)
-			app_set->ch[ch].rate_ctrl = rec_rc ;
-	}
-
-	DBG_UDS("[REC] ch:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, rec_fps, rec_bps, rec_gop, rec_rc);
-
-	// STM
-	ch=STM_CH_NUM;
-	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
-		app_set->ch[ch].resol = stm_res ;
-	if(stm_fps < FPS_MAX && stm_fps >= 0 && app_set->ch[ch].framerate != stm_fps)
-		app_set->ch[ch].framerate = stm_fps ;
-	if(stm_bps < MAX_QUALITY && stm_bps >= 0 &&app_set->ch[ch].quality != stm_bps)
-		app_set->ch[ch].quality = stm_bps ;
-	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
-		app_set->ch[ch].gop = stm_gop ;
-	if(stm_rc != app_set->ch[ch].rate_ctrl){
-		app_set->ch[ch].rate_ctrl = stm_rc;
-	}
-		
-	DBG_UDS("[STM] ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
-#endif
-    
 	return 0;
 }
 
@@ -1804,6 +1703,7 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "reload_config") == 0)
 		{
 		}
+		#if SYS_CONFIG_VOIP		
 		else if (strcmp(rbuf, "GetVoipConfiguration") == 0) {
 			sprintf(wbuf, "[APP_UDS] --- GetVoipConfiguration ---");
 			app_log_write(MSG_LOG_WRITE, wbuf);
@@ -1854,6 +1754,7 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
+		#endif
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
 			sprintf(wbuf, "[APP_UDS] --- GetServersConfiguration ---");
 			app_log_write(MSG_LOG_WRITE, wbuf);

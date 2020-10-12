@@ -78,7 +78,7 @@ void video_status(void)
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
-#if defined(NEXXONE) || defined(NEXX360W)
+#if defined(NEXXONE)
 	app_leds_cam_ctrl(vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
@@ -109,10 +109,6 @@ void video_status(void)
         	app_rec_stop(1);
 			sleep(1); /* wait for file close */
 		}
-		
-#if defined(FITT360_SECURITY)
-        app_mcu_pwr_off(OFF_NORMAL);
-#endif
     } 
 }
 
@@ -401,11 +397,7 @@ static void cap_enc_late_init(void)
 		ctrl_vid_rate(i, app_cfg->ich[i].rc, app_cfg->ich[i].br);
 //        ctrl_vid_gop_set(i, app_set->ch[i].gop) ; 
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
         ctrl_vid_gop_set(i, app_set->ch[i].framerate) ; 
-#else
-		ctrl_vid_gop_set(i, app_cfg->ich[i].fr);
-#endif
 	}
 
     if (app_cfg->en_jpg)
@@ -427,31 +419,20 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 			eprintf("Failed get resolution!!!\n");
 			return EFAIL;
 		}
-
-        printf("channel = %d resolution = %d\n", idx, ch_prm->resol) ;
+        dprintf("channel = %d resolution = %d\n", idx, ch_prm->resol) ;
 
 		app_cfg->ich[idx].wi = wi;
 		app_cfg->ich[idx].he = he;
-		
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
 		app_cfg->ich[idx].fr = app_set->ch[idx].framerate ;
 		app_cfg->ich[idx].br = (app_set->ch[idx].quality * app_cfg->ich[idx].fr)/DEFAULT_FPS;
-#else
-		app_cfg->ich[idx].fr = get_fps_val(ch_prm->framerate);
-		br = get_bitrate_val(ch_prm->quality, ch_prm->resol);
-		app_cfg->ich[idx].br = (br * app_cfg->ich[idx].fr)/DEFAULT_FPS;
-#endif
-
 		app_cfg->ich[idx].rc = app_set->ch[idx].rate_ctrl ; 
-		printf(" [app] (CH%d): %dx%d, fr %d, br %d\n", idx, wi, he, app_cfg->ich[idx].fr, app_cfg->ich[idx].br);
+		dprintf(" [app] (CH%d): %dx%d, fr %d, br %d\n", idx, wi, he, app_cfg->ich[idx].fr, app_cfg->ich[idx].br);
         
-
 		if(idx==0) {
 			//# set cap param
 			vcapParams->width 	= wi;
 			vcapParams->height	= he;
 		}
-
 	}
 
 	return SOK;
@@ -520,14 +501,10 @@ int app_cap_start(void)
 	vid_cap_start();
 
 	//#--- start component
-#if defined(NEXX360B) || defined(NEXX360W) 
-	Vsys_create(0);
-#elif defined(FITT360_SECURITY)
-	Vsys_create(1);
-#elif defined(NEXXONE)	
+#if defined(NEXXONE)	
 	Vsys_create();
 #else
-#error Check SYSTEM_PLATFORM in Rules.make
+	Vsys_create(0);
 #endif	
 	Vsys_datetime_init();	//# m3 Date/Time init
 

@@ -41,7 +41,6 @@
 #endif
 
 #define SYS_LOG_ENABLE
-#define SYS_VOIP_ENABLE
 /*
  * if defined VOIP_CTRL_PWR_KEY -> short power key, volume control
  */  
