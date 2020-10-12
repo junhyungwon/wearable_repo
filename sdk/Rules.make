@@ -14,8 +14,6 @@ endif
 # CONFIGURATION
 #####################################################################################
 #--- Select SYSTEM PLATFORM -------------------------------
-#SYSTEM_PLATFORM := FITT360_BASIC
-#SYSTEM_PLATFORM := FITT360
 #SYSTEM_PLATFORM := NEXX360B
 #SYSTEM_PLATFORM := NEXX360W
 SYSTEM_PLATFORM := NEXXONE_VOIP
@@ -64,22 +62,6 @@ TILER_ENABLE := NO
 #--- Teardown method (YES/NO)
 TEARDOWN_LOAD_UNLOAD := YES
 
-ifeq ($(SYSTEM_PLATFORM), FITT360_BASIC)
-	#--- Select Wi-Fi method (YES/NO)
-	USE_WIFI = NO
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP := NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER := AFO
-endif
-ifeq ($(SYSTEM_PLATFORM), FITT360)
-	#--- Select Wi-Fi method (YES/NO)
-	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP := NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER := AFO
-endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES

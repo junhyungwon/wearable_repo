@@ -36,7 +36,10 @@
 #include "app_mcu.h"
 #include "app_rec.h"
 #include "app_file.h"
+
+#if SYS_CONFIG_VOIP
 #include "app_voip.h"
+#endif
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -65,8 +68,12 @@ static int qbr[MAX_RESOL][MAX_QUALITY] = {
 /*
  * Nexx360/Fitt360 --> 15,10,5 Fps
  * Nexxone ----------> 30,15,5
- */ 
+ */
+#if defined(NEXXONE) 
 static int FPS_IDX[FPS_MAX]	= {30, 15, 5};
+#else
+static int FPS_IDX[FPS_MAX]	= {15, 10, 5};
+#endif
 static char *cfg_dir[CFG_MAX] = {CFG_DIR_NAND, CFG_DIR_MMC};
 static char cMacAddr[18]; // Server's MAC address
 
@@ -231,15 +238,18 @@ static void char_memset(void)
 
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
 
+#if SYS_CONFIG_VOIP
 	// VOIP size : 66 
     app_set->voip.port = CFG_INVALID ;
+	app_set->voip.private_network_only=1;
     memset(app_set->voip.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.userid, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.passwd, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
-
-    memset(app_set->reserved, CFG_INVALID, 408) ;
-//    memset(app_set->reserved, CFG_INVALID, 474) ;  -66 (voip)
+    memset(app_set->reserved, CFG_INVALID, 406) ;
+#else
+    memset(app_set->reserved, CFG_INVALID, 474) ;  -66 (voip)	
+#endif
 //    memset(app_set->reserved, CFG_INVALID, 794) ;
 }
 
@@ -390,13 +400,13 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.lv = %d\n", pset->account_info.onvif.lv) ;
     printf("pset->account_info.onvif.id = %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
-
+#if SYS_CONFIG_VOIP
     printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
     printf("pset->voip.port   = %d\n", pset->voip.port);
     printf("pset->voip.userid = %s\n", pset->voip.userid);
     printf("pset->voip.passwd = %s\n", pset->voip.passwd);
     printf("pset->voip.peerid = %s\n", pset->voip.peerid);
-
+#endif
 	printf("\n");
 
     return 0;
@@ -612,9 +622,13 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
 
+#if defined(NEXXONE)
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = ON ; //# NEXXONE --> ON
-		
+	    pset->rec_info.auto_rec = ON ;
+#else
+    if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
+	    pset->rec_info.auto_rec = OFF ;
+#endif		
 	if(pset->rec_info.pre_rec != ON && pset->rec_info.pre_rec != OFF)
 	    pset->rec_info.pre_rec = OFF ;
 		
@@ -827,7 +841,6 @@ static void app_set_default(int default_type)
     if (!default_type)
         memcpy(&tmp_set, app_set, sizeof(app_set_t)) ;
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	//# Encoding cfg per channel
 	channels = MODEL_CH_NUM+1;
 
@@ -840,20 +853,6 @@ static void app_set_default(int default_type)
 		app_set->ch[ich].motion 	= OFF;
 		app_set->ch[ich].gop 	    = DEFAULT_FPS;
 	}
-#else
-	/* FITT360 (index ±¸Á¶) */
-	channels = MODEL_CH_NUM+1;
-
-	for (ich = 0; ich < channels; ich++)
-	{
-		app_set->ch[ich].resol		= RESOL_720P;
-		app_set->ch[ich].framerate	= FPS_15;
-		app_set->ch[ich].quality	= Q_HIGH;
-		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
-		app_set->ch[ich].motion 	= OFF;
-		app_set->ch[ich].gop 	    = DEFAULT_FPS;
-	}
-#endif
 	
 	app_set->wd.gsn = GSN_IDX_03;
 
@@ -939,7 +938,11 @@ static void app_set_default(int default_type)
 	//# rec information
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
+#if defined(NEXXONE)	
     app_set->rec_info.auto_rec      = ON ;
+#else
+    app_set->rec_info.auto_rec      = OFF ;
+#endif
 	app_set->rec_info.pre_rec       = OFF ;
 	app_set->rec_info.audio_rec     = OFF ;
 
@@ -974,12 +977,7 @@ static void app_set_default(int default_type)
     app_set->time_info.daylight_saving = 0 ;
     app_set->time_info.timesync_type = 1 ;
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	app_set->account_info.ON_OFF = ON;
-#else
-	app_set->account_info.ON_OFF = OFF;
-#endif
-    
     app_set->account_info.enctype = 0 ;
     if(app_set->account_info.enctype) // 1, AES encryption
 	{
@@ -1003,11 +1001,13 @@ static void app_set_default(int default_type)
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
 
+#if SYS_CONFIG_VOIP
     strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);
     app_set->voip.port = PBX_SERVER_PORT;
     strcpy(app_set->voip.passwd, PBX_SERVER_PW);
 	memset((void*)app_set->voip.userid, 0x00, sizeof(app_set->voip.userid));
 	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
+#endif	
 }
 
 static void app_set_delete_cfg(void)
@@ -1053,14 +1053,8 @@ int app_set_open(void)
 	 *            MMC  : --> /mmc/cfg/nexx_cfg.ini
 	 *            NAND : --> /media/nand/cfg/nexx_cfg.ini 
 	 */
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
 		ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
-#else
-	/* FITT360 */
-	if (cfg_read(CFG_MMC, CFG_FILE_MMC) == EFAIL)	//# read previous setting type.
-		ret = cfg_read(CFG_NAND, CFG_FILE_NAND);	//# nand read if sd read fail
-#endif
 	
 	if (ret == EFAIL) 
 	    app_set_default(FULL_RESET);
@@ -1108,12 +1102,7 @@ int app_set_write(void)
 			chmod(CFG_DIR_MMC, 0775);
 		}
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
-#else
-		snprintf(path, sizeof(path), "%s", CFG_FILE_MMC);
-#endif
-
 		if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
 			eprintf("couldn't open %s file\n", path);
 		}
@@ -1126,12 +1115,7 @@ int app_set_write(void)
 	}
 	
 	memset(path, 0, sizeof(path));
-
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
 	snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
-#else
-	snprintf(path, sizeof(path), "%s", CFG_FILE_NAND);
-#endif
 	
 	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
 		eprintf("couldn't open %s file\n", path);

@@ -27,6 +27,7 @@
 #include <syslog.h>
 
 #include "msg.h"
+#include "board_config.h"
 #include "app_gmem.h"
 
 /*----------------------------------------------------------------------------

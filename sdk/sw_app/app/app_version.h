@@ -22,19 +22,26 @@
 #define SW_RELEASE					1
 #define TCX_MODEL   				MODEL_NAME
 
-#if defined(NEXX360B) || defined(NEXX360W)
-#if SW_RELEASE
-#if SYS_CONFIG_NET
-#	define FITT360_SW_VER      		"2.06.00N"
-#else
-#	define FITT360_SW_VER      		"2.06.00B"
-#endif /* #if SYS_CONFIG_NET */
-#else
-#	define FITT360_SW_VER			"2.06.00.D"
-#endif	/* #if SW_RELEASE */
-#elif defined(NEXXONE)
-	#define FITT360_SW_VER      	"0.90.06" 	//# alpha version
-#endif
-#define FITT360_HW_VER				"Rev.0.3"
+/* Fixed Hardware Version */
+#define FITT360_HW_VER				"Rev.0.3" 
 
+#if defined(NEXX360B)
+#	if SW_RELEASE
+#	define FITT360_SW_VER      		"2.06.00B"
+#	else
+#	define FITT360_SW_VER      		"2.06.00B"
+#	endif
+#elif defined(NEXX360W)
+#	if SW_RELEASE
+#	define FITT360_SW_VER      		"2.06.00N"
+#	else
+#	define FITT360_SW_VER      		"2.06.00N"
+#	endif
+#elif defined(NEXXONE)
+#	if SW_RELEASE
+#	define FITT360_SW_VER      		"0.90.07"
+#	else
+#	define FITT360_SW_VER      		"0.90.07"
+#	endif
+#endif
 #endif	/* _APP_VERSION_H_ */

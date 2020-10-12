@@ -565,7 +565,7 @@ void app_voip_start(int net_type, int enable_stun, short server_port, const char
 	if (stun_server != NULL)
 		strcpy(ivoip->stun_svr, stun_server);
 		
-	if (server_port < 0)
+	if (server_port <= 0)
 		ivoip->svr_port = 6060; //# set default port
 	else
 		ivoip->svr_port = server_port;

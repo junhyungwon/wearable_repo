@@ -139,32 +139,10 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
     char msg[128] = {0, } ;
 
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-
     int br ;
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
+
     app_set->ch[ch].framerate = framerate ;
     app_cfg->ich[ch].fr = framerate;
-#else
-    app_ch_cfg_t *ch_prm;
-
-    switch(framerate)
-    {
-        case FPS_30 :
-            app_set->ch[ch].framerate = FPS_30 ;
-            break ;
-        case FPS_15 :
-            app_set->ch[ch].framerate = FPS_15 ;
-            break ;
-        case FPS_5 :
-            app_set->ch[ch].framerate = FPS_5 ;
-            break ;
-        default :
-            app_set->ch[ch].framerate = FPS_30 ;
-            printf("ctrl vid framerate default %s\n",msg) ;
-            break ;
-    }
-    app_cfg->ich[ch].fr = get_fps_val(ch_prm->framerate);
-#endif
 
     params.frameRate = app_cfg->ich[ch].fr;
 
@@ -185,37 +163,8 @@ int ctrl_vid_bitrate(int ch, int bitrate)
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
     int br;
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
     app_set->ch[ch].quality = bitrate;
 	br = bitrate ;
-#else
-    app_ch_cfg_t *ch_prm;
-
-    ch_prm = &app_set->ch[ch];
-
-    switch(bitrate)
-    {
-        case Q_HIGH :
-            app_set->ch[ch].quality = Q_HIGH;
-            break ;
-
-        case Q_MID :
-            app_set->ch[ch].quality = Q_MID;
-
-            break ;
-
-        case Q_LOW :
-            app_set->ch[ch].quality = Q_LOW;
-            break ;
-
-        default :
-            app_set->ch[ch].quality = Q_LOW;
-            break ;
-    }
-
-    br = get_bitrate_val(bitrate, ch_prm->resol);  // bitrate HIGH 0, MID 1, LOW 2
-#endif
-
 	// resol 480P 0 720P 1 1080P 2
     app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
 
@@ -1032,7 +981,6 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	app_mcu_pwr_off(OFF_RESET);
 	return 0;
 }
-
 
 /*
  * if /mmc/app_fitt.out is exist, copy app_fitt.out to /opt/fit/bin/.

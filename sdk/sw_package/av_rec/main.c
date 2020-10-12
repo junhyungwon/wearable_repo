@@ -54,6 +54,12 @@ typedef struct {
 
 	char deviceId[32];
 	char fname[256];
+	
+	#if defined(NEXX360B) || defined(NEXX360W) 
+	int ch2_keyframe;
+	int ch3_keyframe;
+	int ch4_keyframe;
+	#endif
 
 } app_rec_ctrl_t;
 
@@ -409,15 +415,53 @@ static void *THR_rec_evt(void *prm)
 				
 				if (irec->fevt != NULL) 
 				{
+					#if defined(NEXXONE)
 					/* ch=1 스트리밍 채널이 gmem에 기록되어 있으므로 avi 저장 시 이를 막아야 함 */
 					if (ifr->ch < 1) {
 						ret = evt_file_write(ifr);
 						if (ret < 0) {
 							eprintf("avi write failed!\n");
-							//irec->rec_err = 1;
-							//app_cfg->ste.b.mmc_err = 1;
 						}
 					}
+					#else
+					if (ifr->ch == 1) {
+					    if (ifr->is_key)
+					        irec->ch2_keyframe = 1 ;
+                    }
+                    if (ifr->ch == 2) {
+					    if (ifr->is_key)
+					        irec->ch3_keyframe = 1 ;
+                    }
+                    if (ifr->ch == 3) {
+					    if (ifr->is_key)
+					        irec->ch4_keyframe = 1 ;
+					}
+					if (ifr->ch < 4) {
+				        if (ifr->ch == 1 && !irec->ch2_keyframe)
+					    {
+				            app_msleep(10);
+				            read_idx = idx_increase(read_idx);
+						    continue;
+                        }
+				        if (ifr->ch == 2 && !irec->ch3_keyframe)
+					    {
+				            app_msleep(10);
+				            read_idx = idx_increase(read_idx);
+						    continue;
+                        }
+				        if (ifr->ch == 3 && !irec->ch4_keyframe)
+					    {
+				            app_msleep(10);
+				            read_idx = idx_increase(read_idx);
+						    continue;
+                        }
+				
+				        ret = evt_file_write(ifr);
+				        if (ret < 0) {
+							eprintf("avi write failed!\n");
+				        }
+				    }
+					#endif
 				}
 				read_idx = idx_increase(read_idx);
 				if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {

@@ -49,9 +49,11 @@
 #define MAX_BITRATE            		8000
 #define DEFAULT_QUALITY        		4000
 
-#define PBX_SERVER_ADDR         "52.78.124.88"
-#define PBX_SERVER_PORT         6060
-#define PBX_SERVER_PW           "9999"
+#if SYS_CONFIG_VOIP
+#define PBX_SERVER_ADDR         	"52.78.124.88"
+#define PBX_SERVER_PORT         	6060
+#define PBX_SERVER_PW           	"9999"
+#endif
 
 typedef enum {
 	RATE_CTRL_VBR,
@@ -74,12 +76,21 @@ typedef enum {
 	MAX_QUALITY
 } app_quality_e;
 
+#if defined(NEXXONE)
 typedef enum {
     FPS_30=0,
     FPS_15,
     FPS_5,
     FPS_MAX
 } app_frate_e;
+#else
+typedef enum {
+    FPS_15=0,
+    FPS_10,
+    FPS_5,
+    FPS_MAX
+} app_frate_e;
+#endif
 
 typedef enum {
     GSN_IDX_01=0,
@@ -185,6 +196,7 @@ typedef struct {
 	int	 dev_cam_ch;		//# NEXXONE: 1, Any others: 4
 	char reserved[26];
 } app_system_t;
+//} __attribute__((packed)) app_system_t;
 
 typedef struct {
 	int period_idx;
@@ -242,6 +254,7 @@ typedef struct {
     char reserved[121] ;
 } app_account_t ; // size:320
 
+#if SYS_CONFIG_VOIP
 typedef struct {
     char  ipaddr[MAX_CHAR_16];
     short port ;
@@ -250,6 +263,7 @@ typedef struct {
     char  peerid[MAX_CHAR_16] ;
     short private_network_only;
 } app_voip_t; // 68 
+#endif
 
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1
@@ -267,10 +281,13 @@ typedef struct {
     
     app_account_t           account_info;
 
+#if SYS_CONFIG_VOIP
     app_voip_t              voip; // 68
-
-	//char reserved[474]; // 1024 - 164 (ddns) - 66 (time) - 320(account)
 	char reserved[406];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip)
+#else
+	char reserved[474];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
+#endif
+	
 } app_set_t;
 
 /*----------------------------------------------------------------------------
