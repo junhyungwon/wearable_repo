@@ -1002,6 +1002,9 @@ void ctrl_auto_update(void)
 		if (_sw_update(SD_MOUNT_PATH) == 0) {
 			app_mcu_pwr_off(OFF_RESET);
 		}
+	} else {
+		eprintf("no update file!\n");
+		return;
 	}
 	
 	memset(path, 0, sizeof(path));

@@ -240,7 +240,7 @@ int app_leds_gps_ctrl(int ste)
  * connection OK --> GREEN
  * connection fail --> RED
 -----------------------------------------------------------------------------*/
-#if defined(NEXXONE) || defined(NEXX360W)
+#if defined(NEXXONE)
 int app_leds_cam_ctrl(int ste)
 {
 	int ret = 0;
