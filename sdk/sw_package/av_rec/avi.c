@@ -42,15 +42,18 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
     char msg[128] = {0, };
 	AVI_SYSTEM_PARAM aviInfo;
 	FILE *favi;
+	int i;
 	
 	memset(&aviInfo, 0, sizeof(AVI_SYSTEM_PARAM));
-
-	aviInfo.nVidCh	= 1;
+	
+	aviInfo.nVidCh	= MODEL_CH_NUM;
 	aviInfo.bEnMeta	= TRUE; //# FALSE
 	aviInfo.uVideoType	= ENCODING_H264;
-
-	aviInfo.nVidWi[0] = ifr->frm_wi;
-	aviInfo.nVidHe[0] = ifr->frm_he;
+	
+	for (i = 0; i < aviInfo.nVidCh; i++) {
+		aviInfo.nVidWi[i] = ifr->frm_wi;
+		aviInfo.nVidHe[i] = ifr->frm_he;
+	}
 	aviInfo.fFrameRate	= (double)(ifr->frm_rate*1000./1001.);
 
 	if (snd_on) {

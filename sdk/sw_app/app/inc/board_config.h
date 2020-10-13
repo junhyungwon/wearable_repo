@@ -26,9 +26,9 @@
 #	define STREAM_CH_NUM				4
 #	define JPEG_CH_NUM					5
 #	define MAX_FPS						15
-#	define SYS_CONFIG_VOIP				1
+#	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_NET				1
-#	define SYS_CONFIG_GPS				1
+#	define SYS_CONFIG_GPS				0
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
 #	define MODEL_NAME					"NEXX360B"

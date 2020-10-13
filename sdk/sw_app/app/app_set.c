@@ -248,7 +248,7 @@ static void char_memset(void)
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->reserved, CFG_INVALID, 406) ;
 #else
-    memset(app_set->reserved, CFG_INVALID, 474) ;  -66 (voip)	
+    memset(app_set->reserved, CFG_INVALID, 474) ;
 #endif
 //    memset(app_set->reserved, CFG_INVALID, 794) ;
 }
@@ -739,7 +739,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     printf("pset->account_info.onvif.lv		= %d\n", pset->account_info.onvif.lv) ;
     printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
-	
+
+#if SYS_CONFIG_VOIP	
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
 
@@ -754,6 +755,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if((int)pset->voip.peerid[0] == CHAR_INVALID || (int)pset->voip.peerid[0] == 0)
 		strcpy(pset->voip.peerid, "");
+#endif
 		
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM

@@ -550,11 +550,15 @@ static void *THR_snd_cap(void *prm)
 	read_sz = SND_PCM_SRATE * SND_PCM_PTIME / 1000; //# 
 	ret = __snd_prm_init("aic3x", &isnd->snd_in, SND_PCM_CAP, 
 				SND_PCM_CH, SND_PCM_SRATE, read_sz);
+#if SYS_CONFIG_VOIP	
 	ret |= __snd_prm_init("dummy", &isnd->snd_dup, SND_PCM_PLAY, 
 				SND_PCM_CH, SND_PCM_SRATE, read_sz);
-	
+#endif
 	ret |= __snd_dev_init(SND_IN_DEV, &isnd->snd_in);
+
+#if SYS_CONFIG_VOIP
 	ret |= __snd_dev_init(SND_DUP_DEV, &isnd->snd_dup);
+#endif
 	if (ret) {
 		eprintf("Failed to init sound device!\n");
 		return NULL;
@@ -569,8 +573,9 @@ static void *THR_snd_cap(void *prm)
 	}
 	
 	__snd_dev_start(&isnd->snd_in);
+#if SYS_CONFIG_VOIP	
 	__snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
-
+#endif
 	while (!exit)
 	{
 		int bytes = 0;
@@ -584,12 +589,13 @@ static void *THR_snd_cap(void *prm)
 			eprintf("sound device error!!\n");
 			continue;
 		}
-		
+
+#if SYS_CONFIG_VOIP		
 		//# copy to dup device
 		app_memcpy(isnd->snd_dup.sampv, isnd->snd_in.sampv, bytes);
 		/* VOIP를 사용할 경우에만 copy ?? */
 		__snd_dev_write(&isnd->snd_dup, bytes/2); 
-		
+#endif		
 		if (isnd->snd_rec_enable)
 		{
 			//# audio codec : g.711
@@ -612,14 +618,16 @@ static void *THR_snd_cap(void *prm)
 		}
 	}
 
+#if SYS_CONFIG_VOIP
 	__snd_dev_stop(&isnd->snd_dup, SND_PCM_PLAY);
 	__snd_dev_stop(&isnd->snd_dup, SND_PCM_CAP);
-	
+#endif	
 	/* free memory alloc */
 	free(enc_buf);
 	__snd_prm_free(&isnd->snd_in);
+#if SYS_CONFIG_VOIP	
 	__snd_prm_free(&isnd->snd_dup);
-	
+#endif	
 	tObj->active = 0;
 	aprintf("...exit\n");
 
