@@ -114,9 +114,13 @@ static void __netmgr_wlan_event_handler(int ste)
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
 	info = (netmgr_shm_request_info_t *)databuf;
 	
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) 
+#if defined(NEXXONE)
 	if (app_cfg->vid_count == 0) {
 		//mode = 1; /* AP Mode :TODO */			
+	}
+#else
+	if (app_cfg->vid_count == 0) {
+		mode = 1; /* AP Mode */			
 	}
 #endif
 	
@@ -415,15 +419,21 @@ static void *THR_netmgr_send_msg(void *prm)
 				
 				if (type == NETMGR_DEV_TYPE_WIFI) 
 				{
+					#if SYS_CONFIG_WLAN
 					__netmgr_wlan_event_handler(status);
+					#endif
 				}
 				else if (type == NETMGR_DEV_TYPE_RNDIS) 
 				{
+					#if SYS_CONFIG_WLAN
 					__netmgr_rndis_event_handler(status);
+					#endif
 				}
 				else if (type == NETMGR_DEV_TYPE_USB2ETHER)
 				{
+					#if SYS_CONFIG_WLAN
 					__netmgr_usb2eth_event_handler(status);
+					#endif
 				}
 				else if (type == NETMGR_DEV_TYPE_CRADLE)
 				{

@@ -27,7 +27,7 @@
 #	define JPEG_CH_NUM					5
 #	define MAX_FPS						15
 #	define SYS_CONFIG_VOIP				0
-#	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
@@ -37,7 +37,7 @@
 #	define JPEG_CH_NUM					5
 #	define MAX_FPS						15	
 #	define SYS_CONFIG_VOIP				0
-#	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
@@ -47,7 +47,7 @@
 #	define JPEG_CH_NUM					2
 #	define MAX_FPS						30	
 #	define SYS_CONFIG_VOIP				1
-#	define SYS_CONFIG_NET				1
+#	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."

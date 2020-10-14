@@ -142,10 +142,8 @@ int app_main(void)
 
     app_cap_start();
 	app_snd_start(); 
-
-#if SYS_CONFIG_NET	
 	app_netmgr_init();
-#endif		
+	
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
 
@@ -217,9 +215,7 @@ int app_main(void)
     }
     
 	app_tsync_exit() ;
-#if SYS_CONFIG_NET	
 	app_netmgr_exit();
-#endif	
 	app_mcu_stop();
 	tObj->active = 0;
 
