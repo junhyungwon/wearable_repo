@@ -259,6 +259,8 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
          */
          fprintf(config, "\tpsk=%s\n", phrase);
          fprintf(config, "\tpriority=2\n");
+
+		 fprintf(config, "\tbgscan=\"simple:5:-60:6300\"\n") ;
 	} else {
 		/*
 		 * # Plaintext connection (no WPA, no IEEE 802.1X)
