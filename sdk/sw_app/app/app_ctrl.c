@@ -198,7 +198,7 @@ int ctrl_vid_gop_set(int ch, int gop)
 *****************************************************************************/
 int ctrl_vid_resolution(int resol_idx) 
 {
-    char log[128] = {0, };
+    char buf[128] = {0, };
     int ret ;
 
     //# to prevent key input
@@ -227,7 +227,21 @@ int ctrl_vid_resolution(int resol_idx)
     app_rtsptx_stop_start() ;
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable
-
+	
+	switch(resol_idx) {
+	default:
+	case 0:
+		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 480P ---");
+		break;
+	case 1:
+		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 720P ---");
+		break;
+	case 2:
+		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 1080P ---");
+		break;
+    }
+	
+    app_log_write(MSG_LOG_WRITE, buf);
     app_cfg->ste.b.nokey = 0;
 
     return SOK ;
