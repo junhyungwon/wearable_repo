@@ -43,9 +43,9 @@
 -----------------------------------------------------------------------------*/
 
 //static MEM_LAYOUT mem_layout_setting[MEM_LAYOUT_NUM];
-//static VIDEO_BLK_INFO Video_info_default[VIDOE_INFO_END];
+//static VIDEO_BLK_INFO Video_info_default[VIDEO_INFO_END];
 
-extern CACHE_MNG Cache_mng_default[VIDOE_INFO_END];
+extern CACHE_MNG Cache_mng_default[VIDEO_INFO_END];
 
 /**
  * @brief	Reset video frame
@@ -63,7 +63,7 @@ void Video_Frame_reset( VIDEO_FRAME *pframe)
 	pframe->realsize	= -1;
 	pframe->flag		= 0;
 	pframe->timestamp	= 0;
-	for( cnt = 0; cnt < VIDOE_INFO_END; cnt++ )
+	for( cnt = 0; cnt < VIDEO_INFO_END; cnt++ )
 	{
 		pframe->ref_serial[cnt] = -1;
 	}
@@ -144,9 +144,9 @@ int MemMng_Init( MEM_MNG_INFO *pInfo )
 	int cnt;
 
 	memset( pInfo, 0 , sizeof(MEM_MNG_INFO) );
-	pInfo->video_info = calloc(VIDOE_INFO_END, sizeof(VIDEO_BLK_INFO));
+	pInfo->video_info = calloc(VIDEO_INFO_END, sizeof(VIDEO_BLK_INFO));
 
-	for(cnt = 0; cnt < VIDOE_INFO_END; cnt++)
+	for(cnt = 0; cnt < VIDEO_INFO_END; cnt++)
 	{
 		if(cnt >= AUDIO_INFO_G711_CH1)
 		{
@@ -280,7 +280,7 @@ int MemMng_Init( MEM_MNG_INFO *pInfo )
 
 	pInfo->freesize			= pInfo->totalsize;
 	pInfo->offset			= 0;
-	pInfo->video_info_nums	= VIDOE_INFO_END;
+	pInfo->video_info_nums	= VIDEO_INFO_END;
 
 	if(Video_Mem_Malloc(pInfo) < 0) {
 		goto MEM_INIT_FAIL;

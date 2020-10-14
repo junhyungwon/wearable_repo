@@ -66,10 +66,10 @@ enum {
 };
 
 enum {
-	VIDOE_INFO_CH1 = 0,
-	VIDOE_INFO_CH2,
+	VIDEO_INFO_CH1 = 0,
+	VIDEO_INFO_CH2,
 	AUDIO_INFO_G711_CH1,
-	VIDOE_INFO_END
+	VIDEO_INFO_END
 };
 
 enum {
@@ -103,7 +103,7 @@ typedef struct _CACHE_DATA_INFO {
 	int				realsize;
 	int				flag;
 	unsigned int	timestamp;
-	int				ref_serial[VIDOE_INFO_END];
+	int				ref_serial[VIDEO_INFO_END];
 } CACHE_DATA_INFO;
 
 typedef struct _CACHE_DATA {
@@ -115,7 +115,7 @@ typedef struct _CACHE_DATA {
 	int				cnt;
 	int				flag;
 	unsigned int	timestamp;
-	int				ref_serial[VIDOE_INFO_END];
+	int				ref_serial[VIDEO_INFO_END];
 	unsigned int	offset;
 } CACHE_DATA;
 
@@ -146,7 +146,7 @@ typedef struct _VIDEO_FRAME
 	int				realsize;
 	int				flag;
 	unsigned int	timestamp;
-	int				ref_serial[VIDOE_INFO_END];
+	int				ref_serial[VIDEO_INFO_END];
 	unsigned int	offset;
 } VIDEO_FRAME;
 
@@ -206,7 +206,7 @@ typedef struct _MEM_SIZE {
 } MEM_SIZE;
 
 typedef struct _MEM_LAYOUT {
-	MEM_SIZE profiles[VIDOE_INFO_END];
+	MEM_SIZE profiles[VIDEO_INFO_END];
 	unsigned int totalsizes;
 } MEM_LAYOUT;
 

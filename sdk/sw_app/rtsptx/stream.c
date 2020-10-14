@@ -134,13 +134,13 @@ int stream_write(void *pAddr, int size, int frame_type, int stream_type, unsigne
 		return STREAM_FAILURE;
 	}
 
-	for( cnt = 0; cnt < VIDOE_INFO_END; cnt++ )
+	for( cnt = 0; cnt < VIDEO_INFO_END; cnt++ )
 	{
 		pVidInfo->frame[pVidInfo->cur_frame].ref_serial[cnt] = pParm->MemInfo.video_info[cnt].cur_serial;
 	}
 
 	/* post process */
-	//if(stream_type == VIDOE_INFO_CH1 || stream_type == VIDOE_INFO_CH2)
+	//if(stream_type == VIDEO_INFO_CH1 || stream_type == VIDEO_INFO_CH2)
 	{
 		if(pParm->lockNewFrame[stream_type])
 		{
@@ -211,14 +211,14 @@ int stream_end(void)
 		Sem_kill(pParm->MemMngSemId[cnt]);
 	}
 
-	for( cnt = 0; cnt < VIDOE_INFO_END-1; cnt++)
+	for( cnt = 0; cnt < VIDEO_INFO_END-1; cnt++)
 	{
 		GopCleanup(&pParm->MemInfo.video_info[cnt],cnt);
 		GopCleanup(&pParm->MemInfo.video_info[cnt],cnt);
 	}
 
-//	GopCleanup(&pParm->MemInfo.video_info[VIDOE_INFO_MP4],GOP_INDEX_MP4);
-//	GopCleanup(&pParm->MemInfo.video_info[VIDOE_INFO_MP4],GOP_INDEX_MP4_EXT);
+//	GopCleanup(&pParm->MemInfo.video_info[VIDEO_INFO_MP4],GOP_INDEX_MP4);
+//	GopCleanup(&pParm->MemInfo.video_info[VIDEO_INFO_MP4],GOP_INDEX_MP4_EXT);
 
 	CacheMng_Release(&(pParm->MemInfo));
 	MemMng_release( &(pParm->MemInfo) );
@@ -406,7 +406,7 @@ void *Msg_CTRL(void *args)
 						msgbuf.frame_info.flags = Cache_info.flag;
 						msgbuf.frame_info.frameType = Cache_info.fram_type;
 						msgbuf.frame_info.timestamp = Cache_info.timestamp;
-						for (cnt = 0; cnt < VIDOE_INFO_END; cnt++ )
+						for (cnt = 0; cnt < VIDEO_INFO_END; cnt++ )
 						{
 							msgbuf.frame_info.ref_serial[cnt] = Cache_info.ref_serial[cnt];
 						}
@@ -476,7 +476,7 @@ void *Msg_CTRL(void *args)
 					msgbuf.frame_info.flags 	= Cache_info.flag;
 					msgbuf.frame_info.frameType = Cache_info.fram_type;
 					msgbuf.frame_info.timestamp = Cache_info.timestamp;
-					for (cnt = 0; cnt < VIDOE_INFO_END; cnt++ )
+					for (cnt = 0; cnt < VIDEO_INFO_END; cnt++ )
 					{
 						msgbuf.frame_info.ref_serial[cnt] = Cache_info.ref_serial[cnt];
 					}

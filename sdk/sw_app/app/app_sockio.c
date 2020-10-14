@@ -151,8 +151,10 @@ static Void *THR_ddns(Void *prm)
 
     sprintf(stop_buffer, "killall -9 wget") ;
 
-    if(app_set->ddns_info.interval)
+    if(app_set->ddns_info.interval > 0 && app_set->ddns_info.interval < 60)  // 1min ~ 59Min
         interval = app_set->ddns_info.interval * 60 * 1000 ;
+    else
+		interval = 60 * 1000 ; // l min
 
     retval = app_cfg->ste.b.cradle_eth_run;
     

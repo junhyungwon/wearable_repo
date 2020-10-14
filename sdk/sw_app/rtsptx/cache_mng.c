@@ -31,7 +31,7 @@
 #include <cache_mng.h>
 #include <stream.h>
 
-CACHE_MNG	Cache_mng_default[VIDOE_INFO_END];// =
+CACHE_MNG	Cache_mng_default[VIDEO_INFO_END];// =
 /*
 {
 	{
@@ -122,7 +122,7 @@ void CacheMng_cache_reset( CACHE_DATA *pcache)
 		pcache->cnt			= 0;
 		pcache->flag		= -1;
 		pcache->timestamp	= 0;
-		for( cnt = 0; cnt < VIDOE_INFO_END; cnt++ )
+		for( cnt = 0; cnt < VIDEO_INFO_END; cnt++ )
 		{
 			pcache->ref_serial[cnt] = -1;
 		}
@@ -269,7 +269,7 @@ int CacheMng_Init(MEM_MNG_INFO *pInfo)
 			return CACHE_NOMEM;
 	}
 
-	for( cnt = 0; cnt < VIDOE_INFO_END ; cnt++ )
+	for( cnt = 0; cnt < VIDEO_INFO_END ; cnt++ )
 	{
 		if( Cache_mng_default[cnt].video_type == pInfo->video_info[cnt].video_type )
 		{
@@ -512,7 +512,7 @@ int CacheMng_GetCacheInfoBySerial( int serial, CACHE_DATA_INFO *pCache_info, VID
 		pCache_info->flag		= pCache->flag;
 		pCache_info->timestamp	= pCache->timestamp;
 
-		for( cnt = 0; cnt < VIDOE_INFO_END; cnt++ ) {
+		for( cnt = 0; cnt < VIDEO_INFO_END; cnt++ ) {
 			pCache_info->ref_serial[cnt] = pCache->ref_serial[cnt];
 		}
 
@@ -549,7 +549,7 @@ int CacheMng_cache_write( CACHE_DATA *pCache, VIDEO_FRAME *pFrame, VIDEO_BLK_INF
 	pCache->timestamp	= pFrame->timestamp;
 	pCache->offset		= pFrame->offset;
 
-	for( cnt = 0; cnt < VIDOE_INFO_END; cnt++ )
+	for( cnt = 0; cnt < VIDEO_INFO_END; cnt++ )
 	{
 		pCache->ref_serial[cnt] = pFrame->ref_serial[cnt];
 	}
