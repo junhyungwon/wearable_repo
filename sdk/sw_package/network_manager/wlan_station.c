@@ -710,3 +710,183 @@ int netmgr_wlan_cli_stop(void)
 	return 0;
 }
 
+//#----------------------- obsolete ------------------------------------------
+#if 0
+#define CMD_IWLIST				"/sbin/iwlist wlan0 scanning"
+#define LINE_BUF_SIZE			512
+
+static int app_iscan_run(void)
+{
+	FILE *f;
+
+	char mac[18];
+	char ssid[LINE_BUF_SIZE];
+
+	int wep, inCell, valid;
+	int master, index, level;
+	int r = 0;
+	int i;
+
+	app_shm->shm_buf[0] = 0;	//# scan flag reset
+
+	/* wlan0     Scan completed :
+     *           Cell 01 - Address: 00:25:A6:B5:6F:D3
+     *              ESSID:"ollehWiFi"
+     *              Protocol:IEEE 802.11gn
+     *              Mode:Master
+     *              Frequency:2.412 GHz (Channel 1)
+     *              Encryption key:on
+     *              Bit Rates:144 Mb/s
+     *              Extra:wpa_ie=dd1a0050f20101000050f20202000050f2040050f20201000050f201
+     *              IE: WPA Version 1
+     *                  Group Cipher : TKIP
+     *                  Pairwise Ciphers (2) : CCMP TKIP
+     *                  Authentication Suites (1) : 802.1x
+     *              Extra:rsn_ie=30180100000fac020200000fac04000fac020100000fac010000
+     *              IE: IEEE 802.11i/WPA2 Version 1
+     *                  Group Cipher : TKIP
+     *                  Pairwise Ciphers (2) : CCMP TKIP
+     *                  Authentication Suites (1) : 802.1x
+     *              Quality=0/100  Signal level=56/100
+     *               Extra:fm=0003
+	 */
+	/* initialize parser helper */
+	mac[0] = '\0'; ssid[0] = '\0';
+
+	index = 0; 	inCell = 0; valid = 0;
+	level = -1; wep = -1; master = -1;
+
+	memset(lbuf, 0, sizeof(lbuf));
+
+	f = popen(CMD_IWLIST, "r");
+	if (f != NULL)
+	{
+		while (fgets(lbuf, sizeof(lbuf), f) != NULL)
+		{
+			char *start;
+			int length;
+
+			length = strlen(lbuf);
+			/* find wlan0 */
+			if ((start = strstr(lbuf, NET_IF_NAME)) != NULL) {
+				valid = 1;
+				continue; /* goto next line for parser */
+			}
+
+			if (!valid) {
+				/* if don't display --> wlan0 Scan completed */
+				continue; /* goto next line */
+			}
+
+			/* find Cell strings */
+			if ((start = strstr(lbuf, "Cell ")) != NULL) {
+				//# find Address: xx:xx:xx:xx:xx:xx
+			    int rem;
+
+			    rem  = (lbuf + length) - (start + strlen("Cell XX - Address: xx:xx:xx:xx:xx:xx"));
+			    if (rem < 0) {
+					//# invalid input
+					eprintf("can't find Cell XX line.!!\n");
+					continue; /* goto next line */
+				}
+
+				strncpy(mac, start + strlen("Cell XX - Address: "), 17);
+				mac[17] = '\0';
+				inCell = 1;
+
+			} else if (inCell && (start = strstr(lbuf, "ESSID:\""))) {
+				start += 7; /* --> ESSID:" */
+				for (i = 0; i < (LINE_BUF_SIZE - 1); i++) {
+					if (start[i] == '\0' || start[i] == '"') {
+						break;
+					}
+					/* fill ssid */
+					ssid[i] = start[i];
+				}
+				ssid[i] = '\0';
+
+				/* check ascii */
+				if (ssid[0] == '\0' || ssid[0] > '\x7F') {
+//					printf("founded cell ssid %s no ascii!!\n", ssid);
+					/* invalid (no ascii) */
+					ssid[0] = '\0';
+				}
+			} else if (inCell && (start = strstr(lbuf, "Mode:"))) {
+				if (strstr(start, "Master")) {
+					master = 1;
+				} else {
+					master = 0; /* ad-hoc or station */
+				}
+
+			} else if (inCell && (start = strstr(lbuf, "Signal level="))) {
+				char numstr[4];
+
+				//# want to see if there are at least two more places
+				if ((lbuf + length) - (start + 3) < 1) {
+					eprintf("iwlist gave bad signal level line\n");
+					continue; /* goto next line */
+				}
+
+				start += 13; /* Signal level= */
+				for (i = 0; i < 3; i++) {
+					if (start[i] == '/')
+						numstr[i] = '\0';
+					else
+						numstr[i] = start[i];
+				}
+
+				numstr[3] = '\0';
+				level = atoi(numstr); /* ex) 56/100 */
+				if (level > 100)
+					/* invalid */
+					level = -1;
+
+			} else if (inCell && (start = strstr(lbuf, "Encryption key:"))) {
+				start += 15; /* Encryption key: */
+				if (strstr(start, "on")) {
+					wep = 1;
+				} else {
+					wep = 0;
+				}
+			}
+
+			if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0')
+			{
+				#if 0
+				printf("founded cell[%d] mac address %s\n", (index+1), mac);
+				printf("founded cell[%d] ssid %s\n", (index+1), ssid);
+				printf("founded cell[%d] signal level %d\n", (index+1), level);
+				printf("founded cell[%d] mode %s\n", (index+1), master?"master":"station");
+				printf("founded cell[%d] encrypt wpa %s\n", (index+1), wep?"on":"open");
+				#endif
+
+				/* save current incell information */
+				piwscan_list->info[index].level = level;
+				piwscan_list->info[index].en_key = wep;
+				strcpy(piwscan_list->info[index].ssid, ssid);
+				index++;
+
+				/* initialize parser helper */
+				memset(lbuf, 0, sizeof(lbuf));
+				mac[0] = '\0'; ssid[0] = '\0';
+
+				inCell = 0; level = -1;
+				wep = -1; master = -1;
+			} /* if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0') */
+
+		} /* while (fgets(lbuf, sizeof(lbuf), f) != NULL) */
+
+		/* scan done!! */
+		piwscan_list->num = index;
+
+	} else {
+		dprintf("could not open %s\n", CMD_IWLIST);
+		r = -1;
+	}
+
+	app_shm->shm_buf[0] = WIFI_REQUEST_DONE;	//# set flag
+	printf(" [app_iscan] %s done...\n", __func__);
+	return r;
+}
+#endif
+//#-----------------------------------------------------------------------------------------------------------------

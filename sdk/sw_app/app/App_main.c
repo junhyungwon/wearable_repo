@@ -309,10 +309,12 @@ int main(int argc, char **argv)
 		return -1;
 	} else {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-		#ifdef NEXXONE
+#if defined(NEXXONE) || defined(NEXX360W)
+		#if SYS_CONFIG_VOIP
 		/* copy app_fitt.out or full update */
 		ctrl_auto_update();
 		#endif
+#endif
 		/* remove update files */
 		ctrl_reset_nand_update();
 	}
@@ -340,6 +342,7 @@ int main(int argc, char **argv)
 	if (app_file_init() == SOK) {
 		app_rec_init();
 	}
+	
 #if SYS_CONFIG_GPS	
 	app_gps_init();
 #endif	

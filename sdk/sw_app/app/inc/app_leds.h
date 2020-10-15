@@ -71,12 +71,9 @@ int app_leds_backup_state_ctrl(int ste);
 int app_leds_sys_normal_ctrl(void);
 int app_leds_sys_error_ctrl(void);
 int app_leds_eth_status_ctrl(int ste);
-
-#if defined(NEXXONE)
-int app_leds_cam_ctrl(int ste);
-int app_leds_voip_ctrl(int ste);
-#else
 int app_leds_cam_ctrl(int no, int ste);
+#if SYS_CONFIG_VOIP
+int app_leds_voip_ctrl(int ste);
 #endif
 
 #ifdef __cplusplus

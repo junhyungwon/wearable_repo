@@ -246,12 +246,8 @@ static void *THR_micom(void *prm)
 					app_mcu_pwr_off(OFF_NORMAL);
 					exit = 1;
 				} else {
-					#if defined(NEXXONE)
-					#ifdef VOIP_CTRL_PWR_KEY
-					/* volume control */
-					app_voip_set_play_volume();
-					#else
-					//# record start/stop
+#if defined(NEXXONE) || defined(NEXX360W)
+					#if SYS_CONFIG_VOIP 
 					if (!app_cfg->ste.b.ftp_run) 
 					{     
 						if (app_rec_state()) {
@@ -260,13 +256,18 @@ static void *THR_micom(void *prm)
 							app_rec_start();
 						}
 					}
-					#endif
 					#else
 					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
 						if (!app_cfg->ste.b.nokey)
 				    		change_video_fxn();
 					}
-					#endif 
+					#endif
+#elif defined(NEXX360B)
+					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
+						if (!app_cfg->ste.b.nokey)
+				    		change_video_fxn();
+					}
+#endif 
 				}
 				break;
 			}

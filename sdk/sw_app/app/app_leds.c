@@ -240,51 +240,6 @@ int app_leds_gps_ctrl(int ste)
  * connection OK --> GREEN
  * connection fail --> RED
 -----------------------------------------------------------------------------*/
-#if defined(NEXXONE)
-int app_leds_cam_ctrl(int ste)
-{
-	int ret = 0;
-	int index = 0;
-
-	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
-	
-	index = LED_IDX_CAM1;
-	ret = leds_ctrl(index, ste?DEV_LED_ON:DEV_LED_OFF);
-	if (ret < 0) {
-		//eprintf("failed camera led control (%d)\n", index);
-	}
-
-	return ret;
-}
-
-/*----------------------------------------------------------------------------
- LED VOIP control. (
- *
- * connection OK --> GREEN
- * connection busy --> BLINK
------------------------------------------------------------------------------*/
-int app_leds_voip_ctrl(int ste)
-{
-	int ret = 0;
-	int index = 0;
-
-	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
-	
-	index = LED_IDX_CAM4;
-	ret = leds_ctrl(index, ste);
-	if (ret < 0) {
-		//eprintf("failed voip led control (%d)\n", index);
-	}
-
-	return ret;
-}
-#else
 int app_leds_cam_ctrl(int no, int ste)
 {
 	int ret = 0;
@@ -316,7 +271,31 @@ int app_leds_cam_ctrl(int no, int ste)
 
 	return ret;
 }
-#endif
+
+/*----------------------------------------------------------------------------
+ LED VOIP control. (
+ *
+ * connection OK --> GREEN
+ * connection busy --> BLINK
+-----------------------------------------------------------------------------*/
+int app_leds_voip_ctrl(int ste)
+{
+	int ret = 0;
+	int index = 0;
+
+	/* don't control for update */
+	if (app_cfg->ste.b.busy) {
+		return 0;
+	}
+	
+	index = LED_IDX_CAM4;
+	ret = leds_ctrl(index, ste);
+	if (ret < 0) {
+		//eprintf("failed voip led control (%d)\n", index);
+	}
+
+	return ret;
+}
 
 /*----------------------------------------------------------------------------
  LED SD card (insert/remove) control.
