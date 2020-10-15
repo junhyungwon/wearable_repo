@@ -79,7 +79,7 @@ void video_status(void)
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
 #if defined(NEXXONE)
-	app_leds_cam_ctrl(vstatus[0]);
+	app_leds_cam_ctrl(0, vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
 #else
