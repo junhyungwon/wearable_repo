@@ -193,7 +193,7 @@ typedef struct {
     char p2p_id[MAX_CHAR_32] ;
     char p2p_passwd[MAX_CHAR_32] ;
 	char uid[MAX_CHAR_32];
-	int	 dev_cam_ch;		//# NEXXONE: 1, Any others: 4
+	short dev_cam_ch;		//# NEXXONE: 1, Any others: 4
 	char reserved[26];
 } app_system_t;
 //} __attribute__((packed)) app_system_t;
