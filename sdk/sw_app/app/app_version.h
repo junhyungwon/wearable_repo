@@ -29,19 +29,19 @@
 #	if SW_RELEASE
 #	define FITT360_SW_VER      		"2.06.00B"
 #	else
-#	define FITT360_SW_VER      		"2.06.00B"
+#	define FITT360_SW_VER      		"2.06.00.D"
 #	endif
 #elif defined(NEXX360W)
 #	if SW_RELEASE
 #	define FITT360_SW_VER      		"2.06.00N"
 #	else
-#	define FITT360_SW_VER      		"2.06.00N"
+#	define FITT360_SW_VER      		"2.06.00.D"
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
 #	define FITT360_SW_VER      		"0.90.07"
 #	else
-#	define FITT360_SW_VER      		"0.90.07"
+#	define FITT360_SW_VER      		"0.90.07.D"
 #	endif
 #endif
 #endif	/* _APP_VERSION_H_ */
