@@ -502,15 +502,16 @@ static int __load_file_list(const char *path, struct list_head *head)
 }
 
 /* avi list save to /usr/share/video.lst */
-static int __save_file_list(const char *path, struct list_head *head, size_t count)
+static int __save_file_list(const char *path)
 {
+	struct list_head *head = &ilist;
 	struct list_head *iter;
 	struct disk_list *ptr;
 	list_info_t info;
 	
 	FILE *f = NULL;
 	int res, i;
-	size_t index;
+	size_t index = ifile->file_count;
 	
 	res = access(path, R_OK|W_OK);
     if ((res == 0) || (errno == EACCES)) {
@@ -524,16 +525,16 @@ static int __save_file_list(const char *path, struct list_head *head, size_t cou
 		return -1;
 	}
 	
-	index = count;
+	//dprintf("%d files save in video list\n", index);
 	fwrite(&index, sizeof(size_t), 1, f);    //# total file count
-//	dprintf("%d files save in video list\n", count);
-	
-	__list_for_each(iter, head) {
+	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
-		strcpy(info.name, ptr->fullname);
-		info.size = ptr->filesz;
-		//dprintf("saved name %s, size %u in video list!\n", ptr->fullname, ptr->filesz);
-		fwrite(&info, sizeof(list_info_t), 1, f);
+		if (ptr != NULL) {
+			strcpy(info.name, ptr->fullname);
+			info.size = ptr->filesz;
+			//dprintf("saved name %s, size %u in video list!\n", ptr->fullname, ptr->filesz);
+			fwrite(&info, sizeof(list_info_t), 1, f);	
+		}
 	}
 	fclose(f);
 	
@@ -889,6 +890,6 @@ int app_file_save_flist(void)
 	
 	/* set file list path */
 	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
-	res = __save_file_list(flist_path, &ilist, ifile->file_count);
+	res = __save_file_list(flist_path);
 	return res;
 }
