@@ -605,6 +605,7 @@ static void *THR_file_mng(void *prm)
 
 	int cmd, exit=0, fcheck = 0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME;
+	unsigned int b_cycle=FILE_STATE_CHECK_BEEP;
 	char msg[MAX_CHAR_255] = {0,};
 	int r = 0;
 	
@@ -672,14 +673,21 @@ static void *THR_file_mng(void *prm)
 						ifile->file_state = FILE_STATE_NORMAL;
 					}					 
 				}
-				
-			    _check_overwite_full_led(ifile->file_state);
+			   
 				f_cycle = 0;
         	}
+			
+			//# file state check for beep -- per 1 sec
+	        if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
+			{
+				 _check_overwite_full_led(ifile->file_state);
+				b_cycle = 0;
+			}
 		}
 		
 		OSA_waitMsecs(FILE_LIST_CYCLE);
 		f_cycle += FILE_LIST_CYCLE;
+		b_cycle += FILE_LIST_CYCLE;
 	}
 	
 	tObj->active = 0;
