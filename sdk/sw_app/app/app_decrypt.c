@@ -184,10 +184,10 @@ static void DAddRoundKey(int round)
         for (j = 0; j < 4; ++j)
         {
             state[i][j] ^= RoundKey[(round * Nb * 4) + (i * Nb) + j];
-            printf("%2x ", RoundKey[(round * Nb * 4) + (i * Nb) + j]);
+            //printf("%2x ", RoundKey[(round * Nb * 4) + (i * Nb) + j]);
         }
     }
-    printf("\n");
+    //printf("\n");
 }
 
 // The SubBytes Function Substitutes the values in the

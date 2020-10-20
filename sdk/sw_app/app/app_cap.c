@@ -94,20 +94,25 @@ void video_status(void)
 	app_cfg->vid_count = vcount;
     sprintf(msg, " Camera Detected Count: %d", count);
 	app_log_write(MSG_LOG_WRITE, msg);
-
+	
 	if (app_cfg->ste.b.cap == 0) {
-		#if defined(NEXXONE)
-		if (app_cfg->vid_count > 0 && app_set->rec_info.auto_rec) {
+#if defined(NEXXONE)
+		if (app_cfg->vid_count > 0) {
 			app_cfg->ste.b.cap = 1;
-			app_rec_start();  //#--- record start
+			if (app_set->rec_info.auto_rec) {
+				app_rec_start();  
+			}
 		}
-		#else
-		if (app_cfg->vid_count >= 4 && app_set->rec_info.auto_rec) {
+#else
+		/* required for avi open */
+		if ((app_cfg->vid_count > 0) && (vstatus[0] > 0)) {
 			app_cfg->ste.b.cap = 1;
-			app_rec_start();  //#--- record start
+			if (app_set->rec_info.auto_rec) {
+				app_rec_start();  
+			}
 		}
-		#endif	
-	}
+#endif
+	} /* if (app_cfg->ste.b.cap == 0) */
 	
     if (app_cfg->vid_count == 0)
     {
