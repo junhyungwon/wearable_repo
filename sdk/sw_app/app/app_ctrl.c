@@ -779,7 +779,7 @@ static int _is_firmware_for_release(void)
         }
 
 		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
-			sprintf(buf, "This FW is not for NEXXONE !!!");
+			sprintf(buf, "This FW is not for %s !!!", MODEL_NAME);
 			printf("%s\n", buf);
 			app_log_write(MSG_LOG_WRITE, buf);
 			ret = EFAIL;
@@ -907,7 +907,8 @@ static int _sw_update(const char *disk)
 		sprintf(msg, "Firmware file is not exist !!!");
 		app_log_write(MSG_LOG_WRITE, msg);
 		printf("%s\n", msg);
-        return EFAIL;
+        app_cfg->ste.b.busy = 0;
+		return EFAIL;
 	}
 	app_cfg->ste.b.busy = 0;
 	

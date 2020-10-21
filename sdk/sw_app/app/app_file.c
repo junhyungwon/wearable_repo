@@ -603,7 +603,7 @@ static void *THR_file_mng(void *prm)
 {
 	app_thr_obj *tObj = &ifile->fObj;
 
-	int cmd, exit=0, fcheck = 0;
+	int cmd, exit=0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME;
 	unsigned int b_cycle=FILE_STATE_CHECK_BEEP;
 	char msg[MAX_CHAR_255] = {0,};
@@ -622,17 +622,8 @@ static void *THR_file_mng(void *prm)
 			break;
 		}
 		
-		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
-            if(!fcheck)
-			{
-				if (_check_threshold_size(ifile) < 0) {
-					sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
-					app_log_write(MSG_LOG_WRITE, msg);
-				}
-				app_file_update_disk_usage();
-				fcheck = 1 ;
-			}
-
+		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) 
+		{
 			//# file size check and delete -- per 1 min
 	        if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
 			{
@@ -673,7 +664,6 @@ static void *THR_file_mng(void *prm)
 						ifile->file_state = FILE_STATE_NORMAL;
 					}					 
 				}
-			   
 				f_cycle = 0;
         	}
 			
@@ -726,6 +716,15 @@ int app_file_init(void)
 			return status;
 		}
 	}
+	
+	/* To check mmc threshold size */
+	memset(msg, 0, sizeof(msg));
+	if (_check_threshold_size(ifile) < 0) {
+		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!");
+		eprintf("%s\n", msg);
+		app_log_write(MSG_LOG_WRITE, msg);
+	}
+	app_file_update_disk_usage();
 	
     //#--- create normal record thread
 	status = OSA_mutexCreate(&(ifile->mutex_file));
