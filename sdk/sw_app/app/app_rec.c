@@ -188,7 +188,7 @@ static void *THR_rec_send_msg(void *prm)
 	return NULL;
 }
 
-static int _is_enable_rec_start()
+static int _is_enable_rec_start(void)
 {	
 	//# currently record
 	if (irec->evt_rec) {
@@ -207,7 +207,7 @@ static int _is_enable_rec_start()
 		return EFAIL;
 	}
 
-	if (!app_set->rec_info.overwrite && app_file_check_disk_free_space() == EFAIL) {
+	if ((!app_set->rec_info.overwrite) && (app_file_check_disk_free_space() == EFAIL)) {
 		eprintf("Bypass start record!\n");
 		return EFAIL;
 	}

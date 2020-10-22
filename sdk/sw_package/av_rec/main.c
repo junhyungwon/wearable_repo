@@ -359,15 +359,28 @@ static void *THR_rec_evt(void *prm)
         }
 		#endif
 		
-        if (irec->en_pre)
-		    read_idx = search_frame(PRE_REC_SEC);
-        else
-		    read_idx = search_frame(0);
-		
-		if (read_idx < 0) {
-			eprintf("can't read frame! plz check capture dev.\n");
-			continue;
-		}
+		do {
+			char msg[128]={0,};
+			int print_limit = 1;
+			
+			if (irec->en_pre)
+				read_idx = search_frame(PRE_REC_SEC);
+			else
+				read_idx = search_frame(0);
+			
+			if (read_idx >= 0) {
+				break;
+			} else {
+				if (print_limit) {
+					sprintf(msg, "can't read frame! plz check capture dev.");
+					log_write(msg);
+					eprintf("%s\n", msg);
+					print_limit = 0;
+				}
+				/* encoder에서 데이터가 늦게 출력되는 경우가 발생. */
+				app_msleep(30);	
+			}
+		} while (1);
 
 		ifr = &imem->ifr[read_idx];
         if (ifr->ch == 0  && ifr->d_type == DATA_TYPE_VIDEO && ifr->is_key) {

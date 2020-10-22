@@ -502,15 +502,16 @@ static int __load_file_list(const char *path, struct list_head *head)
 }
 
 /* avi list save to /usr/share/video.lst */
-static int __save_file_list(const char *path, struct list_head *head, size_t count)
+static int __save_file_list(const char *path)
 {
+	struct list_head *head = &ilist;
 	struct list_head *iter;
 	struct disk_list *ptr;
 	list_info_t info;
 	
 	FILE *f = NULL;
 	int res, i;
-	size_t index;
+	size_t index = ifile->file_count;
 	
 	res = access(path, R_OK|W_OK);
     if ((res == 0) || (errno == EACCES)) {
@@ -524,16 +525,16 @@ static int __save_file_list(const char *path, struct list_head *head, size_t cou
 		return -1;
 	}
 	
-	index = count;
+	//dprintf("%d files save in video list\n", index);
 	fwrite(&index, sizeof(size_t), 1, f);    //# total file count
-//	dprintf("%d files save in video list\n", count);
-	
-	__list_for_each(iter, head) {
+	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
-		strcpy(info.name, ptr->fullname);
-		info.size = ptr->filesz;
-		//dprintf("saved name %s, size %u in video list!\n", ptr->fullname, ptr->filesz);
-		fwrite(&info, sizeof(list_info_t), 1, f);
+		if (ptr != NULL) {
+			strcpy(info.name, ptr->fullname);
+			info.size = ptr->filesz;
+			//dprintf("saved name %s, size %u in video list!\n", ptr->fullname, ptr->filesz);
+			fwrite(&info, sizeof(list_info_t), 1, f);	
+		}
 	}
 	fclose(f);
 	
@@ -602,8 +603,9 @@ static void *THR_file_mng(void *prm)
 {
 	app_thr_obj *tObj = &ifile->fObj;
 
-	int cmd, exit=0, fcheck = 0;
+	int cmd, exit=0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME;
+	unsigned int b_cycle=FILE_STATE_CHECK_BEEP;
 	char msg[MAX_CHAR_255] = {0,};
 	int r = 0;
 	
@@ -620,17 +622,8 @@ static void *THR_file_mng(void *prm)
 			break;
 		}
 		
-		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) {
-            if(!fcheck)
-			{
-				if (_check_threshold_size(ifile) < 0) {
-					sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
-					app_log_write(MSG_LOG_WRITE, msg);
-				}
-				app_file_update_disk_usage();
-				fcheck = 1 ;
-			}
-
+		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) 
+		{
 			//# file size check and delete -- per 1 min
 	        if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
 			{
@@ -671,14 +664,20 @@ static void *THR_file_mng(void *prm)
 						ifile->file_state = FILE_STATE_NORMAL;
 					}					 
 				}
-				
-			    _check_overwite_full_led(ifile->file_state);
 				f_cycle = 0;
         	}
+			
+			//# file state check for beep -- per 1 sec
+	        if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
+			{
+				 _check_overwite_full_led(ifile->file_state);
+				b_cycle = 0;
+			}
 		}
 		
 		OSA_waitMsecs(FILE_LIST_CYCLE);
 		f_cycle += FILE_LIST_CYCLE;
+		b_cycle += FILE_LIST_CYCLE;
 	}
 	
 	tObj->active = 0;
@@ -717,6 +716,15 @@ int app_file_init(void)
 			return status;
 		}
 	}
+	
+	/* To check mmc threshold size */
+	memset(msg, 0, sizeof(msg));
+	if (_check_threshold_size(ifile) < 0) {
+		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!");
+		eprintf("%s\n", msg);
+		app_log_write(MSG_LOG_WRITE, msg);
+	}
+	app_file_update_disk_usage();
 	
     //#--- create normal record thread
 	status = OSA_mutexCreate(&(ifile->mutex_file));
@@ -889,6 +897,6 @@ int app_file_save_flist(void)
 	
 	/* set file list path */
 	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
-	res = __save_file_list(flist_path, &ilist, ifile->file_count);
+	res = __save_file_list(flist_path);
 	return res;
 }

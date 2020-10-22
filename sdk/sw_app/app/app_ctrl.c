@@ -738,7 +738,8 @@ void ctrl_swosd_userstr(char *str, int draw)
  firmware update
 -----------------------------------------------------------------------------*/
 #define FW_FILE_NUM 		8
-#define FW_TYPE     		0   //# "normal" or "debug"
+#define FW_TYPE     		0   //# "release" or "debug"
+#define DEV_MODEL			1	//# "NEXXONE"
 #define F_RELEASE   		"release"
 #define FW_DIR      		"/mmc/fw_version.txt"
 #define FW_UBIFS			"/mmc/rfs_fit.ubifs"
@@ -760,6 +761,7 @@ static int _is_firmware_for_release(void)
     FILE *F_fw;
     F_fw = fopen(FW_DIR, "r");
     int i=0, ret = FALSE;
+	char buf[256]={0,};
 
     if (F_fw != NULL) {
         while (!feof(F_fw)) {
@@ -775,6 +777,13 @@ static int _is_firmware_for_release(void)
             printf("\n TYPE RELEASE!!\n");
             ret = TRUE;
         }
+
+		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
+			sprintf(buf, "This FW is not for %s !!!", MODEL_NAME);
+			printf("%s\n", buf);
+			app_log_write(MSG_LOG_WRITE, buf);
+			ret = EFAIL;
+		}
     }
     return ret ;
 }
@@ -855,7 +864,7 @@ static char *_findFirmware(const char* root)
 static int _unpack_N_check(const char* pFile, const char* root, int* release)
 {
 	char buf[256]={0,};
-	
+	int ret = SOK;
 	sprintf(buf, "tar xvf %s -C %s", pFile, root);
 	system(buf);
 	/* change 3--> 1*/
@@ -869,8 +878,12 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	}
 
 	*release = _is_firmware_for_release();
-
-	return SOK;
+	
+	//# *release is EFAIL means firmware is not for NEXONE.
+	if (*release == EFAIL)
+		ret = EFAIL;
+	
+	return ret;
 }
 
 /*****************************************************************************
@@ -894,7 +907,8 @@ static int _sw_update(const char *disk)
 		sprintf(msg, "Firmware file is not exist !!!");
 		app_log_write(MSG_LOG_WRITE, msg);
 		printf("%s\n", msg);
-        return EFAIL;
+        app_cfg->ste.b.busy = 0;
+		return EFAIL;
 	}
 	app_cfg->ste.b.busy = 0;
 	
@@ -908,6 +922,9 @@ static int _sw_update(const char *disk)
         ret = EFAIL;
 		goto fw_exit;
 	}
+
+	//# buzz: update
+	app_buzz_ctrl(50, 3);		
 	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
@@ -1007,20 +1024,12 @@ void ctrl_auto_update(void)
 	int ret;
 		
 	/* First, full firmware check.. */
-	memset(path, 0, sizeof(path));
-	sprintf(path, fw_full_name);
-	if(0 == access(path, 0)) 
-	{
-		app_buzz_ctrl(50, 3);		//# buzz: update
-		//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-		if (_sw_update(SD_MOUNT_PATH) == 0) {
-			app_mcu_pwr_off(OFF_RESET);
-		}
-	} else {
-		eprintf("no update file!\n");
-		return;
+	//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
+	if (_sw_update(SD_MOUNT_PATH) == 0) {
+		app_mcu_pwr_off(OFF_RESET);
 	}
-	
+
+		
 	memset(path, 0, sizeof(path));
 	sprintf(path, fw_app_name);
 	if(0 == access(path, 0)) // existence only
