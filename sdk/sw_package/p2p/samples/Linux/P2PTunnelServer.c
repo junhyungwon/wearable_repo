@@ -5,6 +5,11 @@
 #include <time.h>
 #include <pthread.h>
 #include <sys/wait.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "P2PTunnelAPIs.h"
 // #include "IOTCAPIs.h"
 // Enable auto launch PasswordServer.

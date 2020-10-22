@@ -5,10 +5,11 @@ INCLUDE += -I./inc $(MCFW_INC) $(OSA_INC) $(XDAIS_INC) $(SYSLINK_INC) $(CODEC_IN
 INCLUDE += -I$(APP_DIR)/device/inc -I$(APP_DIR)/rtsptx -I$(APP_DIR)/control_sock -I$(APP_DIR)/lib/include
 INCLUDE += -I$(EXTERNAL_PACKAGE)/iw_scan #for wifi client
 INCLUDE += -I$(EXTERNAL_PACKAGE)/web/www_root/include
+INCLUDE += -I$(APP_DIR)/settings
 
 LIBS= $(LIB_DIR)/app_fitt.a $(MCFW_LIBS) $(AUDIO_LIBS) $(CMEM_LIB) $(BLKID_LIBS)
 
 # app addition
-LIBS += -L$(SHLIB_DIR) -lfont_db
+LIBS += -L$(SHLIB_DIR) -lfont_db -ljson-c
 
 include $(MCFW_ROOT_PATH)/makerules/common_footer_a8.mk

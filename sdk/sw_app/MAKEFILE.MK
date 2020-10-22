@@ -11,6 +11,7 @@ hw_test:
 app_fitt:
 	make -fMAKEFILE.MK -C$(APP_DIR)/device MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/graphic MODULE=app_fitt $(TARGET)
+	make -fMAKEFILE.MK -C$(APP_DIR)/settings MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/rtsptx MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/app MODULE=app_fitt $(TARGET)
 	make -fMAKEFILE.MK -C$(APP_DIR)/control_sock MODULE=app_fitt $(TARGET)
