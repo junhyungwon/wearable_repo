@@ -351,12 +351,12 @@ static int	parseModel(app_set_t* const set, json_object* rootObj)
 	return 0;
 }
 
-int js_read_settings(app_set_t* const set)
+int js_read_settings(app_set_t* const set, const char* fname)
 {
-	int ret = -1;
-	json_object *rootObject = json_object_from_file("/mmc/cfg/nexx.json");
+	int ret = EFAIL;
+	json_object *rootObject = json_object_from_file(fname);
 	if(!rootObject) {
-		printf("load JSON data from %s failed.\n", "/mmc/cfg/nexx.json");
+		printf("load JSON data from %s failed.\n", fname);
 		return ret;
 	}
 
@@ -411,7 +411,7 @@ int js_read_settings(app_set_t* const set)
 	return 0;
 }
 
-int js_write_settings(const app_set_t* set)
+int js_write_settings(const app_set_t* const set, const char* fname)
 {
 	int i, ret;
 
@@ -568,7 +568,7 @@ int js_write_settings(const app_set_t* set)
 	// Finish
 	printf("%s\n", json_object_to_json_string(rootObject));
 
-	ret = json_object_to_file_ext("/mmc/cfg/nexx.json", rootObject, JSON_C_TO_STRING_PLAIN);
+	ret = json_object_to_file_ext(fname, rootObject, JSON_C_TO_STRING_PLAIN);
 	if(ret == -1){
 		printf("Failed save JSON File.\n");
 	}

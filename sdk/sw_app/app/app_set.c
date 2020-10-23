@@ -1073,23 +1073,23 @@ int app_set_open(void)
     app_set = (app_set_t *)&app_sys_set;
 	char_memset();
 	
-    if(access("/mmc/cfg/nexx.json", F_OK) == 0) {
-        ret = js_read_settings(app_set);
-    }
-    else {
-	/* 
-	 * Fitt360 CFG Path 
-	 *            MMC  : ---> /mmc/cfg/fbx_cfg.ini
-	 *            NAND : ---> /media/nand/cfg/fbx_cfg.ini
-	 * 
-	 * NEXX360/NEXXONE CFG Path 
-	 *            MMC  : --> /mmc/cfg/nexx_cfg.ini
-	 *            NAND : --> /media/nand/cfg/nexx_cfg.ini 
-	 */
-	if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
-		ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
-    }
-	
+	// try read config from json file
+	ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC);
+    if( EFAIL == ret)
+	{
+		/* 
+		* Fitt360 CFG Path 
+		*            MMC  : ---> /mmc/cfg/fbx_cfg.ini
+		*            NAND : ---> /media/nand/cfg/fbx_cfg.ini
+		* 
+		* NEXX360/NEXXONE CFG Path 
+		*            MMC  : --> /mmc/cfg/nexx_cfg.ini
+		*            NAND : --> /media/nand/cfg/nexx_cfg.ini 
+		*/
+		if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL) //# sd read first.
+			ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);  //# nand read if sd read fail
+	}
+
 	if (ret == EFAIL) 
 	    app_set_default(FULL_RESET);
 	
@@ -1156,7 +1156,7 @@ int app_set_write(void)
 	}
 
     // BKKIM 
-    js_write_settings(app_set);
+    js_write_settings(app_set, NEXX_CFG_JSON_MMC);
 
 	sync();
 	printf(" [app] %s done...!\n", __func__);

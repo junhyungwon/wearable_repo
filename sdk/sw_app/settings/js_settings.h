@@ -4,8 +4,8 @@
 
 #include "app_set.h"
 
-int js_read_settings(app_set_t* const set);
-int js_write_settings(const app_set_t* set);
+int js_read_settings(app_set_t* const set, const char* fname);
+int js_write_settings(const app_set_t* const set, const char* fname);
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif//__JS_SETTINGS_H__
