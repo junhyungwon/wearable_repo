@@ -6,8 +6,12 @@ BUILD_DATE=$(shell date +"%y/%m/%d %H:%M")
 #ROOTDIR = ../../../../../../
 #include $(ROOTDIR)/sdk/sw_mcfw/makerules/common_header_a8.mk
 
-dvr_rdk_BASE := $(shell pwd)
+#dvr_rdk_BASE := $(shell pwd)
 EXEC_DIR = $(ROOTDIR)/sdk/bin
+
+INSTALL_DIR :=$(APP_INSTALL_DIR)
+CC	:= $(BUILD_TOOL_PREFIX)gcc
+STRIP 	:= $(BUILD_TOOL_PREFIX)strip
 
 ifeq ("$(platform)","ti")
 CROSS_COMPILE := $(ROOTDIR)/ti_tools/linux_devkit/bin/arm-arago-linux-gnueabi-
@@ -41,8 +45,9 @@ ifeq ("$(platform)","hi100")
 endif
 
 ifeq ("$(platform)","ti")
-       CXX=/opt/ti-tools/linux_devkit/bin/arm-arago-linux-gnueabi-gcc
+#       CXX=/opt/ti-tools/linux_devkit/bin/arm-arago-linux-gnueabi-gcc
 #        CXX=$(CROSS_COMPILE)gcc
+        CXX=$(BUILD_TOOL_PREFIX)gcc
 endif
 
 all:
@@ -54,7 +59,7 @@ all:
 
 
 clean:
-	rm -rf *.o *~ *.bak P2PTunnelServer_* P2PTunnelAgent_*
+	rm -rf *.o *~ *.bak P2PTunnelServer P2PTunnelServer_* P2PTunnelAgent P2PTunnelAgent_*
 
 install:
 	cp P2PTunnelServer_$(platform) $(EXEC_DIR)

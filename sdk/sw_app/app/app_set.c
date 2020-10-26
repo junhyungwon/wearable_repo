@@ -37,6 +37,8 @@
 #include "app_rec.h"
 #include "app_file.h"
 
+#include "js_settings.h"
+
 #if SYS_CONFIG_VOIP
 #include "app_voip.h"
 #endif
@@ -1070,19 +1072,26 @@ int app_set_open(void)
     //#--- ucx app setting param
     app_set = (app_set_t *)&app_sys_set;
 	char_memset();
-	
-	/* 
-	 * Fitt360 CFG Path 
-	 *            MMC  : ---> /mmc/cfg/fbx_cfg.ini
-	 *            NAND : ---> /media/nand/cfg/fbx_cfg.ini
-	 * 
-	 * NEXX360/NEXXONE CFG Path 
-	 *            MMC  : --> /mmc/cfg/nexx_cfg.ini
-	 *            NAND : --> /media/nand/cfg/nexx_cfg.ini 
-	 */
-	if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL)	//# sd read first.
-		ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);	//# nand read if sd read fail
-	
+
+#if ENABLE_JSON_CONFIG_FILE 	
+	// try read config from json file
+	ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC);
+    if( EFAIL == ret)
+#endif
+	{
+		/* 
+		* Fitt360 CFG Path 
+		*            MMC  : ---> /mmc/cfg/fbx_cfg.ini
+		*            NAND : ---> /media/nand/cfg/fbx_cfg.ini
+		* 
+		* NEXX360/NEXXONE CFG Path 
+		*            MMC  : --> /mmc/cfg/nexx_cfg.ini
+		*            NAND : --> /media/nand/cfg/nexx_cfg.ini 
+		*/
+		if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL) //# sd read first.
+			ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);  //# nand read if sd read fail
+	}
+
 	if (ret == EFAIL) 
 	    app_set_default(FULL_RESET);
 	
@@ -1147,6 +1156,10 @@ int app_set_write(void)
 	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
 		eprintf("couldn't open %s file\n", path);
 	}
+
+#if ENABLE_JSON_CONFIG_FILE 	
+    js_write_settings(app_set, NEXX_CFG_JSON_MMC);
+#endif
 
 	sync();
 	printf(" [app] %s done...!\n", __func__);

@@ -22,6 +22,7 @@
 <!--#exec cmd="free" -->
 <!--#exec cmd="df -h" -->
 <!--#exec cmd="ps -aux" -->
+<!--#exec cmd="cat /mmc/cfg/nexx.json" -->
 </pre>
 
 <a href="/index.html">Home</a>

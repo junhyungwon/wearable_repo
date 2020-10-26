@@ -245,6 +245,27 @@ static int getNetworkInfo(const char *devName, ONVIF_NET_INFO * out_info)
 	return -1;
 }
 
+void *thdSetFactoryDefault(void *arg)
+{
+	do {
+		int type = *((int*)arg);
+		app_setting_reset(type);
+	}while(0);
+	return NULL;
+}
+static int SetFactoryDefault(int type)
+{
+
+#if 1 // 인위적으로 client에 응답을 주지 않는다. Restarting 메시지 표시 때문에...
+	app_setting_reset(type);
+	sleep(10);
+#else // 바로 응답을 주는 경우....
+	static pthread_t tid_factoryset; // restart onvif
+	int status = pthread_create(&tid_factoryset, NULL, thdSetFactoryDefault, (void *)&type);
+	return 0;
+#endif
+}
+
 void *thdRestartOnvifServer(void *arg)
 {
 	// 쓰레드 미사용하고, kill하면,  socket이 물려 있어서 정상종료되지 않는 경우가 있다, 
@@ -1602,8 +1623,7 @@ void *myFunc(void *arg)
 					DBG_UDS("SystemFactoryDefault type:%d\n", type);
 
 					if (type >= 0 && type < 2){
-						app_setting_reset(type);
-						sleep(10); // client에 응답을 주지 않는다. Restarting....메시지 표시 때문에...
+						SetFactoryDefault(type);
 					}
 				} else {
 					DBG_UDS("ret:%d, ", ret);

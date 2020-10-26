@@ -266,7 +266,7 @@ typedef struct {
 #endif
 
 typedef struct {
-	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1
+	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1 = records + streaming
 	app_watchdog_t			wd;
 
 	app_network_dev_t		net_info;	//# network information for device
