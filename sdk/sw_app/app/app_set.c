@@ -1072,10 +1072,12 @@ int app_set_open(void)
     //#--- ucx app setting param
     app_set = (app_set_t *)&app_sys_set;
 	char_memset();
-	
+
+#if ENABLE_JSON_CONFIG_FILE 	
 	// try read config from json file
 	ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC);
     if( EFAIL == ret)
+#endif
 	{
 		/* 
 		* Fitt360 CFG Path 
@@ -1155,8 +1157,9 @@ int app_set_write(void)
 		eprintf("couldn't open %s file\n", path);
 	}
 
-    // BKKIM 
+#if ENABLE_JSON_CONFIG_FILE 	
     js_write_settings(app_set, NEXX_CFG_JSON_MMC);
+#endif
 
 	sync();
 	printf(" [app] %s done...!\n", __func__);
