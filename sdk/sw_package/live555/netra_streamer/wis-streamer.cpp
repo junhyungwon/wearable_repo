@@ -250,6 +250,7 @@ int main(int argc, char** argv) {
   int IsSilence = 0;
   int OverHTTPEnable = 1;
   int svcEnable = 0, rtsp_port = 0, ret = 0 ;
+  int useid = 0;
 
   char rtsp_username[32] = {0, } ; 
   char rtsp_password[32] = {0, } ; 
@@ -267,6 +268,7 @@ int main(int argc, char** argv) {
          rtsp_port = atoi(argv[1]) ;
      if(argc > 3 )
      {  
+		 useid = 1 ;
          rtsp_port = atoi(argv[1]) ;
          strcpy(rtsp_username, argv[2] );        
          strcpy(rtsp_password, argv[3] );        
@@ -375,9 +377,11 @@ int main(int argc, char** argv) {
 	}
 
   UserAuthenticationDatabase* authDB = NULL;
-    
-  authDB = new UserAuthenticationDatabase;
-  authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
+  if(useid)
+  {	
+      authDB = new UserAuthenticationDatabase;
+      authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
+  }
 //      authDB->addUserRecord("linkflow", "1"); // replace these with real strings  
    
   // Create the RTSP server:
