@@ -23,6 +23,7 @@
 #include <semaphore_util.h>
 
 #define USE_GMEM
+#define SYS_DEBUG
 
 enum{
 	STREAM_FAILURE   = -1,

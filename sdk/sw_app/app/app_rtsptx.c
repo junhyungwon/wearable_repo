@@ -27,6 +27,7 @@
 #include "app_comm.h"
 #include "stream.h"
 #include "app_rtsptx.h"
+#include "app_snd.h"
 
 
 /*----------------------------------------------------------------------------
@@ -144,13 +145,13 @@ int app_rtsptx_start(void)
         return -1;
     }
 	if(app_set->account_info.ON_OFF)
-    {
-	    sprintf(rtsp_cmd, "%s %d %s %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd) ;
-    }
+	{	
+	    sprintf(rtsp_cmd, "%s %d %s %s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE ) ;
+	}
 	else
 	{
-	    sprintf(rtsp_cmd, "%s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port) ;
-	}
+	    sprintf(rtsp_cmd, "%s %d %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, SND_PCM_SRATE) ;
+    }
 
     fd = popen(rtsp_cmd, "r");
 	if(fd == NULL) {
@@ -198,13 +199,13 @@ int app_rtsptx_stop_start()
     sleep(1);
 
 	if(app_set->account_info.ON_OFF)
-    {
-	    sprintf(rtsp_cmd, "%s %d %s %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd) ;
-    }
+	{	
+	    sprintf(rtsp_cmd, "%s %d %s %s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE ) ;
+	}
 	else
 	{
-	    sprintf(rtsp_cmd, "%s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port) ;
-	}
+	    sprintf(rtsp_cmd, "%s %d %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, SND_PCM_SRATE) ;
+    }
 
     fd = popen(rtsp_cmd, "r");
     if (fd == NULL) {

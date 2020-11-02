@@ -386,10 +386,10 @@ VideoOpenFileSource
 ::VideoOpenFileSource(UsageEnvironment& env, NETRAInput& input)
   : OpenFileSource(env, input), SerialBook(0), SerialLock(0), StreamFlag(STREAM_GET_VOL),IsStart(1) {
 
-// uSecsToDelay = 30000;     // 5ms
-// uSecsToDelayMax = 50000;
- uSecsToDelay = 1000;     // 5ms
- uSecsToDelayMax = 1666;
+ uSecsToDelay = 50000;     // 5ms
+ uSecsToDelayMax = 100000;
+// uSecsToDelay = 1000;     // 5ms
+// uSecsToDelayMax = 1666;
  srcType = 0;
 
 
@@ -913,7 +913,7 @@ int VideoOpenFileSource::readFromFile()
 AudioOpenFileSource
 ::AudioOpenFileSource(UsageEnvironment& env, NETRAInput& input)
   : OpenFileSource(env, input), AudioBook(0), AudioLock(0), IsStart(1) {
-  uSecsToDelay = 5000;
+  uSecsToDelay = 3000;
   uSecsToDelayMax = 125000;
   srcType = 1;
 }
@@ -933,21 +933,20 @@ int AudioOpenFileSource::getAudioData() {
 	int ret;
 
 	if (AudioBook == 0) {
-        printf("GetAVData  calll 9999999 field value = %d\n",AV_OP_GET_ULAW_SERIAL) ;
+        printf("GetAVData AUDIO calll 9999999 field value = %d\n",AV_OP_GET_ULAW_SERIAL) ;
 		GetAVData(fInput.channel, AV_OP_GET_ULAW_SERIAL, -1, &av_data );
 		printf("av_data.serial = %d <= audio_lock = %d!!!\n", av_data.serial, AudioLock);
 		if (av_data.serial <= AudioLock) {
-			printf("av_data.serial = %d <= audio_lock = %d!!!\n", av_data.serial, AudioLock);
+			printf("av_data.serial = %d <= audio_lock = %d  fInput.channel = %d !!!\n", av_data.serial, AudioLock, fInput.channel);
 			return 0;
 		}
 		AudioBook = av_data.serial;
 	}
-    //printf("GetAVData  calll 10101010 field value = %d\n",AV_OP_LOCK_ULAW) ;
 	ret = GetAVData(fInput.channel, AV_OP_LOCK_ULAW, AudioBook, &av_data );
 
 	if (ret == RET_SUCCESS) {
 		if (AudioLock > 0) {
-            printf("GetAVData  calll field 12121212 value = %d\n",AV_OP_UNLOCK_ULAW) ;
+            printf("GetAVData AUDIO calll field 12121212 fInput.channel = %d value = %d av_data.size = %d av_data.width = %d av_data.height = %d\n",fInput.channel, AV_OP_UNLOCK_ULAW, av_data.size, av_data.width, av_data.height) ;
 			GetAVData(fInput.channel, AV_OP_UNLOCK_ULAW, AudioLock, NULL);
 			AudioLock = 0;
 		}

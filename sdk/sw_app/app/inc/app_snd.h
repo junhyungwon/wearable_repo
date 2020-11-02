@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define SND_PCM_SRATE			8000 //# for baresip
+#define SND_PCM_SRATE			16000 //# for baresip
 #define SND_PCM_PTIME			250 //# fixed 고정해야 함.
 #define SND_PCM_CH				1
 #define SND_PCM_BITS			16

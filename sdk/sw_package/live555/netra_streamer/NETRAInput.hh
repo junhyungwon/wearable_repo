@@ -36,7 +36,7 @@ public:
 
 private:
   NETRAInput(UsageEnvironment& env, int vType); // called only by createNew()
-
+  
 
 //  Boolean initialize(UsageEnvironment& env);
 //  Boolean openFiles(UsageEnvironment& env);
@@ -59,7 +59,7 @@ private:
 enum{
 	VIDEO_TYPE_H264_CH1	= 0,
 	VIDEO_TYPE_H264_CH2,
-	VIDEO_TYPE_MAX_NUM
+	VIDEO_TYPE_MAX_NUM 
 };
 
 /*
@@ -75,7 +75,7 @@ enum{
 // Functions to set the optimal buffer size for RTP sink objects.
 // These should be called before each RTPSink is created.
 #define AUDIO_MAX_FRAME_SIZE 20480
-#define VIDEO_MAX_FRAME_SIZE 200000 //800000
+#define VIDEO_MAX_FRAME_SIZE 200000
 inline void setAudioRTPSinkBufferSize() { OutPacketBuffer::maxSize = AUDIO_MAX_FRAME_SIZE; }
 inline void setVideoRTPSinkBufferSize() { OutPacketBuffer::maxSize = VIDEO_MAX_FRAME_SIZE; }
 int GetSprop(void *pBuff, char vType);

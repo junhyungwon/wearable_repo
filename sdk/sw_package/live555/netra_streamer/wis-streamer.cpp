@@ -81,7 +81,7 @@ int audioOutputBitrate = 128000;
 
 unsigned audioSamplingFrequency = 16000;
 unsigned audioNumChannels = 1;
-int audio_enable = 0;
+int audio_enable = 1;
 unsigned audioType = AUDIO_G711;
 char watchVariable = 0;
 char videoType = -1;
@@ -255,25 +255,39 @@ int main(int argc, char** argv) {
   char rtsp_username[32] = {0, } ; 
   char rtsp_password[32] = {0, } ; 
 
-  audioOutputBitrate = 128000;
-  audioSamplingFrequency = 16000;
  
   if(argc < 2)
   {
      rtsp_port = 8551 ;
+	 audioSamplingFrequency = 8000;
+	 audioOutputBitrate = 64000;
   }
   else 
   {
-     if(argc < 3)
+     if(argc < 4)
+	 {
          rtsp_port = atoi(argv[1]) ;
-     if(argc > 3 )
+		 audioSamplingFrequency = atoi(argv[2]) ;
+		 if(audioSamplingFrequency == 8000)
+			 audioOutputBitrate = 64000 ;
+		 else
+			 audioOutputBitrate = 128000 ;
+
+	 }
+     if(argc > 4 )
      {  
 		 useid = 1 ;
          rtsp_port = atoi(argv[1]) ;
          strcpy(rtsp_username, argv[2] );        
          strcpy(rtsp_password, argv[3] );        
+		 audioSamplingFrequency = atoi(argv[4]) ;
+		 if(audioSamplingFrequency == 8000)
+			 audioOutputBitrate = 64000 ;
+		 else
+			 audioOutputBitrate = 128000 ;
      }
   }
+
 
   // Begin by setting up our usage environment:
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();

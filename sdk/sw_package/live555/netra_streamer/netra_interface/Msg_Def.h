@@ -287,7 +287,7 @@ enum {
 
 typedef enum {
 	FMT_VIDEO_CH1 = 0,
-	FMT_VIDEO_CH2 = 0,
+	FMT_VIDEO_CH2,
 	//RTSP_EXT_CHANNEL	
 	FMT_AUDIO_CH1,
 	FMT_AUDIO_CH2,
