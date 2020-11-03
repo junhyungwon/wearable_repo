@@ -72,12 +72,12 @@ enum _enumUdsCmd {
 };
 
 enum _tagUdsErrs{
-    ERR_INVALID_FWFILE=-1000,
+    ERR_UDS =-1000,
     ERR_FAILED_CONNECT,
     ERR_FAILED_CREATE_DESCRIPTOR,
     ERR_INVALID_ID,
     ERR_INVALID_PW,
-    ERR_ERROR=-1,
+    ERR_UDS_ERROR=-1,
 	ERR_NO_ERROR = 0,
 	ERR_NO_CHANGE = 1,
 };

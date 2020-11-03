@@ -424,7 +424,7 @@ fw: ubxapp ubifs
 	@echo "***** Build Firmware (involved make ubxapp && make ubifs) ******"
 	@echo "----------------------------------------------------------------"
 	@cd $(TFTP_HOME) \
-		&& rm -f rfs_fit.ubifs.md5 \
+		&& rm -f rfs_fit.ubifs.md5 fitt_firmware_full_N.dat \
 		&& touch fw_version.txt \
 		&& md5sum rfs_fit.ubifs > rfs_fit.ubifs.md5 \
 		&& tar cvf fitt_firmware_full_N.dat \
