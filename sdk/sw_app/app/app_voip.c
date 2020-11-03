@@ -285,7 +285,7 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-//	dprintf("current baresip state = %d\n", action);
+	dprintf("current baresip state = %d\n", action);
 	
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:

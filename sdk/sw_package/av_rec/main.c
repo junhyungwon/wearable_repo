@@ -304,11 +304,16 @@ static void evt_file_close(void)
 	}
 }
 
-static int evt_file_write(stream_info_t *ifr)
+static int evt_file_write(stream_info_t *ifr, int snd_on)
 {
 	int ret = OSA_SOK;
-
-	ret = avi_file_write(irec->fevt, ifr);
+	
+	if (ifr->d_type==DATA_TYPE_VIDEO)
+		ret = avi_file_write(irec->fevt, ifr);
+	else if ((ifr->d_type==DATA_TYPE_AUDIO)) {
+		if (snd_on)
+			ret = avi_file_write(irec->fevt, ifr);
+	}
 
 	return ret;
 }
@@ -431,7 +436,7 @@ static void *THR_rec_evt(void *prm)
 					#if defined(NEXXONE)
 					/* ch=1 스트리밍 채널이 gmem에 기록되어 있으므로 avi 저장 시 이를 막아야 함 */
 					if (ifr->ch < 1) {
-						ret = evt_file_write(ifr);
+						ret = evt_file_write(ifr, irec->en_snd);
 						if (ret < 0) {
 							eprintf("avi write failed!\n");
 						}
@@ -469,7 +474,7 @@ static void *THR_rec_evt(void *prm)
 						    continue;
                         }
 				
-				        ret = evt_file_write(ifr);
+				        ret = evt_file_write(ifr, irec->en_snd);
 				        if (ret < 0) {
 							eprintf("avi write failed!\n");
 				        }
