@@ -947,6 +947,23 @@ fw_exit:
 	return ret;
 }
 
+
+
+void *thrRunFWUpdate(void *arg)
+{
+	app_buzz_ctrl(50, 3);		//# buzz: update
+	dev_fw_setenv("nand_update", "1", 0);
+	sync();
+
+	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Temp version Firmware update done....");
+	sync();
+	app_msleep(100);		//# wait for safe
+	printf("\nfw update ready ! It will restart\n\n");
+
+	app_mcu_pwr_off(OFF_RESET);
+
+	return NULL;
+}
 /* example remote update
  *
 curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
@@ -966,7 +983,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	}
 	app_file_save_flist(); /* save file list */
 	
-#if 1 // decompress tar
+#if 1 // untar
 	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
 	printf("fwupdate cmd:%s\n", cmd);
@@ -996,20 +1013,22 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		//TODO: 실패할 경우, 압축해제한 파일들 처리
 		return -1;
 	}
+
+#if 1
+		thrRunFWUpdate(NULL);
+#else
+	// thread로 전환..웹에 펌업 시작을 알릴 목적으로..
+	{
+		pthread_t tid_fw;
+		int ret = pthread_create(&tid_fw, NULL, thrRunFWUpdate, NULL);
+		if (ret != 0) {
+			eprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
+			return -1;
+		}
+		pthread_detach(tid_fw);
+	}
+#endif
 	
-	app_buzz_ctrl(50, 3);		//# buzz: update
-
-	dev_fw_setenv("nand_update", "1", 0);
-
-	sync();
-
-	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Temp version Firmware update done....");
-	
-	sync();
-	app_msleep(200);		//# wait for safe
-	printf("\nfw update ready ! It will restart\n\n");
-
-	app_mcu_pwr_off(OFF_RESET);
 	return 0;
 }
 
@@ -1128,16 +1147,13 @@ int ctrl_is_live_process(const char *process_name)
  */
 int ctrl_update_firmware_by_cgi(char *fwpath)
 {
-	int ret = 0;
-
-	if(!app_cfg->ste.b.ftp_run)
-	{ 
-		ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
-		if (ret < 0 ) {
-			app_rec_start();
-		}
+	int ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
+	if (ret < 0)
+	{
+		app_rec_start();
 	}
-    return ret ;     
+
+	return ret ;     
 }
 
 /*
