@@ -1681,30 +1681,62 @@ void *myFunc(void *arg)
 			sprintf(wbuf, "[APP_CGI] --- FWUPDATE ---");
 			app_log_write(MSG_LOG_WRITE, wbuf);
 
-			// 1. send READY
-			sprintf(wbuf, "READY");
-			ret = write(cs_uds, wbuf, sizeof wbuf);
+			if (app_cfg->ste.b.ftp_run)
+			{
+				sprintf(wbuf, "FTP_RUNNING");
+				ret = write(cs_uds, wbuf, sizeof wbuf);
+			}
+			else
+			{
+				// 1. send READY
+				sprintf(wbuf, "READY");
+				ret = write(cs_uds, wbuf, sizeof wbuf);
 
-			if(ret > 0){
-				memset(rbuf, 0, sizeof rbuf);
-				ret = read(cs_uds, rbuf, sizeof rbuf);
-				DBG_UDS("FWUPDATE ret:%d, rbuf:%s\n", ret, rbuf);
-				if (ret > 0) {
+				if (ret > 0)
+				{
+					// read file path
+					memset(rbuf, 0, sizeof rbuf);
+					ret = read(cs_uds, rbuf, sizeof rbuf);
+					DBG_UDS("FWUPDATE ret:%d, rbuf:%s\n", ret, rbuf);
+					if (ret > 0)
+					{
+						if (access(rbuf, F_OK) != 0)
+						{
+							DBG_UDS("No FW File:%s\n", rbuf);
+							sprintf(wbuf, "NO_FILE");
+							ret = write(cs_uds, wbuf, sizeof wbuf);
+						}
+						else
+						{
+							ret = ctrl_update_firmware_by_cgi(rbuf);
+							//ctrl_update_firmware_by_cgi("/tmp");
+							if (ret == 0)
+							{
+								sprintf(wbuf, "SUCCEED");
+								ret = write(cs_uds, wbuf, sizeof wbuf);
+								DBG_UDS("OK, Succeed Update\n");
+							}
+							else {
+								sprintf(wbuf, "INVALID_FILE");
+								ret = write(cs_uds, wbuf, sizeof wbuf);
+								DBG_UDS("Error, Failed Update\n");
+							}
+						}
+					}
+					else
+					{
+						DBG_UDS("ret:%d, ", ret);
+						perror("failed read:");
 
-					if (access(rbuf, F_OK) != 0) { 
-						DBG_UDS("No FW File:%s\n", rbuf);
+						sprintf(wbuf, "NETWORK_ERROR");
+						ret = write(cs_uds, wbuf, sizeof wbuf);
 					}
-					else {
-						ctrl_update_firmware_by_cgi(rbuf);
-						//ctrl_update_firmware_by_cgi("/tmp");
-					}
-				} else {
-					DBG_UDS("ret:%d, ", ret);
-					perror("failed read:"); 
 				}
-			} else {
-				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
-				perror("failed write: ");
+				else
+				{
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
 			}
 		}
 		else if (strcmp(rbuf, "SystemRestore") == 0)

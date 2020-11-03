@@ -6,34 +6,15 @@
 #include "cgi_debug.h"
 #include "qdecoder.h"
 #include "cgi_uds.h"
+#include "cgi_error.h"
 
 
 #define FW_FILE_PATH		"/tmp" // tmp 에 만들고, fitt에서 지지고볶고 난리를...
 
-enum {
-	ERR_RECORD = -1000,
-	ERR_EXIST_ID,
-	ERR_PASSWORD,
-	ERR_UNKNOWN,
-	ERR_SET_FRAME,
-	ERR_SETUP,
-	ERR_INPUT,
-	ERR_HOLIDAY,
-	ERR_EMAIL_TEST,
-	ERR_FW_UPDATE,
-	ERR_NO_SDCARD,				// SDCARD 없음(마운트 안됨)
-	ERR_NO_FWFILE,				// 파일 없음
-    ERR_FWFILE_SIZE,            // 사이즈에 문제가 있음.
-    ERR_FWFILE_NOTATION,        // 모델에 맞는 펌웨어 검사..
-    ERR_FWFILE_CONTENTS,        // 펌웨어 파일 내용 이상.
-
-	OK_FW_UPDATE=0,
-};
-
 int main(int argc, char **argv)
 {
-	int nStat = ERR_FW_UPDATE;
-	int status = -1, value;
+	int nStat = ERR_FWUPDATE;
+	int status = -1;
 	qentry_t *req = NULL;
 
 	req = qcgireq_setoption(NULL, true, FW_FILE_PATH, 1024*1024*48);
@@ -61,7 +42,7 @@ int main(int argc, char **argv)
 	if (filename == NULL || filelength < 1 || savepath == NULL) {
 		//CGI_DBG("Select File, Please....\n");
 		//qcgires_error(req, "Select file, please.");
-		nStat = ERR_NO_FWFILE;
+		nStat = ERR_FWUPDATE_NOFILE;
 		goto __FWUPGRADE_END;
 	}
 
@@ -75,7 +56,7 @@ int main(int argc, char **argv)
 		CGI_DBG("mkdir %s\n", FW_FILE_PATH);
 		if( 0 != mkdir(FW_FILE_PATH, 0777)){
 			CGI_DBG("Failed mkdir :%s\n", strerror(errno));
-			nStat = ERR_FWFILE_NOTATION;
+			nStat = ERR_FWUPDATE_NOTATION;
 			goto __FWUPGRADE_END;
 		}
 	}
@@ -86,7 +67,7 @@ int main(int argc, char **argv)
 
 	if( 0 != rename(savepath, filepath)){
 		//CGI_DBG("Failed rename fw file...%s\n", strerror(errno));
-		nStat = ERR_FWFILE_NOTATION;
+		nStat = ERR_FWUPDATE_NOTATION;
 		goto __FWUPGRADE_END;
 	}
 
@@ -96,38 +77,39 @@ int main(int argc, char **argv)
 	char strPath[128];
 	sprintf(strPath, "%s", filepath);
 	nStat = sysctl_message(UDS_CMD_FWUPDATE, (void*)strPath, sizeof(strPath));
-	//CGI_DBG("fw update done...\n");
+	CGI_DBG("fw update res...%d\n", nStat);
 
 __FWUPGRADE_END:	
 	printf("Content-type: text/html;\r\n\r\n");
 	{
-		if(nStat == OK_FW_UPDATE){
-			printf("%s\r\n", "OK");
-			//Reboot(); main에서 직접 실행한다. 이미 서버는 죽었다...
+		if (nStat == ERR_FWUPDATE_INVALID_FILE){
+			fprintf(stdout, "%s\r\n", "ERR_FWUPDATE_INVALID_FILE");
+			CGI_DBG("%s\r\n", "ERR_FWUPDATE_INVALID_FILE");
 		}
-		else{
-
-			//CGI_DBG("fw update error : %d\r\n", nStat);
-
-#if 0
-			// share the status by file
-			//StartProcess("echo -1 > /tmp/upgrade_state");  // error
-#else
-			// directly,  send error message to system
-			status = -1;
-			//CGI_DBG("Failed FWUPGRADE....... \n");
-#endif
-
-#if 1
-			// Send resume message to system
-			value = 0;
-			//CGI_DBG("RESUME_FROM_UPGRADE ....... \n");
-#endif
+		else if (nStat == ERR_FWUPDATE_FTP_RUNNING){
+			fprintf(stdout, "%s\r\n", "ERR_FWUPDATE_FTP_RUNNING");
+			CGI_DBG("%s\r\n", "ERR_FWUPDATE_FTP_RUNNING");
 		}
+		else if (nStat == ERR_FWUPDATE_SIZE) {
+			fprintf(stdout, "%s\r\n", "ERR_FWUPDATE_SIZE");
+			CGI_DBG("%s\r\n", "ERR_FWUPDATE_SIZE");
+		}
+		else if (nStat == OK_FW_UPDATE){
+			fprintf(stdout, "%s\r\n", "OK_FW_UPDATE");
+			CGI_DBG("%s\r\n", "OK_FW_UPDATE");
+		}
+		else {
+			// ERROR
+			fprintf(stdout, "%s\r\n", "ERR_FWUPDATE");
+			CGI_DBG("fw update error : %d\r\n", nStat);
+		}
+
 	}
 
 	if(req) req->free(req);
 
-	return 0;
+	sync();
+
+	return nStat;
 
 }

@@ -397,6 +397,10 @@ int sysctl_message(
 				// 2. check ready
 				ret = read(cs, rbuf, sizeof rbuf);
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+				if(0==strcmp(rbuf, "FTP_RUNNING")) {
+					close(cs);
+					return ERR_FWUPDATE_FTP_RUNNING;
+				}
 
 				// 3. send , fwfile path
 				sprintf(wbuf, "%s", (char*)data);
@@ -408,13 +412,21 @@ int sysctl_message(
 				if(ret > 0){
 					CGI_DBG("read:%s\n", rbuf);
 
-					if(0==strcmp(rbuf, "SUCCEED")) {
+					if(0==strcmp(rbuf, "NO_FILE")) {
 						close(cs);
-						return 0;
+						return ERR_FWUPDATE_NOFILE;
 					}
-					else if(0==strcmp(rbuf, "INVALID_FWFILE")) {
+					else if(0==strcmp(rbuf, "SUCCEED")) {
 						close(cs);
-						return ERR_INVALID_FWFILE;
+						return OK_FW_UPDATE;
+					}
+					else if(0==strcmp(rbuf, "INVALID_FILE")) {
+						close(cs);
+						return ERR_FWUPDATE_INVALID_FILE;
+					}
+					else {
+						close(cs);
+						return ERR_FWUPDATE;
 					}
 				}
 			}
@@ -679,6 +691,6 @@ CGI_DBG("\nw:%d, h:%d, kbps:%d, fps:%d, ei:%d, gov:%d\n", w, h, kbps, fps, ei, g
 
 	close(cs);
 
-	return ERR_ERROR;
+	return ERR_UDS_ERROR;
 }
 
