@@ -69,6 +69,8 @@ enum _enumUdsCmd {
     UDS_SET_USER_CONFIG,
     UDS_GET_VOIP_CONFIG,
     UDS_SET_VOIP_CONFIG,
+    UDS_GET_SYSTEM_INFO,
+    UDS_SET_SYSTEM_INFO,
 };
 
 enum _tagUdsErrs{
