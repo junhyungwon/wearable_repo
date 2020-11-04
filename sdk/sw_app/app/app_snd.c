@@ -597,8 +597,10 @@ static void *THR_snd_cap(void *prm)
 		app_memcpy(isnd->snd_dup.sampv, isnd->snd_in.sampv, bytes);
 		/* VOIP를 사용할 경우에만 copy ?? */
 		__snd_dev_write(&isnd->snd_dup, bytes/2); 
-#endif		
-//		if (isnd->snd_rec_enable)
+#endif	
+
+#if defined(NEXXONE)	
+		if (isnd->snd_rec_enable)
 		{
 			//# audio codec : g.711
 			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
@@ -616,14 +618,34 @@ static void *THR_snd_cap(void *prm)
 			ifr->b_size = enc_size;
 			//ifr->t_sec = (Uint32)(captime/1000);
 			//ifr->t_msec = (Uint32)(captime%1000);
-		 	app_memcpy(addr, enc_buf, enc_size);
-			gettimeofday(&tv, NULL) ;
-
-		    timestamp = tv.tv_sec + tv.tv_usec*1000 ;
-		    app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
-				0, 2, timestamp);
+			app_memcpy(addr, enc_buf, enc_size);
 		}
-        
+#else		
+			//# audio codec : g.711
+		enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
+		addr = g_mem_get_addr(enc_size, &idx);
+		if(addr == NULL) {
+			eprintf("audio gmem is null\n");
+			continue;
+		}
+
+		ifr = &isnd->imem->ifr[idx];
+		ifr->d_type = CAP_TYPE_AUDIO;
+		ifr->ch = 0;
+		ifr->addr = addr;
+		ifr->offset = (int)addr - g_mem_get_virtaddr();
+		ifr->b_size = enc_size;
+		//ifr->t_sec = (Uint32)(captime/1000);
+		//ifr->t_msec = (Uint32)(captime%1000);
+		app_memcpy(addr, enc_buf, enc_size);
+
+		gettimeofday(&tv, NULL) ;
+		timestamp = tv.tv_sec + tv.tv_usec*1000 ;
+		app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
+		0,  2, timestamp);
+
+#endif
+
 	}
 
 #if SYS_CONFIG_VOIP
