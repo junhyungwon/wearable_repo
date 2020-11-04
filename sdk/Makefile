@@ -1,7 +1,7 @@
 # Copyright (c) Texas Instruments Inc 2012
 DIR=default
 FILE=default
-CPU_NUM=16
+CPU_NUM=4
 
 include Rules.make
 include $(ROOTDIR)/makerules/build_config.mk
@@ -137,6 +137,7 @@ app_pkg_clean: libavi_clean wlan_scan_clean live555_clean
 
 ##### MCFW BUILD #####
 mcfw: hdvpss m3 app
+mcfw_all: hdvpss_all m3_all app_all
 
 #### M3 BUILD #####
 

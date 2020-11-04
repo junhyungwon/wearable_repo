@@ -1,8 +1,12 @@
 #!/bin/bash
 
+#FW_PREFIX="NEXX360B"
+#FW_PREFIX="NEXX360W"
 FW_PREFIX="NEXXONE"
-VERSION_TXT_FILE="fw_version.txt"
+UPDATE_MODE="release"
+#UPDATE_MODE="debug"
 
+VERSION_TXT_FILE="fw_version.txt"
 
 function _parsing_fw_ver ()
 {
@@ -24,6 +28,8 @@ function _compile_ubifs()
  echo
  echo "Making UBIFS ..."	
  make -s ubifs
+ cd bin
+ md5sum rfs_fit.ubifs > rfs_fit.ubifs.md5
 }
 
 # write to fw_version.txt
@@ -68,7 +74,7 @@ fi
 # version parsing and naming...
 _parsing_fw_ver
 ver_name="$ver1.$ver2.$ver3$ver4" 
-fw_name=""$FW_PREFIX"_"$ver_name"_full_N.dat"
+fw_name=""$FW_PREFIX"_"$ver_name"_full.dat"
 
 echo
 echo Make $"FW_PREFIX" firmware "$ver_name" ....
@@ -79,14 +85,14 @@ _compile_ubifs
 
 # update fw_version.txt
 cd bin
-_fw_version_write "release" "$ver1" "$ver2" "$ver3" "$ver4"
+_fw_version_write "$UPDATE_MODE" "$ver1" "$ver2" "$ver3" "$ver4"
 
 
 # packaging binary
 echo
 echo "Packaging files..."
 echo
-tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs mcu_fitt.txt
+tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 mv "$fw_name" ../.
 
 echo

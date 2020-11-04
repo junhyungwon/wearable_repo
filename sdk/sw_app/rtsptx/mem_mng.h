@@ -16,30 +16,30 @@
 -----------------------------------------------------------------------------*/
 #define SHMEM_KEY	(0x4321)
 
-#define MJPG_CACHE_SIZE 			(0x100000)
+#define MJPG_CACHE_SIZE 			(0x2000)
 /* size of 3 GOP */
 #define MP4_CACHE_SIZE 				(0xA00000)
 //#define MP4_CACHE_SIZE 				(0x500000)
 #define MP4_EXT_CACHE_SIZE 			(0x100000)
 #define AUDIO_CACHE_SIZE 			(0x16000)
 
-#define MJPG_CACHE_BLK_SIZE 		(100*1024)
+#define MJPG_CACHE_BLK_SIZE 		(1*512)
 #define MP4_CACHE_BLK_SIZE 			(30*1024)//(1*512)
-#define MP4_EXT_CACHE_BLK_SIZE 		(1*1024)
+#define MP4_EXT_CACHE_BLK_SIZE 		(1*512)
 #define AUDIO_CACHE_BLK_SIZE 		(1*1024)
 
 #define CACHE_MEM_SIZE	(MJPG_CACHE_SIZE+MP4_CACHE_SIZE+MP4_EXT_CACHE_SIZE+AUDIO_CACHE_SIZE)
 
 
-#define MJPG_MEM_SIZE 				(0x100000)
+#define MJPG_MEM_SIZE 				(0x2000)
 #define MP4_MEM_SIZE 				(0xA00000)
 //#define MP4_MEM_SIZE 				(0x500000)
 #define MP4_EXT_MEM_SIZE 			(0x100000)
 #define AUDIO_MEM_SIZE 				(0x16000)
 
-#define MJPG_BLK_SIZE				(100*1024)
+#define MJPG_BLK_SIZE				(1*512)
 #define MP4_BLK_SIZE				(30*1024)//(1*512)
-#define MP4_EXT_BLK_SIZE			(1*1024)
+#define MP4_EXT_BLK_SIZE			(1*512)
 
 #define AUDIO_BLK_SIZE				(1*1024)
 
