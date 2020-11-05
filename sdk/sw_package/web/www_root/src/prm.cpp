@@ -434,6 +434,27 @@ _FREE_CAMERA_OBJ:
 	return ret;
 }
 
+void put_json_system_info(T_CGI_SYSTEM_INFO *p)
+{
+	json_object *root_obj = json_object_new_object();
+
+	json_object_object_add(root_obj, "model", json_object_new_string(p->model));
+	json_object_object_add(root_obj, "fwver", json_object_new_string(p->fwver));
+	json_object_object_add(root_obj, "ftp",   json_object_new_int(   p->ftp));
+	json_object_object_add(root_obj, "onvif", json_object_new_int(   p->onvif));
+	json_object_object_add(root_obj, "p2p",   json_object_new_int(   p->p2p));
+	json_object_object_add(root_obj, "https", json_object_new_int(   p->https));
+	json_object_object_add(root_obj, "rec",   json_object_new_int(   p->rec));
+
+	PUT_CACHE_CONTROL_NOCACHE;
+	PUT_CONTENT_TYPE_JSON;
+	PUT_CRLF;
+	PUTSTR("%s\r\n", json_object_to_json_string(root_obj));
+
+	// free
+	json_object_put(root_obj);
+}
+
 void put_json_voip_config(T_CGI_VOIP_CONFIG *p)
 {
 	json_object *voip_obj;
@@ -856,6 +877,12 @@ int do_search(char *pContents)
 					T_CGI_VOIP_CONFIG t;memset(&t, 0, sizeof t);
 					sysctl_message(UDS_GET_VOIP_CONFIG, (void*)&t, sizeof t);
 					put_json_voip_config(&t);
+					return 0;
+				}
+				else if(!strcmp(prm[i].value, "system_info")){
+					T_CGI_SYSTEM_INFO t;memset(&t, 0, sizeof t);
+					sysctl_message(UDS_GET_SYSTEM_INFO, (void*)&t, sizeof t);
+					put_json_system_info(&t);
 					return 0;
 				}
 				else {

@@ -158,6 +158,23 @@ int sysctl_message(
 				}
 			}
 			break;
+		case UDS_GET_SYSTEM_INFO:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_GET_SYSTEM_INFO);
+				ret = write(cs, wbuf, sizeof wbuf);
+				CGI_DBG("Sent CMD : %s\n", wbuf);
+
+				// 2. wait response and read sizeof T_CGI_SYSTEM_CONFIG bytes
+				ret = read(cs, (T_CGI_SYSTEM_INFO*)data, sizeof(T_CGI_SYSTEM_INFO));
+				CGI_DBG("Read, size:%d\n", ret);
+
+				if(ret > 0){
+					close(cs);
+					return 0;
+				}
+			}
+			break;
 		case UDS_GET_SYSTEM_CONFIG:
 			{
 				// 1. write command

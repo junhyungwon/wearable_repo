@@ -167,5 +167,15 @@ typedef struct _tagCgiUserConfig {
 	T_CGI_RTSP_CONFIG  rtsp;
 }T_CGI_USER_CONFIG;
 
+typedef struct _tagCgiSystemInfo{
+	char model[32];
+	char fwver[32];
+    int ftp;
+    int onvif;
+    int p2p;
+    int https;
+    int rec;
+}T_CGI_SYSTEM_INFO;
+
 ////////////////////////////////////////////////////////////////////////////////
 #endif//__CGI_PARAM_H__
