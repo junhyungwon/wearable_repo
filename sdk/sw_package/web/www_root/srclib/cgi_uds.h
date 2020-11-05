@@ -30,6 +30,8 @@
 #define STR_MSG_SET_USER_CONFIG      "SetUserConfiguration"
 #define STR_MSG_GET_VOIP_CONFIG      "GetVoipConfiguration"
 #define STR_MSG_SET_VOIP_CONFIG      "SetVoipConfiguration"
+#define STR_MSG_GET_SYSTEM_INFO      "GetSystemInfo"
+#define STR_MSG_SET_SYSTEM_INFO      "SetSystemInfo"
 
 enum _enumUdsCmd {
     UDS_CMD_FWUPDATE,
@@ -69,6 +71,8 @@ enum _enumUdsCmd {
     UDS_SET_USER_CONFIG,
     UDS_GET_VOIP_CONFIG,
     UDS_SET_VOIP_CONFIG,
+    UDS_GET_SYSTEM_INFO,
+    UDS_SET_SYSTEM_INFO,
 };
 
 enum _tagUdsErrs{

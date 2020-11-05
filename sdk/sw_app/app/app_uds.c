@@ -955,6 +955,19 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 	return isChanged;
 }
 
+static int getSystemInfo(T_CGI_SYSTEM_INFO *t){
+
+	sprintf(t->model, "%s", MODEL_NAME);
+	sprintf(t->fwver, "%s", app_set->sys_info.fw_ver);
+    t->https = app_set->net_info.https_enable;
+    t->onvif = app_set->net_info.enable_onvif;
+    t->p2p   = app_set->sys_info.P2P_ON_OFF;
+	t->rec   = app_rec_state(); 
+	t->ftp   = app_cfg->ste.b.ftp_run;
+
+	return 0;
+}
+
 static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 {
 	char MacAddr[12]={0} ;
@@ -1904,6 +1917,20 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
+		else if (strcmp(rbuf, "GetSystemInfo") == 0) {
+			T_CGI_SYSTEM_INFO t;memset(&t,0, sizeof t);
+			if(0 == getSystemInfo(&t)){
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+				if (ret > 0) {
+					DBG_UDS("model:%s\n", t.model);
+					DBG_UDS("fwver:%s\n", t.fwver);
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
+			}
+		}
 		else if (strcmp(rbuf, "GetSystemConfiguration") == 0) {
 			sprintf(wbuf, "[APP_UDS] --- GetSystemconfiguration ---");
 			app_log_write(MSG_LOG_WRITE, wbuf);
@@ -1913,7 +1940,6 @@ void *myFunc(void *arg)
 				ret = write(cs_uds, &t, sizeof t);
 				DBG_UDS("sent, ret=%d \n", ret);
 				if (ret > 0) {
-
 					// TODO something...
 				} else {
 					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
