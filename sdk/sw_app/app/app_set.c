@@ -36,7 +36,7 @@
 #include "app_mcu.h"
 #include "app_rec.h"
 #include "app_file.h"
-
+#include "app_ctrl.h"
 #include "js_settings.h"
 
 #if SYS_CONFIG_VOIP
@@ -1109,21 +1109,7 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
     if (type >= 0 && type < 2)
     {
         app_set_default(type);  // onvif factory default
-	    app_set_write();
-
-        ret = app_rec_state();
-        if (ret) {
-            app_rec_stop(1);
-			sleep(1); /* wait for file close */
-        }
-		/* added by rupy */
-		app_file_save_flist(); /* save file list */
-		#if SYS_CONFIG_VOIP
-		app_voip_save_config(); /* save voip volume */
-		#endif
-		sync();
-		
-		app_mcu_pwr_off(OFF_RESET);
+	    ctrl_sys_reboot();
     } 
 }
 

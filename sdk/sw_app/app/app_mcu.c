@@ -71,6 +71,9 @@ static void delay_3sec_exit(void)
 	while (tgap < MAX_TIME_GAP && (imcu->val.ibatt > IBATT_MIN || imcu->val.ebatt > EBATT_MIN)) {
 		gettimeofday(&t2, NULL);
 		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
+		if (tgap <= 0) {
+			gettimeofday(&t1, NULL);
+		}
 		OSA_waitMsecs(1);
 	}
 	gettimeofday(&t2, NULL);
@@ -152,18 +155,11 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 			c_volt_chk--;
 			if(c_volt_chk == 0) 
 			{
-				/* add rupy */
-				app_rec_stop(0);
-				app_file_save_flist(); /* save file list */
-				#if SYS_CONFIG_VOIP
-				app_voip_save_config(); /* save voip volume */
-	            #endif
-				app_buzz_ctrl(80, 2);	//# buzz: pwr off
-				eprintf("low power detect(%d, %d)!\n", ibatt, ebatt);
-                sprintf(msg, "Peek Low Voltage Detected ");
+				snprintf(msg, sizeof(msg), "Peek Low Voltage Detected(%d, %d)", ibatt, ebatt);
+				eprintf("%s!\n", msg);
                 app_log_write(MSG_LOG_SHUTDOWN, msg);
-
-				app_mcu_pwr_off(OFF_NORMAL);
+				ctrl_sys_shutdown();
+				
 				return 1;
 			}
 		} else {
@@ -232,18 +228,11 @@ static void *THR_micom(void *prm)
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
 				if (key_type == PSW_EVT_LONG) 
 				{
-					//# add rupy
-					app_rec_stop(0);
-					app_buzz_ctrl(80, 2);	//# buzz: pwr off
-					app_file_save_flist(); /* save file list */
-					sprintf(log, "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
-					app_log_write( MSG_LOG_SHUTDOWN, log);
+					snprintf(log, sizeof(log), "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
+					app_log_write(MSG_LOG_SHUTDOWN, log);
 					dprintf("%s\n", log);
-					#if SYS_CONFIG_VOIP
-					app_voip_save_config(); /* save voip volume */
-					#endif
-					app_set_write();
-					app_mcu_pwr_off(OFF_NORMAL);
+					//# add rupy
+					ctrl_sys_shutdown();
 					exit = 1;
 				} else {
 #if defined(NEXXONE) || defined(NEXX360W)
