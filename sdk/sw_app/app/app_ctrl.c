@@ -947,8 +947,6 @@ fw_exit:
 	return ret;
 }
 
-
-
 void *thrRunFWUpdate(void *arg)
 {
 	app_buzz_ctrl(50, 3);		//# buzz: update
