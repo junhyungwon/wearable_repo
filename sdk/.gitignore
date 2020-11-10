@@ -3478,6 +3478,7 @@ sdk/sw_app/control_sock/MAKEFILE.DEPEND
 sdk/sw_app/device/MAKEFILE.DEPEND
 sdk/sw_app/graphic/MAKEFILE.DEPEND
 sdk/sw_app/hw_test/MAKEFILE.DEPEND
+sdk/sw_app/settings/MAKEFILE.DEPEND
 sdk/sw_app/module/iw_scan/app_ipc.o
 sdk/sw_app/module/iw_scan/app_iwscan.o
 sdk/sw_app/module/iw_scan/app_main.o
