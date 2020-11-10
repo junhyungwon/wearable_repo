@@ -366,6 +366,10 @@ static void __call_status_handler(void)
 			}
 			break;
 		
+		case SIPC_STATE_CALL_LOCAL_SDP:
+			/* ignore Local SDP Session */
+			break;
+			
 		default:
 			app_leds_voip_ctrl(DEV_LED_ON);
 			ctrl_swosd_userstr("C", 0);

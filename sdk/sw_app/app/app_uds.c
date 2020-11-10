@@ -1762,7 +1762,7 @@ void *myFunc(void *arg)
 		{
 			sprintf(wbuf, "[APP_UDS] --- System Reboot ---");
 			app_log_write(MSG_LOG_WRITE, wbuf);
-			fitt360_reboot() ;
+			ctrl_sys_reboot() ;
 			sleep(10); // client에 응답을 주지 않는다. Restarting....메시지 표시 때문에...
 		}
 		else if (strcmp(rbuf, "reload_config") == 0)

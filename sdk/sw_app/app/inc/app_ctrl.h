@@ -23,9 +23,9 @@
 #define DISP_TVO	VDIS_DEV_SD
 
 typedef enum {
-        TYPE_BASIC,
-        TYPE_WIRELESS,
-        TYPE_MAX
+	TYPE_BASIC = 0,
+	TYPE_WIRELESS,
+	TYPE_MAX
 } app_update_ctrl_e;
 
 /*----------------------------------------------------------------------------
@@ -43,7 +43,6 @@ int ctrl_vid_gop_set(int ch, int gop) ;                 //# runtime
 int ctrl_jpg_quality(int ch, int value);		//# runtime
 int ctrl_vid_resolution(int resol) ;                    //# runtime 
 int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop) ;
-
 
 int ctrl_set_port(int http_port, int https_port, int rtsp_port) ; //# runtime
 int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet) ;
@@ -65,10 +64,12 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec);
 void ctrl_reset_nand_update(void);
 int ctrl_enc_multislice(void) ;
 int ctrl_get_resolution(void) ;
-void fitt360_reboot() ;
 
 int ctrl_update_firmware_by_cgi(char *path);
 int ctrl_is_live_process(const char *process_name);
 void ctrl_auto_update(void);
+
+void ctrl_sys_reboot(void);
+void ctrl_sys_shutdown(void);
 
 #endif	/* _APP_CTRL_H_ */
