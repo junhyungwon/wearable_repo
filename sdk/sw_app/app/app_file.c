@@ -153,19 +153,31 @@ int app_file_check_disk_free_space(void)
  *****************************************************************************/
 static Uint32 get_file_count(const char *dpath)
 {
-	char cmd[1024] = {0,};
+	struct dirent *entry;
+	DIR *dcim;
 	FILE *f = NULL;
-	Uint32 count;
-
-	snprintf(cmd, sizeof(cmd), "/bin/ls -1 %s | /usr/bin/wc -l", dpath);
-	f = popen(cmd, "r");
-	if (f != NULL) {
-		fscanf(f, "%u ", &count);
-		pclose(f);
-	} else
+	Uint32 count = 0;
+	
+	dcim = opendir(dpath);
+	if (dcim != NULL) 
+	{
+		while ((entry = readdir(dcim)))
+		{
+			if ((strcmp(entry->d_name,".")==0) || 
+				(strcmp(entry->d_name,"..")==0) ||
+				(strcmp(entry->d_name,"video.lst")==0)) 
+				continue;
+			
+			/* If the entry is a regular file */
+			if (entry->d_type == DT_REG) { 
+         		count++;
+    		}
+		}
+		closedir(dcim);
+	} else {
 		count = 0;
-
-//	dprintf("%u files in %s path\n", count, dpath);
+	}
+	//dprintf("%u files in %s path\n", count, dpath);
 
 	return count;
 }
@@ -378,14 +390,14 @@ static int _delete_files(unsigned long del_sz)
  * @section  DESC Description
  *	 - desc : files are sorted to ascending. 
  *****************************************************************************/
-static int __create_list(const char *search_path, char *filters, struct list_head *head)
+static int __create_list(const char *search_path, char *filters, struct list_head *head, size_t bcnt)
 {
 	struct stat statbuf;
 	struct dirent *entry;
 	char __path[256] = {0,};
 	DIR *dp;
 	
-	size_t index, len, cnt;
+	size_t index, len;
 	int i;
 
 	list_info_t *list, *tmp;
@@ -396,13 +408,6 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	if (search_path[len - 1] != '/')
 		strcat(__path, "/"); //# /mmc/DCIM/
 	
-	/* get file count */
-	cnt = get_file_count((const char *)ifile->rec_root);
-	if (cnt == 0) {
-		eprintf("empty directiory. skipping video list!\n");
-		return 0;
-	}
-		
 	/* opendir is not required "/" */
 	if ((dp = opendir(__path)) == NULL) {
 		eprintf("cannot open directory : %s\n", __path);
@@ -410,8 +415,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	}
 
 	index = 0;
-	list = (list_info_t *)malloc(sizeof(list_info_t) * cnt);
-
+	list = (list_info_t *)malloc(sizeof(list_info_t)*bcnt);
 	/* traverse directory (assume -> subdir isn't existed) */
 	tmp = list;
 	while ((entry = readdir(dp)) != NULL)
@@ -446,18 +450,20 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 		}
 	}
 
-	if (list)
+	if (list != NULL)
 		free(list);
 
 	return 0;
 }
 
 /* avi list loads from /usr/share/video.lst */
-static int __load_file_list(const char *path, struct list_head *head)
+static int __load_file_list(const char *path, struct list_head *head, size_t bcnt)
 {
+	char msg[MAX_CHAR_128]={0,};
 	list_info_t *list, *tmp;
 	FILE *f = NULL;
-	int count=0, i;
+	size_t lcnt;
+	int i;
 	
 	f = fopen(path, "r");
 	if (f == NULL) {
@@ -465,27 +471,29 @@ static int __load_file_list(const char *path, struct list_head *head)
 		return -1;
 	}
 	
-	fread(&count, sizeof(int), 1, f);  //# total file count
-	dprintf("file count is %d in video list\n", count);
+	fread((void *)&lcnt, sizeof(int), 1, f);  //# total file count
+	snprintf(msg, sizeof(msg), "saved file number is %d in video lst", lcnt);
+	dprintf("%s\n", msg);
 	
-	if (count == 0) {
-		eprintf("invalid video list!!\n");
+	if ((lcnt == 0) || (bcnt != lcnt)) {
+		memset(msg, 0, sizeof(msg));
+		snprintf(msg, sizeof(msg), "invalid video list (%d, %d)!!\n", bcnt, lcnt);
+		eprintf("%s\n", msg);
 		return -1;
 	}
 	
 	//# memory alloc
-	list = (list_info_t *)malloc(sizeof(list_info_t) * count);
+	list = (list_info_t *)malloc(sizeof(list_info_t)*lcnt);
 	if (list == NULL) {
 		eprintf("failed to allocate memory with file list!\n");
 		fclose(f);
 		return -1;
 	}
 	
-	fread(list, sizeof(list_info_t)*count, 1, f);
-	
+	fread(list, sizeof(list_info_t)*lcnt, 1, f);
 	/* add linked list */
 	tmp = list;
-	for (i = 0; i < count; i++, tmp++) 
+	for (i = 0; i < lcnt; i++, tmp++) 
 	{
 		size_t len;
 		
@@ -495,7 +503,7 @@ static int __load_file_list(const char *path, struct list_head *head)
 	}
 		
 	fclose(f);
-	if (list)
+	if (list != NULL)
 		free(list);
 	
 	return 0;
@@ -504,6 +512,7 @@ static int __load_file_list(const char *path, struct list_head *head)
 /* avi list save to /usr/share/video.lst */
 static int __save_file_list(const char *path)
 {
+	char msg[128] = {0,};
 	struct list_head *head = &ilist;
 	struct list_head *iter;
 	struct disk_list *ptr;
@@ -511,7 +520,7 @@ static int __save_file_list(const char *path)
 	
 	FILE *f = NULL;
 	int res, i;
-	size_t index = ifile->file_count;
+	size_t scnt = ifile->file_count;
 	
 	res = access(path, R_OK|W_OK);
     if ((res == 0) || (errno == EACCES)) {
@@ -525,8 +534,11 @@ static int __save_file_list(const char *path)
 		return -1;
 	}
 	
-	//dprintf("%d files save in video list\n", index);
-	fwrite(&index, sizeof(size_t), 1, f);    //# total file count
+	snprintf(msg, sizeof(msg), "%d files saved in video list", scnt);
+	app_log_write(MSG_LOG_WRITE, msg);
+	dprintf("%s\n", msg);
+	
+	fwrite(&scnt, sizeof(size_t), 1, f);    //# total file count
 	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
 		if (ptr != NULL) {
@@ -536,6 +548,7 @@ static int __save_file_list(const char *path)
 			fwrite(&info, sizeof(list_info_t), 1, f);	
 		}
 	}
+	fflush(f);
 	fclose(f);
 	
 	return 0;
@@ -696,21 +709,24 @@ int app_file_init(void)
 	char msg[MAX_CHAR_128]={0,};
 	char flist_path[256]={0,};
 	int res, status;
+	size_t num_of_files;
 	
     memset(ifile, 0, sizeof(app_file_t));
 	
 	ifile->file_state = FILE_STATE_NORMAL;
 	sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
+	
 	//#-- create directories such as DCIM, ufs
 	_check_rec_dir((const char *)ifile->rec_root);
-	
+	/* Get the number of files in DCIM */
+	num_of_files = get_file_count((const char *)ifile->rec_root);
 	/* set file list path */
 	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
-	res = __load_file_list((const char *)flist_path, &ilist);
+	res = __load_file_list((const char *)flist_path, &ilist, num_of_files);
 	if (res < 0) {
-		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist);
+		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, num_of_files);
 		if (status == EFAIL) 	{
-			sprintf(msg, "make file list fail!!");
+			sprintf(msg, "Failed to make file list!!");
 			app_log_write(MSG_LOG_WRITE, msg);
 			eprintf("%s\n", msg);
 			return status;
@@ -721,8 +737,8 @@ int app_file_init(void)
 	memset(msg, 0, sizeof(msg));
 	if (_check_threshold_size(ifile) < 0) {
 		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!");
-		eprintf("%s\n", msg);
 		app_log_write(MSG_LOG_WRITE, msg);
+		eprintf("%s\n", msg);
 	}
 	app_file_update_disk_usage();
 	

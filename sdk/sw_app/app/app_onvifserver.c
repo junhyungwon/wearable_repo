@@ -367,7 +367,7 @@ int app_onvif_init_config()
 		fputs("	<information>\n", fp);
 		fputs("		<Manufacturer>LinkFlow</Manufacturer>\n", fp);
 #if defined(NEXXONE)
-		fputs("		<Model>NEXXONE</Model>\n", fp);
+		fputs("		<Model>NEXX ONE</Model>\n", fp);
 #elif defined(NEXX360B)
 		fputs("		<Model>NEXX360B</Model>\n", fp);
 #elif defined(NEXX360W)
