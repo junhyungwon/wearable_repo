@@ -30,7 +30,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define P2P_SERVER "/opt/fit/bin/P2PTunnelServer"
+#define P2P_SERVER "/opt/fit/bin/P2PTunnelServer_ti"
 
 #define P2P_NAME   "P2PTunnelServer"  // name size of process in /proc/../status is 16
 #define CHECK_MSEC        1000
