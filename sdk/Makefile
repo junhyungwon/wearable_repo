@@ -129,7 +129,7 @@ p2p_install:
 p2p_clean:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux clean
 
-p2p_all: p2p_clean p2p
+p2p_all: p2p_clean p2p p2p_install
 
 app_pkg: libavi wlan_scan live555
 
