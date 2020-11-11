@@ -1017,6 +1017,9 @@ TUNNEL_API int P2PTunnelAgent_GetProfile(int nSessionIndex, st_User_Profile* use
 TUNNEL_API int P2PTunnelServer_SetStatus(char *StatusBuffer, int length);
 TUNNEL_API int P2PTunnelServer_Check_Buffer(int nSessionID, int port, int *used, int *available);
 TUNNEL_API int P2PTunnelServer_SetDuration(unsigned int duration);
+TUNNEL_API int P2PTunnelServer_EnableLog(char enableConnectLog);
+TUNNEL_API int P2PTunnelServer_Port(int port);
+TUNNEL_API int P2PTunnelAgent_Connect2(const char *cszUID, const void *cpAuthData, int nAuthDataLength, int *pnErrFromDeviceCB, int agentPort);
 
 // version = 1 ---> Old Version,  version = 2 ---> New Version,  
 TUNNEL_API int P2PTunnel_SetRelayVersion(char version);

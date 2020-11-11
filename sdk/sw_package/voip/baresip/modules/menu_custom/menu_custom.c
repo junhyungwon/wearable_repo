@@ -290,15 +290,21 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		ikey->ste.call_err = 0;
 		break;
 	
-	case UA_EVENT_CALL_REMOTE_SDP: /* session description protocol */
+	/* Remote session description protocol */
+	case UA_EVENT_CALL_REMOTE_SDP: 
 		ikey->play = mem_deref(ikey->play);
 		return;
 	
-	case UA_EVENT_CALL_LOCAL_SDP: /* ??? */
+	/* 
+	 * Device에서 상대방에 전화를 걸때 내 장치의 
+	 * Session 상태를 확인하기 위한 이벤트
+	 * Local session description protocol
+	 */ 
+	case UA_EVENT_CALL_LOCAL_SDP:
 		ikey->ste.call_ste = SIPC_STATE_CALL_LOCAL_SDP;
-		ikey->ste.call_dir = 0;
-		ikey->ste.call_reg = 0;
-		ikey->ste.call_err = 0;
+		//ikey->ste.call_dir = 0;
+		//ikey->ste.call_reg = 0;
+		//ikey->ste.call_err = 0;
 		break;
 		
 	case UA_EVENT_CALL_TRANSFER:

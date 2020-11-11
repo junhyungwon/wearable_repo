@@ -293,10 +293,9 @@ void change_info(char *data)
 		}
 
 	    if(ret)
-		    fitt360_reboot();
+		    ctrl_sys_reboot();
 	}
 }
-
 
 int processdata (char *data)
 {
@@ -442,7 +441,6 @@ static void *THR_ipinstall(void *prm)
     return NULL;
 }
 
-
 void IPSOCK_ERROR_proc(int Err)
 {
     switch(Err)
@@ -491,7 +489,6 @@ void IPSOCK_ERROR_proc(int Err)
             break ;
     }
 }
-
 
 /*****************************************************************************
 * @brief    ipinstall thread start/stop function

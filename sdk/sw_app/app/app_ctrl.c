@@ -55,7 +55,6 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 static const char *fw_app_name  = "/mmc/app_fitt.out";
-static const char *fw_full_name = "/mmc/fitt_firmware_full_N.dat";
 	
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -135,11 +134,7 @@ int ctrl_enc_multislice()
 *****************************************************************************/
 int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, FPS 5 2
 {
-    char log[128] = {0, };
-    char msg[128] = {0, } ;
-
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int br ;
 
     app_set->ch[ch].framerate = framerate ;
     app_cfg->ich[ch].fr = framerate;
@@ -158,8 +153,6 @@ int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, F
 *****************************************************************************/
 int ctrl_vid_bitrate(int ch, int bitrate) 
 {
-    char log[128] = {0, };
-    char msg[128] = {0, } ;
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
     int br;
 
@@ -302,7 +295,6 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 	}
 
 	return SOK ;
-    
 }
 
 /*****************************************************************************
@@ -378,7 +370,6 @@ int ctrl_set_port(int http_port, int https_port, int rtsp_port)
 int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet)
 {
     char log[256] = {0,};
-	int ret;
 	
 	if (!net_type)  // STATIC
 	{
@@ -402,19 +393,8 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 	}	
 	
 	app_set->net_info.type = net_type;
-	ret = app_rec_state();	
-	if (ret) {
-		app_rec_stop(1);
-		sleep(1); /* wait for file close */
-	}
+	ctrl_sys_reboot();
 	
-	app_file_save_flist(); /* save file list */
-	app_file_exit();
-#if SYS_CONFIG_VOIP	
-	app_voip_save_config(); /* save voip volume */
-#endif	
-    app_set_write();
-	app_mcu_pwr_off(OFF_RESET);
     return SOK ;
 }
 
@@ -425,27 +405,14 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 int ctrl_set_gateway(const char *gw)
 {
     char log[255]={0,};
-    int ret;
 
     if (gw != NULL)
         strcpy(app_set->net_info.eth_gateway, gw);
-
-    ret = app_rec_state();
-    if (ret) {
-        app_rec_stop(1);
-		sleep(1); /* wait for file close */
-    }
 	
-	app_file_save_flist(); /* save file list */
-#if SYS_CONFIG_VOIP
-	app_voip_save_config(); /* save voip volume */
-#endif
-    app_file_exit();
-
-    sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
-    app_log_write( MSG_LOG_SHUTDOWN, log );
-	app_set_write();
-	app_mcu_pwr_off(OFF_RESET);
+	sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
+    dprintf("%s\n", log);
+	app_log_write( MSG_LOG_SHUTDOWN, log );
+	ctrl_sys_reboot();	
 
     return SOK;
 }
@@ -1079,14 +1046,12 @@ void ctrl_auto_update(void)
 {
 	char path[64] = {0, };
 	char cmd[255] = {0, };
-	int ret;
 		
 	/* First, full firmware check.. */
 	//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
 	if (_sw_update(SD_MOUNT_PATH) == 0) {
 		app_mcu_pwr_off(OFF_RESET);
 	}
-
 		
 	memset(path, 0, sizeof(path));
 	sprintf(path, fw_app_name);
@@ -1120,6 +1085,12 @@ void ctrl_reset_nand_update(void)
 				printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n",full_upfiles[i]);
 			    util_sys_exec(cmd);
 		    }
+			
+			/* delete rfs_fit.ubifs.md5 */
+			memset(cmd, 0, sizeof(cmd));
+			snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
+			if (access(cmd, F_OK) == 0)
+				remove(cmd);
 		}
 		
 		dev_fw_setenv("nand_update", "0", 0);
@@ -1201,23 +1172,46 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 /*
  * record stop and reboot.
  */
-void fitt360_reboot(void)
+void ctrl_sys_reboot(void)
 {
-    int ret = 0;
+    int recording = 0;
 
-    ret = app_rec_state();
-    if(ret) {
-        app_rec_stop(1);
-		sleep(1);
+    recording = app_rec_state();
+    if (recording) {
+        app_rec_stop(1); /* buzzer on */
+		app_msleep(500);
     }
-	
 	app_file_save_flist(); /* save file list */
 #if SYS_CONFIG_VOIP
 	app_voip_save_config(); /* save voip volume */	
 #endif
-    app_file_exit();
+//    app_file_exit(); ??
     app_set_write();
-    app_buzz_ctrl(80, 2);
-	
+	app_buzz_ctrl(80, 2); //# Power Off Buzzer
 	app_mcu_pwr_off(OFF_RESET);
+}
+
+/*
+ * record stop and halt.
+ */
+void ctrl_sys_shutdown(void)
+{
+    int recording = 0;
+
+    recording = app_rec_state();
+    if (recording) {
+		app_rec_stop(0);
+    }
+	app_buzz_ctrl(80, 2); //# Power Off Buzzer
+	if (recording) {
+		/* 먼저 buzzer를 울리기 위해서 */
+		app_msleep(500);	
+	}
+	app_file_save_flist(); /* save file list */
+#if SYS_CONFIG_VOIP
+	app_voip_save_config(); /* save voip volume */	
+#endif
+//    app_file_exit(); ??
+    app_set_write();
+	app_mcu_pwr_off(OFF_NORMAL);
 }
