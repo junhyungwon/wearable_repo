@@ -949,19 +949,19 @@ fw_exit:
 
 void *thrRunFWUpdate(void *arg)
 {
+	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Web Remote Update Temp version Firmware update done....");
+
 	app_buzz_ctrl(50, 3);		//# buzz: update
 	dev_fw_setenv("nand_update", "1", 0);
 	sync();
 
-	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Temp version Firmware update done....");
-	sync();
-	app_msleep(100);		//# wait for safe
 	printf("\nfw update ready ! It will restart\n\n");
 
 	app_mcu_pwr_off(OFF_RESET);
 
 	return NULL;
 }
+
 /* example remote update
  *
 curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
@@ -971,8 +971,6 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	char cmd[256];
 	int ret;
 	
-    app_leds_fw_update_ctrl();
-	
 	/* recording stop */
 	ret = app_rec_state();
 	if (ret) {
@@ -980,7 +978,50 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		sleep(1); /* wait for file close */
 	}
 	app_file_save_flist(); /* save file list */
-	
+
+	// check tar content list	
+#if 1
+	{
+		sprintf(cmd, "tar tf %s > /tmp/fw.list", fwpath);
+		printf("cmd:%s\n", cmd);
+		system(cmd);
+		FILE *fp = fopen("/tmp/fw.list", "r");
+		if (!fp)
+		{
+			printf("failed tar tf %s > /tmp/fw.list\n", fwpath);
+			return -1;
+		}
+		char line[255] = {0};
+		while(fgets(line, 255, fp)){
+
+			int len = strlen(line);
+			if (len > 1)
+			{
+				// remote CR
+				if (line[len - 1] == '\n')
+					line[len - 1] = '\0';
+
+				if(strcmp(line, "boot.scr")==0){
+					printf("checked boot.scr\n");
+				}
+				else if(strcmp(line, "MLO")==0){
+					printf("checked MLO\n");
+				}
+				else if(strcmp(line, "fw_version.txt")==0){
+					printf("checked fw_version.txt\n");
+				}
+				else if(strcmp(line, "rfs_fit.ubifs")==0){
+					printf("checked %s\n", "rfs_fit.ubifs");
+				}
+				else if(strcmp(line, "rfs_fit.ubifs.md5")==0){
+					printf("checked rfs_fit.ubifs.md5\n");
+				}
+			}
+		}
+		fclose(fp);
+	}
+#endif
+
 #if 1 // untar
 	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
@@ -1012,7 +1053,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		return -1;
 	}
 
-#if 1
+#if 0
 		thrRunFWUpdate(NULL);
 #else
 	// thread로 전환..웹에 펌업 시작을 알릴 목적으로..
@@ -1145,9 +1186,12 @@ int ctrl_is_live_process(const char *process_name)
  */
 int ctrl_update_firmware_by_cgi(char *fwpath)
 {
+    app_leds_fw_update_ctrl();
+	
 	int ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
 	if (ret < 0)
 	{
+		app_leds_sys_normal_ctrl();
 		app_rec_start();
 	}
 

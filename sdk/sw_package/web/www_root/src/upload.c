@@ -63,13 +63,15 @@ int main(int argc, char **argv)
 #endif
 
 	sprintf(filepath, "%s/%s", FW_FILE_PATH, filename);
-	//CGI_DBG("filepath : %s\n", filepath);
+	CGI_DBG("savepath : %s\n", savepath);
 
 	if( 0 != rename(savepath, filepath)){
 		//CGI_DBG("Failed rename fw file...%s\n", strerror(errno));
 		nStat = ERR_FWUPDATE_NOTATION;
 		goto __FWUPGRADE_END;
 	}
+
+	CGI_DBG("rename: %s\n", filepath);
 
 
 	// send message of start fwupdate to system and wait for done
