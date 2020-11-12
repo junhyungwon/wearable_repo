@@ -263,6 +263,11 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		break;
 	
 	case UA_EVENT_REGISTER_OK:
+		/* 통화대기 중 이 REGISTER OK 메세지가 전달될 경우에 hang 걸림 */
+		if (have_active_calls()) {
+			dprintf("invalid REGISTER_OK.....ignore!!\n");
+			return;
+		}
 		check_registrations();
 		/* 최초 resister ok event가 전송됨 */ 
 		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
@@ -443,23 +448,36 @@ static void __unregister_user(void)
 			//mem_deref(ua);
 		}	
 	}
-	
 	info("unregister done!!\n");
 }
 
 static int __dialer_user(const char *call_num)
 {
+	struct player *player = baresip_player();
 	int err = 0;
+	struct config *cfg;
 	
+	cfg = conf_config();
 	/* redial 기능을 위해서 필요함. 현재는 사용안됨 */
 	//mbuf_rewind(ikey->dialbuf);
 	//(void)mbuf_write_str(ikey->dialbuf, call_num);
-	
-	err = ua_connect(uag_current(), NULL, NULL, call_num, VIDMODE_OFF);
-	if (err) {
-		warning("menu: ua_connect failed: %m\n", err);
+	/* device number와 peer number가 같은 경우 error */
+	if (strcmp(ikey->uri.ua_uri, call_num) == 0) {
+		warning("menu: Don't allow same number between call and ua!\n");
+		
+		ikey->play = mem_deref(ikey->play);
+		(void)play_file(&ikey->play, player, 
+						"error.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
+		delay_msecs(1000);
+		ikey->play = mem_deref(ikey->play);
+		err = -1;
+	} else {
+		err = ua_connect(uag_current(), NULL, NULL, call_num, VIDMODE_OFF);
+		if (err) {
+			warning("menu: ua_connect failed: %m\n", err);
+		}
 	}
-
+	
 	return err;
 }
 
