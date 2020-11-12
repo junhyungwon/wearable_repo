@@ -887,6 +887,7 @@ static int _sw_update(const char *disk)
 		app_log_write(MSG_LOG_WRITE, msg);
 		printf("%s\n", msg);
         ret = EFAIL;
+		/* TODO : delete unpack update files.... */
 		goto fw_exit;
 	}
 
