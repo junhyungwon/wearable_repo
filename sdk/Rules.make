@@ -15,8 +15,8 @@ endif
 #####################################################################################
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
-SYSTEM_PLATFORM := NEXX360W
-#SYSTEM_PLATFORM := NEXXONE_VOIP
+#SYSTEM_PLATFORM := NEXX360W
+SYSTEM_PLATFORM := NEXXONE_VOIP
 ######################################################################################
 
 #--- Build Type (debug/release)
