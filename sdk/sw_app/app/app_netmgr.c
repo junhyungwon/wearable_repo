@@ -355,11 +355,22 @@ static void __netmgr_dev_ip_status_handler(void)
 		sprintf(app_set->net_info.eth_ipaddr, "%s", info->ip_address);
         sprintf(app_set->net_info.eth_gateway, "%s", info->gw_address);
         sprintf(app_set->net_info.eth_netmask, "%s", info->mask_address);
-	} 
-	else {
-		sprintf(app_set->net_info.wlan_ipaddr, "%s", info->ip_address);
-        sprintf(app_set->net_info.wlan_gateway, "%s", info->gw_address);
-        sprintf(app_set->net_info.wlan_netmask, "%s", info->mask_address);
+	} else {
+		if (device == NETMGR_DEV_TYPE_RNDIS) {
+			/* 
+			 * 기존 설정이 Wi-Fi Static인 경우 RNDIS는 DHCP 모드로 동작하므로
+			 * IP 값이 변경된다. 따라서 Wi-Fi IP 설정을 따르는 경우 IP를 복사하지 않음
+			 */
+			if (app_set->net_info.type != NET_TYPE_STATIC) {
+				sprintf(app_set->net_info.wlan_ipaddr, "%s", info->ip_address);
+				sprintf(app_set->net_info.wlan_gateway, "%s", info->gw_address);
+				sprintf(app_set->net_info.wlan_netmask, "%s", info->mask_address);	
+			}
+		} else {
+			sprintf(app_set->net_info.wlan_ipaddr, "%s", info->ip_address);
+			sprintf(app_set->net_info.wlan_gateway, "%s", info->gw_address);
+			sprintf(app_set->net_info.wlan_netmask, "%s", info->mask_address);
+		}
 	}
 }
 
