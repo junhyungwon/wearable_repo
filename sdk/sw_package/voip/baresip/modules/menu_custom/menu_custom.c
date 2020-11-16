@@ -56,7 +56,8 @@ static char ui_buf[2048];
 
 /* aic3x audio codec output volume percentage */
 static int __aic3x_output_level[3] = {
-	60, 80, 100 	
+	/* 60, 80, 100 */
+	45, 50, 75 	
 };
 
 /*----------------------------------------------------------------------------
