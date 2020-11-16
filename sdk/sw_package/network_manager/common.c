@@ -250,7 +250,7 @@ static int __set_net_if_gate(const char *ifce, const char *gate)
 {
 	char cmd[128];
 	char tmp[16];
-	int ret;
+	int ret, metric;
 	FILE *f = NULL;
 
 	if (gate == NULL) {
@@ -266,13 +266,19 @@ static int __set_net_if_gate(const char *ifce, const char *gate)
 		return -1;
 
 	if (strcmp((char*)tmp, "0.0.0.0")) {
-		snprintf((char*)cmd, sizeof(cmd), "route del default gw %s %s", tmp, ifce);
+		snprintf((char*)cmd, sizeof(cmd), "/sbin/route del default gw %s dev %s", tmp, ifce);
 		f = popen(cmd, "r");
 		if (f != NULL)
 			pclose(f);
 	}
-
-	snprintf((char*)cmd, sizeof(cmd), "route add default gw %s %s", gate, ifce);
+	
+	metric = 0;
+	if (strcmp("eth0", ifce)==0) {
+		metric = 10;
+		snprintf((char*)cmd, sizeof(cmd), "/sbin/route add default gw %s dev %s metric %d", gate, ifce, metric);
+	} else {
+		snprintf((char*)cmd, sizeof(cmd), "/sbin/route add default gw %s dev %s metric %d", gate, ifce, metric);
+	}
 	f = popen(cmd, "r");
 	if (f != NULL)
 		pclose(f);
