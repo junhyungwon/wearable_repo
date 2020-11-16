@@ -997,6 +997,28 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	system(cmd);
 #endif
 
+    if(TRUE != _is_firmware_for_release()) // RELEASE Version .. --> update file delete
+	{
+		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
+		int i;
+		for (i = 0; i < FW_FILE_NUM; i++)
+		{
+			sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
+			printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
+			util_sys_exec(cmd);
+		}
+
+		/* delete rfs_fit.ubifs.md5 */
+		memset(cmd, 0, sizeof(cmd));
+		snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
+		if (access(cmd, F_OK) == 0)
+			remove(cmd);
+
+		return -1;
+	} else {
+		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
+	}
+
 	// check md5sum
 	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
 	FILE *fp = popen(cmd, "r");
