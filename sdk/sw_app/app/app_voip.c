@@ -90,6 +90,19 @@ static int __aic3x_output_level[3] = {
  local function
 -----------------------------------------------------------------------------*/
 #if SYS_CONFIG_VOIP
+static const char *__action_str(int act)
+{
+	switch (act) {
+	case SIPC_STATE_CALL_IDLE:          return "IDLE";
+	case SIPC_STATE_CALL_INCOMING:      return "CALL_INCOMING";
+	case SIPC_STATE_CALL_RINGING:       return "CALL_RINGING";
+	case SIPC_STATE_CALL_ESTABLISHED:   return "CALL_ESTABLISHED";
+	case SIPC_STATE_CALL_LOCAL_SDP:     return "CALL_LOCAL_SDP";
+	case SIPC_STATE_CALL_STOP:          return "CALL_CLOSED";
+	default: return "?";
+	}
+}
+
 static int send_msg(int cmd, const char *uri)
 {
 	to_sipc_msg_t msg;
@@ -278,6 +291,7 @@ static void __call_unregister_handler(void)
 
 static void __call_event_handler(void)
 {
+	char msg[128] = {0,};
 	int action = ivoip->st.call_ste;
 	
 	if (!ivoip->st.call_reg) {
@@ -285,7 +299,9 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-	dprintf("current baresip state = %d\n", action);
+	snprintf(msg, sizeof(msg), "baresip state is %s, send btn event...", __action_str(action));
+	app_log_write(MSG_LOG_WRITE, msg);
+	dprintf("%s\n", msg);
 	
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
@@ -341,11 +357,14 @@ static void __call_snd_volume_handler(void)
 
 static void __call_status_handler(void)
 {
+	char msg[128] = {0,};
 	int is_reg = ivoip->st.call_reg;
 	int errcode = ivoip->st.call_err;
 	int action = ivoip->st.call_ste;
-
-//	dprintf("call status is %x\n", action);
+	
+	snprintf(msg, sizeof(msg), "baresip response is %s", __action_str(action));
+	app_log_write(MSG_LOG_WRITE, msg);
+	dprintf("%s\n", msg);
 	
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
