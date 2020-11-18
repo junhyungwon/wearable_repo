@@ -32,8 +32,9 @@
 
 #define __STAGE_CRADLE_ETH_WAIT_ACTIVE	(0x00)
 #define __STAGE_CRADLE_ETH_WAIT_DHCP	(0x01)
-#define __STAGE_CRADLE_ETH_DHCP_NOTY	(0x02)
-#define __STAGE_CRADLE_ETH_GET_STATUS	(0x03)
+#define __STAGE_CRADLE_ETH_DHCP_VERIFY	(0x02)
+#define __STAGE_CRADLE_ETH_DHCP_NOTY	(0x03)
+#define __STAGE_CRADLE_ETH_GET_STATUS	(0x04)
 
 #define NETMGR_CRADLE_ETH_DEVNAME		"eth0"
 
@@ -110,19 +111,37 @@ static void *THR_cradle_eth_main(void *prm)
 				break;
 			
 			case __STAGE_CRADLE_ETH_DHCP_NOTY:
-				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
-				netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
-				dprintf("cradle ip is %s\n", icradle->ip);
+				/* ip copy */
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_CRADLE, icradle->ip, icradle->mask, icradle->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_CRADLE);
 				icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
+				break;
+			
+			case __STAGE_CRADLE_ETH_DHCP_VERIFY:
+				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
+				res = netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
+				if (res < 0) {
+					icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+				} else {
+					if (!strcmp(icradle->ip, "0.0.0.0")) {
+						/* dhcp로부터 IP 할당이 안된 경우 */
+						dprintf("couln't get dhcp ip address!\n");	
+						icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
+					} else {
+						dprintf("cradle ip is %s\n", icradle->ip);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
+						icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;	
+					}
+				}
 				break;
 				
 			case __STAGE_CRADLE_ETH_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(NETMGR_CRADLE_ETH_DEVNAME)) {
-					icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;
-					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
+					icradle->stage = __STAGE_CRADLE_ETH_DHCP_VERIFY;
+					icradle->cradle_eth_timer = 0; 
 				} else {
 					if (icradle->cradle_eth_timer >= CNT_CRADLE_ETH_WAIT_DHCP) {
 						/* error */

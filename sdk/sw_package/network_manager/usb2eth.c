@@ -32,8 +32,9 @@
 
 #define __STAGE_USB2ETH_WAIT_ACTIVE		(0x00)
 #define __STAGE_USB2ETH_WAIT_DHCP		(0x01)
-#define __STAGE_USB2ETH_DHCP_NOTY		(0x02)
-#define __STAGE_USB2ETH_GET_STATUS		(0x03)
+#define __STAGE_USB2ETH_DHCP_VERIFY		(0x02)
+#define __STAGE_USB2ETH_DHCP_NOTY		(0x03)
+#define __STAGE_USB2ETH_GET_STATUS		(0x04)
 
 #define NETMGR_USB2ETH_DEVNAME			"eth1"
 
@@ -84,8 +85,7 @@ static void *THR_usb2eth_main(void *prm)
 		
 		while (quit == 0)
 		{
-			int st;
-			int res;
+			int st, res;
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
@@ -109,17 +109,34 @@ static void *THR_usb2eth_main(void *prm)
 				break;
 			
 			case __STAGE_USB2ETH_DHCP_NOTY:
-				netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
-				dprintf("usb2eth ip is %s\n", iusb2eth->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_USB2ETHER, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_USB2ETHER);
 				break;
-				
+			
+			case __STAGE_USB2ETH_DHCP_VERIFY:
+				res = netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
+				if (res < 0) {
+					iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
+				} else {
+					if (!strcmp(iusb2eth->ip, "0.0.0.0")) {
+						/* dhcp로부터 IP 할당이 안된 경우 */
+						dprintf("couln't get dhcp ip address!\n");
+						iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);	
+					} else {
+						dprintf("usb2eth ip is %s\n", iusb2eth->ip);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
+						iusb2eth->stage = __STAGE_USB2ETH_DHCP_NOTY;
+					}
+				}
+				break;
+					
 			case __STAGE_USB2ETH_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(NETMGR_USB2ETH_DEVNAME)) {
-					iusb2eth->stage = __STAGE_USB2ETH_GET_STATUS;
-					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
+					iusb2eth->stage = __STAGE_USB2ETH_DHCP_VERIFY;
+					iusb2eth->usb2eth_timer = 0;
 				} else {
 					if (iusb2eth->usb2eth_timer >= CNT_USB2ETH_WAIT_DHCP) {
 						/* error */

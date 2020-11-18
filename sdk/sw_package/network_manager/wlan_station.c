@@ -51,8 +51,9 @@
 #define __STAGE_CLI_WAIT_AUTH		(0x3)
 #define __STAGE_CLI_SET_IP			(0x4)
 #define __STAGE_CLI_WAIT_DHCP		(0x5)
-#define __STAGE_CLI_DHCP_NOTY		(0x6)
-#define __STAGE_CLI_GET_RSSI_LEVEL	(0x7)
+#define __STAGE_CLI_DHCP_VERIFY		(0x6)
+#define __STAGE_CLI_DHCP_NOTY		(0x7)
+#define __STAGE_CLI_GET_RSSI_LEVEL	(0x8)
 
 typedef struct {
 	app_thr_obj cObj; /* wlan client mode */
@@ -497,7 +498,7 @@ static void *THR_wlan_cli_main(void *prm)
 		
 		while (!quit)
 		{
-			int st;
+			int st, res;
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
@@ -520,20 +521,35 @@ static void *THR_wlan_cli_main(void *prm)
 				break;
 			
 			case __STAGE_CLI_DHCP_NOTY:
-				netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-				dprintf("wlan client ip is %s\n", i_cli->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_WIFI);
 				i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
 				break;
-				
+			
+			case __STAGE_CLI_DHCP_VERIFY:
+				res = netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
+				if (res < 0) {
+					i_cli->stage = __STAGE_CLI_SET_IP;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
+				} else {
+					if (!strcmp(i_cli->ip, "0.0.0.0")) {
+						/* dhcp로부터 IP 할당이 안된 경우 */
+						dprintf("couln't get dhcp ip address!\n");
+						i_cli->stage = __STAGE_CLI_SET_IP;
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
+					} else {
+						dprintf("wlan client ip is %s\n", i_cli->ip);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
+						i_cli->stage = __STAGE_CLI_DHCP_NOTY;
+					}
+				}
+				break;
+					
 			case __STAGE_CLI_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(cli_dev_name)) 
-				{
+				if (netmgr_udhcpc_is_run(cli_dev_name)) {
 					i_cli->cli_timer = 0;
-					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
-					i_cli->stage = __STAGE_CLI_DHCP_NOTY;
+					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
 				} else {
 					if (i_cli->cli_timer >= CNT_CLI_DHCP) {
 						/* error */

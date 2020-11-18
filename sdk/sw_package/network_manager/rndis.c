@@ -40,8 +40,9 @@
 
 #define __STAGE_RNDIS_WAIT_ACTIVE	(0x00)
 #define __STAGE_RNDIS_WAIT_DHCP		(0x01)
-#define __STAGE_RNDIS_DHCP_NOTY		(0x02)
-#define __STAGE_RNDIS_GET_STATUS	(0x03)
+#define __STAGE_RNDIS_DHCP_VERIFY	(0x02)
+#define __STAGE_RNDIS_DHCP_NOTY		(0x03)
+#define __STAGE_RNDIS_GET_STATUS	(0x04)
  
 #define RNDIS_DEVNAME(a)			((a==1)?"usb0":"eth1")
 #define RNDIS_DEV_NAME_USB	  		1
@@ -173,19 +174,36 @@ static void *THR_rndis_main(void *prm)
 				break;
 			
 			case __STAGE_RNDIS_DHCP_NOTY:
-				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
-				netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
-				dprintf("rndis ip is %s\n", irndis->ip);
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_RNDIS, irndis->ip, irndis->mask, irndis->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_RNDIS);
 				irndis->stage = __STAGE_RNDIS_GET_STATUS;
 				break;
-				
+			
+			case __STAGE_RNDIS_DHCP_VERIFY:
+				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
+				res = netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
+				if (res < 0) {
+					irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
+				} else {
+					if (!strcmp(irndis->ip, "0.0.0.0")) {
+						/* dhcp로부터 IP 할당이 안된 경우 */
+						dprintf("couln't get dhcp ip address!\n");	
+						irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
+					} else {
+						dprintf("rndis ip is %s\n", irndis->ip);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
+						irndis->stage = __STAGE_RNDIS_DHCP_NOTY;	
+					}
+				}
+				break;
+					
 			case __STAGE_RNDIS_WAIT_DHCP:
 				//# check done pipe(udhcpc...)
 				if (netmgr_udhcpc_is_run(RNDIS_DEVNAME(irndis->iftype))) {
-					irndis->stage = __STAGE_RNDIS_DHCP_NOTY;
-					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
+					irndis->stage = __STAGE_RNDIS_DHCP_VERIFY;
+					irndis->rndis_timer = 0;
 				} else {
 					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_DHCP) {
 						/* error */
