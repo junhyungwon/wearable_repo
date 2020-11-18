@@ -304,67 +304,59 @@ static int __is_connected_wlan(void)
 {
 	struct stat sb;
 	char path[1024 + 1];
-
-	int value;
+	
+	int d_vid, d_pid, value;
 	int r = -1;
 	int busnum = 1; /* fixed */
 	FILE *f = NULL;
 	
-	if (!app_cfg->ste.bit.wlan)
-	{
-		int d_vid, d_pid;
+	r = netmgr_wlan_is_exist(&d_vid, &d_pid);
+	if (r < 0) {
+		return -1;
+	}
 
-		r = netmgr_wlan_is_exist(&d_vid, &d_pid);
-		if (r < 0) {
-			return -1;
-		}
-
-		memset(path, 0, sizeof(path - 1));
-		snprintf(path, sizeof(path), "%s/1-1/devnum", NETLINK_USB_PATH);
-		r = stat(path, &sb);
-		if (r)
-			return -1;
-
-		f = fopen(path, "r");
-		if (f != NULL) 
-		{
-			fscanf(f, "%d", &value);
-			fclose(f);
-
-			if ((d_vid == RTL_8188E_VID) && (d_pid == RTL_8188E_PID)) {
-				iwlan->usb_ss[0].sid = (busnum << 8 | value);
-				iwlan->usb_ss[0].vid = RTL_8188E_VID;
-				iwlan->usb_ss[0].pid = RTL_8188E_PID;
-			} else if((d_vid == RTL_8188C_VID) && (d_pid == RTL_8188C_PID)) {
-				iwlan->usb_ss[1].sid = (busnum << 8 | value);
-				iwlan->usb_ss[1].vid = RTL_8188C_VID;
-				iwlan->usb_ss[1].pid = RTL_8188C_PID;
-			} else if((d_vid == RTL_8192C_VID) && (d_pid == RTL_8192C_PID)) {
-				iwlan->usb_ss[2].sid = (busnum << 8 | value);
-				iwlan->usb_ss[2].vid = RTL_8192C_VID;
-				iwlan->usb_ss[2].pid = RTL_8192C_PID;
-			} else if((d_vid == RTL_8821A_VID) && (d_pid == RTL_8821A_PID)) {
-				iwlan->usb_ss[3].sid = (busnum << 8 | value);
-				iwlan->usb_ss[3].vid = RTL_8821A_VID;
-				iwlan->usb_ss[3].pid = RTL_8821A_PID;
-			} else if((d_vid == RTL_8812A_VID) && (d_pid == RTL_8812A_PID)) {
-				iwlan->usb_ss[4].sid = (busnum << 8 | value);
-				iwlan->usb_ss[4].vid = RTL_8812A_VID;
-				iwlan->usb_ss[4].pid = RTL_8812A_PID;
-			}
-			
-			/* USB을 연결하고 부팅하면 netlink에서 검색을 못한다. 수동으로 검색하는 루틴에서 
-			 * 이를 확인 한 후 vid, pid를 저장함.
-			 */
-			app_cfg->wlan_vid = d_vid;
-			app_cfg->wlan_pid = d_pid;
-		} else {
-			return -1;
-		}
-	} else
+	memset(path, 0, sizeof(path - 1));
+	snprintf(path, sizeof(path), "%s/1-1/devnum", NETLINK_USB_PATH);
+	r = stat(path, &sb);
+	if (r)
 		return -1;
 
-	return 0;
+	f = fopen(path, "r");
+	if (f != NULL) {
+		fscanf(f, "%d", &value);
+		fclose(f);
+
+		if ((d_vid == RTL_8188E_VID) && (d_pid == RTL_8188E_PID)) {
+			iwlan->usb_ss[0].sid = (busnum << 8 | value);
+			iwlan->usb_ss[0].vid = RTL_8188E_VID;
+			iwlan->usb_ss[0].pid = RTL_8188E_PID;
+		} else if((d_vid == RTL_8188C_VID) && (d_pid == RTL_8188C_PID)) {
+			iwlan->usb_ss[1].sid = (busnum << 8 | value);
+			iwlan->usb_ss[1].vid = RTL_8188C_VID;
+			iwlan->usb_ss[1].pid = RTL_8188C_PID;
+		} else if((d_vid == RTL_8192C_VID) && (d_pid == RTL_8192C_PID)) {
+			iwlan->usb_ss[2].sid = (busnum << 8 | value);
+			iwlan->usb_ss[2].vid = RTL_8192C_VID;
+			iwlan->usb_ss[2].pid = RTL_8192C_PID;
+		} else if((d_vid == RTL_8821A_VID) && (d_pid == RTL_8821A_PID)) {
+			iwlan->usb_ss[3].sid = (busnum << 8 | value);
+			iwlan->usb_ss[3].vid = RTL_8821A_VID;
+			iwlan->usb_ss[3].pid = RTL_8821A_PID;
+		} else if((d_vid == RTL_8812A_VID) && (d_pid == RTL_8812A_PID)) {
+			iwlan->usb_ss[4].sid = (busnum << 8 | value);
+			iwlan->usb_ss[4].vid = RTL_8812A_VID;
+			iwlan->usb_ss[4].pid = RTL_8812A_PID;
+		}
+		
+		/* USB을 연결하고 부팅하면 netlink에서 검색을 못한다. 수동으로 검색하는 루틴에서 
+			* 이를 확인 한 후 vid, pid를 저장함.
+			*/
+		app_cfg->wlan_vid = d_vid;
+		app_cfg->wlan_pid = d_pid;
+		return 0;
+	} 
+	
+	return -1;
 }
 
 /*****************************************************************************
@@ -442,9 +434,13 @@ static void *THR_wlan_poll(void *prm)
 	pfd.fd = iwlan->fd;
 	
 	/* 동글을 연결하고 시스템이 켜지는 경우 netlink로 이벤트 전달이 안됨 */
-	if (!__is_connected_wlan()) 
+	if (!app_cfg->ste.bit.wlan) 
 	{
-		netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
+		ret = __is_connected_wlan();
+		if (!ret) {
+			app_cfg->ste.bit.wlan = 1; 
+			netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
+		} 
 	}
 	
 	while (!exit)
@@ -485,6 +481,7 @@ static void *THR_wlan_poll(void *prm)
 									{
 										app_cfg->wlan_vid = -1; /* device가 제거된 상태 */
 										app_cfg->wlan_pid = -1;
+										app_cfg->ste.bit.wlan = 0;
 										netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 0);
 									}
 								}
@@ -500,6 +497,7 @@ static void *THR_wlan_poll(void *prm)
 										/* 현재 연결되 USB 장치의 VID와 PID를 저장 */
 										app_cfg->wlan_vid = v;
 										app_cfg->wlan_pid = p;
+										app_cfg->ste.bit.wlan = 1;
 										netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
 									}
 								}
@@ -509,7 +507,17 @@ static void *THR_wlan_poll(void *prm)
 				} //# if (len > 32)
 			} //# if (pfd.revents & POLLIN)
 			delay_msecs(50);
-		} //# if (ret > 0)
+		} else {
+			/* 간헐적으로 부팅 시 인식 안되는 경우가 있어서 poll 형태로 감시 */
+			if (!app_cfg->ste.bit.wlan) 
+			{
+				ret = __is_connected_wlan();
+				if (!ret) {
+					app_cfg->ste.bit.wlan = 1; 
+					netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
+				} 
+			}
+		}
 	} 
 	
 	tObj->active = 0;
