@@ -39,9 +39,9 @@
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"0.09.10"
+#	define FITT360_SW_VER      		"0.09.11"
 #	else
-#	define FITT360_SW_VER      		"0.09.10.D"
+#	define FITT360_SW_VER      		"0.09.11.D"
 #	endif
 #endif
 #endif	/* _APP_VERSION_H_ */
