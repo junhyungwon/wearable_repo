@@ -30,7 +30,7 @@ static struct config core_config = {
 	/** Call config */
 	{
 		20, /*120, local_time_out */
-		4
+		1   /* max call */
 	},
 
 	/** Audio */
