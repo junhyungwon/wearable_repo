@@ -1998,7 +1998,12 @@ void audio_sdp_attr_decode(struct audio *a)
 
 			info("audio: peer changed ptime_tx %ums -> %ums\n",
 			     a->tx.ptime, ptime_tx);
-
+			
+			//# rupy (increase buffer size 20-->60ms)
+			if (ptime_tx < 60) {
+				ptime_tx = 60;
+			}
+			
 			tx->ptime = ptime_tx;
 
 			if (tx->ac) {
