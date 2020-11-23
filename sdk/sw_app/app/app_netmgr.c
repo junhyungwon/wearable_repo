@@ -29,9 +29,17 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define NETMGR_WLAN_AP_PASSWD			"12345678"
+#define NETMGR_WLAN_AP_IPADDR			"192.168.0.1"
+#define NETMGR_WLAN_AP_MASKADDR			"255.255.255.0"
+#define NETMGR_WLAN_AP_GWADDR			"192.168.0.1"
+#define NETMGR_WLAN_AP_5G_CHANNEL		36
+#define NETMGR_WLAN_AP_2G_CHANNEL		6
+		
 typedef struct {
-	app_thr_obj sObj;		//# rec message send thread
-	app_thr_obj rObj;		//# rec message send thread
+	app_thr_obj sObj;		//# net message send thread
+	app_thr_obj rObj;		//# net message send thread
+	app_thr_obj wObj;		//# wlan event thread
 	
 	int qid;
 	
@@ -104,25 +112,14 @@ static void __netmgr_hotplug_noty(void)
 	event_send(tObj, APP_KEY_UP, 0, 0);
 }
 
-static void __netmgr_wlan_event_handler(int ste)
+static void __netmgr_wlan_event_handler(int ste, int mode)
 {
 	netmgr_shm_request_info_t *info;
 	char *databuf;
-	int mode = 0; /* set default client mode */
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
 	info = (netmgr_shm_request_info_t *)databuf;
-	
-#if defined(NEXXONE)
-	if (app_cfg->vid_count == 0) {
-		//mode = 1; /* AP Mode :TODO */			
-	}
-#else
-	if (app_cfg->vid_count == 0) {
-		mode = 1; /* AP Mode */			
-	}
-#endif
 	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
@@ -139,26 +136,20 @@ static void __netmgr_wlan_event_handler(int ste)
 			
 			/* Wi-Fi AP Mode */
 			/* shared memory에 접속에 필요한 정보를 기록한다. */
-			//app_set->wifiap.ssid
-			//app_set->wifiap.pwd
-			//#app_set->wifiap.stealth;
-			//#channel = 36 or 44, 2.4G 6
-			
-			/* ssid set */
 			snprintf(info->ssid, NETMGR_WLAN_SSID_MAX_SZ, "%s", app_set->sys_info.deviceId);
-			strcpy(info->passwd,"12345678");
-			strcpy(info->ip_address, "192.168.0.1");
-			strcpy(info->mask_address, "255.255.255.0");
-			strcpy(info->gw_address, "192.168.0.1");
+			strcpy(info->passwd, NETMGR_WLAN_AP_PASSWD);
+			strcpy(info->ip_address, NETMGR_WLAN_AP_IPADDR);
+			strcpy(info->mask_address, NETMGR_WLAN_AP_MASKADDR);
+			strcpy(info->gw_address, NETMGR_WLAN_AP_GWADDR);
 			info->stealth = 0;
 			info->freq = enable;
 			info->dhcp = 0;
 			
 			if (enable) {
 				/* 5GHz Wi-Fi */
-				info->channel = 36; //44
+				info->channel = NETMGR_WLAN_AP_5G_CHANNEL; //44
 			} else {
-				info->channel = 6;
+				info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
 			}
 			
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);
@@ -431,7 +422,13 @@ static void *THR_netmgr_send_msg(void *prm)
 				if (type == NETMGR_DEV_TYPE_WIFI) 
 				{
 					#if SYS_CONFIG_WLAN
-					__netmgr_wlan_event_handler(status);
+					if (status == 0) {
+						/* USB remove */
+						__netmgr_wlan_event_handler(0, 0);
+					} else {
+						/* insert 이벤트는 AP 모드 진입 여부를 확인하기 위해서 2초 정도 여유를 둔다 */	
+						event_send(&inetmgr->wObj, APP_CMD_NOTY, status, 0);
+					}
 					#endif
 				}
 				else if (type == NETMGR_DEV_TYPE_RNDIS) 
@@ -522,6 +519,57 @@ static void *THR_netmgr_recv_msg(void *prm)
 }
 
 /*****************************************************************************
+* @brief    wlan event thread function
+* @section  [prm] active channel
+*****************************************************************************/
+static void *THR_netmgr_wlan_thr(void *prm)
+{
+	app_thr_obj *tObj = &inetmgr->wObj;
+	int exit = 0, cmd;
+	
+	aprintf("enter...\n");
+	tObj->active = 1;
+	
+	while (!exit)
+	{
+		int done, count;
+		
+		cmd = event_wait(tObj);
+		if (cmd == APP_CMD_EXIT) {
+			break;
+		}
+		
+		//# noty
+		count = 10; //# 200ms * 10 = 2sec..
+		done = 0;
+		while (!done)
+		{
+			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+				break;
+			}
+			
+			if (count <= 0) {
+				if (app_cfg->vid_count == 0) {
+					__netmgr_wlan_event_handler(1, 1); /* AP mode */
+				} else {
+					__netmgr_wlan_event_handler(1, 0); /* station mode */
+				}
+				/* exit wlan processing */
+				done = 1;
+			} else {
+				count--;
+			}
+			app_msleep(200);
+		}
+	}
+	
+	tObj->active = 0;
+	aprintf("exit\n");
+	
+	return NULL;
+}
+
+/*****************************************************************************
 * @brief    app netmgr init/exit function
 * @section  [desc]
 *****************************************************************************/
@@ -536,6 +584,15 @@ int app_netmgr_init(void)
 	/* start rec process */
 	snprintf(cmd, sizeof(cmd), "/opt/fit/bin/net_mgr.out &");
 	system(cmd);
+	
+	#if SYS_CONFIG_WLAN
+	//# --create wlan event thread
+	tObj = &inetmgr->wObj;
+	if(thread_create(tObj, THR_netmgr_wlan_thr, APP_THREAD_PRI, tObj) < 0) {
+		eprintf("create thread\n");
+		return EFAIL;
+	}
+	#endif
 	
 	//#--- create msg receive thread
 	tObj = &inetmgr->rObj;
@@ -559,8 +616,17 @@ int app_netmgr_exit(void)
 	while (tObj->active) {
 		app_msleep(20);
 	}
-	
 	thread_delete(tObj);
+	
+	#if SYS_CONFIG_WLAN
+	//#--- stop wlan event thread
+	tObj = &inetmgr->wObj;
+	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while (tObj->active) {
+		app_msleep(20);
+	}
+	thread_delete(tObj);
+	#endif
 	
 	//#--- stop message receive thread. 
 	//# 프로세스에서 이미 종료가 되므로 APP_CMD_EXIT를 하면 안됨.
