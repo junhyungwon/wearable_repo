@@ -168,7 +168,7 @@ static int __wlan_hostapd_run(void)
 	if (f != NULL)
 		pclose(f);
 	
-	/* ip setup */
+	/* ip setup IP 변경될 경우 main에서 수신해야 함 */
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "/sbin/ifconfig wlan0 192.168.0.1 up");
 	f = popen(buf, "r");
@@ -182,6 +182,7 @@ static int __wlan_hostapd_run(void)
 	if (f != NULL)
 		pclose(f);
 	
+	dprintf("Wi-Fi HOSTAPD Done!!\n");
 	return 0;
 }
 
