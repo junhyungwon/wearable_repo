@@ -30,9 +30,9 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define P2P_SERVER "/opt/fit/bin/P2PTunnelServer_ti"
+#define P2P_SERVER 		"/opt/fit/bin/P2PTunnelServer_ti"
 
-#define P2P_NAME   "P2PTunnelServer"  // name size of process in /proc/../status is 16
+#define P2P_NAME   		"P2PTunnelServer"  // name size of process in /proc/../status is 16
 #define CHECK_MSEC        1000
 
 /*----------------------------------------------------------------------------
@@ -82,19 +82,34 @@ int add_p2p_account()
 
 int app_p2p_start(void)
 {
+	char p2p_cmd[MAX_CHAR_128] = {0, } ;
     int ret = 0 ;
-    char p2p_cmd[MAX_CHAR_128] = {0, } ;
-
+	char *s = NULL;
+	
     if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_eth_run)
     {
+		int res;
 //        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.deviceId) ;
-        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.uid) ;
-
-		printf("%s !\n", p2p_cmd) ;
-     
-        ret = system(p2p_cmd) ;   
+		/* "LFS-LSCS-A1-xxxx" */
+		s = strstr(app_set->sys_info.uid, "LFS-LSCS-");
+		if (s != NULL) 
+		{
+			s += 12; /* xxxx */
+			ret = sscanf(s, "%d", &res);
+			if (ret == 1) 
+			{
+				if (res >= 1 && res <= 5000) 
+				{
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s &", P2P_SERVER, app_set->sys_info.uid);
+					printf("%s!\n", p2p_cmd) ;
+					system(p2p_cmd) ;
+					return 0;
+				}
+			} 
+		}
+		//eprintf("invalid UID...Couln't start p2p service!!\n");
     }
-    return 0;
+    return -1;
 }
 
 int app_p2p_stop(void)
@@ -117,13 +132,11 @@ int app_p2p_stop(void)
 static void *THR_p2p(void *prm)
 {
     app_thr_obj *tObj = &ip2p->p2pObj;
-
     int exit = 0, ret = 0, cmd;
-
-    dprintf("enter...\n");
+	
+	dprintf("enter...\n");
     tObj->active = 1;
-    app_msleep(CHECK_MSEC) ;
-
+	
     while (!exit)
     {
 //      #wait cmd 
@@ -133,8 +146,7 @@ static void *THR_p2p(void *prm)
         }
 
         ret = ctrl_is_live_process((const char *)P2P_NAME);
-        if (!ret)
-        {
+        if (!ret) {
             app_p2p_start();
         } 
 		
@@ -142,7 +154,6 @@ static void *THR_p2p(void *prm)
     }
 
     tObj->active = 0;
-
     aprintf("...exit\n");
 
     return NULL;    
