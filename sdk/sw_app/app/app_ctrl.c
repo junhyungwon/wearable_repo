@@ -718,7 +718,7 @@ static char *full_upfiles[FW_FILE_NUM] = {
 	
 typedef struct {
     char item[8];
-    char value[8];
+    char value[10];
 } fw_version_t;
 
 //------------------------------------------------------//

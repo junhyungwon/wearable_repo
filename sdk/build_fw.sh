@@ -84,7 +84,7 @@ echo
 _compile_ubifs
 
 # update fw_version.txt
-cd bin
+#cd bin
 _fw_version_write "$UPDATE_MODE" "$ver1" "$ver2" "$ver3" "$ver4"
 
 
@@ -92,7 +92,8 @@ _fw_version_write "$UPDATE_MODE" "$ver1" "$ver2" "$ver3" "$ver4"
 echo
 echo "Packaging files..."
 echo
-tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+#tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs rfs_fit.ubifs.md5
 mv "$fw_name" ../.
 
 echo
