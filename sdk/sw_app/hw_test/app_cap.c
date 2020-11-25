@@ -80,7 +80,11 @@ int app_cap_start(void)
 	Vdis_init(NULL);
 
 	//#--- start link
+#if defined(NEXXONE)
+	Vsys_create();
+#else	
 	Vsys_create(0);
+#endif	
 	Vsys_datetime_init();	//# m3 Date/Time init
 
 	Vcap_start();
