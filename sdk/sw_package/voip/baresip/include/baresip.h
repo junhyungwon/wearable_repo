@@ -188,7 +188,6 @@ struct call  *call_find_id(const struct list *calls, const char *id);
 void call_set_current(struct list *calls, struct call *call);
 const struct list *call_get_custom_hdrs(const struct call *call);
 
-
 /*
  * Custom headers
  */

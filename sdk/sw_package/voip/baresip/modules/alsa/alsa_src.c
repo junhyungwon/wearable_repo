@@ -72,11 +72,9 @@ static void *read_thread(void *arg)
 		n = snd_pcm_readi(st->read, st->sampv, num_frames);
 		if (n == -EPIPE) {
 			snd_pcm_prepare(st->read);
-			warning("alsa overrun!!\n");
 			continue;
 		}
 		else if (n <= 0) {
-			warning("pcm_readi err %d\n", n);
 			continue;
 		}
 
