@@ -373,6 +373,8 @@ static void call_event_handler(struct call *call, enum call_event ev,
 	MAGIC_CHECK(ua);
 
 	peeruri = call_peeruri(call);
+	if (!peeruri)
+		return;
 
 	switch (ev) {
 

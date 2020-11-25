@@ -299,7 +299,7 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-	snprintf(msg, sizeof(msg), "baresip state is %s, send btn event...", __action_str(action));
+	snprintf(msg, sizeof(msg), "baresip state is %s, send btn...", __action_str(action));
 	app_log_write(MSG_LOG_WRITE, msg);
 	dprintf("%s\n", msg);
 	
@@ -348,13 +348,21 @@ static void __call_event_handler(void)
 	}
 }
 
+/*****************************************************************************
+* @brief    
+*   - desc
+*       : baresip로 earphone volume level을 변경하는 메시지 전달.
+*****************************************************************************/
 static void __call_snd_volume_handler(void)
 {
-	dprintf("call volume is %x\n", ivoip->snd_level);
-	
 	send_msg(SIPC_CMD_SIP_SET_SOUND, NULL);
 }
 
+/*****************************************************************************
+* @brief    
+*   - desc
+*       : __call_event_handler() 에 대한 응답이 baresip로부터 수신.
+*****************************************************************************/
 static void __call_status_handler(void)
 {
 	char msg[128] = {0,};
@@ -365,7 +373,6 @@ static void __call_status_handler(void)
 	snprintf(msg, sizeof(msg), "baresip response is %s", __action_str(action));
 	app_log_write(MSG_LOG_WRITE, msg);
 	dprintf("%s\n", msg);
-	
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
 	{
@@ -401,6 +408,15 @@ static void __call_status_handler(void)
 		app_leds_voip_ctrl(DEV_LED_OFF);
 		ctrl_swosd_userstr("C", 0);
 	}
+}
+
+static void __call_send_cmd(int cmd)
+{
+	app_thr_obj *tObj = &ivoip->eObj;
+	
+	OSA_mutexLock(&ivoip->lock);
+	event_send(tObj, cmd, 0, 0);
+	OSA_mutexUnlock(&ivoip->lock);
 }
 
 /*****************************************************************************
@@ -441,7 +457,7 @@ static void *THR_voip_main(void *prm)
 /*****************************************************************************
 * @brief    voip main function
 * @section  DESC Description
-*   - desc
+*   - desc  baresip로부터 전달되는 메시지를 수신
 *****************************************************************************/
 static void *THR_voip_recv_msg(void *prm)
 {
@@ -559,8 +575,6 @@ void app_voip_exit(void)
 	
 	//#--- stop message receive thread. 
 	//# 프로세스에서 이미 종료가 되므로 APP_CMD_EXIT를 하면 안됨.
-//	tObj = &ivoip->rObj;
-//	thread_delete(tObj);
 	send_msg(SIPC_CMD_SIP_EXIT, NULL);
 	OSA_mutexDelete(&(ivoip->lock));
 	
@@ -575,8 +589,6 @@ void app_voip_exit(void)
 void app_voip_start(int net_type, int enable_stun, short server_port, const char *uag, const char *server, 
 			const char *passwd, const char *peer, const char *stun_server)
 {
-	app_thr_obj *tObj = &ivoip->eObj;
-	
 	if (uag != NULL)
 		strcpy(ivoip->dev_num, uag);
 	if (server != NULL)
@@ -596,9 +608,7 @@ void app_voip_start(int net_type, int enable_stun, short server_port, const char
 	ivoip->enable_stun = enable_stun;
 	ivoip->net_type = net_type;
 	
-	OSA_mutexLock(&ivoip->lock);
-	event_send(tObj, APP_CMD_START, 0, 0);
-	OSA_mutexUnlock(&ivoip->lock);
+	__call_send_cmd(APP_CMD_START);
 }
 
 /*****************************************************************************
@@ -608,29 +618,22 @@ void app_voip_start(int net_type, int enable_stun, short server_port, const char
 *****************************************************************************/
 void app_voip_stop(void)
 {
-	app_thr_obj *tObj = &ivoip->eObj;
-	
-	OSA_mutexLock(&ivoip->lock);
-	event_send(tObj, APP_CMD_STOP, 0, 0);
-	OSA_mutexUnlock(&ivoip->lock);
+	__call_send_cmd(APP_CMD_STOP);
 }
 
 /*****************************************************************************
-* @brief    voip manager (연속으로 event noty를 하면 수신 안됨.. 주의)
+* @brief    
 *   - desc
+*       : user가 call 버튼을 눌렀을 때 실행. 연속으로 버튼일 눌리는 걸 방지해야 함.
+*         voip_main thread로 NOTY 전달. __call_event_handler() 가 실행됨.
 *****************************************************************************/
 void app_voip_event_noty(void)
 {
-	app_thr_obj *tObj = &ivoip->eObj;
-	
 	if (!ivoip->st.call_reg) {
 		eprintf("Not registered!\n");
 		return;
 	}
-	
-	OSA_mutexLock(&ivoip->lock);
-	event_send(tObj, APP_CMD_NOTY, 0, 0);
-	OSA_mutexUnlock(&ivoip->lock);
+	__call_send_cmd(APP_CMD_NOTY);
 }
 
 /*****************************************************************************
@@ -639,14 +642,13 @@ void app_voip_event_noty(void)
 *****************************************************************************/
 void app_voip_set_play_volume(void)
 {
-	app_thr_obj *tObj = &ivoip->eObj;
 	int level = ivoip->snd_level;
 	
 	if (!ivoip->st.call_reg) {
 		eprintf("Not registered!\n");
 		return;
 	}
-		
+	
 	level++;
 	/* round */
 	if (level > SND_LEVEL_HIGH)
@@ -656,9 +658,7 @@ void app_voip_set_play_volume(void)
 	
 	ivoip->snd_level = level;
 	
-	OSA_mutexLock(&ivoip->lock);
-	event_send(tObj, APP_CMD_PAUSE, 0, 0);
-	OSA_mutexUnlock(&ivoip->lock);
+	__call_send_cmd(APP_CMD_PAUSE);
 }
 
 /*****************************************************************************

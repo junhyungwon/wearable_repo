@@ -183,6 +183,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	(void)prm;
 	(void)arg;
 	
+	pthread_mutex_lock(&ikey->lock);
+	
 	dprintf("c_menu: [ ua=%s call=%s ] event: %s (%s)\n",
 	      ua_aor(ua), call_id(call), uag_event_str(ev), prm);
 	
@@ -191,7 +193,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	switch (ev) {
 	case UA_EVENT_REGISTERING:
 		/* 최초 프로그램 시작 시 전달되는 메시지 */
-		return;
+		goto exit_lock;
 	case UA_EVENT_CALL_INCOMING:
 		/* stop any ringtones (auplay_destructor함수가 mem_deref에 의해서 호출됨) */
 		ikey->play = mem_deref(ikey->play);
@@ -267,7 +269,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		/* 통화대기 중 이 REGISTER OK 메세지가 전달될 경우에 hang 걸림 */
 		if (have_active_calls()) {
 			dprintf("invalid REGISTER_OK.....ignore!!\n");
-			return;
+			goto exit_lock;
 		}
 		check_registrations();
 		/* 최초 resister ok event가 전송됨 */ 
@@ -299,7 +301,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	/* Remote session description protocol */
 	case UA_EVENT_CALL_REMOTE_SDP: 
 		ikey->play = mem_deref(ikey->play);
-		return;
+		goto exit_lock;
 	
 	/* 
 	 * Device에서 상대방에 전화를 걸때 내 장치의 
@@ -319,15 +321,19 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	case UA_EVENT_CALL_RTCP:
 		/* 통화 연결 후 RTCP 이벤트가 전송됨 */
 	case UA_EVENT_CALL_RTPESTAB:
-		return;
+		goto exit_lock;
 	
 	default:
 		warning("unknown ua_event 0x%x\n", (int)ev);
-		return;
+		goto exit_lock;
 	}
 	
 	/* poll 쓰레드로 메시지 전달 */
 	event_send(&ikey->sObj, APP_CMD_NOTY, 0, 0);
+
+exit_lock:
+	pthread_mutex_unlock(&ikey->lock);
+	
 	//# for debugging
 	//update_callstatus();
 }
@@ -336,9 +342,13 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 //###################### Baresip Helper ########################################################
 static void __call_stop(void)
 {
-	/* Stop any ongoing ring-tones */
-	ikey->play = mem_deref(ikey->play);
-	ua_hangup(uag_current(), NULL, 0, NULL);
+	struct ua *ua = uag_current();
+	
+	if (ua != NULL) {
+		/* Stop any ongoing ring-tones */
+		ikey->play = mem_deref(ikey->play);
+		ua_hangup(ua, NULL, 0, NULL);
+	}
 }
 
 static void __call_answer(void)
@@ -459,9 +469,6 @@ static int __dialer_user(const char *call_num)
 	struct config *cfg;
 	
 	cfg = conf_config();
-	/* redial 기능을 위해서 필요함. 현재는 사용안됨 */
-	//mbuf_rewind(ikey->dialbuf);
-	//(void)mbuf_write_str(ikey->dialbuf, call_num);
 	/* device number와 peer number가 같은 경우 error */
 	if (strcmp(ikey->uri.ua_uri, call_num) == 0) {
 		warning("menu: Don't allow same number between call and ua!\n");
@@ -565,7 +572,6 @@ static void *THR_sipc_poll(void *prm)
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
-	(void)prm;
 	while(!done)
 	{
 		cmd = event_wait(tObj);
@@ -670,8 +676,9 @@ static int module_init(void)
 		return -1;
 	}
 	
+	/* baresip의 event_handler에 의해서 전달되는 상태메시지를 main으로 전달하기 위한 thread */
 	tObj = &ikey->sObj;
-	if (thread_create(tObj, THR_sipc_poll, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(tObj, THR_sipc_poll, APP_THREAD_PRI-1, NULL) < 0) {
 		warning("create thread!\n");
 		return -1;
 	}
