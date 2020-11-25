@@ -80,7 +80,7 @@ int app_cap_start(void)
 	Vdis_init(NULL);
 
 	//#--- start link
-	Vsys_create();
+	Vsys_create(0);
 	Vsys_datetime_init();	//# m3 Date/Time init
 
 	Vcap_start();
