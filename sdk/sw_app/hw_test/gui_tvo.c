@@ -30,7 +30,6 @@
 #include "app_mcu.h"
 #include "gui_main.h"
 #include "gui_tvo.h"
-#include "app_version.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -149,8 +148,11 @@ typedef struct {
 #define SND_PCM_CH			1
 
 static OSA_ThrHndl sndInThr;
+static OSA_ThrHndl sndOutThr;
+static int snd_pipe[2];
 
 static snd_pcm_data_t snd_in_data;
+static snd_pcm_data_t snd_out_data;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -713,6 +715,138 @@ int test_led(app_thr_obj *tObj)
 	return ret;
 }
 
+#if defined(NEXXONE) /* mic in + earphone out */
+static void thr_snd_in_cleanup(void *prm)
+{
+	snd_pcm_data_t *pSnd = (snd_pcm_data_t *)prm;
+
+	if (pSnd->buf != NULL) {
+		free(pSnd->buf);
+		pSnd->buf = NULL;
+	}
+
+	if (pSnd->pcm_t != NULL) {
+		dev_snd_aic3x_close((void *)pSnd->pcm_t, SND_PCM_REC);
+		pSnd->pcm_t = NULL;
+	}
+}
+
+static void *thr_snd_in(void *prm)
+{
+	int nch, si_size;	/* number of pcm channels */
+	int buf_sz, period_sz;
+	int exit = 0, r;
+
+	snd_pcm_data_t *pSnd = &snd_in_data;
+
+	dev_snd_set_aic3x_input_path(SND_LINE_IN);
+
+	buf_sz    = 8000; //#frames
+	period_sz = (buf_sz / 4);
+	nch		  = SND_PCM_CH;
+
+	pSnd->pcm_t = (snd_pcm_t *)dev_snd_aic3x_init(SND_PCM_REC, SND_PCM_SRATE, nch, buf_sz, period_sz);
+
+	si_size = (period_sz * nch * 2);
+	pSnd->buf = malloc(si_size);
+
+	dev_snd_set_aic3x_volume(SND_VOLUME_C, 60);	//# set default volume 60%
+
+	pthread_cleanup_push(thr_snd_in_cleanup, (void *)pSnd);
+
+	while(!exit)
+	{
+		r = dev_snd_aic3x_read((void *)pSnd->pcm_t, pSnd->buf, nch, period_sz);
+		if (r > 0) {
+			write(snd_pipe[1], pSnd->buf, r);
+		}
+	}
+
+	pthread_cleanup_pop(0);
+
+	return NULL;
+}
+
+static void thr_snd_out_cleanup(void *prm)
+{
+	snd_pcm_data_t *pSnd = (snd_pcm_data_t *)prm;
+
+	OSA_waitMsecs(100);
+
+	if (pSnd->buf != NULL) {
+		free(pSnd->buf);
+		pSnd->buf = NULL;
+	}
+
+	if (pSnd->pcm_t != NULL) {
+		dev_snd_aic3x_close((void *)pSnd->pcm_t, SND_PCM_PLAY);
+		pSnd->pcm_t = NULL;
+	}
+}
+
+void *thr_snd_out(void *prm)
+{
+	int nch, so_size;	/* number of pcm channels */
+	int buf_sz, period_sz;
+	int exit = 0, r;
+
+	snd_pcm_data_t *pSnd = &snd_out_data;
+
+	dev_snd_set_aic3x_output_path(SND_LINE_OUT);
+	dev_snd_set_aic3x_volume(SND_VOLUME_P, 80);
+
+	buf_sz    = 8000; //#frames
+	period_sz = (buf_sz / 4);
+	nch		  = SND_PCM_CH;
+
+	pSnd->pcm_t = (snd_pcm_t *)dev_snd_aic3x_init(SND_PCM_PLAY, SND_PCM_SRATE, nch, buf_sz, period_sz);
+	if(pSnd->pcm_t == NULL) {
+		return NULL;
+	}
+
+	so_size = (period_sz * nch * 2);
+	pSnd->buf = malloc(so_size);
+
+	pthread_cleanup_push(thr_snd_out_cleanup, (void *)pSnd);
+
+	while(!exit)
+	{
+		r = read(snd_pipe[0], pSnd->buf, so_size);
+		if (r > 0) {
+			dev_snd_aic3x_write((void *)pSnd->pcm_t, pSnd->buf, nch, (r/(nch * 2)), period_sz);
+		}
+	}
+
+	pthread_cleanup_pop(0);
+
+	return NULL;
+}
+
+int test_snd(app_thr_obj *tObj)
+{
+	int ret;
+
+	aprintf("start...\n");
+	draw_sub_clear();
+	draw_sub_title("오디오 입/출력 테스트");
+	draw_sub_text("PC의 사운드 출력을 오디오 입력에 연결합니다", 1, RGB_F_GRAY);
+	
+	pipe(snd_pipe);
+
+	/* create sound input thread */
+	OSA_thrCreate(&sndInThr, thr_snd_in, APP_THREAD_PRI, 0, NULL);
+	/* create sound output thread */
+	OSA_thrCreate(&sndOutThr, thr_snd_out, APP_THREAD_PRI, 0, NULL);
+
+	//# Question
+	ret = draw_qna(tObj, "스피커로 사운드가 출력됩니까?", RGB_F_GRAY, OKFAIL);
+	
+	OSA_thrDelete(&sndOutThr);
+	OSA_thrDelete(&sndInThr);
+
+	return ret;
+}
+#else
 static void tvo_draw_bar(int step)
 {
 	ui_pos_t st;
@@ -831,6 +965,7 @@ int test_snd(app_thr_obj *tObj)
 
 	return ret;
 }
+#endif /* #if defined (NEXXONE) */
 
 int test_video(app_thr_obj *tObj)
 {
