@@ -436,7 +436,8 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 		app_cfg->ich[idx].wi = wi;
 		app_cfg->ich[idx].he = he;
 		app_cfg->ich[idx].fr = app_set->ch[idx].framerate ;
-		app_cfg->ich[idx].br = (app_set->ch[idx].quality * app_cfg->ich[idx].fr)/DEFAULT_FPS;
+//		app_cfg->ich[idx].br = (app_set->ch[idx].quality * app_cfg->ich[idx].fr)/DEFAULT_FPS;
+		app_cfg->ich[idx].br = app_set->ch[idx].quality ;
 		app_cfg->ich[idx].rc = app_set->ch[idx].rate_ctrl ; 
 		dprintf(" [app] (CH%d): %dx%d, fr %d, br %d\n", idx, wi, he, app_cfg->ich[idx].fr, app_cfg->ich[idx].br);
         
