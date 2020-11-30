@@ -126,8 +126,16 @@ echo
 echo "Mass production package file"
 echo 
 
+if [ "$FW_PREFIX" == "NEXXONE" ]
+then
+masspack_name=hw_test_binary_"$FW_PREFIX"
+else
 masspack_name=hw_test_binary_"$ver4"
+fi
+
+if [ ! -f "$masspack_name" ]; then
 mkdir "$masspack_name"
+fi
 
 cp ./fit/bin/hw_test.out ./$masspack_name
 cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs ./$masspack_name
