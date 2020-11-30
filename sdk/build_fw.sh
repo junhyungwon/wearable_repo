@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #FW_PREFIX="NEXX360B"
-FW_PREFIX="NEXX360W"
-#FW_PREFIX="NEXXONE"
+#FW_PREFIX="NEXX360W"
+FW_PREFIX="NEXXONE"
 
 VERSION_TXT_FILE="fw_version.txt"
 
@@ -105,12 +105,18 @@ mv "$fw_name" ../.
 #cd bin
 _fw_version_write "debug" "$ver1" "$ver2" "$ver3" "$ver4"
 
+
 # packaging binary
 echo
 echo "Packaging files..."
 echo
+if [ "$FW_PREFIX" == "NEXXONE" ]
+then
 #tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+else
 tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs rfs_fit.ubifs.md5
+fi
 mv "$factory_fw_name" ../.
 
 
