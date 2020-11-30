@@ -739,7 +739,7 @@ static void *thr_snd_in(void *prm)
 
 	snd_pcm_data_t *pSnd = &snd_in_data;
 
-	dev_snd_set_aic3x_input_path(SND_LINE_IN);
+	dev_snd_set_aic3x_input_path(SND_MIC_IN);
 
 	buf_sz    = 8000; //#frames
 	period_sz = (buf_sz / 4);
@@ -792,7 +792,7 @@ void *thr_snd_out(void *prm)
 
 	snd_pcm_data_t *pSnd = &snd_out_data;
 
-	dev_snd_set_aic3x_output_path(SND_LINE_OUT);
+	//dev_snd_set_aic3x_output_path(SND_LINE_OUT);
 	dev_snd_set_aic3x_volume(SND_VOLUME_P, 80);
 
 	buf_sz    = 8000; //#frames
