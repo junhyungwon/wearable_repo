@@ -464,6 +464,7 @@ static void *THR_netmgr_send_msg(void *prm)
 *****************************************************************************/
 static void *THR_netmgr_recv_msg(void *prm)
 {
+	char msg[128]={0,};
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
@@ -478,25 +479,38 @@ static void *THR_netmgr_recv_msg(void *prm)
 			continue;
 		}
 		
+		/* log buffer clear */
+		memset(msg, 0, sizeof(msg));
 		switch (cmd) {
 		case NETMGR_CMD_READY:
-			//dprintf("received netmgr ready!\n");
 			__netmgr_start();
+			snprintf(msg, sizeof(msg), "app: netmgr ready!");
+			//dprintf("%s\n", msg);
+			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
-			//dprintf("device type %x, state %s!\n", inetmgr->device, inetmgr->insert?"insert":"remove");
 			__netmgr_hotplug_noty();
+			snprintf(msg, sizeof(msg), "app: netdevice type %x, state %s", 
+						inetmgr->device, inetmgr->insert?"insert":"remove");
+			//dprintf("%s\n", msg);
+			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
-			//dprintf("device type %x, link status %x!\n", inetmgr->device, inetmgr->link_status);
 			__netmgr_dev_link_status_handler();
+			snprintf(msg, sizeof(msg), "app: device type %x, link status %x", 
+						inetmgr->device, inetmgr->link_status);
+			//dprintf("%s\n", msg);
+			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
-			//dprintf("received netmgr device ip status!\n");
 			__netmgr_dev_ip_status_handler();
+			snprintf(msg, sizeof(msg), "app: get device type %x, ip status!", 
+						inetmgr->device);
+			//dprintf("%s\n", msg);
+			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
@@ -505,7 +519,9 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
-			dprintf("received netmgr exit!\n");
+			snprintf(msg, sizeof(msg), "app: netmgr exit!");
+			//dprintf("%s\n", msg);
+			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 		default:
 			break;	
