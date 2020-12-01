@@ -397,7 +397,11 @@ static int ftp_send_file(int sd, char *filename)
                 return -1 ;
 
 		    if(ftpRecvResponse(sd, buf) != 0)
+            {
                 return -1 ;
+            }
+
+	        ftp_dbg("ftpRecvResponse After STORE = %s\n", buf);
 		    if (strncmp(buf, "150", 3) == 0) 
 			{ //make sure response is a 150
 			    if (ftpSendFile(data_sock, filename) == 0) 
@@ -769,8 +773,10 @@ static void *THR_ftp(void *prm)
 			{	
                 app_cfg->ste.b.ftp_run = 0 ;
 			}
+
 			/* ftp connection 실패시 auto record 설정 On, 및 현재 record 상태 였으면 이전 상태로 돌리기 위한 작업 */
-            if (app_cfg->ste.b.prerec_state && app_set->rec_info.auto_rec && iftp->ftp_state == FTP_STATE_SEND_DONE)
+//            if ((app_cfg->ste.b.prerec_state || app_set->rec_info.auto_rec) && iftp->ftp_state == FTP_STATE_SEND_DONE)
+            if (app_cfg->ste.b.prerec_state && iftp->ftp_state == FTP_STATE_SEND_DONE)
 			{      
                 app_rec_start() ;  // rec start after ftp send
 			    app_cfg->ste.b.prerec_state = 0 ;
@@ -780,7 +786,7 @@ static void *THR_ftp(void *prm)
         else
         {
 			/* cradle에서 분리 되었을 경우 처리*/
-			if(iftp->sdFtp < 0)
+//			if(iftp->sdFtp < 0)
 			{
                 iftp->ftp_state = FTP_STATE_NONE ;
                 app_cfg->ste.b.ftp_run = 0 ;
