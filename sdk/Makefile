@@ -120,6 +120,17 @@ live555_clean:
 
 live555_all: live555_clean live555
 
+ntpclient: 
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/ntpclient
+
+ntpclient_install: 
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/ntpclient install
+
+ntpclient_clean: 
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/ntpclient clean
+
+ntpclient_all: ntpclient_clean ntpclient ntpclient_install
+
 p2p:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux
 
