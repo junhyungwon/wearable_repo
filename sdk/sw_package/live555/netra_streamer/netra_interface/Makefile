@@ -17,7 +17,7 @@ AR = $(CODEGEN_PREFIX)ar
 
 REL_LIB1 = Netra_interface.a
 
-REL_OBJ1 = NetraDrvMsg.o Netra_interface.o sem_util.o msg_util.o
+REL_OBJ1 = NetraDrvMsg.o Netra_interface.o sem_util.o msg_util.o app_encrypt.o
 
 all:  $(REL_LIB1)
 
@@ -35,6 +35,10 @@ Netra_interface.o: Netra_interface.c Netra_interface.h
 
 sem_util.o: sem_util.c sem_util.h
 	$(CC) $(C_FLAGS) -o $@ $<
+
+app_encrypt.o: app_encrypt.c app_encrypt.h
+	$(CC) $(C_FLAGS) -o $@ $<
+    
 
 clean:
 	-$(RM) -f *.o

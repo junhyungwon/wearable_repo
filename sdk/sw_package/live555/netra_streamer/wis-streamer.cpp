@@ -31,6 +31,7 @@
 #include "WISPCMAudioServerMediaSubsession.hh"
 #include <NetraDrvMsg.h>
 #include <Netra_interface.h>
+#include <app_encrypt.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <GroupsockHelper.hh>
@@ -250,11 +251,13 @@ int main(int argc, char** argv) {
   int IsSilence = 0;
   int OverHTTPEnable = 1;
   int svcEnable = 0, rtsp_port = 0, ret = 0 ;
-  int useid = 0;
+  int useid = 0, use_encrypt = 0;
 
   char rtsp_username[32] = {0, } ; 
   char rtsp_password[32] = {0, } ; 
 
+  char enc_username[64] = {0, } ; 
+  char enc_password[64] = {0, } ; 
  
   if(argc < 2)
   {
@@ -285,9 +288,10 @@ int main(int argc, char** argv) {
 			 audioOutputBitrate = 64000 ;
 		 else
 			 audioOutputBitrate = 128000 ;
+
+		 use_encrypt = atoi(argv[5]) ;
      }
   }
-
 
   // Begin by setting up our usage environment:
   TaskScheduler* scheduler = BasicTaskScheduler::createNew();
@@ -394,7 +398,14 @@ int main(int argc, char** argv) {
   if(useid)
   {	
       authDB = new UserAuthenticationDatabase;
-      authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
+	  if(use_encrypt)
+      {   
+		  encrypt_aes(rtsp_username, enc_username, 32) ; 
+		  encrypt_aes(rtsp_password, enc_password, 32) ; 
+          authDB->addUserRecord(enc_username, enc_password); // replace these with real strings  
+	  }
+	  else
+          authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
   }
 //      authDB->addUserRecord("linkflow", "1"); // replace these with real strings  
    

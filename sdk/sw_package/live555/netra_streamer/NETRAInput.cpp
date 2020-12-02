@@ -386,10 +386,10 @@ VideoOpenFileSource
 ::VideoOpenFileSource(UsageEnvironment& env, NETRAInput& input)
   : OpenFileSource(env, input), SerialBook(0), SerialLock(0), StreamFlag(STREAM_GET_VOL),IsStart(1) {
 
- uSecsToDelay = 50000;     // 5ms
- uSecsToDelayMax = 100000;
-// uSecsToDelay = 1000;     // 5ms
-// uSecsToDelayMax = 1666;
+ uSecsToDelay = 30000;     // 5ms
+ uSecsToDelayMax = 50000;
+// uSecsToDelay = 10000;     // 5ms
+// uSecsToDelayMax = 160000;
  srcType = 0;
 
 
@@ -913,7 +913,7 @@ int VideoOpenFileSource::readFromFile()
 AudioOpenFileSource
 ::AudioOpenFileSource(UsageEnvironment& env, NETRAInput& input)
   : OpenFileSource(env, input), AudioBook(0), AudioLock(0), IsStart(1) {
-  uSecsToDelay = 3000;
+  uSecsToDelay = 5000;
   uSecsToDelayMax = 125000;
   srcType = 1;
 }

@@ -88,6 +88,9 @@ int app_rtsptx_start(void)
 	STREAM_SET streamSet;
 	FILE *fd = NULL;
     char rtsp_cmd[MAX_CHAR_128] = {0, } ;
+	char rtsp_user[32] = {0} ;
+	char rtsp_passwd[32] = {0} ;
+
 //    int retcnt = 0 ;
 
 //    while(1)
@@ -146,7 +149,18 @@ int app_rtsptx_start(void)
     }
 	if(app_set->account_info.ON_OFF)
 	{	
-	    sprintf(rtsp_cmd, "%s %d %s %s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE ) ;
+		if(app_set->account_info.enctype)
+        {
+			decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32) ;
+            decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
+
+	        sprintf(rtsp_cmd, "%s %d %s %s %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
+		}
+		else
+		{
+	        sprintf(rtsp_cmd, "%s %d %s %s %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
+
+		}
 	}
 	else
 	{
