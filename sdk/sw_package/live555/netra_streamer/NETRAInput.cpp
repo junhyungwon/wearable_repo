@@ -386,7 +386,7 @@ VideoOpenFileSource
 ::VideoOpenFileSource(UsageEnvironment& env, NETRAInput& input)
   : OpenFileSource(env, input), SerialBook(0), SerialLock(0), StreamFlag(STREAM_GET_VOL),IsStart(1) {
 
- uSecsToDelay = 30000;     // 5ms
+ uSecsToDelay = 100;     // 5ms
  uSecsToDelayMax = 50000;
 // uSecsToDelay = 10000;     // 5ms
 // uSecsToDelayMax = 160000;
@@ -785,7 +785,7 @@ int VideoOpenFileSource::readFromFile()
 			GetAVData(fInput.channel, cmd[AV_UNLOCK_MP4_VOL], -1, &vol_data);
 
 //			printf("WaitVideoStart 00000000000000000000000\n");
-			WaitVideoStart(fInput.videoType, 100);
+			WaitVideoStart(fInput.videoType, 10000);
 
 			ret = GetAVData(fInput.channel, cmd[AV_LOCK_MP4_IFRAME], -1, &av_data);
 			SerialBook = av_data.serial;
@@ -797,7 +797,7 @@ int VideoOpenFileSource::readFromFile()
 		else if (StreamFlag & STREAM_NEW_GOP) {
 
 //            printf("WaitVideoStart 1111111111111111111111111\n") ;
-			WaitVideoStart( fInput.videoType,1000);
+			WaitVideoStart( fInput.videoType, 10000);
 
 //            printf("GetAVData  calll field 70707070 value = %d\n",cmd[AV_LOCK_MP4_IFRAME]) ;
 			ret = GetAVData(fInput.channel, cmd[AV_LOCK_MP4_IFRAME], -1, &av_data );
