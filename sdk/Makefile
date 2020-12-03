@@ -131,6 +131,17 @@ ntpclient_clean:
 
 ntpclient_all: ntpclient_clean ntpclient ntpclient_install
 
+process_check: 
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/proc_check
+
+process_check_install: 
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/proc_check install
+
+process_check_clean: 
+	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/proc_check clean
+
+process_check_all: process_check_clean process_check process_check_install
+
 p2p:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux
 
@@ -384,6 +395,7 @@ fsupdate:
 	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(TFTP_HOME)/process_check $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/network_manager/net_mgr.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.

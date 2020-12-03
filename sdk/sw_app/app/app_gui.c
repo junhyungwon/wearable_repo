@@ -258,16 +258,16 @@ static void *THR_gui(void *prm)
             }
         }
 #endif
-#if 0
+#if 1
 		//# wis-stream keep alive....
 		if (app_cfg->ste.b.rtsptx) 
 		{
 			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
 				igui->tmr_cnt = 0;
 				/* check wis-streamer */
-				//system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
-				//if (!ctrl_is_live_process((const char *)"wis-streamer"))
-				//	app_rtsptx_start();
+//	 	    	system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
+				if (!ctrl_is_live_process((const char *)"wis-streamer"))
+					app_rtsptx_start();
 			} else {
 				igui->tmr_cnt++;
 			}

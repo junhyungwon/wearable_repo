@@ -16,5 +16,9 @@ if [ -x ./bin/app_fitt.out ]; then
 	./bin/app_fitt.out &
 fi
 
+if [ -x ./bin/process_check ]; then
+	./bin/process_check &
+fi
+
 # For get disk free space
 /bin/df /mmc > /dev/null
