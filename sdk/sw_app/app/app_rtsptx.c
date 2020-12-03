@@ -154,6 +154,7 @@ int app_rtsptx_start(void)
 			decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32) ;
             decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
 
+//	        sprintf(rtsp_cmd, "%s %d \"%s\" \"%s\" %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
 	        sprintf(rtsp_cmd, "%s %d %s %s %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
 		}
 		else
