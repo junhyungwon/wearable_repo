@@ -729,7 +729,9 @@ static void *THR_ftp(void *prm)
 
     iftp->ftp_state = FTP_STATE_NONE;
     iftp->retry_cnt = 0 ;
-	
+
+    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
+
 	while (!exit)
 	{
 		//# wait cmd
@@ -744,6 +746,13 @@ static void *THR_ftp(void *prm)
             if(iftp->ftp_state == FTP_STATE_NONE)
             {
 			    iftp->file_cnt = get_recorded_file_count() ;
+
+				if (app_rec_state())  // rec status
+                {
+                    app_rec_stop(1);
+			     	app_cfg->ste.b.prerec_state = 1 ;
+                }
+
                 if (iftp->file_cnt > 0)  
                 {
                     if(app_cfg->ftp_enable)
@@ -751,13 +760,6 @@ static void *THR_ftp(void *prm)
                         app_leds_eth_status_ctrl(LED_FTP_ON);
 
                         app_cfg->ste.b.ftp_run = 1 ;  // rec key disable
-                        if (app_rec_state())  // rec status
-                        {
-                            app_rec_stop(1);
-							app_cfg->ste.b.prerec_state = 1 ;
-                        }
-						else
-							app_cfg->ste.b.prerec_state = 0 ;
 
                         ftp_send() ;
                         app_cfg->ste.b.ftp_run = 0 ;
@@ -775,7 +777,6 @@ static void *THR_ftp(void *prm)
 			}
 
 			/* ftp connection 실패시 auto record 설정 On, 및 현재 record 상태 였으면 이전 상태로 돌리기 위한 작업 */
-//            if ((app_cfg->ste.b.prerec_state || app_set->rec_info.auto_rec) && iftp->ftp_state == FTP_STATE_SEND_DONE)
             if (app_cfg->ste.b.prerec_state && iftp->ftp_state == FTP_STATE_SEND_DONE)
 			{      
                 app_rec_start() ;  // rec start after ftp send
