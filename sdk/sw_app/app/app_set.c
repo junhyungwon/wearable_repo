@@ -436,14 +436,30 @@ static void cfg_param_check_nexx(app_set_t *pset)
             pset->ch[ich].gop = DEFAULT_FPS ;
 
 		if(pset->ch[ich].framerate <= 0  || pset->ch[ich].framerate > DEFAULT_FPS)
-		    pset->ch[ich].framerate	= DEFAULT_FPS;
-
-        printf("pset->ch[ich].framerate = %d\n",pset->ch[ich].framerate) ;
-        printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
+		{
+			if(ich == MODEL_CH_NUM)
+			{
+#if defined(NEXXONE)	
+		        pset->ch[ich].framerate	= DEFAULT_FPS/2;
+#else
+		        pset->ch[ich].framerate	= DEFAULT_FPS;
+#endif
+			}
+			else
+		        pset->ch[ich].framerate	= DEFAULT_FPS;
+        }
 
 		if(pset->ch[ich].quality < MIN_BITRATE || pset->ch[ich].quality	> MAX_BITRATE)
-		    pset->ch[ich].quality = DEFAULT_QUALITY;
-		
+		{
+
+			if(ich == MODEL_CH_NUM)
+			{
+		        pset->ch[ich].quality = DEFAULT_QUALITY/4; // 1Mbps for Live streaming
+			}
+			else
+		        pset->ch[ich].quality = DEFAULT_QUALITY;  // 4Mbps for Recording
+
+		}
 		if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
 		    pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
 
@@ -453,8 +469,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
             if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
         }
-
-        printf("pset->ch[ich].quality = %d\n",pset->ch[ich].quality) ;
 	}
 
 	//# Watchdog...
@@ -837,6 +851,7 @@ static int cfg_read(int is_mmc, char* cfg_path)
 	return SOK;
 }
 
+
 static void app_set_default(int default_type)
 {
     char MacAddr[12] ;
@@ -864,8 +879,21 @@ static void app_set_default(int default_type)
 	for (ich = 0; ich < channels; ich++)
 	{
 		app_set->ch[ich].resol		= RESOL_720P;
-		app_set->ch[ich].framerate	= DEFAULT_FPS;
-		app_set->ch[ich].quality	= DEFAULT_QUALITY;
+		if(ich == MODEL_CH_NUM)
+		{
+#if defined(NEXXONE)	
+		    app_set->ch[ich].framerate	= DEFAULT_FPS/2;  // 15fps
+#else
+		    app_set->ch[ich].framerate	= DEFAULT_FPS;    // 15fps
+#endif
+		    app_set->ch[ich].quality	= DEFAULT_QUALITY/4;  // 1Mbps for live streaming
+		}
+        else
+		{
+		    app_set->ch[ich].framerate	= DEFAULT_FPS;     // 15fps or 30fps
+		    app_set->ch[ich].quality	= DEFAULT_QUALITY; // 4Mbps for live streaming
+		}
+
 		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
 		app_set->ch[ich].motion 	= OFF;
 		app_set->ch[ich].gop 	    = DEFAULT_FPS;
