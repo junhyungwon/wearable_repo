@@ -546,7 +546,7 @@ int netmgr_set_ip_dhcp(const char *ifname)
 	 * -n; error exit. if lease cannot be immediately negotiated.
 	 */
 	memset(command, 0, sizeof(command));
-	snprintf(command, sizeof(command), "/sbin/udhcpc -A 3 -T 1 -t 5 -n -b -p %s -i %s", path, ifname);
+	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 1 -t 5 -n -b -p %s", ifname, path);
 	f = popen(command, "w");
 	if (f != NULL) {
 		pclose(f);
