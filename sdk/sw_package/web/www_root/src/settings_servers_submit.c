@@ -216,6 +216,8 @@ static int submit_settings_qcgi()
 
         return SUBMIT_OK;
     }
+
+    return SUBMIT_ERR;
 }
 
 
