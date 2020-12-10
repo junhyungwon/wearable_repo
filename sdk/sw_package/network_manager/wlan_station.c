@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -39,7 +40,7 @@
 #define TIME_CLI_DHCP    		10000   //# 10sec
 #define CNT_CLI_DHCP        	(TIME_CLI_DHCP/TIME_CLI_CYCLE)
 
-#define IWGETID_CMD				"/sbin/iwgetid wlan0"
+#define IWGETID_CMD				"/sbin/iwgetid wlan0 -r"
 #define IWCONFIG_CMD			"/sbin/iwconfig wlan0"
 
 #define SUPPLICANT_CONFIG		"/etc/wpa_supplicant.conf"
@@ -362,6 +363,8 @@ static int __cli_get_auth_status(const char *essid)
 	{
 		char *s;
 
+		//printf("iwgetid -> %s\n", lbuf);
+		#if 0
 		/* find ESSID: */
 		if ((s = strstr(lbuf, "ESSID:")) != NULL)
 		{
@@ -371,13 +374,27 @@ static int __cli_get_auth_status(const char *essid)
 				id[i] = s[i];
 			}
 			id[i] = '\0';
-
+			
+			dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
 			if (strcmp(id, essid) == 0) {
 				/* connection ok */
 				r = 1;
 				break;
 			}
 		}
+		#else
+		/* last char is '\n' */
+		for (i = 0; i < strlen(lbuf)-1; i++) {
+			id[i] = lbuf[i];
+		}
+		id[i] = '\0';
+		//printf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
+		if (strcmp(id, essid) == 0) {
+			/* connection ok */
+			r = 1;
+			break;
+		} 
+		#endif
 	}
 
 	pclose(f);

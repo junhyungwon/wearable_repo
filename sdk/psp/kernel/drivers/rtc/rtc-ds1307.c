@@ -154,8 +154,8 @@ static const struct chip_desc chips[last_ds_type] = {
 		/* this is battery backed SRAM (isn't compatible with i2c)
 		 * so we use alarm 1 register
 		 */
-		.nvram_offset	= 0x0A, //0x20,
-		.nvram_size		= 3,    //#0x40,
+		.nvram_offset	= 0x20,
+		.nvram_size		= 0x40,
 	},
 };
 
