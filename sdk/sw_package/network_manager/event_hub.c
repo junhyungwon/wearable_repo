@@ -65,8 +65,11 @@ static int send_msg(int cmd, int param1, int param2)
 		if ((app_cfg->wlan_vid == RTL_8821A_VID) && 
 			(app_cfg->wlan_pid == RTL_8821A_PID))
 		{
+			/* AP 모드 사용 시 5GHz 대역이 사용가능 함을 알려주기 위해서 */
 			msg.wlan_5G_enable = 1;		
 		}
+		/* RF Receive Signal Strength (0 ~ 100%)*/
+		msg.wlan_rssi = param2;
 	}
 	
 	return Msg_Send(ievt->qid, (void *)&msg, sizeof(to_netmgr_main_msg_t));
@@ -310,7 +313,7 @@ int netmgr_event_hub_rssi_status(int type, int ste)
 	app_thr_obj *tObj = &ievt->sObj;
 	
 	pthread_mutex_lock(&ievt->lock);
-	event_send(tObj, APP_KEY_RIGHT, type, 0);
+	event_send(tObj, APP_KEY_RIGHT, type, ste);
 	pthread_mutex_unlock(&ievt->lock);
 	
 	return 0;
