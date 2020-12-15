@@ -877,7 +877,8 @@ static int _sw_update(const char *disk)
         app_cfg->ste.b.busy = 0;
 		return EFAIL;
 	}
-	app_cfg->ste.b.busy = 0;
+	/* firmware update 시 종료키 이벤트를 막기 위해서 위치를 변경함 */
+	//app_cfg->ste.b.busy = 0;
 	
 	//# unpack fw file and type check, release/debug and update full or binary only
 	// pFile = /mmc/xxxxxx.dat
@@ -890,10 +891,10 @@ static int _sw_update(const char *disk)
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
 	}
-
+	app_cfg->ste.b.busy = 0;
+	
 	//# buzz: update
 	app_buzz_ctrl(50, 3);		
-	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
@@ -908,10 +909,10 @@ fw_exit:
 	    sprintf(cmd, "rm -rf %s", pFile);
 	    system(cmd);
     }
-
+	
 	sync();
 	app_msleep(500);		//# wait for safe	
-
+	
 	return ret;
 }
 

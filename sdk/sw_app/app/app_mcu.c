@@ -228,12 +228,16 @@ static void *THR_micom(void *prm)
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
 				if (key_type == PSW_EVT_LONG) 
 				{
-					snprintf(log, sizeof(log), "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
-					app_log_write(MSG_LOG_SHUTDOWN, log);
-					dprintf("%s\n", log);
-					//# add rupy
-					ctrl_sys_shutdown();
-					exit = 1;
+					if (!app_cfg->ste.b.busy) {
+						snprintf(log, sizeof(log), "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
+						app_log_write(MSG_LOG_SHUTDOWN, log);
+						dprintf("%s\n", log);
+						//# add rupy
+						ctrl_sys_shutdown();
+						exit = 1;
+					} else {
+						dprintf("skip power switch event!!!\n");
+					}
 				} else {
 #if defined(NEXXONE) || defined(NEXX360W)
 					#if SYS_CONFIG_VOIP 
