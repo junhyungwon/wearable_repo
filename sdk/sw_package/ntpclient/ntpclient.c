@@ -463,7 +463,7 @@ static void setup_receive(int usd, unsigned int interface, short port)
 		fprintf(stderr,"could not bind to udp port %d\n",port);
 		exit(1);
 	}
-
+/*
     struct ifreq ifr ;
 	memset(&ifr, 0, sizeof(ifr)) ;
 	snprintf(ifr.ifr_name, sizeof(ifr.ifr_name),"eth0") ;
@@ -472,7 +472,7 @@ static void setup_receive(int usd, unsigned int interface, short port)
 	{
 		perror("bind to eth0");
 	}
-	 
+*/	 
 
 	/* listen(usd,3); this isn't TCP; thanks Alexander! */
 }

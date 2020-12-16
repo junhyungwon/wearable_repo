@@ -396,7 +396,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 
-    ret = app_cfg->ste.b.cradle_eth_run;
+    ret = app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run;
     if(!ret) {
         set_time_zone() ;  
         return FALSE  ;
@@ -405,7 +405,7 @@ static int time_sync(void)
     if(check_ipaddress(app_set->time_info.time_server))
 	{
 		strncpy(timesrv_addr, app_set->time_info.time_server, strlen(app_set->time_info.time_server));
-//	    printf("ipv4 time_server:%s\n", app_set->time_info.time_server);
+	    printf("ipv4 time_server:%s\n", app_set->time_info.time_server);
 	}
 	else
 	{
@@ -415,7 +415,7 @@ static int time_sync(void)
 		    perror("gethostbyname:");
             return FALSE;
         }
-//	    printf("time_server:%s\n", app_set->time_info.time_server);
+	    printf("time_server:%s\n", app_set->time_info.time_server);
 		strncpy(timesrv_addr, inet_ntoa(*((struct in_addr *)hp->h_addr_list[0])), strlen(inet_ntoa(*((struct in_addr *)hp->h_addr_list[0]))));
     }
 
@@ -491,12 +491,16 @@ static void *THR_tsync(void *prm)
         if (cmd == APP_CMD_STOP)  {
             break;
         }
-        
-		if(app_cfg->ste.b.cradle_eth_ready) {
+		if(app_cfg->ste.b.cradle_eth_ready || app_cfg->ste.b.usbnet_run) {
             if (itsync->tsync_status == TIMESYNC_READY)
+			{ 
                 retval = time_sync() ;
-        } else
+			}
+        } 
+		if(!app_cfg->ste.b.cradle_eth_ready && !app_cfg->ste.b.usbnet_ready)
+		{
             itsync->tsync_status = TIMESYNC_READY ;
+		}
 
         if(retval) {
             itsync->tsync_status = TIMESYNC_DONE ;
