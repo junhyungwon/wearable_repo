@@ -388,8 +388,6 @@ VideoOpenFileSource
 
  uSecsToDelay = 100;     // 5ms
  uSecsToDelayMax = 50000;
-// uSecsToDelay = 10000;     // 5ms
-// uSecsToDelayMax = 160000;
  srcType = 0;
 
 
@@ -628,7 +626,6 @@ int WaitVideoStart( int vType,int sleep_unit )
 	while(1)
 	{
 		av_data.serial = -1;
-        printf("GetAVData  calll 11111111 field value = %d\n",cmd[AV_GET_MPEG4_SERIAL]) ;
 		GetAVData(vType, cmd[AV_GET_MPEG4_SERIAL], -1, &av_data );
 
 		if( (int)av_data.serial < 0 )
@@ -648,7 +645,7 @@ int WaitVideoStart( int vType,int sleep_unit )
 			break;
 		}
 		cnt++;
-		if( cnt > 100 )
+		if( cnt > 2000 )
 			break;
 	} 
 
@@ -684,7 +681,6 @@ int VideoOpenFileSource::readFromFile()
 		av_data.serial = -1;
 		GetAVData(fInput.channel, AV_OP_GET_MJPEG_SERIAL, -1, &av_data);
 
-//printf("av_data.serial = %d\n",av_data.serial) ;
 		if (av_data.serial <= SerialLock)
 			return 0;
 		if( (int)av_data.serial<0 )
@@ -694,8 +690,6 @@ int VideoOpenFileSource::readFromFile()
 			return 0;
 //          continue ;
 		}
-        
-//printf("wis-streamer readFromeFile AV_OP_LOCK_MJPEG ...........................\n") ;        	
 
 		ret = GetAVData(fInput.channel, AV_OP_LOCK_MJPEG, av_data.serial, &av_data );
 		if (ret == RET_SUCCESS) {
@@ -725,7 +719,6 @@ int VideoOpenFileSource::readFromFile()
 #endif
 
 			SerialLock = av_data.serial;
-			//printf("av_data.serial = %d\n", av_data.serial);
 			GetAVData(fInput.channel, AV_OP_UNLOCK_MJPEG, SerialLock, NULL);
 			
 			// Note the timestamp and size:
@@ -774,7 +767,8 @@ int VideoOpenFileSource::readFromFile()
 			if (GetAVData(fInput.channel, cmd[AV_LOCK_MP4_VOL], -1, &vol_data) != RET_SUCCESS)
 			{
 				printf("Error on Get Vol data\n");
-				return -1;
+//				return -1;
+				return 0;
 			}
 			memcpy(fTo + offset, vol_data.ptr, vol_data.size);
 #if ENABLE_WRITE_RAW_DATE 
@@ -817,8 +811,8 @@ int VideoOpenFileSource::readFromFile()
  				int serial_now;
  				serial_now = GetVideoSerial(fInput.videoType);
  				IscheckKey = 0;
-//                printf("serial now = %d, SerialBook = %d\n",serial_now, SerialBook);
- 				if( (serial_now - SerialBook) > 0 )
+                printf("serial now = %d, SerialBook = %d\n",serial_now, SerialBook);
+				if( (serial_now - SerialBook) > 0 )
  				{
                     printf("GetAVData  calll 90909090 field value = %d\n",cmd[AV_UNLOCK_MP4]) ;
  					GetAVData(fInput.channel, cmd[AV_UNLOCK_MP4], SerialBook, &av_data);
