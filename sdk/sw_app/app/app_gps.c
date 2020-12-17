@@ -180,6 +180,7 @@ static void *THR_gps_main(void *prm)
 	int exit=0, cmd;
 	int meta_timer = CNT_FITTMETA;
 	int first = 0;
+	int poll_done=0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -195,7 +196,8 @@ static void *THR_gps_main(void *prm)
 			break;
 		}
 		
-		while (1)
+		poll_done = 0;
+		while (!poll_done)
 		{
 			app_cfg->wd_flags |= WD_DEV;
 			
@@ -203,9 +205,9 @@ static void *THR_gps_main(void *prm)
 			if (cmd == APP_CMD_STOP) {
 				app_cfg->wd_flags &= ~WD_DEV; //# for watchdog disable..
 				__gps_send_cmd(GNSS_CMD_GPS_STOP);
-				break;
-			} 
-			else {
+				first = 0; poll_done = 1; cmd = APP_CMD_NONE;
+				continue;
+			} else if (cmd != APP_CMD_NONE) {
 				if (!first) {
 					__gps_send_cmd(GNSS_CMD_GPS_START);
 					first = 1;
@@ -363,10 +365,8 @@ static void *THR_gps_recv_msg(void *prm)
 		
 		case GNSS_CMD_GPS_POLL_DATA:
 			memset(&igps->r_data, 0, sizeof(gnss_shm_data_t));
-			
 			/* GPS ?„ë¡œ?¸ìŠ¤?ì„œ shared ë©”ëª¨ë¦¬ì— ?€?¥í•œ ?°ì´?°ë? ê°€?¸ì˜¨??*/
 			memcpy((char *)&igps->r_data, (char *)igps->sbuf, sizeof(gnss_shm_data_t));
-
 			//GPS LED State
 			if (app_cfg->ste.b.gps) {
 				(igps->r_data.gps_fixed == 0) ? app_leds_gps_ctrl(LED_GPS_FAIL) : app_leds_gps_ctrl(LED_GPS_ON);

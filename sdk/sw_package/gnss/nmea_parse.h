@@ -80,12 +80,10 @@ typedef int bool;
 #define INTERNAL_SET(n)						((gps_mask_t)(1llu<<(SET_HIGH_BIT+(n))))
 #define RAW_IS  							INTERNAL_SET(1) 	/* raw pseudoranges available */
 #define USED_IS 							INTERNAL_SET(2) 	/* sat-used count available */
-#define DRIVER_IS							INTERNAL_SET(3) 	/* driver type identified */
 #define CLEAR_IS							INTERNAL_SET(4) 	/* starts a reporting cycle */
 #define REPORT_IS							INTERNAL_SET(5) 	/* ends a reporting cycle */
 #define NODATA_IS							INTERNAL_SET(6) 	/* no data read from fd */
 #define NTPTIME_IS							INTERNAL_SET(7) 	/* precision time is available */
-#define GOODTIME_IS							INTERNAL_SET(11) 	/* time good even if no pos fix */
 
 //----------------------------------------------------------------------------------------------
 #define DD(s)   							((int)((s)[0]-'0')*10+(int)((s)[1]-'0'))
