@@ -32,9 +32,6 @@
 -----------------------------------------------------------------------------*/
 #define GPS_PROC_LENGTH			1000 /*  nmea ?°ì´????1000ê°?76 *1000 = 760KB ê°€ ?„ìš”??*/
 
-#define GPS_DISABLED			0
-#define	GPS_ENABLED				1
-
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -132,13 +129,29 @@ static void gps_dev_exit(int fd)
 	}
 }
 
+static void gps_clear_rmc_data(void)
+{
+	iproc->w_data.gps_fixed = 0;
+	iproc->w_data.speed 	= 0;
+	iproc->w_data.lat   	= 0;
+	iproc->w_data.lot   	= 0;
+	iproc->w_data.dir   	= 0;
+	iproc->w_data.gtm.tm_year  	= 0;
+	iproc->w_data.gtm.tm_mon  	= 0;
+	iproc->w_data.gtm.tm_mday  	= 0;
+	iproc->w_data.gtm.tm_hour  	= 0;
+	iproc->w_data.gtm.tm_min  	= 0;
+	iproc->w_data.gtm.tm_sec  	= 0;
+	iproc->w_data.subsec    	= 0;
+}
+
 static void gps_set_rmc_data(int isEnable)
 {
 	pthread_mutex_lock(&iproc->lock);
-
-	if(isEnable) {
+	
+	iproc->w_data.gps_fixed = isEnable;
+	if (isEnable) {
 		/* NMEA DATA copy */
-		iproc->w_data.gps_fixed = session->gpsdata.status;
 		iproc->w_data.speed     = session->gpsdata.fix.speed;
 		iproc->w_data.lat     	= session->gpsdata.fix.latitude;
 		iproc->w_data.lot     	= session->gpsdata.fix.longitude;
@@ -158,11 +171,7 @@ static void gps_set_rmc_data(int isEnable)
 				iproc->w_data.gtm.tm_hour, iproc->w_data.gtm.tm_min, iproc->w_data.gtm.tm_sec,
 				iproc->w_data.speed, iproc->w_data.lat, iproc->w_data.lot);
 		#endif	
-	} else {
-		// GPS is not stable... 
-		iproc->w_data.gps_fixed = 0;
-	}
-
+	} 
 	pthread_mutex_unlock(&iproc->lock);
 }
 
@@ -209,13 +218,9 @@ static void *THR_gps_poll(void *prm)
 			}
 			
 			changed = app_nmea_parse_get_data();
-			if (changed == ERROR_SET) {
-				/* ERROR?? */
-				gps_set_rmc_data(GPS_DISABLED);
-				continue;
-			} else if (changed == NODATA_IS) {
-				/* not yet GPRMC data receive!! ignore */
+			if ((changed == ERROR_SET) || (changed == NODATA_IS)) {
 				delay_msecs(100);
+				//dprintf("GPS on serial is offline!!!\n");
 				continue;
 			} 
 			
@@ -229,9 +234,9 @@ static void *THR_gps_poll(void *prm)
 				((changed & SPEED_SET) != 0))
 			
 			{
-				gps_set_rmc_data(GPS_ENABLED);
-			}
-				
+				gps_set_rmc_data(session->gpsdata.status);
+			} 
+			
 			delay_msecs(20);
 		} /* while (poll_done == 0) */
 			
@@ -280,10 +285,9 @@ int app_gps_proc_init(void)
 * @brief    gnss request gps data
 * @section  [desc]
 *****************************************************************************/
-void app_gps_data_request()
+void app_gps_data_request(void)
 {
 	pthread_mutex_lock(&iproc->lock);
- 	/* shared memory¿¡ ÀúÀå ÈÄ ¸Þ¼¼Áö Àü´Þ */
 	memcpy((char *)app_cfg->shmbuf, (char *)&iproc->w_data, sizeof(gnss_shm_data_t));
 	send_msg(GNSS_CMD_GPS_POLL_DATA);
 	pthread_mutex_unlock(&iproc->lock);
@@ -295,6 +299,9 @@ void app_gps_data_request()
 *****************************************************************************/
 int app_gps_proc_start(void)
 {
+	/* data memory clear */
+	memset((void *)app_cfg->shmbuf, 0, sizeof(gnss_shm_data_t));
+	gps_clear_rmc_data();
 	event_send(&iproc->mObj, APP_CMD_START, 0, 0);
 	return 0;
 }
@@ -306,9 +313,7 @@ int app_gps_proc_start(void)
 int app_gps_proc_stop(void)
 {
 	event_send(&iproc->mObj, APP_CMD_STOP, 0, 0);
-	
 	tcflush(app_cfg->gps_fd, TCIFLUSH); //# input flush.
-	
 	return 0;
 }
 

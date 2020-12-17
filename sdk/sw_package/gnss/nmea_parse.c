@@ -311,7 +311,6 @@ static const char *__packetdump(char *scbuf, size_t scbuflen, char *binbuf, size
 			printable = false;
 			break;	/* no need to keep iterating */
 		}
-    
 	if (printable)
 		return binbuf;
     else
@@ -837,6 +836,10 @@ static void gps_packet_reset(struct gps_lexer_t *lexer)
     lexer->state = GROUND_STATE;
     lexer->inbuflen = 0;
     lexer->inbufptr = lexer->inbuffer;
+	
+	/* clear in/out buffer */
+	memset(lexer->inbuffer, 0, sizeof(lexer->inbuffer));
+	memset(lexer->outbuffer, 0, sizeof(lexer->outbuffer));
 }
 
 static void gps_lexer_init(struct gps_lexer_t *lexer)
@@ -1567,6 +1570,7 @@ ssize_t nmea_packet_get(int fd, struct gps_lexer_t *lexer)
 		#if 0
 		{
 			char scratchbuf[MAX_PACKET_LENGTH*4+1];
+			/* remaining packet buffer dump */
 			dprintf("Read %zd chars to buffer offset %zd (total %zd): %s\n",
 				recvd, lexer->inbuflen, lexer->inbuflen + recvd,
 				__packetdump(scratchbuf, sizeof(scratchbuf),
@@ -1632,8 +1636,6 @@ void app_nmea_parse_init(void)
 	session->gpsdata.set = 0;
 	
 	gps_zero_satellites(&session->gpsdata);
-	gps_packet_reset(&session->lexer);
-	
     gps_lexer_init(&session->lexer);
     gps_clear_fix(&session->gpsdata.fix);
     session->gpsdata.status = STATUS_NO_FIX;
