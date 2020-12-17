@@ -23,6 +23,7 @@
 #define UPDATE 0 
 #define SEARCH 1
 #define SYSMNG 2
+#define LOGINCHECK 3
 
 
 #define SUPPORT_LANG "en"
