@@ -150,6 +150,11 @@ int main(int argc, char *argv[])
 	if( strstr(pQuery, "action=update")){
 		nAction = UPDATE;
 	}
+	else if( strstr(pQuery, "action=logincheck")){
+		nAction = LOGINCHECK;
+		printf("OK");
+		return 0;
+	}
 	else if( strstr(pQuery, "action=search")){
 		nAction = SEARCH;
 	}
@@ -185,6 +190,8 @@ int main(int argc, char *argv[])
 	}
 	else if(nAction == SEARCH){
 		ret = do_search(pContents);
+	}
+	else if(nAction == LOGINCHECK){
 	}
 	else if(nAction == UPDATE){
 		ret = do_update(pContents);
