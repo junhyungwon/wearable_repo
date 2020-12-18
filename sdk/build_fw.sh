@@ -1,10 +1,17 @@
 #!/bin/bash
 
-#FW_PREFIX="NEXX360B"
-#FW_PREFIX="NEXX360W"
-FW_PREFIX="NEXXONE"
-
 VERSION_TXT_FILE="fw_version.txt"
+
+function fmenu()
+{
+ echo "=========================================="
+ echo "           NEXX Device MODEL List         "
+ echo "=========================================="
+ echo "1. NEXX360 Basic                          "
+ echo "2. NEXX360 Wireless                       "
+ echo "3. NEXX ONE                               "
+ echo "=========================================="
+}
 
 function _parsing_fw_ver ()
 {
@@ -18,13 +25,13 @@ function _parsing_fw_ver ()
 
 function _compile_ubifs()
 {
- echo	
+ echo
  echo "------------------------------------------"
  echo      Compile "$fw_name" ubifs...
- echo "------------------------------------------"	
+ echo "------------------------------------------"
 
  echo
- echo "Making UBIFS ..."	
+ echo "Making UBIFS ..."
  make -s ubifs
  cd bin
  md5sum rfs_fit.ubifs > rfs_fit.ubifs.md5
@@ -43,7 +50,7 @@ CTAG	$5
 EOM
 
 echo
-echo Write to $VERSION_TXT_FILE: "$FW_PREFIX"_$2.$3.$4$5-$1 
+echo Write to $VERSION_TXT_FILE: "$FW_PREFIX"_$2.$3.$4$5-$1
 echo
 }
 
@@ -69,10 +76,41 @@ else
 	fi
 fi
 
+while true
+do
+	echo " "
+	fmenu
+	echo " "
+	echo -n "원하시는 모델을 선택해 주세요.(default 2): "
+	read fnum
+	case "$fnum" in
+		"2" )
+			echo " "
+			echo "select NEXX360 Wireless "
+			FW_PREFIX="NEXX360W"
+			break;;
+		"3" )
+			echo " "
+			echo "select NEXX ONE "
+			FW_PREFIX="NEXXONE"
+			break;;
+		"1" )
+			echo " "
+			echo "select NEXX360 Basic "
+			FW_PREFIX="NEXX360B"
+			break;;
+		* )
+			echo " "
+			echo "select NEXX360 Wireless "
+			FW_PREFIX="NEXX360W"
+			break;;
+	esac
+done
+
 # version parsing and naming...
 _parsing_fw_ver
-#ver_name="$ver1.$ver2.$ver3$ver4" 
-ver_name="$ver1.$ver2.$ver3" 
+#ver_name="$ver1.$ver2.$ver3$ver4"
+ver_name="$ver1.$ver2.$ver3"
 fw_name=""$FW_PREFIX"_"$ver_name"_full.dat"
 
 # factory distribute package
@@ -121,10 +159,10 @@ mv "$factory_fw_name" ../.
 
 
 
-# mass production package 
+# mass production package
 echo
 echo "Mass production package file"
-echo 
+echo
 
 if [ "$FW_PREFIX" == "NEXXONE" ]
 then
