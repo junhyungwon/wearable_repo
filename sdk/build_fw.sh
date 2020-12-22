@@ -81,7 +81,7 @@ do
 	echo " "
 	fmenu
 	echo " "
-	echo -n "원하시는 모델을 선택해 주세요.(default 2): "
+	echo -n "Please select Model Name..(default 2): "
 	read fnum
 	case "$fnum" in
 		"2" )

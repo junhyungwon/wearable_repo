@@ -132,7 +132,7 @@ int ctrl_enc_multislice()
 * @brief    set video framerate
 * @section  [desc]
 *****************************************************************************/
-int ctrl_vid_framerate(int ch, int framerate) // framerate FPS_30 0, FPS_15 1, FPS 5 2
+int ctrl_vid_framerate(int ch, int framerate)
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
@@ -157,12 +157,11 @@ int ctrl_vid_bitrate(int ch, int bitrate)
     int br;
 
     app_set->ch[ch].quality = bitrate;
-	br = bitrate ;
 	// resol 480P 0 720P 1 1080P 2
-    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
-
+//    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
+    app_cfg->ich[ch].br = bitrate;
     params.targetBitRate = app_cfg->ich[ch].br*1000 ;
-
+    
     Venc_setDynamicParam(ch, 0, &params, VENC_BITRATE);
 
     return SOK ;
@@ -235,7 +234,9 @@ int ctrl_vid_resolution(int resol_idx)
     }
 	
     app_log_write(MSG_LOG_WRITE, buf);
+	
     app_cfg->ste.b.nokey = 0;
+	printf("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
 
     return SOK ;
 }
@@ -250,7 +251,7 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
 	params.frameRate = fps ;
-	params.targetBitRate = ((bitrate * fps)/DEFAULT_FPS)*1000;
+	params.targetBitRate = bitrate*1000;
 	params.intraFrameInterval = gop ;
 	app_set->ch[ch].framerate = fps;
 	app_set->ch[ch].quality = bitrate;

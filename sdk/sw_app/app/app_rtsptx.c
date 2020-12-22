@@ -197,6 +197,8 @@ int app_rtsptx_stop(void)
 int app_rtsptx_stop_start()
 {
     FILE *fd = NULL;
+	char rtsp_user[32] = {0} ;
+	char rtsp_passwd[32] = {0} ;
     char rtsp_cmd[MAX_CHAR_64] = {0, } ;
 
      if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
@@ -215,13 +217,34 @@ int app_rtsptx_stop_start()
 
 	if(app_set->account_info.ON_OFF)
 	{	
+		if(app_set->account_info.enctype)
+        {
+			decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32) ;
+            decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
+
+//	        sprintf(rtsp_cmd, "%s %d \"%s\" \"%s\" %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
+	        sprintf(rtsp_cmd, "%s %d %s %s %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
+		}
+		else
+		{
+	        sprintf(rtsp_cmd, "%s %d %s %s %d %d&",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE, app_set->account_info.enctype ) ;
+
+		}
+	}
+	else
+	{
+	    sprintf(rtsp_cmd, "%s %d %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, SND_PCM_SRATE) ;
+	}
+/*
+	if(app_set->account_info.ON_OFF)
+	{	
 	    sprintf(rtsp_cmd, "%s %d %s %s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE ) ;
 	}
 	else
 	{
 	    sprintf(rtsp_cmd, "%s %d %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, SND_PCM_SRATE) ;
     }
-
+*/
     fd = popen(rtsp_cmd, "r");
     if (fd == NULL) {
         return -1;
