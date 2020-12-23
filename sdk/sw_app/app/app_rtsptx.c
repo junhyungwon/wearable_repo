@@ -91,18 +91,6 @@ int app_rtsptx_start(void)
 	char rtsp_user[32] = {0} ;
 	char rtsp_passwd[32] = {0} ;
 
-//    int retcnt = 0 ;
-
-//    while(1)
-//	{
-//		app_msleep(10) ;
-//		retcnt += 1 ;
-//		if(app_cfg->vid_count == MODEL_CH_NUM || retcnt == 500)
-//		{
-//		    break ;
-//		}
-//	}
-
 #ifdef RTSP_ENCRYPT
     char *rname ;
     srand(time(NULL)) ;
@@ -213,6 +201,7 @@ int app_rtsptx_stop_start()
         return -1;
 
     pclose(fd);
+/*
     sleep(1);
 
 	if(app_set->account_info.ON_OFF)
@@ -235,21 +224,12 @@ int app_rtsptx_stop_start()
 	{
 	    sprintf(rtsp_cmd, "%s %d %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, SND_PCM_SRATE) ;
 	}
-/*
-	if(app_set->account_info.ON_OFF)
-	{	
-	    sprintf(rtsp_cmd, "%s %d %s %s %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, SND_PCM_SRATE ) ;
-	}
-	else
-	{
-	    sprintf(rtsp_cmd, "%s %d %d &",RTSP_STREAMER, app_set->net_info.rtsp_port, SND_PCM_SRATE) ;
-    }
-*/
+
     fd = popen(rtsp_cmd, "r");
     if (fd == NULL) {
         return -1;
     }
     pclose(fd);
-
+*/
     return 0 ;
 }

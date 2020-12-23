@@ -238,7 +238,8 @@ int main(int argc, char *argv[])
 	int updateCount = 0;
 	
 	// printf("---- %s ----\n", inet_ntoa(2) );
-	if(argc < 2)
+//	if(argc < 2)
+	if(argc < 4)
 	{
 		printf("P2PTunnelServer UID ShowDebug P2PServer!\n");
 		printf("P2PServer 0 = Formal Server, 1 = Test Server\n");
@@ -263,13 +264,14 @@ int main(int argc, char *argv[])
 	signal(SIGCHLD, clean_up_passd);
 	printf("PasswordServer PID=%d\n", gPassPID);
 #endif
-	
+/*	
 	if(argc >=3)
 		P2PTunnel_ShowDebug(atoi(argv[2]));	
 
 	if(argc >=4)
 		p2pServer = atoi(argv[3]);
-	
+*/
+
 	char *s = "My arg Pass to call back function";
 	P2PTunnelServer_GetStatus(TunnelStatusCB, (void *)s);
 	// printf("Tunnel Version[%X]\n", P2PTunnel_Version());
@@ -292,10 +294,9 @@ int main(int argc, char *argv[])
 	userProfile.userPort_1 = ONVIF_MAPPING_REMOTE_PORT;
 	userProfile.userPort_2 = RTSP_MAPPING_REMOTE_PORT;
 	userProfile.userPort_3 = 8401;
-	strcpy(userProfile.FirmwareVersion,"1.2.3.4");
-	strcpy(userProfile.ModalName,"abcd");
-	strcpy(userProfile.DeviceName,"qwer");
-	strcpy(userProfile.FirmwareVersion,"1.2.3.4");
+	strcpy(userProfile.FirmwareVersion,argv[3]);
+	strcpy(userProfile.ModalName,argv[2]);
+	strcpy(userProfile.DeviceName,argv[4]);
 	for (j = 0 ; j <sizeof(userProfile.Reserved) ; j++)
 	{
 	    userProfile.Reserved[j] = j;

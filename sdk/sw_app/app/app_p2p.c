@@ -100,7 +100,11 @@ int app_p2p_start(void)
 			{
 				if (res >= 1 && res <= 5000) 
 				{
-					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s &", P2P_SERVER, app_set->sys_info.uid);
+#if defined(NEXXONE)
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXONE", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#else
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#endif
 					printf("%s!\n", p2p_cmd) ;
 					system(p2p_cmd) ;
 					return 0;
@@ -133,7 +137,7 @@ static void *THR_p2p(void *prm)
 {
     app_thr_obj *tObj = &ip2p->p2pObj;
     int exit = 0, ret = 0, cmd;
-	
+
 	dprintf("enter...\n");
     tObj->active = 1;
 	
@@ -149,7 +153,7 @@ static void *THR_p2p(void *prm)
         if (!ret) {
             app_p2p_start();
         } 
-		
+
         app_msleep(CHECK_MSEC);
     }
 
