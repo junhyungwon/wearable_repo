@@ -365,6 +365,21 @@ static void __netmgr_dev_ip_status_handler(void)
 	}
 }
 
+static void __netmgr_rssi_status_handler(int level)
+{
+	int device = inetmgr->device;
+	char msg[128]={0,};
+	
+	if (level < 0) {
+		snprintf(msg, sizeof(msg), "Wi-Fi RSSI is minus, connection closed...");
+		dprintf("%s\n", msg);
+		app_log_write(MSG_LOG_WRITE, msg);					
+	} else {					
+		//dprintf("current rssi level is (%d/100)\n", level);	
+		/* level 값을 확인 후 추가적인 작업이 필요할 경우를 위해서....*/
+	}		
+}
+
 static void __netmgr_start(void)
 {
 	app_thr_obj *tObj = &inetmgr->sObj;
@@ -514,7 +529,8 @@ static void *THR_netmgr_recv_msg(void *prm)
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
-			//dprintf("rssi level = %d\n", inetmgr->rssi_level);
+			/* if rssi == -1, then connection should closed... */
+			__netmgr_rssi_status_handler(inetmgr->rssi_level);
 			break;
 			
 		case NETMGR_CMD_PROG_EXIT:

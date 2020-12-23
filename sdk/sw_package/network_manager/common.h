@@ -80,4 +80,8 @@ int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid);
 int netmgr_wlan_load_kermod(int vid, int pid);
 int netmgr_wlan_wait_mod_active(void);
 
+int utf8_unescape(const char *dst, char *src);
+int hextobin(unsigned char c);
+int hexstr2bin(const char *hex, unsigned char *buf, size_t len);
+
 #endif /* __DEV_GPIO_H__ */
