@@ -57,6 +57,10 @@ char menu_get_cmd(void);
 
 void __time_trace(int param);
 unsigned int util_gen_crc32(unsigned int crc, const void *buf, unsigned int size);
+void util_hexdump(char *p, int n);
+int hextobin(unsigned char c);
+int utf8_unescape(const char *dst, char *src);
+
 int uinput_init(void);
 int uinput_emit_key(int type, int code, int val);
 int uinput_exit(void);
