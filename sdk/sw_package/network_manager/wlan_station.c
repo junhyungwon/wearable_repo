@@ -27,9 +27,13 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define MAX_ESSID_LEN			32
+#define CMD_IWLIST				"/sbin/iwlist wlan0 scanning"
+#define CMD_IWLIST_BUFSZ		512
+
 #define TIME_CLI_CYCLE			200		//# msec
-#define TIME_RSSI_SEND    		10000   //# 1sec
-#define CNT_RSSI_SEND        	(TIME_RSSI_SEND/TIME_CLI_CYCLE)
+#define TIME_CONN_STAT_SEND    	5000   //# 10sec
+#define CNT_CONN_STAT_SEND      (TIME_CONN_STAT_SEND/TIME_CLI_CYCLE)
 
 #define TIME_CLI_ACTIVE    		10000   //# 10sec
 #define CNT_CLI_ACTIVE        	(TIME_CLI_ACTIVE/TIME_CLI_CYCLE)
@@ -40,7 +44,10 @@
 #define TIME_CLI_DHCP    		10000   //# 10sec
 #define CNT_CLI_DHCP        	(TIME_CLI_DHCP/TIME_CLI_CYCLE)
 
-#define IWGETID_CMD				"/sbin/iwgetid wlan0 -r"
+#define TIME_CLI_GET_ESSID 		5000   //# 1sec
+#define CNT_CLI_GET_ESSID       (TIME_CLI_GET_ESSID/TIME_CLI_CYCLE)
+
+#define IWGETID_CMD				"/sbin/iwgetid wlan0" //#"/sbin/iwgetid wlan0 -r"
 #define IWCONFIG_CMD			"/sbin/iwconfig wlan0"
 
 #define SUPPLICANT_CONFIG		"/etc/wpa_supplicant.conf"
@@ -48,13 +55,15 @@
 
 #define __STAGE_CLI_MOD_LOAD		(0x0)
 #define __STAGE_CLI_MOD_WAIT		(0x1)
-#define __STAGE_CLI_AUTH_START		(0x2)
-#define __STAGE_CLI_WAIT_AUTH		(0x3)
-#define __STAGE_CLI_SET_IP			(0x4)
-#define __STAGE_CLI_WAIT_DHCP		(0x5)
-#define __STAGE_CLI_DHCP_VERIFY		(0x6)
-#define __STAGE_CLI_DHCP_NOTY		(0x7)
-#define __STAGE_CLI_GET_RSSI_LEVEL	(0x8)
+#define __STAGE_CLI_CHECK_ESSID		(0x2)
+#define __STAGE_CLI_AUTH_START		(0x3)
+#define __STAGE_CLI_WAIT_AUTH		(0x4)
+#define __STAGE_CLI_SET_IP			(0x5)
+#define __STAGE_CLI_WAIT_DHCP		(0x6)
+#define __STAGE_CLI_DHCP_VERIFY		(0x7)
+#define __STAGE_CLI_DHCP_NOTY		(0x8)
+#define __STAGE_CLI_CONNECT_STATS	(0x9)
+#define __STAGE_CLI_ERROR_STOP		(0xA)
 
 typedef struct {
 	app_thr_obj cObj; /* wlan client mode */
@@ -85,7 +94,6 @@ static netmgr_wlan_cli_t *i_cli = &t_cli;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-
 static int __cli_get_phrase(const char *ssid, const char *password, char *output)
 {
 	FILE *f = NULL;
@@ -314,7 +322,8 @@ static int __cli_start(const char *ssid, const char *password, int encrypt)
 
 static void __cli_stop(const char *ifce)
 {
-	FILE *f;
+	FILE *f = NULL;
+	char buf[256]={0,};
 	int pid = 0;
 
 	/* kill wpa_supplicant daemon */
@@ -326,9 +335,28 @@ static void __cli_stop(const char *ifce)
 
 	    kill(pid, SIGKILL);
 	    waitpid(pid, NULL, 0);
-	} else
-		eprintf("couldn't stop wpa_supplicant\n");
-
+	} 
+	else {
+		/* wpa_supplicant가 비정상적으로 실행되면 pid 파일이 생성 안됨 
+		 * 직접 kill 해야 함.
+		 */
+		pid_t num_pid;
+		
+		f = popen("/bin/pidof wpa_supplicant", "r");
+		if (f != NULL) {
+			/* */
+			fgets(buf, sizeof(buf), f);
+			num_pid = strtoul(buf, NULL, 10);
+			pclose(f);
+			if (num_pid > 0) {
+				//dprintf("wpa_supplicant pid is %d\n", num_pid);
+				kill(num_pid, SIGKILL);
+    			waitpid(num_pid, NULL, 0);
+			} else
+				eprintf("couldn't stop wpa_supplicant\n"); 
+		}
+	}
+	
 	/* stop udhcpc */
 	if (netmgr_udhcpc_is_run(ifce))
 		netmgr_udhcpc_stop(ifce);
@@ -344,7 +372,7 @@ static int __cli_get_auth_status(const char *essid)
 {
 	FILE *f = NULL;
 	char lbuf[128 + 1];
-	char id[32 + 1];
+	char id[MAX_ESSID_LEN + 1];
 
 	int r = 0, i;
 
@@ -361,40 +389,34 @@ static int __cli_get_auth_status(const char *essid)
 	memset(lbuf, 0, sizeof(lbuf));
 	while (fgets(lbuf, sizeof(lbuf), f) != NULL)
 	{
+		char data_buf[128]={0,};
 		char *s;
 
-		//printf("iwgetid -> %s\n", lbuf);
-		#if 0
 		/* find ESSID: */
-		if ((s = strstr(lbuf, "ESSID:")) != NULL)
+		if ((s = strstr(lbuf, "ESSID:\"")) != NULL)
 		{
 			s += 7; /* --> ESSID:" */
-			for (i = 0; i < strlen(essid); i++) {
-				/* To fine next token: '"' */
-				id[i] = s[i];
-			}
-			id[i] = '\0';
-			
-			dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
-			if (strcmp(id, essid) == 0) {
-				/* connection ok */
-				r = 1;
-				break;
+			if (utf8_unescape(data_buf, s) < 0) {
+				id[0] = '\0';
+			} 
+			else {
+				for (i = 0; i < MAX_ESSID_LEN; i++) {
+					/* To fine next token: '"' */
+					if (data_buf[i] == '\0' || data_buf[i] == '"') {
+						break;
+					}
+					id[i] = data_buf[i];
+				}
+				id[i] = '\0';
+				
+				//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
+				if (strcmp(id, essid) == 0) {
+					/* connection ok */
+					r = 1;
+					break;
+				}
 			}
 		}
-		#else
-		/* last char is '\n' */
-		for (i = 0; i < strlen(lbuf)-1; i++) {
-			id[i] = lbuf[i];
-		}
-		id[i] = '\0';
-		//printf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
-		if (strcmp(id, essid) == 0) {
-			/* connection ok */
-			r = 1;
-			break;
-		} 
-		#endif
 	}
 
 	pclose(f);
@@ -404,16 +426,16 @@ static int __cli_get_auth_status(const char *essid)
 /*
  * 연결된 AP의 신호 레벨을 확인할 때 필요함.
  */
-static int __cli_get_link_status(char *essid, int *level)
+static int __cli_get_link_status(const char *essid, int *level)
 {
 	FILE *f = NULL;
 
 	char lbuf[256 + 1];
 	char tbuf[4];
-	char id[32 + 1];
+	char id[MAX_ESSID_LEN + 1];
 
 	int valid = 0;
-
+	
 	/*
 	 * wlan0     IEEE 802.11bg  ESSID:"UD-DMZ"  Nickname:"<WIFI@REALTEK>"
      *     Mode:Managed  Frequency:2.437 GHz  Access Point: 08:10:75:08:B9:74
@@ -433,21 +455,26 @@ static int __cli_get_link_status(char *essid, int *level)
 
 	while (fgets(lbuf, sizeof(lbuf), f) != NULL)
 	{
+		char data_buf[128]={0,};
 		char *s;
 		int i, val;
 
 		/* find ESSID: */
-		if ((s = strstr(lbuf, "ESSID:")) != NULL) {
+		if ((s = strstr(lbuf, "ESSID:\"")) != NULL) {
 			s += 7; /* --> ESSID:" */
-			for (i = 0; i < sizeof(lbuf) - 1; i++) {
-				/* To fine next token: '"' */
-				if (s[i] == '\0' || s[i] == '"') {
-					break;
+			if (utf8_unescape(data_buf, s) < 0) {
+				id[0] = '\0';	
+			} else {
+				for (i = 0; i < MAX_ESSID_LEN; i++) {
+					/* To fine next token: '"' */
+					if (data_buf[i] == '\0' || data_buf[i] == '"') {
+						break;
+					}
+					id[i] = data_buf[i];
 				}
-				id[i] = s[i];
+				id[i] = '\0';
 			}
-			id[i] = '\0';
-
+			//dprintf("founded essid %s\n", data_buf);
 			if (strcmp(id, essid) == 0) {
 				/* connection ok */
 				valid = 1;
@@ -477,15 +504,193 @@ static int __cli_get_link_status(char *essid, int *level)
 
 			pclose(f);
 			*level = val;
-			
 			//dprintf("%s rssi level = %d\n", essid, *level);
-			return 1;
+			return 0;
 		}
 	}
-
+	
+	if (!valid) {
+		/* invalid level is -1 */
+		*level = -1;
+		dprintf("ESSID-->%s connection closed!\n", essid);
+	}
 	pclose(f);
+	return -1;
+}
 
-	return 0;
+static char listbuf[CMD_IWLIST_BUFSZ];
+static int __cli_check_essid(const char *src_essid)
+{
+	FILE *f;
+	
+	/* max 32bytes */
+	char ssid[MAX_ESSID_LEN+1]={0,};
+	char mac[18];
+		
+	int wep, inCell, valid;
+	int master, index, level, i;
+
+	/* wlan0     Scan completed :
+     *           Cell 01 - Address: 00:25:A6:B5:6F:D3
+     *              ESSID:"ollehWiFi"
+     *              Protocol:IEEE 802.11gn
+     *              Mode:Master
+     *              Frequency:2.412 GHz (Channel 1)
+     *              Encryption key:on
+     *              Bit Rates:144 Mb/s
+     *              Extra:wpa_ie=dd1a0050f20101000050f20202000050f2040050f20201000050f201
+     *              IE: WPA Version 1
+     *                  Group Cipher : TKIP
+     *                  Pairwise Ciphers (2) : CCMP TKIP
+     *                  Authentication Suites (1) : 802.1x
+     *              Extra:rsn_ie=30180100000fac020200000fac04000fac020100000fac010000
+     *              IE: IEEE 802.11i/WPA2 Version 1
+     *                  Group Cipher : TKIP
+     *                  Pairwise Ciphers (2) : CCMP TKIP
+     *                  Authentication Suites (1) : 802.1x
+     *              Quality=0/100  Signal level=56/100
+     *               Extra:fm=0003
+	 */
+	/* initialize parser helper */
+	mac[0] = '\0'; ssid[0] = '\0';
+
+	index = 0; 	inCell = 0; valid = 0;
+	level = -1; wep = -1; master = -1;
+
+	memset(listbuf, 0, sizeof(listbuf));
+
+	f = popen(CMD_IWLIST, "r");
+	if (f != NULL)
+	{
+		while (fgets(listbuf, sizeof(listbuf), f) != NULL)
+		{
+			char *start;
+			int length;
+			
+			length = strlen(listbuf);
+			/* find wlan0 */
+			if ((start = strstr(listbuf, cli_dev_name)) != NULL) {
+				valid = 1;
+				continue; /* goto next line for parser */
+			}
+
+			if (!valid) {
+				/* if don't display --> wlan0 Scan completed */
+				continue; /* goto next line */
+			}
+
+			/* find Cell strings */
+			if ((start = strstr(listbuf, "Cell ")) != NULL) {
+				//# find Address: xx:xx:xx:xx:xx:xx
+			    int rem;
+			    rem  = (listbuf + length) - (start + strlen("Cell XX - Address: xx:xx:xx:xx:xx:xx"));
+			    if (rem < 0) {
+					//# invalid input
+					eprintf("can't find Cell XX line.!!\n");
+					continue; /* goto next line */
+				}
+
+				strncpy(mac, start + strlen("Cell XX - Address: "), 17);
+				mac[17] = '\0';
+				inCell = 1;
+			} 
+			else if (inCell && (start = strstr(listbuf, "ESSID:\""))) 
+			{
+				char data_buf[128]={0,};
+				
+				start += 7; /* --> ESSID:" copy to max 32 */
+				if (utf8_unescape(data_buf, start) < 0) {
+					ssid[0] = '\0';	
+				} 
+				else {
+					//dprintf("converted essid %s\n", data_buf);
+					for (i = 0; i < MAX_ESSID_LEN; i++) 
+					{
+						if ((data_buf[i] == '\0') || (data_buf[i] == '"')) {
+							/* null character */
+							break;
+						}
+						/* fill ssid */
+						ssid[i] = data_buf[i];
+					}
+					ssid[i] = '\0';
+				}
+			} else if (inCell && (start = strstr(listbuf, "Mode:"))) {
+				if (strstr(start, "Master")) {
+					master = 1;
+				} else {
+					master = 0; /* ad-hoc or station */
+				}
+			} else if (inCell && (start = strstr(listbuf, "Signal level="))) {
+				char numstr[4];
+				//# want to see if there are at least two more places
+				if ((listbuf + length) - (start + 3) < 1) {
+					eprintf("iwlist gave bad signal level line\n");
+					continue; /* goto next line */
+				}
+
+				start += 13; /* Signal level= */
+				for (i = 0; i < 3; i++) {
+					if (start[i] == '/')
+						numstr[i] = '\0';
+					else
+						numstr[i] = start[i];
+				}
+
+				numstr[3] = '\0';
+				level = atoi(numstr); /* ex) 56/100 */
+				if (level > 100)
+					/* invalid */
+					level = -1;
+
+			} else if (inCell && (start = strstr(listbuf, "Encryption key:"))) {
+				start += 15; /* Encryption key: */
+				if (strstr(start, "on")) {
+					wep = 1;
+				} else {
+					wep = 0;
+				}
+			}
+
+			if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0')
+			{
+				#if 0
+				printf("founded cell[%d] mac address %s\n", (index+1), mac);
+				printf("founded cell[%d] ssid %s\n", (index+1), ssid);
+				printf("founded cell[%d] signal level %d\n", (index+1), level);
+				printf("founded cell[%d] mode %s\n", (index+1), master?"master":"station");
+				printf("founded cell[%d] encrypt wpa %s\n", (index+1), wep?"on":"open");
+				#endif
+				
+				//printf("founded cell[%d] ssid %s(src = %s)\n", (index+1), ssid, src_essid);
+				if (strcmp(ssid, src_essid) == 0) {
+					/* founded valid essid return 0 */
+					pclose(f);
+					return 0;
+				}
+				/* save current incell information */
+				//piwscan_list->info[index].level = level;
+				//piwscan_list->info[index].en_key = wep;
+				//strcpy(piwscan_list->info[index].ssid, ssid);
+				//index++;
+
+				/* initialize parser helper */
+				memset(listbuf, 0, sizeof(listbuf));
+				mac[0] = '\0'; ssid[0] = '\0';
+
+				inCell = 0; level = -1; wep = -1; master = -1;
+				
+			} /* if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0') */
+		} /* while (fgets(listBuf, sizeof(listBuf), f) != NULL) */
+	} 
+	else {
+		dprintf("could not open %s\n", CMD_IWLIST);
+	}
+	
+	if (f != NULL)
+		pclose(f);
+
+	return -1;
 }
 
 /*****************************************************************************
@@ -504,15 +709,14 @@ static void *THR_wlan_cli_main(void *prm)
 	while (!exit)
 	{
 		int cmd = 0;
-		
 		cmd = event_wait(tObj);
-		if (cmd == APP_CMD_EXIT)
-			break;
-		
-		else if (cmd == APP_CMD_START) {
-			quit = 0; /* for loop */ 
+		if (cmd == APP_CMD_EXIT) {
+			exit = 1;
+			continue;
 		}
 		
+		/* for loop */ 
+		quit = 0;
 		while (!quit)
 		{
 			int st, res;
@@ -528,11 +732,20 @@ static void *THR_wlan_cli_main(void *prm)
 			
 			st = i_cli->stage;
 			switch (st) {
-			case __STAGE_CLI_GET_RSSI_LEVEL:
-				if (i_cli->cli_timer >= CNT_RSSI_SEND) {
-					__cli_get_link_status(i_cli->ssid, &i_cli->level);
-					netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, i_cli->level);
+			case __STAGE_CLI_CONNECT_STATS:
+				if (i_cli->cli_timer >= CNT_CONN_STAT_SEND) {
 					i_cli->cli_timer = 0;
+					__cli_get_link_status(i_cli->ssid, &i_cli->level);
+					if (i_cli->level < 0) {
+						/* AP와 연결이 끊어진 상태를 나타냄 (AP가 다시 활성화 될 때까지 waiting... */
+						__cli_stop(cli_dev_name);
+						/* For LED RED */
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						i_cli->stage = __STAGE_CLI_CHECK_ESSID;
+					} else {
+						netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, i_cli->level);
+						i_cli->stage = __STAGE_CLI_CONNECT_STATS;
+					}
 				} else 
 					i_cli->cli_timer++;
 				break;
@@ -540,20 +753,18 @@ static void *THR_wlan_cli_main(void *prm)
 			case __STAGE_CLI_DHCP_NOTY:
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_WIFI);
-				i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
+				i_cli->stage = __STAGE_CLI_CONNECT_STATS;
 				break;
 			
 			case __STAGE_CLI_DHCP_VERIFY:
 				res = netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
 				if (res < 0) {
-					i_cli->stage = __STAGE_CLI_SET_IP;
-					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
+					i_cli->stage = __STAGE_CLI_ERROR_STOP;
 				} else {
 					if (!strcmp(i_cli->ip, "0.0.0.0")) {
 						/* dhcp로부터 IP 할당이 안된 경우 */
 						dprintf("couln't get dhcp ip address!\n");
-						i_cli->stage = __STAGE_CLI_SET_IP;
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
+						i_cli->stage = __STAGE_CLI_ERROR_STOP;
 					} else {
 						dprintf("wlan client ip is %s\n", i_cli->ip);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
@@ -568,13 +779,11 @@ static void *THR_wlan_cli_main(void *prm)
 					i_cli->cli_timer = 0;
 					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
 				} else {
+					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
+					i_cli->cli_timer++;
 					if (i_cli->cli_timer >= CNT_CLI_DHCP) {
-						/* error */
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
-						quit = 1; /* loop exit */
-					} else {
-						i_cli->cli_timer++;
-					}
+						i_cli->stage = __STAGE_CLI_ERROR_STOP;
+					} 
 				}
 				break;
 					
@@ -582,7 +791,7 @@ static void *THR_wlan_cli_main(void *prm)
 				if (i_cli->dhcp == 0) { //# set static ip
 					netmgr_set_ip_static(cli_dev_name, i_cli->ip, i_cli->mask, i_cli->gw);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
-					i_cli->stage = __STAGE_CLI_GET_RSSI_LEVEL;
+					i_cli->stage = __STAGE_CLI_CONNECT_STATS;
 				} else {
 					netmgr_set_ip_dhcp(cli_dev_name);
 					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
@@ -598,10 +807,7 @@ static void *THR_wlan_cli_main(void *prm)
 					i_cli->stage = __STAGE_CLI_WAIT_AUTH;
 					i_cli->cli_timer++;
 					if (i_cli->cli_timer >= CNT_CLI_AUTH) {
-						/* fail */
-						/* error 상태를 mainapp에 알려줘야 함 */
-						quit = 1;
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						i_cli->stage = __STAGE_CLI_ERROR_STOP;
 					}
 				}
 				break;
@@ -613,18 +819,33 @@ static void *THR_wlan_cli_main(void *prm)
 				i_cli->cli_timer = 0;
 				break;
 			
+			case __STAGE_CLI_CHECK_ESSID:
+				i_cli->cli_timer++;
+				if (i_cli->cli_timer >= CNT_CLI_GET_ESSID) {
+					res = __cli_check_essid(i_cli->ssid);
+					if (res >= 0)
+						i_cli->stage = __STAGE_CLI_AUTH_START;
+					else
+						i_cli->stage = __STAGE_CLI_CHECK_ESSID;
+					i_cli->cli_timer = 0;	
+				}
+				break;
+				
 			case __STAGE_CLI_MOD_WAIT:
 				if (netmgr_wlan_wait_mod_active() == 0) {
+					res = netmgr_net_link_detect(cli_dev_name);
+					if (!res) {
+						/* Link up */
+						netmgr_net_link_up(cli_dev_name);
+						sleep(1); /* wait 1sec */
+					}
 					i_cli->cli_timer = 0;
-					i_cli->stage = __STAGE_CLI_AUTH_START;
+					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 				} else {
 					/* timeout 계산 */
 					i_cli->cli_timer++;
 					if (i_cli->cli_timer >= CNT_CLI_ACTIVE) {
-						/* fail */
-						/* error 상태를 mainapp에 알려줘야 함 */
-						quit = 1;
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						i_cli->stage = __STAGE_CLI_ERROR_STOP;
 					} 
 				}
 				break;
@@ -632,7 +853,15 @@ static void *THR_wlan_cli_main(void *prm)
 			case __STAGE_CLI_MOD_LOAD:
 				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
 				i_cli->stage = __STAGE_CLI_MOD_WAIT;
-				break;		
+				break;
+			
+			case __STAGE_CLI_ERROR_STOP:
+				/* fail */
+				/* error 상태를 mainapp에 알려줘야 함 */
+				quit = 1;
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+				__cli_stop(cli_dev_name);
+				break;
 			}
 			
 			delay_msecs(TIME_CLI_CYCLE);
@@ -742,184 +971,3 @@ int netmgr_wlan_cli_stop(void)
 	
 	return 0;
 }
-
-//#----------------------- obsolete ------------------------------------------
-#if 0
-#define CMD_IWLIST				"/sbin/iwlist wlan0 scanning"
-#define LINE_BUF_SIZE			512
-
-static int app_iscan_run(void)
-{
-	FILE *f;
-
-	char mac[18];
-	char ssid[LINE_BUF_SIZE];
-
-	int wep, inCell, valid;
-	int master, index, level;
-	int r = 0;
-	int i;
-
-	app_shm->shm_buf[0] = 0;	//# scan flag reset
-
-	/* wlan0     Scan completed :
-     *           Cell 01 - Address: 00:25:A6:B5:6F:D3
-     *              ESSID:"ollehWiFi"
-     *              Protocol:IEEE 802.11gn
-     *              Mode:Master
-     *              Frequency:2.412 GHz (Channel 1)
-     *              Encryption key:on
-     *              Bit Rates:144 Mb/s
-     *              Extra:wpa_ie=dd1a0050f20101000050f20202000050f2040050f20201000050f201
-     *              IE: WPA Version 1
-     *                  Group Cipher : TKIP
-     *                  Pairwise Ciphers (2) : CCMP TKIP
-     *                  Authentication Suites (1) : 802.1x
-     *              Extra:rsn_ie=30180100000fac020200000fac04000fac020100000fac010000
-     *              IE: IEEE 802.11i/WPA2 Version 1
-     *                  Group Cipher : TKIP
-     *                  Pairwise Ciphers (2) : CCMP TKIP
-     *                  Authentication Suites (1) : 802.1x
-     *              Quality=0/100  Signal level=56/100
-     *               Extra:fm=0003
-	 */
-	/* initialize parser helper */
-	mac[0] = '\0'; ssid[0] = '\0';
-
-	index = 0; 	inCell = 0; valid = 0;
-	level = -1; wep = -1; master = -1;
-
-	memset(lbuf, 0, sizeof(lbuf));
-
-	f = popen(CMD_IWLIST, "r");
-	if (f != NULL)
-	{
-		while (fgets(lbuf, sizeof(lbuf), f) != NULL)
-		{
-			char *start;
-			int length;
-
-			length = strlen(lbuf);
-			/* find wlan0 */
-			if ((start = strstr(lbuf, NET_IF_NAME)) != NULL) {
-				valid = 1;
-				continue; /* goto next line for parser */
-			}
-
-			if (!valid) {
-				/* if don't display --> wlan0 Scan completed */
-				continue; /* goto next line */
-			}
-
-			/* find Cell strings */
-			if ((start = strstr(lbuf, "Cell ")) != NULL) {
-				//# find Address: xx:xx:xx:xx:xx:xx
-			    int rem;
-
-			    rem  = (lbuf + length) - (start + strlen("Cell XX - Address: xx:xx:xx:xx:xx:xx"));
-			    if (rem < 0) {
-					//# invalid input
-					eprintf("can't find Cell XX line.!!\n");
-					continue; /* goto next line */
-				}
-
-				strncpy(mac, start + strlen("Cell XX - Address: "), 17);
-				mac[17] = '\0';
-				inCell = 1;
-
-			} else if (inCell && (start = strstr(lbuf, "ESSID:\""))) {
-				start += 7; /* --> ESSID:" */
-				for (i = 0; i < (LINE_BUF_SIZE - 1); i++) {
-					if (start[i] == '\0' || start[i] == '"') {
-						break;
-					}
-					/* fill ssid */
-					ssid[i] = start[i];
-				}
-				ssid[i] = '\0';
-
-				/* check ascii */
-				if (ssid[0] == '\0' || ssid[0] > '\x7F') {
-//					printf("founded cell ssid %s no ascii!!\n", ssid);
-					/* invalid (no ascii) */
-					ssid[0] = '\0';
-				}
-			} else if (inCell && (start = strstr(lbuf, "Mode:"))) {
-				if (strstr(start, "Master")) {
-					master = 1;
-				} else {
-					master = 0; /* ad-hoc or station */
-				}
-
-			} else if (inCell && (start = strstr(lbuf, "Signal level="))) {
-				char numstr[4];
-
-				//# want to see if there are at least two more places
-				if ((lbuf + length) - (start + 3) < 1) {
-					eprintf("iwlist gave bad signal level line\n");
-					continue; /* goto next line */
-				}
-
-				start += 13; /* Signal level= */
-				for (i = 0; i < 3; i++) {
-					if (start[i] == '/')
-						numstr[i] = '\0';
-					else
-						numstr[i] = start[i];
-				}
-
-				numstr[3] = '\0';
-				level = atoi(numstr); /* ex) 56/100 */
-				if (level > 100)
-					/* invalid */
-					level = -1;
-
-			} else if (inCell && (start = strstr(lbuf, "Encryption key:"))) {
-				start += 15; /* Encryption key: */
-				if (strstr(start, "on")) {
-					wep = 1;
-				} else {
-					wep = 0;
-				}
-			}
-
-			if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0')
-			{
-				#if 0
-				printf("founded cell[%d] mac address %s\n", (index+1), mac);
-				printf("founded cell[%d] ssid %s\n", (index+1), ssid);
-				printf("founded cell[%d] signal level %d\n", (index+1), level);
-				printf("founded cell[%d] mode %s\n", (index+1), master?"master":"station");
-				printf("founded cell[%d] encrypt wpa %s\n", (index+1), wep?"on":"open");
-				#endif
-
-				/* save current incell information */
-				piwscan_list->info[index].level = level;
-				piwscan_list->info[index].en_key = wep;
-				strcpy(piwscan_list->info[index].ssid, ssid);
-				index++;
-
-				/* initialize parser helper */
-				memset(lbuf, 0, sizeof(lbuf));
-				mac[0] = '\0'; ssid[0] = '\0';
-
-				inCell = 0; level = -1;
-				wep = -1; master = -1;
-			} /* if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0') */
-
-		} /* while (fgets(lbuf, sizeof(lbuf), f) != NULL) */
-
-		/* scan done!! */
-		piwscan_list->num = index;
-
-	} else {
-		dprintf("could not open %s\n", CMD_IWLIST);
-		r = -1;
-	}
-
-	app_shm->shm_buf[0] = WIFI_REQUEST_DONE;	//# set flag
-	printf(" [app_iscan] %s done...\n", __func__);
-	return r;
-}
-#endif
-//#-----------------------------------------------------------------------------------------------------------------
