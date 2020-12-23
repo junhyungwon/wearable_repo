@@ -420,7 +420,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
     char enc_Passwd[32] = {0, } ;
     char MacAddr[12]  ;
     char compbuff[32];
-
 	int ich=0, channels = 0;
 	
 	channels = MODEL_CH_NUM+1;
@@ -701,33 +700,46 @@ static void cfg_param_check_nexx(app_set_t *pset)
  
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
-
-    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
-    {
-        if(pset->account_info.enctype) // AES type 
-        { 
-            encrypt_aes(RTSP_DEFAULT_ID, enc_ID, 32) ;
-            strncpy(pset->account_info.rtsp_userid, enc_ID, strlen(enc_ID)) ;
-        }
-		else
+	
+	/* AES를 사용하는 경우 문자열에 따라서 0xff 또는 0x00으로 시작하는 경우가 있다. */
+	/* 따라서 4byte 크기를 비교함 */
+	{
+		int *tmp_buf;
+		int res;
+		
+		tmp_buf	= &pset->account_info.rtsp_userid[0];
+		res     = *tmp_buf;
+	//    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
+		if ((res == (int)CHAR_INVALID) || (res == 0))
 		{
-            strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
+			if (pset->account_info.enctype) // AES type 
+			{ 
+				encrypt_aes(RTSP_DEFAULT_ID, enc_ID, 32) ;
+				strncpy(pset->account_info.rtsp_userid, enc_ID, strlen(enc_ID)) ;
+			}
+			else
+			{
+				strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
+			}
 		}
-    }    
-
-    if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
-    {
-        if(pset->account_info.enctype) // AES type 
-        { 
-            encrypt_aes(RTSP_DEFAULT_PW, enc_Passwd, 32) ;
-            strncpy(pset->account_info.rtsp_passwd, enc_Passwd, strlen(enc_Passwd)) ;
-        } 
-		else
+		
+		tmp_buf	= &pset->account_info.rtsp_passwd[0];
+		res     = *tmp_buf;
+	//	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
+		if ((res == (int)CHAR_INVALID) || (res == 0))
 		{
-            strcpy(pset->account_info.rtsp_passwd, RTSP_DEFAULT_PW) ;
+			if(pset->account_info.enctype) // AES type 
+			{ 
+				encrypt_aes(RTSP_DEFAULT_PW, enc_Passwd, 32) ;
+				strncpy(pset->account_info.rtsp_passwd, enc_Passwd, strlen(enc_Passwd)) ;
+			} 
+			else
+			{
+				strcpy(pset->account_info.rtsp_passwd, RTSP_DEFAULT_PW) ;
+			}
 		}
-    }
-
+	}
+	
 	// webuser
     if((int)pset->account_info.webuser.id[0] == CHAR_INVALID || (int)pset->account_info.webuser.id[0] == 0){
 		strcpy(pset->account_info.webuser.id, WEB_DEFAULT_ID);

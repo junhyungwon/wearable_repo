@@ -352,6 +352,8 @@ int decrypt_aes(const char *src, char *dst, int length)
 
     InvCipher();
     
+	//printf("Dec:invcipertext");
+	//util_hexdump(out, length); 
     //strncpy(dst, out, length) ;
     memcpy(dst, out, length);
 

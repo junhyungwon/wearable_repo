@@ -332,6 +332,88 @@ void util_hexdump(char *p, int n)
 	}
 }
 
+/* Convert C from hexadecimal character to integer.  */
+int hextobin(unsigned char c)
+{
+	switch (c)
+	{
+		default: return c - '0';
+		case 'a': case 'A': return 10;
+		case 'b': case 'B': return 11;
+		case 'c': case 'C': return 12;
+		case 'd': case 'D': return 13;
+		case 'e': case 'E': return 14;
+		case 'f': case 'F': return 15;
+	}
+}
+
+/* referenced from echo.c */
+int utf8_unescape(const char *dst, char *src)
+{
+	char *data_buf = dst;
+	char const *s = src;
+	unsigned char c;
+	int xfred = 0;
+	
+	if ((data_buf == NULL) || (s == NULL)) {
+		return -1;
+	}
+	
+	while ((c = *s++))
+	{
+		if (c == '\\' && *s)
+		{
+			switch (c = *s++) 
+			{
+				case 'x':
+				{
+					unsigned char ch = *s;
+					
+					if (!isxdigit(ch)) {
+						/* not an escape */
+						data_buf[xfred] = '\\';
+						xfred++;
+					}
+					s++;
+					c = hextobin(ch);
+					ch = *s;
+					if (isxdigit(ch)) {
+						s++;
+						c = c * 16 + hextobin(ch);
+					} 
+					
+				}
+				break;
+				case '0':
+					c = 0;
+					if (!('0' <= *s && *s <= '7'))
+						break;
+					c = *s++;
+				/* Fall through.  */
+				case '1': case '2': case '3':
+				case '4': case '5': case '6': case '7':
+					c -= '0';
+					if ('0' <= *s && *s <= '7')
+						c = c * 8 + (*s++ - '0');
+					if ('0' <= *s && *s <= '7')
+						c = c * 8 + (*s++ - '0');
+				break;
+				case '\\': 
+				break;
+				default:  
+					//putchar('\\');
+					data_buf[xfred] = '\\';
+					xfred++; 
+				break;
+			}
+		}
+		//putchar (c);
+		data_buf[xfred] = c;
+		xfred++;	
+	}
+}
+
+//# ------------------------------------------------------------------------------------------------------------------
 /*
  * linux usermode input. (virtual Key)
  */
