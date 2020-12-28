@@ -278,12 +278,12 @@ int set_time_by_ntp()
 		strncpy(server_addr, inet_ntoa(*((struct in_addr *)hp->h_addr_list[0])), strlen(inet_ntoa(*((struct in_addr *)hp->h_addr_list[0]))));
 	}
 
-    sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /tmp/ntp.txt",server_addr) ;
+    sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
     system(buff) ;
 
     while(1)
     {
-        if(access("/tmp/ntp.txt", F_OK) != 0)
+        if(access("/mmc/ntp.txt", F_OK) != 0)
         {
             if(cnt == 5)
                 break ;
@@ -296,7 +296,7 @@ int set_time_by_ntp()
 		printf("check npt.txt --- %d\n", cnt);
         OSA_waitMsecs(1000);
     }
-    if((fd = fopen("/tmp/ntp.txt", "r")) != NULL)
+    if((fd = fopen("/mmc/ntp.txt", "r")) != NULL)
     {
         int readsize = fread(buff, sizeof buff, 1,  fd) ;
 
@@ -304,12 +304,12 @@ int set_time_by_ntp()
         {
             retval = TRUE ;
             fclose(fd) ;
-            remove("/tmp/ntp.txt") ;
+            remove("/mmc/ntp.txt") ;
         }
         else
         {
             fclose(fd) ;
-            remove("/tmp/ntp.txt") ; // vacant file..
+            remove("/mmc/ntp.txt") ; // vacant file..
         }
     }
 
@@ -339,14 +339,14 @@ int gettime_from_ntp(char *server_addr)
 			// FALSE로 리턴하면 시간이 2000년 설정됨.
 			return TRUE;
 		}
-        sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /tmp/ntp.txt",server_addr) ;
+        sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
 
         system(buff) ;
     }
 
     while(1)
     {
-        if(access("/tmp/ntp.txt", F_OK) != 0)
+        if(access("/mmc/ntp.txt", F_OK) != 0)
         {
             if(cnt == 5)
                 break ;
@@ -358,7 +358,7 @@ int gettime_from_ntp(char *server_addr)
         }
         OSA_waitMsecs(100);
     }
-    if((fd = fopen("/tmp/ntp.txt", "r")) != NULL)
+    if((fd = fopen("/mmc/ntp.txt", "r")) != NULL)
     {
         readsize = fread(buffer, 754, 1,  fd) ;
 		if(readsize > 0)
@@ -370,18 +370,18 @@ int gettime_from_ntp(char *server_addr)
                     retval = TRUE ;
 				}
                 fclose(fd) ;
-                remove("/tmp/ntp.txt") ;
+                remove("/mmc/ntp.txt") ;
             }
             else
             {
                 fclose(fd) ;
-                remove("/tmp/ntp.txt") ;
+                remove("/mmc/ntp.txt") ;
             }
 		}
 		else
 		{
             fclose(fd) ;
-            remove("/tmp/ntp.txt") ;
+            remove("/mmc/ntp.txt") ;
 		}
     }
 
