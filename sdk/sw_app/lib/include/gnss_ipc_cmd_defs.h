@@ -49,6 +49,7 @@ extern "C" {
 #define GNSS_SHM_SIZE					(4096)
 #define GNSS_FIFO_SIZE					(2048)
 
+#define GNSS_MAX_GNSS_CH				(30)	/* max satellite number */				
 /*
  * @brief ipc message buffer type
  */
@@ -67,6 +68,12 @@ typedef struct {
 	int status;              //# GPS ?íƒœ ?„ë‹¬. (-2 error, -1 off line 0 on-line)
 } to_gnss_main_msg_t;
 
+typedef struct {
+    int ss;
+    int used;
+//    int PRN; /* pseudo random noise */
+} sate_data_t;
+
 /* ((double)8*5) + ((int)4*8) = 72 byte. */
 typedef struct {
 	struct tm gtm;			//# GPS time 
@@ -78,7 +85,9 @@ typedef struct {
 	double lat; 			//# latitude : (+)N, (-)S
 	double lot; 			//# longitude: (+)E, (-) W
 	double dir; 			//# forward direction (degree)
-
+	
+	sate_data_t sateview[GNSS_MAX_GNSS_CH];
+	
 } gnss_shm_data_t;
 
 #if defined (__cplusplus)

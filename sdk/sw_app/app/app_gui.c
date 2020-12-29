@@ -44,6 +44,9 @@
 /* 50000 / 1500 = 33 */
 #define WD_LOG_CNT				(WD_LOG_TIMEOUT / UI_WATCHDOG_TIME)
 
+#define UI_VOIP_REG_TIME		(60000) //1min
+#define CNT_VOIP_REG_CHECK		(UI_VOIP_REG_TIME/UI_CYCLE_TIME)
+
 #define WD_ENC_NAME				"ENCODER "
 #define WD_TMR_NAME				"TIMMER "
 #define WD_DEV_NAME				"GPS "
@@ -72,6 +75,7 @@ typedef struct {
 #endif
     int start;
 	int tmr_cnt;
+	int voip_tmr;
 } app_gui_t;
 
 static app_gui_t t_gui;
@@ -185,7 +189,7 @@ static void gui_tvo_exit(void)
 static void *THR_gui(void *prm)
 {
 	app_thr_obj *tObj = &igui->uObj;
-	int cmd, exit=0;
+	int cmd, res, exit=0;
 	int wd_cycle = 0, wd_detect=0, pre_wd = 0;
 	char wd_name[MAX_CHAR_64], msg[MAX_CHAR_128];
 
@@ -281,7 +285,7 @@ static void *THR_gui(void *prm)
 			/* 유선망은 제외 USB 네트워크 */
 			if (app_cfg->ste.b.usbnet_run) 
 			{
-				int network = 0, res;
+				int network = 0;
 				int is_public = 0;
 				
 				res = app_netmgr_get_usbnet_dev();
@@ -295,17 +299,31 @@ static void *THR_gui(void *prm)
 
 				/* voip register start */
 				app_cfg->ste.b.voip = 1;
+				igui->voip_tmr = 0;
 				if (app_set->voip.private_network_only) is_public = 0; //# For External LTE Modem
 				else  									is_public = 1;
 				app_voip_start(network, is_public, app_set->voip.port, app_set->voip.userid, app_set->voip.ipaddr, 
 						app_set->voip.passwd, app_set->voip.peerid, VOIP_STUN_PATH);	
 			}
 		} else {
-			/* voip unregister */
-			if (app_cfg->ste.b.usbnet_run == 0) {
-				/* 네트워크 연결이 해제되면 재등록을 해야 함 */
-				app_cfg->ste.b.voip = 0;
-				app_voip_stop();
+			/* checking voip registration */
+			res = app_voip_is_registered();
+			if (res == 0) 
+			{
+				/* PBX not registered.. retry */
+				if (igui->voip_tmr >= CNT_VOIP_REG_CHECK) {
+					dprintf("voip timer expired for registeration.\n");
+					igui->voip_tmr = 0; app_cfg->ste.b.voip = 1;
+				} else 
+					igui->voip_tmr++;
+			} else {
+				/* voip unregister */
+				if (app_cfg->ste.b.usbnet_run == 0) {
+					/* 네트워크 연결이 해제되면 재등록을 해야 함 */
+					app_cfg->ste.b.voip = 0;
+					igui->voip_tmr = 0;
+					app_voip_stop();
+				}
 			}
 		}
 		
@@ -385,6 +403,7 @@ int app_gui_init(void)
 
 	//#--- create thread
     igui->tmr_cnt = 0;
+	igui->voip_tmr = 0;
 	tObj = &igui->uObj;
     if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create gui thread\n");

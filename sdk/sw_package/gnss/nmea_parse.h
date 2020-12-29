@@ -75,7 +75,6 @@ typedef int bool;
 #define STATUS_NO_FIX						0
 #define STATUS_FIX							1
 #define STATUS_DGPS_FIX						2
-
 //---------------------------------------------------------------------------------------------
 #define INTERNAL_SET(n)						((gps_mask_t)(1llu<<(SET_HIGH_BIT+(n))))
 #define RAW_IS  							INTERNAL_SET(1) 	/* raw pseudoranges available */

@@ -41,8 +41,6 @@ typedef struct {
 
 	int qid;
 	
-//	FIFO fifo;
-	gnss_shm_data_t r_data;
 	gnss_shm_data_t w_data;
 	pthread_mutex_t lock;
 } app_gps_proc_t;
@@ -132,6 +130,7 @@ static void gps_dev_exit(int fd)
 static void gps_clear_rmc_data(void)
 {
 	iproc->w_data.gps_fixed = 0;
+	iproc->w_data.view_num  = 0;
 	iproc->w_data.speed 	= 0;
 	iproc->w_data.lat   	= 0;
 	iproc->w_data.lot   	= 0;
@@ -145,34 +144,67 @@ static void gps_clear_rmc_data(void)
 	iproc->w_data.subsec    	= 0;
 }
 
-static void gps_set_rmc_data(int isEnable)
+static void gps_set_rmc_data(struct gps_device_t *csession)
 {
-	pthread_mutex_lock(&iproc->lock);
+	struct satellite_t *sp;
+	int enable=0;
+	int visible=0;
+	int i;
 	
-	iproc->w_data.gps_fixed = isEnable;
-	if (isEnable) {
-		/* NMEA DATA copy */
-		iproc->w_data.speed     = session->gpsdata.fix.speed;
-		iproc->w_data.lat     	= session->gpsdata.fix.latitude;
-		iproc->w_data.lot     	= session->gpsdata.fix.longitude;
-		iproc->w_data.dir     	= session->gpsdata.fix.track;
+	if (csession != NULL) 
+	{
+		pthread_mutex_lock(&iproc->lock);
 		
-		iproc->w_data.gtm.tm_year  	= session->nmea.date.tm_year; //# 1900?„ì„ ?”í•´????
-		iproc->w_data.gtm.tm_mon  	= session->nmea.date.tm_mon; //# +1???´ì•¼ 1??ë¶€???œìž‘??
-		iproc->w_data.gtm.tm_mday  	= session->nmea.date.tm_mday;
-		iproc->w_data.gtm.tm_hour  	= session->nmea.date.tm_hour;
-		iproc->w_data.gtm.tm_min  	= session->nmea.date.tm_min;
-		iproc->w_data.gtm.tm_sec  	= session->nmea.date.tm_sec;
-		iproc->w_data.subsec    	= session->nmea.subseconds.tv_nsec / 1000000L; //# nano ì´ˆë¡œ ?œì‹œ.. msë¡?ë³€ê²½í•˜ê¸??„í•´??					
+		enable  = csession->gpsdata.status;
+		visible = csession->gpsdata.satellites_visible;
+		 
+		iproc->w_data.gps_fixed = enable;
+		iproc->w_data.view_num = visible;
+		
+		/* current numberof satelite view for debug */
+		if (visible > 0) {
+			//dprintf("Total number of satellites in view = %d\n", visible);
+			for (i = 0; i < visible; i++) {
+				sp = &csession->gpsdata.skyview[i];
+				#if 0
+				if (sp->used) {
+					dprintf("[%d]th satellites SNR is = %lf(dB)\n", i, sp->ss);
+				} else {
+					dprintf("[%d]th satellites not used\n", i);
+				}
+				#endif
+				iproc->w_data.sateview[i].ss   = (int)sp->ss;
+				iproc->w_data.sateview[i].used = (int)sp->used; 
+			}
+		} else {
+			/* clear data */
+			memset(iproc->w_data.sateview, 0, sizeof(iproc->w_data.sateview));
+		}
+				
+		if (enable) {
+			/* NMEA DATA copy */
+			iproc->w_data.speed     = csession->gpsdata.fix.speed;
+			iproc->w_data.lat     	= csession->gpsdata.fix.latitude;
+			iproc->w_data.lot     	= csession->gpsdata.fix.longitude;
+			iproc->w_data.dir     	= csession->gpsdata.fix.track;
 			
-		#if 0	
-		dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
-				iproc->w_data.gtm.tm_year+1900, iproc->w_data.gtm.tm_mon+1, iproc->w_data.gtm.tm_mday,
-				iproc->w_data.gtm.tm_hour, iproc->w_data.gtm.tm_min, iproc->w_data.gtm.tm_sec,
-				iproc->w_data.speed, iproc->w_data.lat, iproc->w_data.lot);
-		#endif	
-	} 
-	pthread_mutex_unlock(&iproc->lock);
+			iproc->w_data.gtm.tm_year  	= csession->nmea.date.tm_year; //# 1900?„ì„ ?”í•´????
+			iproc->w_data.gtm.tm_mon  	= csession->nmea.date.tm_mon; //# +1???´ì•¼ 1??ë¶€???œìž‘??
+			iproc->w_data.gtm.tm_mday  	= csession->nmea.date.tm_mday;
+			iproc->w_data.gtm.tm_hour  	= csession->nmea.date.tm_hour;
+			iproc->w_data.gtm.tm_min  	= csession->nmea.date.tm_min;
+			iproc->w_data.gtm.tm_sec  	= csession->nmea.date.tm_sec;
+			iproc->w_data.subsec    	= csession->nmea.subseconds.tv_nsec / 1000000L; //# nano ì´ˆë¡œ ?œì‹œ.. msë¡?ë³€ê²½í•˜ê¸??„í•´??					
+				
+			#if 0	
+			dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
+					iproc->w_data.gtm.tm_year+1900, iproc->w_data.gtm.tm_mon+1, iproc->w_data.gtm.tm_mday,
+					iproc->w_data.gtm.tm_hour, iproc->w_data.gtm.tm_min, iproc->w_data.gtm.tm_sec,
+					iproc->w_data.speed, iproc->w_data.lat, iproc->w_data.lot);
+			#endif	
+		} 
+		pthread_mutex_unlock(&iproc->lock);
+	}
 }
 
 /*****************************************************************************
@@ -234,7 +266,7 @@ static void *THR_gps_poll(void *prm)
 				((changed & SPEED_SET) != 0))
 			
 			{
-				gps_set_rmc_data(session->gpsdata.status);
+				gps_set_rmc_data(session);
 			} 
 			
 			delay_msecs(20);
