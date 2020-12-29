@@ -707,7 +707,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		int *tmp_buf;
 		int res;
 		
-		tmp_buf	= &pset->account_info.rtsp_userid[0];
+		tmp_buf	= (int *)&pset->account_info.rtsp_userid[0];
 		res     = *tmp_buf;
 	//    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
 		if ((res == (int)CHAR_INVALID) || (res == 0))
@@ -723,7 +723,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 			}
 		}
 		
-		tmp_buf	= &pset->account_info.rtsp_passwd[0];
+		tmp_buf	= (int *)&pset->account_info.rtsp_passwd[0];
 		res     = *tmp_buf;
 	//	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
 		if ((res == (int)CHAR_INVALID) || (res == 0))

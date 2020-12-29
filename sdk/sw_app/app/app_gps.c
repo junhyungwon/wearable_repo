@@ -365,14 +365,13 @@ static void *THR_gps_recv_msg(void *prm)
 		
 		case GNSS_CMD_GPS_POLL_DATA:
 			memset(&igps->r_data, 0, sizeof(gnss_shm_data_t));
-			/* GPS ?„ë¡œ?¸ìŠ¤?ì„œ shared ë©”ëª¨ë¦¬ì— ?€?¥í•œ ?°ì´?°ë? ê°€?¸ì˜¨??*/
 			memcpy((char *)&igps->r_data, (char *)igps->sbuf, sizeof(gnss_shm_data_t));
-			//GPS LED State
+			
+			//# setup GPS LED State
 			if (app_cfg->ste.b.gps) {
 				(igps->r_data.gps_fixed == 0) ? app_leds_gps_ctrl(LED_GPS_FAIL) : app_leds_gps_ctrl(LED_GPS_ON);
 			}
 			
-			/* GPS ?œê°„?¼ë¡œ ?œìŠ¤??TIME ?™ê¸°??*/
 			/* 3D fixed */
 			if (igps->r_data.gps_fixed == 1 && sync_time)
 			{
@@ -390,6 +389,20 @@ static void *THR_gps_recv_msg(void *prm)
 					igps->r_data.gps_fixed, igps->r_data.gtm.tm_year+1900, igps->r_data.gtm.tm_mon+1, 
 					igps->r_data.gtm.tm_mday, igps->r_data.gtm.tm_hour, igps->r_data.gtm.tm_min, 
 					igps->r_data.gtm.tm_sec, igps->r_data.speed, igps->r_data.lat, igps->r_data.lot);
+			#endif
+			#if 0
+			if (igps->r_data.view_num > 0) 
+			{
+				int i;
+				dprintf("Total number of %d satellites in view!!\n", igps->r_data.view_num);
+				for (i = 0; i < igps->r_data.view_num; i++) {
+					if (igps->r_data.sateview[i].used) {
+						dprintf("[%d]th satellites SNR is = %d(dB)\n", i, igps->r_data.sateview[i].ss);
+					} else {
+						dprintf("[%d]th satellites not used\n", i);
+					}
+				}
+			}
 			#endif	
 			break;
 		

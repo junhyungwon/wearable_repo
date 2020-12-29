@@ -671,4 +671,19 @@ void app_voip_save_config(void)
 	__set_voip_play_volume(level);
 	dprintf("last sound level %d saved!\n", level);
 }
+
+/*****************************************************************************
+* @brief    
+*   - desc
+*       : PBX에 등록이 성공되었는지 확인.
+*         voip_main thread로 NOTY 전달. __call_event_handler() 가 실행됨.
+*****************************************************************************/
+int app_voip_is_registered(void)
+{
+	int res = 0;
+	
+	if (ivoip->st.call_reg)
+		res = 1; 
+	return res;	
+}
 #endif /* end of #ifdef SYS_CONFIG_VOIP */

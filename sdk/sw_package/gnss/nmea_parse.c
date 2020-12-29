@@ -2,6 +2,7 @@
  * NEXTT360 Board
  * Copyright by LF, Incoporated. All Rights Reserved.
  * based on gpsd.
+ *  refer to GPSD project
  *---------------------------------------------------------------------------*/
  /**
  * @file    nmea.c
@@ -1087,6 +1088,109 @@ static void gps_packet_parse(struct gps_lexer_t *lexer)
 }
 
 //--------------------------------- End of GPS Packet Function -------------------------------------
+/* Recommend Minimum Course Specific GPS/TRANSIT Data */
+static gps_mask_t processRMC(int count, char *field[], struct gps_device_t *session)
+{
+	/*
+     * RMC,225446.33,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E,A*68
+     * 1     225446.33    Time of fix 22:54:46 UTC
+     * 2     A            Status of Fix:
+     *                     A = Autonomous, valid;
+     *                     D = Differential, valid;
+     *                     V = invalid
+     * 3,4   4916.45,N    Latitude 49 deg. 16.45 min North
+     * 5,6   12311.12,W   Longitude 123 deg. 11.12 min West
+     * 7     000.5        Speed over ground, Knots
+     * 8     054.7        Course Made Good, True north
+     * 9     181194       Date of fix ddmmyy.  18 November 1994
+     * 10,11 020.3,E      Magnetic variation 20.3 deg East
+     * 12    A            FAA mode indicator (NMEA 2.3 and later)
+     *                     see faa_mode() for possible mode values
+     * 13    V            Nav Status (NMEA 4.1 and later)
+     *                     A=autonomous,
+     *                     D=differential,
+     *                     E=Estimated,
+     *                     M=Manual input mode
+     *                     N=not valid,
+     *                     S=Simulator,
+     *                     V = Valid
+     * *68        mandatory nmea_checksum
+     *
+     */
+    gps_mask_t mask = ONLINE_SET;
+    char status = field[2][0];
+    int newstatus;
+
+    switch (status) {
+    default:
+    case 'V':
+        /* Invalid */
+        session->gpsdata.status = STATUS_NO_FIX;
+        session->newdata.mode = MODE_NO_FIX;
+        mask |= STATUS_SET | MODE_SET;
+        break;
+    case 'D':
+        /* Differential Fix */
+        /* FALLTHROUGH */
+    case 'A':
+        /* Valid Fix */
+        /*
+         * The MTK3301, Royaltek RGM-3800, and possibly other
+         * devices deliver bogus time values when the navigation
+         * warning bit is set.
+         */
+        if ('\0' != field[1][0] &&
+            9 < count &&
+            '\0' !=  field[9][0]) {
+            if (0 == merge_hhmmss(field[1], session) &&
+                0 == merge_ddmmyy(field[9], session)) {
+                /* got a good data/time */
+                mask |= TIME_SET;
+                register_fractional_time(field[0], field[1], session);
+            }
+        }
+        /* else, no point to the time only case, no regressions with that */
+
+        if (0 == do_lat_lon(&field[3], &session->newdata)) {
+            newstatus = STATUS_FIX;
+            mask |= LATLON_SET;
+            if (MODE_2D >= session->gpsdata.fix.mode) {
+                /* we have at least a 2D fix */
+                /* might cause blinking */
+                session->newdata.mode = MODE_2D;
+                mask |= MODE_SET;
+            }
+        } else {
+            newstatus = STATUS_NO_FIX;
+            session->newdata.mode = MODE_NO_FIX;
+            mask |= MODE_SET;
+        }
+        if ('\0' != field[7][0]) {
+            session->newdata.speed = safe_atof(field[7]) * KNOTS_TO_MPS;
+            mask |= SPEED_SET;
+        }
+        if ('\0' != field[8][0]) {
+            session->newdata.track = safe_atof(field[8]);
+            mask |= TRACK_SET;
+        }
+
+        if (count >= 12) {
+            newstatus = faa_mode(field[12][0]);
+        }
+
+        if (3 < session->gpsdata.satellites_used) {
+            /* 4 sats used means 3D */
+            session->newdata.mode = MODE_3D;
+            mask |= MODE_SET;
+        } 
+		
+		/* 0 -> no fix, 1-> fix, 2-> differendial fix (not used) */
+        session->gpsdata.status = (newstatus ? 1 : 0);
+    }
+
+    return mask;
+}
+
 static gps_mask_t processGSA(int count, char *field[],
                              struct gps_device_t *session)
 {
@@ -1173,10 +1277,25 @@ static gps_mask_t processGSA(int count, char *field[],
 #undef GSA_TALKER
 }
 
+/* xxGSV -  GPS Satellites in View */
 static gps_mask_t processGSV(int count, char *field[],
                              struct gps_device_t *session)
 {
 #define GSV_TALKER      field[0][1]
+	/*
+     * GSV,2,1,08,01,40,083,46,02,17,308,41,12,07,344,39,14,22,228,45*75
+     *  1) 2           Number of sentences for full data
+     *  2) 1           Sentence 1 of 2
+     *  3) 08          Total number of satellites in view
+     *  4) 01          Satellite PRN number
+     *  5) 40          Elevation, degrees
+     *  6) 083         Azimuth, degrees
+     *  7) 46          Signal-to-noise ratio in decibels
+     * <repeat for up to 4 satellites per sentence>
+     *   )             NMEA 4.1 signalId
+     *   )             checksum
+     *
+     */
     int n, fldnum;
     int nmea_gnssid = 0;
 
@@ -1297,10 +1416,11 @@ static gps_mask_t processGSV(int count, char *field[],
     for (n = 0; n < session->gpsdata.satellites_visible; n++)
         if (session->gpsdata.skyview[n].azimuth != 0)
             goto sane;
-    
+    dprintf("xxGSV: Satellite data no good (%d of %d).\n", 
+				session->nmea.part, session->nmea.await);
 	gps_zero_satellites(&session->gpsdata);
-
     return ONLINE_SET;
+
 sane:
     session->gpsdata.skyview_time.tv_sec = 0;
     session->gpsdata.skyview_time.tv_nsec = 0;
@@ -1313,82 +1433,6 @@ sane:
 
     return SATELLITE_SET;
 #undef GSV_TALKER
-}
-
-static gps_mask_t processRMC(int count, char *field[], struct gps_device_t *session)
-{
-    gps_mask_t mask = ONLINE_SET;
-    char status = field[2][0];
-    int newstatus;
-
-    switch (status) {
-    default:
-    case 'V':
-        /* Invalid */
-        session->gpsdata.status = STATUS_NO_FIX;
-        session->newdata.mode = MODE_NO_FIX;
-        mask |= STATUS_SET | MODE_SET;
-        break;
-    case 'D':
-        /* Differential Fix */
-        /* FALLTHROUGH */
-    case 'A':
-        /* Valid Fix */
-        /*
-         * The MTK3301, Royaltek RGM-3800, and possibly other
-         * devices deliver bogus time values when the navigation
-         * warning bit is set.
-         */
-        if ('\0' != field[1][0] &&
-            9 < count &&
-            '\0' !=  field[9][0]) {
-            if (0 == merge_hhmmss(field[1], session) &&
-                0 == merge_ddmmyy(field[9], session)) {
-                /* got a good data/time */
-                mask |= TIME_SET;
-                register_fractional_time(field[0], field[1], session);
-            }
-        }
-        /* else, no point to the time only case, no regressions with that */
-
-        if (0 == do_lat_lon(&field[3], &session->newdata)) {
-            newstatus = STATUS_FIX;
-            mask |= LATLON_SET;
-            if (MODE_2D >= session->gpsdata.fix.mode) {
-                /* we have at least a 2D fix */
-                /* might cause blinking */
-                session->newdata.mode = MODE_2D;
-                mask |= MODE_SET;
-            }
-        } else {
-            newstatus = STATUS_NO_FIX;
-            session->newdata.mode = MODE_NO_FIX;
-            mask |= MODE_SET;
-        }
-        if ('\0' != field[7][0]) {
-            session->newdata.speed = safe_atof(field[7]) * KNOTS_TO_MPS;
-            mask |= SPEED_SET;
-        }
-        if ('\0' != field[8][0]) {
-            session->newdata.track = safe_atof(field[8]);
-            mask |= TRACK_SET;
-        }
-
-        if (count >= 12) {
-            newstatus = faa_mode(field[12][0]);
-        }
-
-        if (3 < session->gpsdata.satellites_used) {
-            /* 4 sats used means 3D */
-            session->newdata.mode = MODE_3D;
-            mask |= MODE_SET;
-        } 
-		
-		/* 0 -> no fix, 1-> fix, 2-> differendial fix (not used) */
-        session->gpsdata.status = (newstatus ? 1 : 0);
-    }
-
-    return mask;
 }
 
 static gps_mask_t nmea_parse(char *sentence, struct gps_device_t * session)

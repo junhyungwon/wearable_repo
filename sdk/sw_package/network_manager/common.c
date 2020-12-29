@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <poll.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -1129,5 +1130,7 @@ int utf8_unescape(const char *dst, char *src)
 		data_buf[xfred] = c;
 		xfred++;	
 	}
+	
+	return 0;
 }
 //#----------------------------------------------------------------------------------------------------------

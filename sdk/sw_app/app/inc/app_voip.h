@@ -31,5 +31,6 @@ void app_voip_stop(void);
 void app_voip_event_noty(void);
 void app_voip_set_play_volume(void);
 void app_voip_save_config(void);
+int app_voip_is_registered(void);
 
 #endif	/* __APP_VOIP_H__ */
