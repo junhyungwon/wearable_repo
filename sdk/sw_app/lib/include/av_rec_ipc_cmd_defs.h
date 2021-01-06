@@ -45,6 +45,7 @@ extern "C" {
 #define AV_CMD_REC_DONE					(0x604)
 #define AV_CMD_REC_READY				(0x605)
 #define AV_CMD_REC_FLIST				(0x606)
+#define AV_CMD_REC_ERR					(0x607)
 
 typedef struct {
 	long type;

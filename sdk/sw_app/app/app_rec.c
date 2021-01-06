@@ -107,7 +107,6 @@ static void *THR_rec_recv_msg(void *prm)
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
-	
 	//# message queue
 	irec->qid = Msg_Init(REC_MSG_KEY);
 	
@@ -124,17 +123,24 @@ static void *THR_rec_recv_msg(void *prm)
 			irec->init = 1; /* from record process */
 			dprintf("received rec ready!\n");
 			break;
+		
 		case AV_CMD_REC_EXIT:
 			exit = 1;
 			dprintf("received rec exit!\n");
 			break;
+		
+		case AV_CMD_REC_ERR:
+			dprintf("received rec error!\n");
+			irec->evt_rec = 0; /* record stop...*/
+			app_leds_rec_ctrl(LED_REC_FAIL);
+			break;
+		
 		default:
 			break;	
 		}
 	}
 	
 	Msg_Kill(irec->qid);
-	
 	aprintf("exit...\n");
 		
 	return NULL;
@@ -180,7 +186,6 @@ static void *THR_rec_send_msg(void *prm)
 	
 	tObj->active = 0;
 	irec->evt_rec = 0;
-	
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
 	aprintf("exit\n");

@@ -44,7 +44,7 @@ typedef struct {
 	int fr;  		//# frame rate..
 	unsigned int rec_min;
 	
-    int rec_first;
+	int rec_first;
     int old_min;
 	
 	int en_snd; 			//# sound enable
@@ -247,7 +247,6 @@ static int evt_file_open(stream_info_t *ifr)
 	if ((irec->old_min != ts.tm_min && minute_change))
 	{
 		irec->old_min = ts.tm_min;
-
         minute_change = 0;
 		
 		if (irec->fevt != NULL) 
@@ -271,18 +270,10 @@ static int evt_file_open(stream_info_t *ifr)
 		
 		irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
 						irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
-		if (irec->fevt == NULL) {
-			eprintf("new file open (%s)\n", filename);
+		if (irec->fevt == NULL)
 			return EFAIL;
-		}
 		
-		fprintf(stdout, "new filename %s\n", filename);
-/*
-		if(app_file_add(filename) == EFAIL) {
-			eprintf("file management error!! (%s)\n", filename);
-			return EFAIL;
-		}
-*/
+		dprintf("AVI name %s opened!\n", irec->fname);
 		return SOK;
 	}
 
@@ -302,6 +293,9 @@ static void evt_file_close(void)
 		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
 		irec->fevt = NULL;
 	}
+	sync();
+	/* will free the page cache */
+	//system("echo 1 > /proc/sys/vm/drop_caches");
 }
 
 static int evt_file_write(stream_info_t *ifr, int snd_on)
@@ -335,8 +329,8 @@ static void *THR_rec_evt(void *prm)
 	app_thr_obj *tObj = &irec->eObj;
 	int cmd, exit=0, ret=0;
 	int i, frame_num, read_idx=0;
-	int done;
 	stream_info_t *ifr;
+	char msg[256]={0,};
 	
 	aprintf("enter...\n");
 	
@@ -347,25 +341,11 @@ static void *THR_rec_evt(void *prm)
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT) {
 			break;
-		} 
-		//else if (cmd == APP_CMD_STOP || ( app_set->rec_info.overwrite==OFF && app_cfg->ste.b.disk_full)) {
-		else if (cmd == APP_CMD_STOP) {
+		} else if (cmd == APP_CMD_STOP) {
 			continue;
 		}
 		
-		#if 0
-		( app_set->rec_info.overwrite==OFF && app_cfg->ste.b.disk_full))
-		if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
-		{
-            if(sz_info.free < (1024*MB)/KB)
-			{
-                continue ;
-			}
-        }
-		#endif
-		
 		do {
-			char msg[128]={0,};
 			int print_limit = 1;
 			
 			if (irec->en_pre)
@@ -377,6 +357,7 @@ static void *THR_rec_evt(void *prm)
 				break;
 			} else {
 				if (print_limit) {
+					memset(msg, 0, sizeof(msg));
 					sprintf(msg, "can't read frame! plz check capture dev.");
 					log_write(msg);
 					eprintf("%s\n", msg);
@@ -391,27 +372,20 @@ static void *THR_rec_evt(void *prm)
         if (ifr->ch == 0  && ifr->d_type == DATA_TYPE_VIDEO && ifr->is_key) {
 		    ret = evt_file_open(&imem->ifr[read_idx]);
 			if (ret < 0) {
-				//irec->rec_err = 1;
+				send_msg(AV_CMD_REC_ERR, 0, NULL);
+				memset(msg, 0, sizeof(msg));
+				sprintf(msg, "1.Failed to open AVI (%s)!", irec->fname);
+				log_write(msg);
+				eprintf("%s\n", msg);
 				continue;
-			}
+			} 
 		}
 
-		done = 0;
-		while (!done)
+		while (1)
 		{
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
 				break;
 			}
-			
-			#if 0
-			if(_get_disk_kb_info(ifile, &sz_info) != EFAIL && app_set->rec_info.overwrite==OFF)
-		    {
-                if(sz_info.free < (1024*MB)/KB)
-			    {
-                    break ;
-			    }
-            }
-			#endif
 			
 			frame_num = get_valid_frame(read_idx);
 			if (frame_num < 10) {
@@ -425,10 +399,14 @@ static void *THR_rec_evt(void *prm)
 				if ((ifr->d_type==DATA_TYPE_VIDEO) && (ifr->ch==0) && ifr->is_key) {
 					ret = evt_file_open(ifr);
 					if (ret < 0) {
-						eprintf("couldn't open avi!\n");
-						//irec->rec_err = 1;
-						//app_cfg->ste.b.mmc_err = 1;
-					}
+						send_msg(AV_CMD_REC_ERR, 0, NULL);
+						memset(msg, 0, sizeof(msg));
+						sprintf(msg, "2.Failed to open AVI (%s)!", irec->fname);
+						log_write(msg);
+						eprintf("%s\n", msg);
+						/* loop exit */
+						break; 
+					} 
 				}
 				
 				if (irec->fevt != NULL) 
@@ -438,7 +416,13 @@ static void *THR_rec_evt(void *prm)
 					if (ifr->ch < 1) {
 						ret = evt_file_write(ifr, irec->en_snd);
 						if (ret < 0) {
-							eprintf("avi write failed!\n");
+							send_msg(AV_CMD_REC_ERR, 0, NULL);
+							memset(msg, 0, sizeof(msg));
+							sprintf(msg, "avi write failed!");
+							log_write(msg);
+							eprintf("%s\n", msg);
+							/* loop exit */
+							break;
 						}
 					}
 					#else
@@ -476,7 +460,13 @@ static void *THR_rec_evt(void *prm)
 				
 				        ret = evt_file_write(ifr, irec->en_snd);
 				        if (ret < 0) {
-							eprintf("avi write failed!\n");
+							send_msg(AV_CMD_REC_ERR, 0, NULL);
+							memset(msg, 0, sizeof(msg));
+							sprintf(msg, "avi write failed!");
+							log_write(msg);
+							eprintf("%s\n", msg);
+							/* loop exit */
+							break;
 				        }
 				    }
 					#endif
@@ -486,21 +476,15 @@ static void *THR_rec_evt(void *prm)
 					break;
 				}
 			}
-		}
+		} /* while (1) */
 		
 		//# record done
 		evt_file_close();
-		sync();
-		
-		/* will free the page cache */
-		//system("echo 1 > /proc/sys/vm/drop_caches");
-		
 		dprintf("record done!\n");
-	}
+	} /* while (!exit) */
 
-	evt_file_close();		//# when APP_CMD_EXIT
+	evt_file_close();	//# when APP_CMD_EXIT
 	tObj->active = 0;
-
 	aprintf("exit\n");
 
 	return NULL;
