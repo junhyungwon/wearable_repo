@@ -23,6 +23,8 @@
  * global variables
  ******************************************************************************/
 
+T_CGI_VIDEO_QUALITY vq;
+
 namespace NS_CMD {
 	int gRefreshSec=1;
 	int send_response(int errnum)
@@ -33,19 +35,34 @@ namespace NS_CMD {
 #else
 		printf("Cache-Control: no-cache, no-store\r\n"
 		       "Content-type: application/json\r\n\r\n");
-
-		printf("{ return value: %d }", errnum);
+		
+ 		printf("{ return value: %d }", errnum);
 #endif
 	}
 }
+
+int get_vid_response(int retval)
+{
+	printf("\nCache-Control: no-cache, no-store\r\n"
+		       "Content-type: application/json\r\n\r\n");
+
+    printf("\"FPS\" :  %d\n",vq.stm.fps) ;
+	printf("\"BPS\" :  %d\n",vq.stm.bps) ;
+ 	printf("{ return value: %d }", SOK);
+}
+
 
 int do_sysmng(char *pContents)
 {
 	int ret=SUBMIT_OK,i;
 
+    int stm_res=-1,stm_fps=-1,stm_bps=-1,stm_gop=-1,stm_rc=-1;
+    int rec_fps=-1,rec_bps=-1,rec_gop=-1,rec_rc=-1;
+
     T_CGIPRM prm[128];
     int cnt = parseContents(pContents, prm);
     CGI_DBG("cnt:%d\n", cnt);
+
 
     if(cnt>0){
         for(i=0;i<cnt;i++) {
@@ -93,6 +110,36 @@ int do_sysmng(char *pContents)
 					}
 				}
             } 
+			else if(!strcmp(prm[i].name, "get_videoquality"))
+			{
+				if(0 != sysctl_message(UDS_GET_VIDEO_QUALITY, (void*)&vq, sizeof(vq))){
+					ret = SUBMIT_ERR ;
+				}
+				else
+				{
+					ret = SUBMIT_GET_VID ;
+				}
+			}
+			else if(!strcmp(prm[i].name, "framerate"))
+			{
+				stm_fps = atoi(prm[i].value) ;
+			    if(!strcmp(prm[i+1].name, "bitrate"))
+				    stm_bps = atoi(prm[i+1].value) ;
+
+				vq.stm.fps = stm_fps ;
+				vq.stm.bps = stm_bps ;
+				vq.stm.gop = stm_fps ;
+
+				CGI_DBG("set_dyn_video_quality\n");
+				NS_CMD::gRefreshSec = 10;
+
+				if(0 != sysctl_message(UDS_SET_DYN_VIDEO_QUALITY, (void*)&vq, sizeof(int))) {
+					ret = SUBMIT_ERR;
+				}
+			}
+			else if(!strcmp(prm[i].name, "bitrate"))
+			{
+			}
             else {
 				CGI_DBG("Invalid param:%s\n", prm[i].name);
 				ret = ERR_INVALID_PARAM;
@@ -206,7 +253,12 @@ int main(int argc, char *argv[])
 		wait_redirect(HOME_PATH, NS_CMD::gRefreshSec);
 	}
 #else
-	send_response(ret);
+    
+	if(ret == SUBMIT_GET_VID){
+        get_vid_response(ret) ;
+	}
+    else
+	    send_response(ret);
 #endif
 
 	return 0;

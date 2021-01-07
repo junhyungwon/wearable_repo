@@ -634,6 +634,31 @@ CGI_DBG("\nw:%d, h:%d, kbps:%d, fps:%d, ei:%d, gov:%d\n", w, h, kbps, fps, ei, g
 				}
 			}
 			break;
+		case UDS_SET_DYN_VIDEO_QUALITY:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_SET_DYN_VIDEO_QUALITY);
+				ret = write(cs, wbuf, sizeof(wbuf));
+				CGI_DBG("Sent CMD : cs:(%d), CMD:%s, wrtten len = %d \n", cs, wbuf, ret);
+
+				// 2. check READY
+				ret = read(cs, rbuf, sizeof rbuf);
+				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+
+				// 3. write id/password info
+				ret = write(cs, data, sizeof(T_CGI_VIDEO_QUALITY));
+				CGI_DBG("Sent Dynamic T_CGI_VIDEO_QUALITY, written len = %d\n", ret);
+
+				// 4. wait response and read OK
+				ret = read(cs, rbuf, sizeof rbuf);
+				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+				if(ret > 0){
+					// check return value
+					close(cs);
+					return 0;
+				}
+			}
+			break;
 		case UDS_CMD_RESTART:
 			{
 				// 1. write command

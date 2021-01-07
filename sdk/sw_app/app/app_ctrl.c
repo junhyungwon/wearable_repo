@@ -134,17 +134,36 @@ int ctrl_enc_multislice()
 *****************************************************************************/
 int ctrl_vid_framerate(int ch, int framerate)
 {
+	int ret = 0 ;
+
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
     app_set->ch[ch].framerate = framerate ;
     app_cfg->ich[ch].fr = framerate;
 
     params.frameRate = app_cfg->ich[ch].fr;
-
+// to do rec stop
+    if(ch != MODEL_CH_NUM)
+	{
+        ret = app_rec_state() ;
+	    if (ret) { 
+	        app_rec_stop(1);
+	        sleep(1); /* wait for file close */
+        }
+	}
     Venc_setInputFrameRate(ch, DEFAULT_FPS);
     Venc_setDynamicParam(ch, 0, &params, VENC_FRAMERATE);
+// to do rec start
+    if(ch != MODEL_CH_NUM)
+	{
+	    if (ret) {
+            app_rec_start();
+        }
+	}
 
-    return SOK ;
+    app_rtsptx_stop_start() ;
+
+	return SOK ;
 }
 
 /*****************************************************************************

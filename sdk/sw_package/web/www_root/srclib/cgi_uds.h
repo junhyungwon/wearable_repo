@@ -18,6 +18,7 @@
 #define STR_MSG_GET_ENCODER_INFO     "GetVideoEncoderInformation"
 #define STR_MSG_GET_VIDEO_QUALITY    "GetVideoQuality"
 #define STR_MSG_SET_VIDEO_QUALITY    "SetVideoQuality"
+#define STR_MSG_SET_DYN_VIDEO_QUALITY    "SetDynVideoQuality"
 #define STR_MSG_GET_OPERATION_CONFIG "GetOperationConfiguration"
 #define STR_MSG_SET_OPERATION_CONFIG "SetOperationConfiguration"
 #define STR_MSG_GET_NETWORK_CONFIG   "GetNetworkConfiguration"
@@ -59,6 +60,7 @@ enum _enumUdsCmd {
 
     UDS_GET_VIDEO_QUALITY,
     UDS_SET_VIDEO_QUALITY,
+    UDS_SET_DYN_VIDEO_QUALITY,
     UDS_GET_OPERATION_CONFIG,
     UDS_SET_OPERATION_CONFIG,
     UDS_GET_NETWORK_CONFIG,

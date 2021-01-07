@@ -39,6 +39,7 @@ enum _enumCgiError{
 	OK_FW_UPDATE  = 0,
 	CGI_NO_CHANGE = 1,
 	SUBMIT_NO_CHANGE = 1,
+	SUBMIT_GET_VID = 100,
 };
 
 ///////////////////////////////////////////////////////////////////////////////

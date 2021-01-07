@@ -1165,6 +1165,30 @@ static int setP2PServer(int p2p_enable, char *username, char *password)
 	return 0;
 }
 
+
+static int setDynamicVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
+              int stm_res, int stm_fps, int stm_bps, int stm_gop, int stm_rc)
+{
+	int ch = STM_CH_NUM;
+	// STM
+	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+	{
+	    ctrl_vid_framerate(ch, stm_fps) ;
+	}
+	if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+    {
+	    ctrl_vid_bitrate(ch, stm_bps) ;
+	}
+	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+	{
+	    ctrl_vid_gop_set(ch, stm_gop) ;
+	}
+	DBG_UDS("[STM] ch:%d, fps:%d, bps:%d, gop:%d\n", ch, stm_fps, stm_bps, stm_gop);
+
+	return 0;
+
+}
+
 static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
               int stm_res, int stm_fps, int stm_bps, int stm_gop, int stm_rc)
 {
@@ -1189,11 +1213,20 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 		app_set->ch[ch].resol = stm_res ;
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+	{
+//	    ctrl_vid_framerate(ch, stm_fps) ;
 		app_set->ch[ch].framerate = stm_fps ;
+	}
 	if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+    {
+//	    ctrl_vid_bitrate(ch, stm_bps) ;
 		app_set->ch[ch].quality = stm_bps ;
+	}
 	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+	{
+//	    ctrl_vid_gop_set(ch, stm_gop) ;
 		app_set->ch[ch].gop = stm_gop ;
+	}
 	if(stm_rc != app_set->ch[ch].rate_ctrl){
 		app_set->ch[ch].rate_ctrl = stm_rc;
 	}
@@ -2135,6 +2168,33 @@ void *myFunc(void *arg)
 					ret = write(cs_uds, strOptions, sizeof strOptions);
 				} else {
 					DBG_UDS("failed read T_CGI_VIDEO_QUALITY, ret:%d, ", ret);
+					perror("failed read: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
+		else if (strcmp(rbuf, "SetDynVideoQuality") == 0){
+			sprintf(wbuf, "[APP_UDS] --- SetDynVideoQuality ---");
+			//app_log_write(MSG_LOG_WRITE, wbuf);
+
+			// 1. send READY
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+
+			if(ret > 0){
+				T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
+				ret = read(cs_uds, &p, sizeof p);
+				DBG_UDS("read Dynamic T_CGI_VIDEO_QUALITY, ret=%d\n", ret);
+				if(ret > 0){
+					setDynamicVideoQuality(p.rec.fps, p.rec.bps, p.rec.gop, p.rec.rc,
+							p.stm.res, p.stm.fps, p.stm.bps, p.stm.gop, p.stm.rc);
+
+					char strOptions[128] = "OK"; // Send DONE
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("failed read Dynamic T_CGI_VIDEO_QUALITY, ret:%d, ", ret);
 					perror("failed read: ");
 				}
 			} else {
