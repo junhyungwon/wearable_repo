@@ -465,7 +465,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         if(ich == MODEL_CH_NUM)
         {
 	     	//# streaming channel...
-            if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol > RESOL_1080P)
+            if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol >= RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
         }
 	}

@@ -85,26 +85,46 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 	if (enctype == ENC_JPEG) // JPEG
 	{
 		int newRes=app_set->ch[STM_CH_NUM].resol;
+#if defined(NEXXONE)
+		if (h == 480  && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
+			newRes = RESOL_480P;
+		else if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
+			newRes = RESOL_720P;
+		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol == RESOL_720P)
+			newRes = RESOL_480P;
+		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol == RESOL_480P)
+			newRes = RESOL_720P;
+#else
 		if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 			newRes = RESOL_720P;
 		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
 			newRes = RESOL_1080P;
 		else if (h == 480 && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
 			newRes = RESOL_480P;
-
+#endif
 		if (newRes != app_set->ch[STM_CH_NUM].resol)
 			ctrl_vid_resolution(newRes);
 	}
 	else if (enctype == ENC_H264) // H264
 	{
 		int newRes=app_set->ch[STM_CH_NUM].resol;
+#if defined(NEXXONE)
+		if (h == 480  && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
+			newRes = RESOL_480P;
+		else if(h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
+			newRes = RESOL_720P;
+		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol == RESOL_720P)
+			newRes = RESOL_480P;
+		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol == RESOL_480P)
+			newRes = RESOL_720P;
+#else
 		if (h == 720  && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 			newRes = RESOL_720P;
 		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol != RESOL_1080P)
 			newRes = RESOL_1080P;
 		else if (h == 480  && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
 			newRes = RESOL_480P;
-
+#endif
 		int newKbps = app_set->ch[STM_CH_NUM].quality;
 		if (kbps <= 750) newKbps = 512;
 		else if (kbps <= 1500) newKbps = 1000;
@@ -1210,8 +1230,18 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 
 	// STM
 	ch=STM_CH_NUM;
+#if defined(NEXXONE)
+	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		app_set->ch[ch].resol = stm_res ;
+	else if(stm_res == RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol == RESOL_480P)
+		app_set->ch[ch].resol = RESOL_720P ;
+	else if(stm_res == RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol == RESOL_720P)
+		app_set->ch[ch].resol = RESOL_480P ;
+#else 
 	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 		app_set->ch[ch].resol = stm_res ;
+#endif
+
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
 	{
 //	    ctrl_vid_framerate(ch, stm_fps) ;

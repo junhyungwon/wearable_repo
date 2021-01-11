@@ -377,12 +377,20 @@ static void *THR_hdmi(void *prm)
 			break;
 		}
         //# change resolution 720P <----> 480P <-----> 1080P  toggle.
+
+#if defined(NEXXONE)  // not support 1080P 
+		if(app_set->ch[MODEL_CH_NUM].resol == RESOL_480P)     
+            ctrl_vid_resolution(RESOL_720P);
+		else    
+            ctrl_vid_resolution(RESOL_480P);
+#else
 		if(app_set->ch[MODEL_CH_NUM].resol == RESOL_480P)     
             ctrl_vid_resolution(RESOL_720P);
 		else if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)     
             ctrl_vid_resolution(RESOL_1080P);
 		else if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)     
             ctrl_vid_resolution(RESOL_480P);
+#endif
 
 	}
 
