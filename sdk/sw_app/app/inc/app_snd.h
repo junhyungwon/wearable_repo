@@ -17,10 +17,9 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define SND_PCM_SRATE			8000 //# for baresip
-#define SND_PCM_PTIME			250 //# fixed 고정해야 함.
-#define SND_PCM_CH				1
-#define SND_PCM_BITS			16
+#define APP_SND_SRATE			8000 //# for baresip
+#define APP_SND_PTIME			250 //# fixed 고정해야 함.
+#define APP_SND_CH				1   /* sound channel */
 
 /*----------------------------------------------------------------------------
  Declares variables

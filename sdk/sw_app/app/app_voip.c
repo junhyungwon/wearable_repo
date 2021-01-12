@@ -21,7 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "dev_sound.h"
+#include "dev_snd.h"
 #include "sipc_ipc_cmd_defs.h"
 #include "app_comm.h"
 #include "app_main.h"
