@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <alsa/asoundlib.h>
 
-#include "dev_sound.h"
+#include "dev_snd.h"
 #include "app_comm.h"
 #include "app_main.h"
 #include "app_gmem.h"
@@ -64,22 +64,6 @@ typedef struct {
 
 #define SND_IN_DEV				"plughw:0,0"
 #define SND_DUP_DEV				"plughw:1,0"  //# --> plughw:1,1
-
-#define SND_PCM_CAP				0
-#define SND_PCM_PLAY			1
-
-typedef struct {
-	char path[256];			//# pcm virtual name
-	snd_pcm_t *pcm_t;
-	
-	int channel;
-	int sample_rate;
-	int mode;
-	int num_frames;
-	
-	char *sampv;
-
-} snd_prm_t;
 
 typedef struct {
 	app_thr_obj cObj;	 //# sound in thread
@@ -162,12 +146,6 @@ static void close_wav_file(void)
 /*----------------------------------------------------------------------------
  audio codec function
 -----------------------------------------------------------------------------*/
-static inline void *advance(void *p, int incr)
-{
-    unsigned char *d = p;
-    return (d + incr);
-}
-
 static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, Int32 bufsize)
 {
     int i, isNegative;
@@ -214,316 +192,6 @@ static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, Int32 bufsi
 	return (outputSize);
 }
 
-static int __snd_prm_init(const char *name, snd_prm_t *prm, 
-						int mode, int ch, int rate, int ptime)
-{
-	int sampc = 0;
-	int ret = 0;
-	
-	memset(prm->path, 0, sizeof(prm->path));
-	strcpy(prm->path, name);
-	
-	/* capture device init */
-	prm->channel = ch;
-	prm->mode = mode; //# capture
-	prm->sample_rate = rate;
-	/* 1초에 sample에 해당하는 프레임 수신. 
-	 * period size = 1s:8000 = 80ms : ? --> sample rate * ptime / 1000
-	 */
-	prm->num_frames = ptime; //# period
-	sampc = rate * ch * ptime / 1000;
-	prm->sampv = (char *)malloc(sampc * SND_PCM_BITS / 8); //# 1sample 16bit..
-	if (prm->sampv == NULL)
-		ret = -1;
-	
-	return ret;
-}
-
-static void __snd_prm_free(snd_prm_t *prm)
-{
-	memset(prm->path, 0, sizeof(prm->path));
-	if (prm->sampv != NULL) {
-		free(prm->sampv);
-		prm->sampv = NULL;
-	}
-}
-
-static int __snd_dev_init(const char *pcm_name, snd_prm_t *prm)
-{
-	unsigned int freq, nchannels;
-	int err;
-	
-	snd_pcm_t *handle = NULL;
-	snd_pcm_hw_params_t *hw_params = NULL;
-
-	snd_pcm_uframes_t buffer_size, period_size;
-	snd_pcm_stream_t mode;
-	
-	period_size = prm->num_frames;
-	buffer_size = (period_size * 4); //# alsa 표준
-	
-	if (prm->mode == SND_PCM_PLAY) {
-		mode = SND_PCM_STREAM_PLAYBACK;
-	} else {
-		mode = SND_PCM_STREAM_CAPTURE;	
-	}
-	
-	err = snd_pcm_open(&handle, pcm_name, mode, 0);
-	if (err < 0) {
-		dprintf("alsa: could not open device '%s' (%s)\n", pcm_name, snd_strerror(err));
-		goto out;
-	}
-	
-	snd_pcm_hw_params_alloca(&hw_params);
-	err = snd_pcm_hw_params_any(handle, hw_params);
-	if (err < 0) {
-		dprintf("Failed to initialize hardware parameters\n");
-		goto out;
-	}
-
-	/* Set access type.*/
-	err = snd_pcm_hw_params_set_access(handle, hw_params,
-							SND_PCM_ACCESS_RW_INTERLEAVED);
-	if (err < 0) {
-		dprintf("Failed to set access type\n");
-		goto out;
-	}
-
-	/* Set sample format */
-	err = snd_pcm_hw_params_set_format(handle, hw_params, SND_PCM_FORMAT_S16_LE);
-	if (err < 0) {
-		dprintf("cannot set sample format!\n");
-		goto out;
-	}
-
-	/* Set sample rate. If the exact rate is not supported */
-	/* by the hardware, use nearest possible rate.         */
-	freq = prm->sample_rate;
-	err = snd_pcm_hw_params_set_rate_near(handle, hw_params, &freq, 0);
-	if (err < 0) {
-		dprintf("Failed to set frequency %d\n", freq);
-		goto out;
-	}
-	
-	nchannels = prm->channel;
-	err = snd_pcm_hw_params_set_channels(handle, hw_params, nchannels);
-	if (err < 0) {
-		dprintf("Failed to set number of channels %d\n", nchannels);
-		goto out;
-	}
-
-    err = snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0);
-    if (err < 0) {
-        dprintf("Failed to set period size to %ld\n", period_size);
-        goto out;
-    }
-
-    err = snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size);
-    if (err < 0) {
-        dprintf("Failed to set buffer size to %ld\n", buffer_size);
-        goto out;
-    }
-
-	/* Apply HW parameter settings to */
-    /* PCM device and prepare device  */
-    err = snd_pcm_hw_params(handle, hw_params);
-	if (err < 0) {
-		dprintf("Unable to install hw params\n");
-		goto out;
-	}
-
-	/* returned approximate maximum buffer size in frames  */
-	snd_pcm_hw_params_get_period_size(hw_params, &period_size, 0);
-	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
-
-//	dprintf(" ALSA Period Size %ld\n", period_size);
-//	dprintf(" ALSA Buffer Size %ld\n", buffer_size);
-
-	/* prepare for audio device */
-	err = snd_pcm_prepare(handle);
-    if (err < 0) {
-        printf("Could not prepare handle %p\n", handle);
-        goto out;
-    }
-
-	prm->pcm_t = handle;
-	err = 0;
-	
-out:
-	if (err) {
-		eprintf("alsa: init failed: err=%d\n", err);
-	}
-	
-	return err;
-}
-
-static void __snd_set_swparam(snd_prm_t *prm, int mode)
-{
-	snd_pcm_sw_params_t *sw_params = NULL;
-	snd_pcm_t *handle = prm->pcm_t;
-	snd_pcm_uframes_t buffer_size, period_size;
-	int err;
-	
-	period_size = prm->num_frames;
-	buffer_size = (period_size * 4); //# alsa 표준
-	
-	/* set software params */
-	snd_pcm_sw_params_alloca(&sw_params);
-    err = snd_pcm_sw_params_current(handle, sw_params);
-    if (err < 0) {
-        eprintf("Failed to get current software parameters\n");
-    }
-	snd_pcm_sw_params_set_avail_min(handle, sw_params, period_size);
-
-	if (mode == SND_PCM_PLAY) {
-		snd_pcm_sw_params_set_start_threshold(handle, sw_params, buffer_size);
-	    snd_pcm_sw_params_set_stop_threshold(handle, sw_params, buffer_size);
-	} else {
-		snd_pcm_sw_params_set_start_threshold(handle, sw_params, 1);
-	    snd_pcm_sw_params_set_stop_threshold(handle, sw_params, buffer_size);	
-	}
-
-    err = snd_pcm_sw_params(handle, sw_params);
-    if (err < 0) {
-        eprintf("Failed to set software parameters\n");
-    }
-}
-
-static ssize_t __snd_dev_read(snd_prm_t *prm)
-{
-	snd_pcm_t *handle = prm->pcm_t;
-	char *rbuf = (char *)prm->sampv;
-
-	ssize_t result = 0;
-	size_t count = (size_t)prm->num_frames;
-	int hwshift;
-
-	hwshift = prm->channel * (SND_PCM_BITS / 8);
-
-	while (count > 0)
-	{
-		snd_pcm_sframes_t r;
-
-		r = snd_pcm_readi(handle, rbuf, count);
-		if (r <= 0)
-		{
-			switch (r) {
-			case 0:
-				dprintf(" Failed to read frames(zero)\n");
-				continue;
-
-			case -EAGAIN:
-				dprintf(" pcm wait (count = %d)!!\n", count);
-				snd_pcm_wait(handle, 100);
-				break;
-
-			case -EPIPE:
-				snd_pcm_prepare(handle);
-				//dprintf(" pcm overrun(count = %d)!!\n", count);
-				break;
-
-			default:
-				dprintf(" read error!!\n");
-				return -1;
-			}
-		}
-
-		/* read size is frame size. For byte conversion..*/
-		/* Frame = 1sample * Total Channel, 1 sample = 16bit (2Byte) */
-		if (r > 0) {
-			rbuf = advance(rbuf, (r * hwshift));
-			result += (r * hwshift);
-			count -= r;
-		}
-	}
-
-	return result;
-}
-
-static ssize_t __snd_dev_write(snd_prm_t *prm, size_t w_samples)
-{
-	snd_pcm_t *handle = prm->pcm_t;
-	char *rbuf = (char *)prm->sampv;
-	
-	ssize_t result = 0;
-	size_t count = (size_t)w_samples;
-	size_t period = (size_t)prm->num_frames;
-	int hwshift;
-
-	hwshift = prm->channel * (SND_PCM_BITS / 8); //# 16bit * channel / 8bit
-
-	if (count < period) {
-    	snd_pcm_format_set_silence(SND_PCM_FORMAT_S16_LE, rbuf + (count * hwshift),
-						(period - count) * prm->channel);
-        count = period;
-	}
-
-	while (count > 0)
-	{
-		snd_pcm_sframes_t r;
-		int ret;
-
-		r = snd_pcm_writei(handle, rbuf, count);
-		if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
-			//dprintf("pcm write wait(100ms)!!\n");
-			snd_pcm_wait(handle, 100);
-		} else if (r == -EPIPE) {
-			//dprintf("pcm write underrun!!\n");
-			ret = snd_pcm_prepare(handle);
-			if (ret < 0) {
-				dprintf("Failed to prepare handle %p\n", handle);
-			}
-			continue;
-		} else if (r == -ESTRPIPE) {
-			ret = snd_pcm_resume(handle);
-			if (ret < 0) {
-				dprintf("Failed. Restarting stream.\n");
-			}
-			continue;
-		} else if (r < 0) {
-			dprintf("write error\n");
-			return -1;
-		}
-
-		if (r > 0) {
-			rbuf = advance(rbuf, r * hwshift);
-			result += (r * hwshift);
-			count -= r;
-		}
-	}
-
-	return result;
-}
-
-static void __snd_dev_stop(snd_prm_t *prm, int mode)
-{
-	snd_pcm_t *handle = prm->pcm_t;
-	
-	if (handle != NULL) {
-		if (mode == SND_PCM_PLAY) {
-			snd_pcm_nonblock(handle, 0);
-			/* Stop PCM device after pending frames have been played */
-			snd_pcm_drain(handle);
-			//snd_pcm_nonblock(handle, 1);
-		} 
-		snd_pcm_hw_free(handle);
-		snd_pcm_close(handle);
-	}
-}
-
-static void __snd_dev_start(snd_prm_t *prm)
-{
-	snd_pcm_t *handle = prm->pcm_t;
-	int err;
-	
-	/* Start */
-	err = snd_pcm_start(handle);
-	if (err) {
-		dprintf("alsa: could not start ausrc device %s, (%s)\n", 
-				prm->path, snd_strerror(err));
-	}
-}
-
 /*****************************************************************************
 * @brief    sound capture thread function
 * @section  [desc]
@@ -549,24 +217,24 @@ static void *THR_snd_cap(void *prm)
 	//init_wav_file(WAV_FILE_NAME, 1, ALSA_SAMPLE_RATE);
 	
 	/* get alsa period size (in sec) */
-	read_sz = SND_PCM_SRATE * SND_PCM_PTIME / 1000; //# 
-	ret = __snd_prm_init("aic3x", &isnd->snd_in, SND_PCM_CAP, 
-				SND_PCM_CH, SND_PCM_SRATE, read_sz);
+	read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	ret = dev_snd_set_param("aic3x", &isnd->snd_in, SND_PCM_CAP, 
+				APP_SND_CH, APP_SND_SRATE, read_sz);
 #if SYS_CONFIG_VOIP	
-	ret |= __snd_prm_init("dummy", &isnd->snd_dup, SND_PCM_PLAY, 
-				SND_PCM_CH, SND_PCM_SRATE, read_sz);
+	ret |= dev_snd_set_param("dummy", &isnd->snd_dup, SND_PCM_PLAY, 
+				APP_SND_CH, APP_SND_SRATE, read_sz);
 #endif
-	ret |= __snd_dev_init(SND_IN_DEV, &isnd->snd_in);
+	ret |= dev_snd_open(SND_IN_DEV, &isnd->snd_in);
 
 #if SYS_CONFIG_VOIP
-	ret |= __snd_dev_init(SND_DUP_DEV, &isnd->snd_dup);
+	ret |= dev_snd_open(SND_DUP_DEV, &isnd->snd_dup);
 #endif
 	if (ret) {
 		eprintf("Failed to init sound device!\n");
 		return NULL;
 	}
 	
-	si_size  = (read_sz * SND_PCM_CH * (SND_PCM_BITS / 8));
+	si_size  = (read_sz * APP_SND_CH * (SND_PCM_BITS / 8));
 	/* G.711로 Encoding 시 16bit -> 8bit로 변경됨 */
 	enc_buf = (char *)malloc(si_size/2);
 	if (enc_buf == NULL) {
@@ -574,9 +242,9 @@ static void *THR_snd_cap(void *prm)
 		return NULL;
 	}
 	
-	__snd_dev_start(&isnd->snd_in);
+	dev_snd_start(&isnd->snd_in);
 #if SYS_CONFIG_VOIP	
-	__snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
+	dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
 #endif
 	while (!exit)
 	{
@@ -586,7 +254,7 @@ static void *THR_snd_cap(void *prm)
 			break;
 		}
 
-		bytes = __snd_dev_read(&isnd->snd_in);
+		bytes = dev_snd_read(&isnd->snd_in);
 		if(bytes < 0) {
 			eprintf("sound device error!!\n");
 			continue;
@@ -596,7 +264,7 @@ static void *THR_snd_cap(void *prm)
 		//# copy to dup device
 		app_memcpy(isnd->snd_dup.sampv, isnd->snd_in.sampv, bytes);
 		/* VOIP를 사용할 경우에만 copy ?? */
-		__snd_dev_write(&isnd->snd_dup, bytes/2); 
+		dev_snd_write(&isnd->snd_dup, bytes/2); 
 #endif	
 
 #if defined(NEXXONE)	
@@ -649,14 +317,14 @@ static void *THR_snd_cap(void *prm)
 	}
 
 #if SYS_CONFIG_VOIP
-	__snd_dev_stop(&isnd->snd_dup, SND_PCM_PLAY);
-	__snd_dev_stop(&isnd->snd_dup, SND_PCM_CAP);
+	dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
+	dev_snd_stop(&isnd->snd_in, SND_PCM_CAP);
 #endif	
 	/* free memory alloc */
 	free(enc_buf);
-	__snd_prm_free(&isnd->snd_in);
+	dev_snd_param_free(&isnd->snd_in);
 #if SYS_CONFIG_VOIP	
-	__snd_prm_free(&isnd->snd_dup);
+	dev_snd_param_free(&isnd->snd_dup);
 #endif	
 	tObj->active = 0;
 	aprintf("...exit\n");
@@ -678,7 +346,7 @@ int app_snd_start(void)
 	isnd->snd_rec_enable = app_set->rec_info.audio_rec;
 	/* set capture volume */
 	//# "/usr/bin/amixer cset numid=31 60% > /dev/null"
-	dev_snd_set_aic3x_volume(SND_VOLUME_C, 60);
+	dev_snd_set_volume(SND_VOLUME_C, 60);
 	
 	/* GMEM Address 가져온다 */
 	imem = (g_mem_info_t *)app_cap_get_gmem();
