@@ -731,7 +731,6 @@ static void *thr_snd_in(void *prm)
 	r |= dev_snd_open("plughw:0,0", &snd_in_data);
 	if (r) {
 		eprintf("Failed to init sound device!\n");
-		return NULL;
 	}
 	
 	dev_snd_start(&snd_in_data);
@@ -762,13 +761,14 @@ static void thr_snd_out_cleanup(void *prm)
 
 void *thr_snd_out(void *prm)
 {
-	int buf_sz;
+	int buf_sz, so_size;
 	int exit = 0, r;
 
-	dev_snd_set_volume(SND_VOLUME_P, 80);
+	dev_snd_set_volume(SND_VOLUME_P, 70);
 
 	/* get alsa period size (in sec) */
-	buf_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	buf_sz  = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	so_size = (buf_sz * APP_SND_CH * (SND_PCM_BITS / 8)); 
 	r = dev_snd_set_param("aic3x", &snd_out_data, SND_PCM_PLAY, 
 				APP_SND_CH, APP_SND_SRATE, buf_sz);
 
@@ -783,9 +783,9 @@ void *thr_snd_out(void *prm)
 
 	while(!exit)
 	{
-		r = read(snd_pipe[0], snd_out_data.sampv, buf_sz);
+		r = read(snd_pipe[0], snd_out_data.sampv, so_size);
 		if (r > 0) {
-			//dev_snd_write((void *)pSnd->pcm_t, r/2);
+			dev_snd_write(&snd_out_data, r/2);
 		}
 	}
 
@@ -858,8 +858,9 @@ static void *thr_snd_in(void *prm)
 	int buf_sz;
 	int exit = 0, r;
 	int cnt_skip = 15;
-
-	dev_snd_set_input_path(SND_MIC_IN);
+	
+	//# move to init.sh
+//	dev_snd_set_input_path(SND_MIC_IN);
 
 	/* get alsa period size (in sec) */
 	buf_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
@@ -870,8 +871,8 @@ static void *thr_snd_in(void *prm)
 	if (r) {
 		eprintf("Failed to init sound device!\n");
 	}
+	
 	dev_snd_start(&snd_in_data);
-
 	dev_snd_set_volume(SND_VOLUME_C, 80);
 	pthread_cleanup_push(thr_snd_in_cleanup, (void *)&snd_in_data);
 
@@ -889,7 +890,7 @@ static void *thr_snd_in(void *prm)
 			{
 				//# draw sound level
 				int av;
-				av = snd_average((short *)snd_in_data.sampv, r, 370);	//# aic3x input offset: 370
+				av = snd_average((short *)snd_in_data.sampv, bytes, 370);	//# aic3x input offset: 370
 				if(av < 100)		tvo_draw_bar(1);	//# noise
 				else if(av < 500)	tvo_draw_bar(2);
 				else if(av < 1000)	tvo_draw_bar(3);
