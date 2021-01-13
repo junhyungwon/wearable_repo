@@ -143,9 +143,7 @@ static Upix ste_color[] = {RGB_BLUE, RGB_RED, RGB_B_GRAY, RGB_BLACK};
 #define APP_SND_CH				1   /* sound channel */
 
 static OSA_ThrHndl sndInThr;
-#if defined(NEXX360W) /* mic in + earphone out */
 static OSA_ThrHndl sndOutThr;
-#endif
 static int snd_pipe[2];
 
 static snd_prm_t snd_in_data;
@@ -781,13 +779,13 @@ void *thr_snd_out(void *prm)
 	}
 
 	dev_snd_set_swparam(&snd_out_data, SND_PCM_PLAY);
-	pthread_cleanup_push(thr_snd_out_cleanup, (void *)pSnd);
+	pthread_cleanup_push(thr_snd_out_cleanup, (void *)&snd_out_data);
 
 	while(!exit)
 	{
-		r = read(snd_pipe[0], pSnd->buf, so_size);
+		r = read(snd_pipe[0], snd_out_data.sampv, buf_sz);
 		if (r > 0) {
-			dev_snd_write((void *)pSnd->pcm_t, r/2);
+			//dev_snd_write((void *)pSnd->pcm_t, r/2);
 		}
 	}
 
