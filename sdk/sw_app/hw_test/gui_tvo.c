@@ -20,7 +20,7 @@
 #include "draw_gui.h"
 #include "img_ud_logo_tvo.h"
 
-#include "dev_sound.h"
+#include "dev_snd.h"
 #include "dev_disk.h"
 
 #include "app_comm.h"
@@ -138,21 +138,18 @@ static ui_pos_t ts_ste[] = {
 static Upix ste_color[] = {RGB_BLUE, RGB_RED, RGB_B_GRAY, RGB_BLACK};
 
 //# For sound
-typedef struct {
-	snd_pcm_t *pcm_t;
-	char *buf;
-	char *ch_buf;		//# separated channel..(for NVP capture)
-} snd_pcm_data_t;
-
-#define SND_PCM_SRATE		16000
-#define SND_PCM_CH			1
+#define APP_SND_SRATE			8000 //# for baresip
+#define APP_SND_PTIME			250 //# fixed 고정해야 함.
+#define APP_SND_CH				1   /* sound channel */
 
 static OSA_ThrHndl sndInThr;
+#if defined(NEXX360W) /* mic in + earphone out */
 static OSA_ThrHndl sndOutThr;
+#endif
 static int snd_pipe[2];
 
-static snd_pcm_data_t snd_in_data;
-static snd_pcm_data_t snd_out_data;
+static snd_prm_t snd_in_data;
+static snd_prm_t snd_out_data;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -718,47 +715,38 @@ int test_led(app_thr_obj *tObj)
 #if defined(NEXXONE) /* mic in + earphone out */
 static void thr_snd_in_cleanup(void *prm)
 {
-	snd_pcm_data_t *pSnd = (snd_pcm_data_t *)prm;
-
-	if (pSnd->buf != NULL) {
-		free(pSnd->buf);
-		pSnd->buf = NULL;
-	}
-
-	if (pSnd->pcm_t != NULL) {
-		dev_snd_aic3x_close((void *)pSnd->pcm_t, SND_PCM_REC);
-		pSnd->pcm_t = NULL;
-	}
+	dev_snd_stop(&snd_in_data, SND_PCM_CAP);
+	dev_snd_param_free(&snd_in_data);
 }
 
 static void *thr_snd_in(void *prm)
 {
-	int nch, si_size;	/* number of pcm channels */
-	int buf_sz, period_sz;
+	int buf_sz;
 	int exit = 0, r;
 
-	snd_pcm_data_t *pSnd = &snd_in_data;
+	dev_snd_set_input_path(SND_MIC_IN);
+	/* get alsa period size (in sec) */
+	buf_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	r = dev_snd_set_param("aic3x", &snd_in_data, SND_PCM_CAP, 
+				APP_SND_CH, APP_SND_SRATE, buf_sz);
 
-	dev_snd_set_aic3x_input_path(SND_MIC_IN);
-
-	buf_sz    = 8000; //#frames
-	period_sz = (buf_sz / 4);
-	nch		  = SND_PCM_CH;
-
-	pSnd->pcm_t = (snd_pcm_t *)dev_snd_aic3x_init(SND_PCM_REC, SND_PCM_SRATE, nch, buf_sz, period_sz);
-
-	si_size = (period_sz * nch * 2);
-	pSnd->buf = malloc(si_size);
-
-	dev_snd_set_aic3x_volume(SND_VOLUME_C, 60);	//# set default volume 60%
-
-	pthread_cleanup_push(thr_snd_in_cleanup, (void *)pSnd);
+	r |= dev_snd_open("plughw:0,0", &snd_in_data);
+	if (r) {
+		eprintf("Failed to init sound device!\n");
+		return NULL;
+	}
+	
+	dev_snd_start(&snd_in_data);
+	dev_snd_set_volume(SND_VOLUME_C, 60);	//# set default volume 60%
+	pthread_cleanup_push(thr_snd_in_cleanup, (void *)&snd_in_data);
 
 	while(!exit)
 	{
-		r = dev_snd_aic3x_read((void *)pSnd->pcm_t, pSnd->buf, nch, period_sz);
-		if (r > 0) {
-			write(snd_pipe[1], pSnd->buf, r);
+		int bytes = 0;
+		
+		bytes = dev_snd_read(&snd_in_data);
+		if (bytes > 0) {
+			write(snd_pipe[1], snd_in_data.sampv, bytes);
 		}
 	}
 
@@ -769,51 +757,37 @@ static void *thr_snd_in(void *prm)
 
 static void thr_snd_out_cleanup(void *prm)
 {
-	snd_pcm_data_t *pSnd = (snd_pcm_data_t *)prm;
-
 	OSA_waitMsecs(100);
-
-	if (pSnd->buf != NULL) {
-		free(pSnd->buf);
-		pSnd->buf = NULL;
-	}
-
-	if (pSnd->pcm_t != NULL) {
-		dev_snd_aic3x_close((void *)pSnd->pcm_t, SND_PCM_PLAY);
-		pSnd->pcm_t = NULL;
-	}
+	dev_snd_stop(&snd_out_data, SND_PCM_PLAY);
+	dev_snd_param_free(&snd_out_data);
 }
 
 void *thr_snd_out(void *prm)
 {
-	int nch, so_size;	/* number of pcm channels */
-	int buf_sz, period_sz;
+	int buf_sz;
 	int exit = 0, r;
 
-	snd_pcm_data_t *pSnd = &snd_out_data;
+	dev_snd_set_volume(SND_VOLUME_P, 80);
 
-	//dev_snd_set_aic3x_output_path(SND_LINE_OUT);
-	dev_snd_set_aic3x_volume(SND_VOLUME_P, 80);
+	/* get alsa period size (in sec) */
+	buf_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	r = dev_snd_set_param("aic3x", &snd_out_data, SND_PCM_PLAY, 
+				APP_SND_CH, APP_SND_SRATE, buf_sz);
 
-	buf_sz    = 8000; //#frames
-	period_sz = (buf_sz / 4);
-	nch		  = SND_PCM_CH;
-
-	pSnd->pcm_t = (snd_pcm_t *)dev_snd_aic3x_init(SND_PCM_PLAY, SND_PCM_SRATE, nch, buf_sz, period_sz);
-	if(pSnd->pcm_t == NULL) {
+	r |= dev_snd_open("plughw:0,0", &snd_out_data);
+	if (r) {
+		eprintf("Failed to init sound device!\n");
 		return NULL;
 	}
 
-	so_size = (period_sz * nch * 2);
-	pSnd->buf = malloc(so_size);
-
+	dev_snd_set_swparam(&snd_out_data, SND_PCM_PLAY);
 	pthread_cleanup_push(thr_snd_out_cleanup, (void *)pSnd);
 
 	while(!exit)
 	{
 		r = read(snd_pipe[0], pSnd->buf, so_size);
 		if (r > 0) {
-			dev_snd_aic3x_write((void *)pSnd->pcm_t, pSnd->buf, nch, (r/(nch * 2)), period_sz);
+			dev_snd_write((void *)pSnd->pcm_t, r/2);
 		}
 	}
 
@@ -877,46 +851,38 @@ static int snd_average(short *pcm, int size, int offset)
 
 static void thr_snd_in_cleanup(void *prm)
 {
-	snd_pcm_data_t *pSnd = (snd_pcm_data_t *)prm;
-
-	if (pSnd->buf != NULL) {
-		free(pSnd->buf);
-		pSnd->buf = NULL;
-	}
-
-	if (pSnd->pcm_t != NULL) {
-		dev_snd_aic3x_close((void *)pSnd->pcm_t, SND_PCM_REC);
-		pSnd->pcm_t = NULL;
-	}
+	dev_snd_stop(&snd_in_data, SND_PCM_CAP);
+	dev_snd_param_free(&snd_in_data);
 }
 
 static void *thr_snd_in(void *prm)
 {
-	int nch, si_size;	/* number of pcm channels */
-	int buf_sz, period_sz;
+	int buf_sz;
 	int exit = 0, r;
 	int cnt_skip = 15;
 
-	snd_pcm_data_t *pSnd = &snd_in_data;
+	dev_snd_set_input_path(SND_MIC_IN);
 
-	dev_snd_set_aic3x_input_path(SND_MIC_IN);
+	/* get alsa period size (in sec) */
+	buf_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	r = dev_snd_set_param("aic3x", &snd_in_data, SND_PCM_CAP, 
+				APP_SND_CH, APP_SND_SRATE, buf_sz);
 
-	buf_sz    = 8000; //#frames
-	period_sz = (buf_sz / 4);
-	nch		  = SND_PCM_CH;
+	r |= dev_snd_open("plughw:0,0", &snd_in_data);
+	if (r) {
+		eprintf("Failed to init sound device!\n");
+	}
+	dev_snd_start(&snd_in_data);
 
-	pSnd->pcm_t = (snd_pcm_t *)dev_snd_aic3x_init(SND_PCM_REC, SND_PCM_SRATE, nch, buf_sz, period_sz);
-
-	si_size = (period_sz * nch * 2);
-	pSnd->buf = malloc(si_size);
-
-	dev_snd_set_aic3x_volume(SND_VOLUME_C, 80);
-	pthread_cleanup_push(thr_snd_in_cleanup, (void *)pSnd);
+	dev_snd_set_volume(SND_VOLUME_C, 80);
+	pthread_cleanup_push(thr_snd_in_cleanup, (void *)&snd_in_data);
 
 	while(!exit)
 	{
-		r = dev_snd_aic3x_read((void *)pSnd->pcm_t, pSnd->buf, nch, period_sz);
-		if (r > 0) {
+		int bytes = 0;
+		
+		bytes = dev_snd_read(&snd_in_data);
+		if (bytes > 0) {
 			if (cnt_skip >= 0) {
 				cnt_skip--;
 				tvo_draw_bar(1);
@@ -925,7 +891,7 @@ static void *thr_snd_in(void *prm)
 			{
 				//# draw sound level
 				int av;
-				av = snd_average((short *)pSnd->buf, r, 370);	//# aic3x input offset: 370
+				av = snd_average((short *)snd_in_data.sampv, r, 370);	//# aic3x input offset: 370
 				if(av < 100)		tvo_draw_bar(1);	//# noise
 				else if(av < 500)	tvo_draw_bar(2);
 				else if(av < 1000)	tvo_draw_bar(3);
