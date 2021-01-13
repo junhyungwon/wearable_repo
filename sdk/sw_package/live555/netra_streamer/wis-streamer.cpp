@@ -72,7 +72,6 @@ int RTSP_server_message_queue_id;
 char const* H264StreamName[VIDEO_TYPE_MAX_NUM] = {"all","all"};
 char const* MjpegStreamName = "mjpeg";
 char const* Mpeg4StreamName = "mpeg4";
-char const* streamDescription = "RTSP/RTP stream from NETRA";
 char name[6] ;
 
 int MjpegVideoBitrate = 1500000;
@@ -258,7 +257,8 @@ int main(int argc, char** argv) {
 
   char enc_username[64] = {0, } ; 
   char enc_password[64] = {0, } ; 
- 
+  char stream_description[64] = {0, } ;
+
   if(argc < 2)
   {
      rtsp_port = 8551 ;
@@ -290,6 +290,7 @@ int main(int argc, char** argv) {
 			 audioOutputBitrate = 128000 ;
 
 		 use_encrypt = atoi(argv[5]) ;
+		 sprintf(stream_description, "RTSP/RTP stream from %s", argv[6]) ;
      }
   }
 
@@ -428,7 +429,7 @@ int main(int argc, char** argv) {
 
 #if 1
 	ServerMediaSession * sms 
-	    = ServerMediaSession::createNew(*env,H264StreamName[video_type],H264StreamName[video_type],streamDescription,streamingMode == STREAMING_MULTICAST_SSM);
+	    = ServerMediaSession::createNew(*env,H264StreamName[video_type],H264StreamName[video_type],stream_description,streamingMode == STREAMING_MULTICAST_SSM);
 			
     if(video_type)
 	{
@@ -514,7 +515,7 @@ int main(int argc, char** argv) {
 	
     if( video_type == VIDEO_TYPE_H264_CH1)
     {
-	    sms = ServerMediaSession::createNew(*env, H264StreamName[video_type], H264StreamName[video_type], streamDescription,streamingMode == STREAMING_MULTICAST_SSM);
+	    sms = ServerMediaSession::createNew(*env, H264StreamName[video_type], H264StreamName[video_type], stream_description,streamingMode == STREAMING_MULTICAST_SSM);
 	
 	    sourceAudio = H264InputDevice[video_type]->audioSource();  
 	    sourceVideo = H264VideoStreamFramer::createNew(*env, H264InputDevice[video_type]->videoSource());
@@ -538,7 +539,7 @@ int main(int argc, char** argv) {
 
 	if( video_type == VIDEO_TYPE_H264_CH2)
 	{	
-		sms = ServerMediaSession::createNew(*env, H264StreamName[video_type], H264StreamName[video_type], streamDescription,streamingMode == STREAMING_MULTICAST_SSM);
+		sms = ServerMediaSession::createNew(*env, H264StreamName[video_type], H264StreamName[video_type], stream_description,streamingMode == STREAMING_MULTICAST_SSM);
 		
 		sourceAudio = H264InputDevice[video_type]->audioSource();
 		sourceVideo = WISJPEGStreamSource::createNew(H264InputDevice[video_type]->videoSource());
