@@ -41,7 +41,6 @@
 typedef struct {
 	app_thr_obj dObj;	//# dev thread
 	app_thr_obj gObj;	//# gps thread
-	app_thr_obj sObj;	//# g-sensor thread
 	app_thr_obj bObj;	//# buzzer thread
 
 	int init;			//# initialize
@@ -166,71 +165,6 @@ int app_get_gsn(int *x, int *y, int *z)
 	*z = acc.z;
 
 	return idev->gsn;
-}
-
-/*****************************************************************************
-* @brief	g-sensor thread function
-* @section  [desc]
-*****************************************************************************/
-static void *THR_gsn(void *prm)
-{
-	app_thr_obj *tObj = &idev->sObj;
-	int cmd, exit=0, ret;
-	accel_data_t acc_obj;
-	int first;
-
-	//# g-sensor open
-	ret = dev_accel_init();
-	if(ret < 0) {
-		eprintf("device open fail\n");
-		return NULL;
-	}
-	dev_accel_start();
-
-	aprintf("enter...\n");
-	tObj->active = 1;
-	first = CNT_GSN_SKIP;	//# skip for first
-
-	while(!exit)
-	{
-		cmd = tObj->cmd;
-		if(cmd == APP_CMD_EXIT) {
-			break;
-		}
-
-		if(iapp->ste.b.cap)
-		{
-			//# get accelerator sensor value
-			ret = dev_accel_read(&acc_obj, 100);
-            if(ret == 0)
-            {
-            	idev->gsn = 1;
-            	if(first > 0) {
-					first--;
-				}
-				else
-				{
-					acc.x = acc_obj.x;	//# forward-backword
-					acc.y = acc_obj.z;	//# left-right
-					acc.z = acc_obj.y;	//# up-down
-
-					//dprintf("x:%3d, y:%3d, z:%3d\n", acc.x, acc.y, acc.z);
-					//gui_draw_state(STE_GSENS, 0, UI_DRAW);
-				}
-            }
-		}
-
-		OSA_waitMsecs(TIME_GSN_CYCLE);
-	}
-
-	//# device close
-	dev_accel_stop();
-	dev_accel_exit();
-
-	tObj->active = 0;
-	aprintf("...exit\n");
-
-	return NULL;
 }
 
 /*****************************************************************************
@@ -412,13 +346,6 @@ int app_dev_start(void)
 	//#--- create gps thread
 	app_gps_ctrl(ENA);
 
-	//#--- create g-sensor thread
-	tObj = &idev->sObj;
-	if(thread_create(tObj, THR_gsn, APP_THREAD_PRI, NULL) < 0) {
-		eprintf("create thread\n");
-		return EFAIL;
-	}
-
 	//#--- create buzzer thread
 	tObj = &idev->bObj;
 	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL) < 0) {
@@ -435,14 +362,6 @@ void app_dev_stop(void)
 
 	//#--- stop buzzer thread
 	tObj = &idev->bObj;
-	event_send(tObj, APP_CMD_EXIT, 0, 0);
-	while(tObj->active) {
-		OSA_waitMsecs(10);
-	}
-	thread_delete(tObj);
-
-	//#--- stop gsn thread
-	tObj = &idev->sObj;
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while(tObj->active) {
 		OSA_waitMsecs(10);

@@ -210,20 +210,33 @@ static void *THR_dev(void *prm)
 			app_mcu_pwr_off(OFF_RESET);
 		}
 		
+#if defined(NEXXONE)
+		/* record key --> call function */
+		rkey = chk_rec_key();
+		//# For button enable, when camera didn't connected 
+		if (rkey == KEY_SHORT) {		
+			/* Short KEY */
+			app_voip_event_noty();
+		} else if (rkey == KEY_LONG) {	
+			/* volume control */
+			app_voip_set_play_volume();
+		}
+#elif defined(NEXX360W)
+		#if SYS_CONFIG_VOIP
+		/* record key --> call function */
+		rkey = chk_rec_key();
+		//# For button enable, when camera didn't connected 
+		if (rkey == KEY_SHORT) {		
+			/* Short KEY */
+			app_voip_event_noty();
+		} else if (rkey == KEY_LONG) {	
+			/* volume control */
+			app_voip_set_play_volume();
+		}
+		#else
 		if (!app_cfg->ste.b.ftp_run)
-		{	
+		{
 			rkey = chk_rec_key();
-#if defined(NEXXONE) || defined(NEXX360W)
-			#if SYS_CONFIG_VOIP
-			//# For button enable, when camera didn't connected 
-			if (rkey == KEY_SHORT) {		
-				/* Short KEY */
-				app_voip_event_noty();
-			} else if (rkey == KEY_LONG) {	
-				/* volume control */
-				app_voip_set_play_volume();
-			}
-			#else
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
 					app_rec_stop(1);
@@ -240,8 +253,12 @@ static void *THR_dev(void *prm)
 				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함.
 				ctrl_auto_update(); 
 			}
-			#endif /* #if SYS_CONFIG_VOIP */
+		}
+		#endif /* #if SYS_CONFIG_VOIP */
 #elif defined(NEXX360B)
+		if (!app_cfg->ste.b.ftp_run)
+		{
+			rkey = chk_rec_key();
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
@@ -259,8 +276,8 @@ static void *THR_dev(void *prm)
 				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함.
 				ctrl_auto_update(); 
 			}
-#endif /* end of #if defined(NEXXONE) */
-		}	
+		}
+#endif
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
