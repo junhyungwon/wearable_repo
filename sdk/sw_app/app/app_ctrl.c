@@ -72,6 +72,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
   
     params.rateControl = rc ;
 
+    app_set->ch[ch].rate_ctrl = rc;
 	Venc_setDynamicParam(ch, 0, &params, VENC_RATECONTROL);  // set rate control
 
 	if(rc == RATE_CTRL_VBR)
@@ -210,18 +211,20 @@ int ctrl_vid_gop_set(int ch, int gop)
 int ctrl_vid_resolution(int resol_idx) 
 {
     char buf[128] = {0, };
-    int ret ;
+    int ret = 0 ;
 
     //# to prevent key input
     app_cfg->ste.b.nokey = 1;
     Vdis_disp_ctrl_exit();
 
+// to do rec stop
+
     ret = app_rec_state() ;
     if (ret) {
         app_rec_stop(1);
-		sleep(1); /* wait for file close */
+	    sleep(1); 
 	}
-	
+		
     app_cap_stop() ;
     app_buzz_ctrl(100, 1);
     app_msleep(200);
@@ -231,6 +234,7 @@ int ctrl_vid_resolution(int resol_idx)
     Vdis_disp_ctrl_init(resol_idx);
 
     app_cap_start();    
+
     if (ret) {
         app_rec_start();
     }

@@ -125,10 +125,13 @@ int do_sysmng(char *pContents)
 				stm_fps = atoi(prm[i].value) ;
 			    if(!strcmp(prm[i+1].name, "bitrate"))
 				    stm_bps = atoi(prm[i+1].value) ;
+			    if(!strcmp(prm[i+2].name, "resolution"))
+				    stm_res = atoi(prm[i+2].value) ;
 
 				vq.stm.fps = stm_fps ;
 				vq.stm.bps = stm_bps ;
 				vq.stm.gop = stm_fps ;
+				vq.stm.res = stm_res ;
 
 				CGI_DBG("set_dyn_video_quality\n");
 				NS_CMD::gRefreshSec = 10;
