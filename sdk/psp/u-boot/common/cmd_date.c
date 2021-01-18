@@ -43,6 +43,41 @@ const char *weekdays[] = {
 
 int mk_date (char *, struct rtc_time *);
 
+//#-------------- from linux kernel --------------------------------
+/*
+ * Does the rtc_time represent a valid date/time?
+ */
+/*
+ * The number of days in the month.
+ */
+static const unsigned char rtc_days_in_month[] = {
+	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+};
+
+static int is_leap_year(unsigned int year)
+{
+	return (!(year % 4) && (year % 100)) || !(year % 400);
+}
+
+static int rtc_month_days(unsigned int month, unsigned int year)
+{
+	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
+}
+
+static int rtc_valid_tm(struct rtc_time *tm)
+{
+	if (tm->tm_year < 70
+		|| ((unsigned)tm->tm_mon) >= 12
+		|| tm->tm_mday < 1
+		|| tm->tm_mday > rtc_month_days(tm->tm_mon, tm->tm_year + 1900)
+		|| ((unsigned)tm->tm_hour) >= 24
+		|| ((unsigned)tm->tm_min) >= 60
+		|| ((unsigned)tm->tm_sec) >= 60)
+		return -1;
+
+	return 0;
+}
+
 int do_date (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	struct rtc_time tm;
@@ -60,8 +95,23 @@ int do_date (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 #endif
 
 	switch (argc) {
-	case 2:			/* set date & time */
-		if (strcmp(argv[1],"reset") == 0) {
+	case 2:			
+		/* rtc valid */
+		if (strcmp(argv[1],"valid") == 0) {
+			rcode = rtc_get (&tm);
+			if (rcode) {
+				puts("## Get date failed\n");
+				break;
+			}
+			rcode = rtc_valid_tm (&tm);
+			if (rcode) {
+				puts("## Invalid date, reset time(2000.01.01.12:00:00)...\n");
+				/* MMDDhhmm[[CC]YY][.ss] */
+				mk_date ("010112002000", &tm);
+			}
+		}
+		/* set date & time */
+		else if (strcmp(argv[1],"reset") == 0) {
 			puts ("Reset RTC...\n");
 			rtc_reset ();
 		} else {
