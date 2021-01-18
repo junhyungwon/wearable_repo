@@ -143,6 +143,9 @@ int do_sysmng(char *pContents)
 			else if(!strcmp(prm[i].name, "bitrate"))
 			{
 			}
+			else if(!strcmp(prm[i].name, "resolution"))
+			{
+			}
             else {
 				CGI_DBG("Invalid param:%s\n", prm[i].name);
 				ret = ERR_INVALID_PARAM;
