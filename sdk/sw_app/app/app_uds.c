@@ -91,9 +91,9 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 		else if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 			newRes = RESOL_720P;
 		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol == RESOL_720P)
-			newRes = RESOL_480P;
-		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol == RESOL_480P)
 			newRes = RESOL_720P;
+		else if (h == 1080 && app_set->ch[STM_CH_NUM].resol == RESOL_480P)
+			newRes = RESOL_480P;
 #else
 		if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 			newRes = RESOL_720P;
@@ -114,9 +114,9 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 		else if(h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 			newRes = RESOL_720P;
 		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol == RESOL_720P)
-			newRes = RESOL_480P;
-		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol == RESOL_480P)
 			newRes = RESOL_720P;
+		else if (h == 1080  && app_set->ch[STM_CH_NUM].resol == RESOL_480P)
+			newRes = RESOL_480P;
 #else
 		if (h == 720  && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
 			newRes = RESOL_720P;
@@ -1204,13 +1204,8 @@ static int setDynamicVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec
 	{
 	    ctrl_vid_gop_set(ch, stm_gop) ;
 	}
-
 	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 		ctrl_vid_resolution(stm_res);
-	else if(stm_res == RESOL_1080P && app_set->ch[ch].resol == RESOL_480P)
-		ctrl_vid_resolution(RESOL_720P);
-	else if(stm_res == RESOL_1080P && app_set->ch[ch].resol == RESOL_720P)
-		ctrl_vid_resolution(RESOL_480P);
 	
 #else
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
@@ -1262,10 +1257,6 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 #if defined(NEXXONE)
 	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 		ctrl_vid_resolution(stm_res);
-	else if(stm_res == RESOL_1080P && app_set->ch[ch].resol == RESOL_480P)
-		ctrl_vid_resolution(RESOL_720P);
-	else if(stm_res == RESOL_1080P && app_set->ch[ch].resol == RESOL_720P)
-		ctrl_vid_resolution(RESOL_480P);
 #else 
 	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 		ctrl_vid_resolution(stm_res);
@@ -1274,21 +1265,17 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
 	{
 	    ctrl_vid_framerate(ch, stm_fps) ;
-//		app_set->ch[ch].framerate = stm_fps ;
 	}
 	if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
     {
 	    ctrl_vid_bitrate(ch, stm_bps) ;
-//		app_set->ch[ch].quality = stm_bps ;
 	}
 	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
 	{
 	    ctrl_vid_gop_set(ch, stm_gop) ;
-//		app_set->ch[ch].gop = stm_gop ;
 	}
 	if(stm_rc != app_set->ch[ch].rate_ctrl){
         ctrl_vid_rate(ch, stm_rc, 0) ;
-//		app_set->ch[ch].rate_ctrl = stm_rc;
 	}
 	DBG_UDS("[STM] ch:%d, res:%d, fps:%d, bps:%d, gop:%d, rc:%d\n", ch, stm_res, stm_fps, stm_bps, stm_gop, stm_rc);
 
