@@ -7,12 +7,11 @@ XDC_BUILD_PKG_LIST_M3      += $(XDC_BUILD_PKG_LIST_COMMON)
 FIRMWARE_OUT_PATH=$(TARGET_MCFW_DIR)/firmware/
 XEM3_IN_PATH=$(DEST_ROOT)/ipnc_rdk/bin/$(PLATFORM)/
 
-CPU_NUM=8
 
 #---------------------------------------------------------------------
 m3vpss:
-	$(MAKE) -j$(CPU_NUM) -C $(MCFW_ROOT_PATH)/mcfw/src_bios6 CORE=m3vpss
-	$(MAKE) -j$(CPU_NUM) -C $(MCFW_ROOT_PATH)/mcfw/src_bios6/main_app xdc_configuro CORE=m3vpss
+	$(MAKE) -C $(MCFW_ROOT_PATH)/mcfw/src_bios6 CORE=m3vpss
+	$(MAKE) -C $(MCFW_ROOT_PATH)/mcfw/src_bios6/main_app xdc_configuro CORE=m3vpss
 	$(MAKE) -C $(MCFW_ROOT_PATH)/mcfw/src_bios6/main_app CORE=m3vpss
 	-mkdir -p $(FIRMWARE_OUT_PATH)
 	cp $(XEM3_IN_PATH)/ipnc_rdk_m3vpss_$(PROFILE_m3vpss).xem3 $(FIRMWARE_OUT_PATH)/sdk_fw_m3vpss.xem3
