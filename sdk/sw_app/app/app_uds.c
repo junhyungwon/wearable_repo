@@ -1225,7 +1225,7 @@ static int setDynamicVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec
 	{
 	    ctrl_vid_gop_set(ch, stm_gop) ;
 	}
-	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 	{
 		ctrl_vid_resolution(stm_res);
 	}
