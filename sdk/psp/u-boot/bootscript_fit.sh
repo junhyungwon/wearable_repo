@@ -34,7 +34,7 @@ fi
 #--- Data Area -----------------------------------
 nand scrub 0x04C00000 0x3000000
 
-setenv bootcmd 'run update;nboot.e 0x81000000 0 0x220000;bootm 0x81000000;'
+setenv bootcmd 'run update;date valid;nboot.e 0x81000000 0 0x220000;bootm 0x81000000;'
 setenv bootargs 'mem=180M console=ttyO0,115200n8 noinitrd rw ubi.mtd=5,2048 rootfstype=ubifs root=ubi0:rootfs ip=off vram=6M notifyk.vpssm3_sva=0xBFD00000 quiet' eth=${ethaddr}
 
 #--- save env ---

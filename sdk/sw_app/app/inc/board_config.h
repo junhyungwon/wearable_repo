@@ -48,7 +48,7 @@
 #	define MAX_FPS						30	
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_WLAN				1
-#	define SYS_CONFIG_GPS				0
+#	define SYS_CONFIG_GPS				1
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif
