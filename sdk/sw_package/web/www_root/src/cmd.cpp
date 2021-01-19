@@ -48,6 +48,7 @@ int get_vid_response(int retval)
 
     printf("\"FPS\" :  %d\n",vq.stm.fps) ;
 	printf("\"BPS\" :  %d\n",vq.stm.bps) ;
+	printf("\"RES\" :  %d\n",vq.stm.res) ;
  	printf("{ return value: %d }", SOK);
 }
 
