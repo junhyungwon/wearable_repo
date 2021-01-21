@@ -45,10 +45,12 @@ app_all: app_clean app
 
 app_test:
 	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) hw_test
+	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) hw_diag
 	@echo -e "\n--- make app done! (`date +'%H:%M:%S'`)---\n"
 
 app_test_clean:
 	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) clean_test
+	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) clean_diag
 
 hw_test: app_test fsupdate
 hw_test_all: app_test_clean hw_test
@@ -120,24 +122,24 @@ live555_clean:
 
 live555_all: live555_clean live555
 
-ntpclient: 
+ntpclient:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/ntpclient
 
-ntpclient_install: 
+ntpclient_install:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/ntpclient install
 
-ntpclient_clean: 
+ntpclient_clean:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/ntpclient clean
 
 ntpclient_all: ntpclient_clean ntpclient ntpclient_install
 
-process_check: 
+process_check:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/proc_check
 
-process_check_install: 
+process_check_install:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/proc_check install
 
-process_check_clean: 
+process_check_clean:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/proc_check clean
 
 process_check_all: process_check_clean process_check process_check_install
