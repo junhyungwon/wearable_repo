@@ -6,10 +6,10 @@ test -f ./init.sh || exit 0
 ./init.sh
 ./load.sh
 
-if [ -e /mmc/hw_test.out ]; then
+if [ -e /mmc/hw_diag.out ]; then
 	echo "Running Hardware Test!!"
-	chmod +x /mmc/hw_test.out
-	/mmc/hw_test.out
+	chmod +x /mmc/hw_diag.out
+	/mmc/hw_diag.out
 fi
 
 if [ -x ./bin/app_fitt.out ]; then
