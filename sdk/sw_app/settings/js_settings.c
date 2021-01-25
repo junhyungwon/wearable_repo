@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <json-c/json.h> 
 
+#include "app_base64.h"
 #include "js_settings.h"
 #include "board_config.h"
 
@@ -32,6 +33,7 @@ static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 #endif
 static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 {
+	size_t dec_size = 0;
 	const char* STR_FIELD = "account_info";
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
@@ -44,9 +46,13 @@ static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 	tmp = json_object_object_get(jobj, "enctype");
 	set->account_info.enctype = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "rtsp_userid");
-	sprintf(set->account_info.rtsp_userid, "%s", json_object_get_string(tmp));
+	memcpy(set->account_info.rtsp_userid, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "rtsp_passwd");
-	sprintf(set->account_info.rtsp_passwd, "%s", json_object_get_string(tmp));
+	dec_size = 0;
+	memcpy(set->account_info.rtsp_passwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
+
+	printf("set->account_info.rtsp_userid: %s\n", set->account_info.rtsp_userid);
+	printf("set->account_info.rtsp_passwd: %s\n", set->account_info.rtsp_passwd);
 
 	json_object* webuser = json_object_object_get(jobj, "webuser");
 	type = json_object_get_type(webuser);
@@ -54,22 +60,30 @@ static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 		tmp = json_object_object_get(webuser, "authtype");
 		set->account_info.webuser.authtype = json_object_get_int(tmp);
 		tmp = json_object_object_get(webuser, "id");
-		sprintf(set->account_info.webuser.id, "%s", json_object_get_string(tmp));
-		tmp = json_object_object_get(webuser, "pw");
-		sprintf(set->account_info.webuser.pw, "%s", json_object_get_string(tmp));
+		dec_size = 0;
+		memcpy(set->account_info.webuser.id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
+ 		tmp = json_object_object_get(webuser, "pw");
+		dec_size = 0;
+		memcpy(set->account_info.webuser.pw, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 		tmp = json_object_object_get(webuser, "lv");
 		set->account_info.webuser.lv = json_object_get_int(tmp);
+
+		printf("set->account_info.webuser.id: %s\n", set->account_info.webuser.id);
+		printf("set->account_info.webuser.pw: %s\n", set->account_info.webuser.pw);
 	}
 
 	json_object* onvif = json_object_object_get(jobj, "onvif");
 	type = json_object_get_type(onvif);
 	if( type == json_type_object) { // must be jobject
 		tmp = json_object_object_get(onvif, "id");
-		sprintf(set->account_info.onvif.id, "%s", json_object_get_string(tmp));
+		memcpy(set->account_info.onvif.id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 		tmp = json_object_object_get(onvif, "pw");
-		sprintf(set->account_info.onvif.pw, "%s", json_object_get_string(tmp));
+		memcpy(set->account_info.onvif.pw, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 		tmp = json_object_object_get(onvif, "lv");
 		set->account_info.onvif.lv = json_object_get_int(tmp);
+
+		printf("set->account_info.onvif.pw: %s\n", set->account_info.onvif.pw);
+		printf("set->account_info.onvif.id: %s\n", set->account_info.onvif.id);
 	}
 
 	return 0;
@@ -98,6 +112,7 @@ static int	parseTimeInfo(app_set_t* const set, json_object* rootObj)
 }
 static int	parseDdnsInfo(app_set_t* const set, json_object* rootObj)
 {
+	size_t dec_size = 0;
 	const char* STR_FIELD = "ddns_info";
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
@@ -108,15 +123,18 @@ static int	parseDdnsInfo(app_set_t* const set, json_object* rootObj)
 	json_object* tmp = json_object_object_get(jobj, "ON_OFF");
 	set->ddns_info.ON_OFF = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "userId");
-	sprintf(set->ddns_info.userId, "%s", json_object_get_string(tmp));
+	memcpy(set->ddns_info.userId, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "passwd");
-	sprintf(set->ddns_info.passwd, "%s", json_object_get_string(tmp));
+	memcpy(set->ddns_info.passwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "serveraddr");
 	sprintf(set->ddns_info.serveraddr, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "hostname");
 	sprintf(set->ddns_info.hostname, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "interval");
 	set->ddns_info.interval = json_object_get_int(tmp);
+
+	printf("set->ddns_info.userId: %s\n", set->ddns_info.userId);
+	printf("set->ddns_info.passwd: %s\n", set->ddns_info.passwd);
 
 	return 0;
 }
@@ -144,6 +162,7 @@ static int	parseRecInfo(app_set_t* const set, json_object* rootObj)
 }
 static int	parseSystemInfo(app_set_t* const set, json_object* rootObj)
 {
+	size_t dec_size = 0;
 	const char* STR_FIELD = "sys_info";
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
@@ -162,18 +181,22 @@ static int	parseSystemInfo(app_set_t* const set, json_object* rootObj)
 	tmp = json_object_object_get(jobj, "P2P_ON_OFF");
 	set->sys_info.P2P_ON_OFF = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "p2p_id");
-	sprintf(set->sys_info.p2p_id, "%s", json_object_get_string(tmp));
+	memcpy(set->sys_info.p2p_id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "p2p_passwd");
-	sprintf(set->sys_info.p2p_passwd, "%s", json_object_get_string(tmp));
+	memcpy(set->sys_info.p2p_passwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "uid");
 	sprintf(set->sys_info.uid, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "dev_cam_ch");
 	set->sys_info.dev_cam_ch = json_object_get_int(tmp);
 
+	printf("set->sys_info.p2p_id: %s\n", set->sys_info.p2p_id);
+	printf("set->sys_info.p2p_passwd: %s\n", set->sys_info.p2p_passwd);
+
 	return 0;
 }
 static int	parseNetworkWifiAp(app_set_t* const set, json_object* rootObj)
 {
+	size_t dec_size = 0;
 	const char* STR_FIELD = "wifiap";
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
@@ -186,14 +209,17 @@ static int	parseNetworkWifiAp(app_set_t* const set, json_object* rootObj)
 	tmp = json_object_object_get(jobj, "ssid");
 	sprintf(set->wifiap.ssid, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "pwd");
-	sprintf(set->wifiap.pwd, "%s", json_object_get_string(tmp));
+	memcpy(set->wifiap.pwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_64, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "stealth");
 	set->wifiap.stealth = json_object_get_int(tmp);
+
+	printf("set->wifiap.pwd: %s\n", set->wifiap.pwd);
 
 	return 0;
 }
 static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)
 {
+	size_t dec_size = 0;
 	const char* STR_FIELD = "ftp_info";
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
@@ -206,11 +232,14 @@ static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)
 	tmp = json_object_object_get(jobj, "ipaddr");
 	sprintf(set->ftp_info.ipaddr, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "id");
-	sprintf(set->ftp_info.id, "%s", json_object_get_string(tmp));
+	memcpy(set->ftp_info.id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_16, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "pwd");
-	sprintf(set->ftp_info.pwd, "%s", json_object_get_string(tmp));
+	memcpy(set->ftp_info.pwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_16, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "ON_OFF");
 	set->ftp_info.ON_OFF = json_object_get_int(tmp);
+
+	printf("set->ftp_info.id: %s\n", set->ftp_info.id);
+	printf("set->ftp_info.pwd: %s\n", set->ftp_info.pwd);
 
 	return 0;
 }
@@ -414,7 +443,8 @@ int js_read_settings(app_set_t* const set, const char* fname)
 int js_write_settings(const app_set_t* const set, const char* fname)
 {
 	int i, ret;
-
+	size_t enc_size = 0;
+	
 	json_object *rootObject;
 	json_object* chinfo_array;
 
@@ -480,8 +510,8 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object* network_ftp = json_object_new_object();
 	json_object_object_add(network_ftp, "port",   json_object_new_int(set->ftp_info.port));
 	json_object_object_add(network_ftp, "ipaddr", json_object_new_string(set->ftp_info.ipaddr));
-	json_object_object_add(network_ftp, "id",     json_object_new_string(set->ftp_info.id));
-	json_object_object_add(network_ftp, "pwd",    json_object_new_string(set->ftp_info.pwd));
+	json_object_object_add(network_ftp, "id",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->ftp_info.id, MAX_CHAR_16, &enc_size)));
+	json_object_object_add(network_ftp, "pwd",    json_object_new_string((const char*)base64_encode((const unsigned char*)set->ftp_info.pwd, MAX_CHAR_16, &enc_size)));
 	json_object_object_add(network_ftp, "ON_OFF", json_object_new_int(set->ftp_info.ON_OFF));
 	json_object_object_add(rootObject,  "ftp_info", network_ftp);
 
@@ -489,7 +519,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object* wifiap = json_object_new_object();
 	json_object_object_add(wifiap, "en_key",  json_object_new_int(set->wifiap.en_key));
 	json_object_object_add(wifiap, "ssid",    json_object_new_string(set->wifiap.ssid));
-	json_object_object_add(wifiap, "pwd",     json_object_new_string(set->wifiap.pwd));
+	json_object_object_add(wifiap, "pwd",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->wifiap.pwd, MAX_CHAR_64, &enc_size)));
 	json_object_object_add(wifiap, "stealth", json_object_new_int(set->wifiap.stealth));
 	json_object_object_add(rootObject,  "wifiap", wifiap);
 
@@ -500,8 +530,8 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(sys_info, "deviceId",   json_object_new_string(set->sys_info.deviceId));
 	json_object_object_add(sys_info, "osd_set",    json_object_new_int(set->sys_info.osd_set));
 	json_object_object_add(sys_info, "P2P_ON_OFF", json_object_new_int(set->sys_info.P2P_ON_OFF));
-	json_object_object_add(sys_info, "p2p_id",     json_object_new_string(set->sys_info.p2p_id));
-	json_object_object_add(sys_info, "p2p_passwd", json_object_new_string(set->sys_info.p2p_passwd));
+	json_object_object_add(sys_info, "p2p_id",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->sys_info.p2p_id, MAX_CHAR_32, &enc_size)));
+	json_object_object_add(sys_info, "p2p_passwd", json_object_new_string((const char*)base64_encode((const unsigned char*)set->sys_info.p2p_passwd, MAX_CHAR_32, &enc_size)));
 	json_object_object_add(sys_info, "uid",        json_object_new_string(set->sys_info.uid));
 	json_object_object_add(sys_info, "dev_cam_ch", json_object_new_int(set->sys_info.dev_cam_ch));
 	json_object_object_add(rootObject,  "sys_info", sys_info);
@@ -518,8 +548,8 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	// 9. ddns information
 	json_object* ddns_info = json_object_new_object();
 	json_object_object_add(ddns_info, "ON_OFF",     json_object_new_int(set->ddns_info.ON_OFF));
-	json_object_object_add(ddns_info, "userId",     json_object_new_string(set->ddns_info.userId));
-	json_object_object_add(ddns_info, "passwd",     json_object_new_string(set->ddns_info.passwd));
+	json_object_object_add(ddns_info, "userId",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->ddns_info.userId, MAX_CHAR_32, &enc_size)));
+	json_object_object_add(ddns_info, "passwd",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->ddns_info.passwd, MAX_CHAR_32, &enc_size)));
 	json_object_object_add(ddns_info, "serveraddr", json_object_new_string(set->ddns_info.serveraddr));
 	json_object_object_add(ddns_info, "hostname",   json_object_new_string(set->ddns_info.hostname));
 	json_object_object_add(ddns_info, "interval",   json_object_new_int(set->ddns_info.interval));
@@ -538,17 +568,17 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object* account_info = json_object_new_object();
 	json_object_object_add(account_info, "ON_OFF",       json_object_new_int(set->account_info.ON_OFF));
 	json_object_object_add(account_info, "enctype",       json_object_new_int(set->account_info.enctype));
-	json_object_object_add(account_info, "rtsp_userid", json_object_new_string(set->account_info.rtsp_userid));
-	json_object_object_add(account_info, "rtsp_passwd", json_object_new_string(set->account_info.rtsp_passwd));
+	json_object_object_add(account_info, "rtsp_userid", json_object_new_string((const char*)base64_encode((const unsigned char*)set->account_info.rtsp_userid, MAX_CHAR_32, &enc_size)));
+	json_object_object_add(account_info, "rtsp_passwd", json_object_new_string((const char*)base64_encode((const unsigned char*)set->account_info.rtsp_passwd, MAX_CHAR_32, &enc_size)));
 	json_object* webuser = json_object_new_object();
 	json_object_object_add(webuser, "authtype", json_object_new_int(set->account_info.webuser.authtype));
-	json_object_object_add(webuser, "id",       json_object_new_string(set->account_info.webuser.id));
-	json_object_object_add(webuser, "pw",       json_object_new_string(set->account_info.webuser.pw));
+	json_object_object_add(webuser, "id",       json_object_new_string((const char*)base64_encode((const unsigned char*)set->account_info.webuser.id, MAX_CHAR_32, &enc_size)));
+	json_object_object_add(webuser, "pw",       json_object_new_string((const char*)base64_encode((const unsigned char*)set->account_info.webuser.pw, MAX_CHAR_32, &enc_size)));
 	json_object_object_add(webuser, "lv",       json_object_new_int(set->account_info.webuser.lv));
 	json_object_object_add(account_info,  "webuser", webuser);
 	json_object* onvif = json_object_new_object();
-	json_object_object_add(onvif, "id",       json_object_new_string(set->account_info.onvif.id));
-	json_object_object_add(onvif, "pw",       json_object_new_string(set->account_info.onvif.pw));
+	json_object_object_add(onvif, "id",       json_object_new_string((const char*)base64_encode((const unsigned char*)set->account_info.onvif.id, MAX_CHAR_32, &enc_size)));
+	json_object_object_add(onvif, "pw",       json_object_new_string((const char*)base64_encode((const unsigned char*)set->account_info.onvif.pw, MAX_CHAR_32, &enc_size)));
 	json_object_object_add(onvif, "lv",       json_object_new_int(set->account_info.onvif.lv));
 	json_object_object_add(account_info,  "onvif", onvif);
 	json_object_object_add(rootObject,  "account_info", account_info);
@@ -568,7 +598,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	// Finish
 	printf("%s\n", json_object_to_json_string(rootObject));
 
-	ret = json_object_to_file_ext(fname, rootObject, JSON_C_TO_STRING_PLAIN);
+	ret = json_object_to_file_ext((char*)fname, rootObject, JSON_C_TO_STRING_PLAIN);
 	if(ret == -1){
 		printf("Failed save JSON File.\n");
 	}

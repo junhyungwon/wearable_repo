@@ -246,7 +246,8 @@ int app_cfg_init(void)
 
 	memset((void *)app_cfg, 0, sizeof(app_cfg_t));
 
-	app_cfg->ste.b.mmc = dev_ste_mmc();
+	//# save mmc status
+	app_cfg->ste.b.mmc = dev_ste_mmc();;
 
 	//# module ctrl
 	app_cfg->en_rec = 1;
@@ -256,7 +257,6 @@ int app_cfg_init(void)
 
     app_cfg->en_jpg = 1 ;
 	app_cfg->ftp_enable = OFF ;
-    app_set_open();
 
     app_cfg->tvo_flag |= TVO_REC;
     app_cfg->tvo_flag |= TVO_TEMP;
@@ -281,7 +281,6 @@ int main(int argc, char **argv)
 {
 	unsigned long part_size = 0;
 	int ret, mmc_state;
-	DIR *mnt_dir = NULL ;
 
 	printf("\n--- FITT360 start (v%s) ---\n", FITT360_SW_VER);
 	
@@ -292,14 +291,25 @@ int main(int argc, char **argv)
 	}
 
 	/* set leds off state */
+	app_mcu_init();
 	app_leds_init();
+	app_buzz_init(); //# buzzer mutex init..	
 
 	mmc_state = app_cfg_init();
-    app_setdns() ;  // set resolv.conf
-	app_mcu_init();
-	app_buzz_init(); //# buzzer mutex init..
-	
-	if (mmc_state < 0) {
+	if (mmc_state == SOK) {
+		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+#if defined(NEXXONE) || defined(NEXX360W)
+	#if SYS_CONFIG_VOIP
+			/* copy app_fitt.out or full update */
+			ctrl_auto_update();
+			if(app_cfg->ste.b.pwr_off)
+				return 0;
+	#endif
+#endif
+		/* remove update files */
+		ctrl_reset_nand_update();
+		
+	} else {	//# mmc error
 		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
 		app_buzz_ctrl(100, 1);
 		app_msleep(5000);
@@ -307,17 +317,11 @@ int main(int argc, char **argv)
 		app_msleep(100);
 		mic_msg_exit();
 		return -1;
-	} else {
-		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-#if defined(NEXXONE) || defined(NEXX360W)
-		#if SYS_CONFIG_VOIP
-		/* copy app_fitt.out or full update */
-		ctrl_auto_update();
-		#endif
-#endif
-		/* remove update files */
-		ctrl_reset_nand_update();
 	}
+
+	app_set_open();
+    app_setdns() ;  // set resolv.conf
+
 
 	//#--- system init
 	ret = main_thread_init();

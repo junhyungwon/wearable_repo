@@ -61,8 +61,8 @@
 #define NEXX_CFG_FILE_MMC       "/mmc/cfg/nexx_cfg.ini"
 #define NEXX_CFG_FILE_NAND      "/media/nand/cfg/nexx_cfg.ini"
 
-#define NEXX_CFG_JSON_MMC		"/mmc/cfg/nexx.json"
-#define NEXX_CFG_JSON_NAND		"/media/nand/cfg/nexx.json"
+#define NEXX_CFG_JSON_MMC		"/mmc/cfg/nexx_cfg.json"
+#define NEXX_CFG_JSON_NAND		"/media/nand/cfg/nexx_cfg.json"
 
 /* micom watchdog */
 #define WD_ENC					(1<<0)
