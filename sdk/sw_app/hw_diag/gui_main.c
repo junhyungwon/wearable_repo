@@ -381,7 +381,7 @@ static char menu_main[] = {
 	"\r\n ============="
 	"\r\n"
 	"\r\n 0: exit"
-	"\r\n 1: 1HD"
+	"\r\n 1: Jpeg"
 	"\r\n"
 	"\r\n 2: Get version"
 	"\r\n 3: Buzzer test"
@@ -418,6 +418,7 @@ static int gui_test_main(void *thr)
 				
 			case '1':
 				/* camera */
+				iapp->snapshot = 1; //# temp
 				break;
 			
 			case '2':

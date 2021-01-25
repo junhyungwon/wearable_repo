@@ -20,7 +20,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-
 typedef union {
 	unsigned int w;
 	struct {
@@ -44,8 +43,15 @@ typedef struct {
 	
 	int hw_ver;
 	int mcu_ver;
+	int snapshot;
 	
 } __attribute__((packed)) app_cfg_t;
+
+typedef enum {
+	RATE_CTRL_VBR,
+	RATE_CTRL_CBR,
+	MAX_RATE_CTRL
+} app_rate_ctrl_e;
 
 /*----------------------------------------------------------------------------
  Declares variables
