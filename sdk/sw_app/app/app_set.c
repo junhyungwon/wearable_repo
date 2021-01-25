@@ -1117,19 +1117,24 @@ int app_set_open(void)
 	// try read config from json file
 	ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC);
     if( EFAIL == ret)
+		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
+	
+	if(EFAIL == ret)
 #endif
 	{
-		/* 
-		* Fitt360 CFG Path 
-		*            MMC  : ---> /mmc/cfg/fbx_cfg.ini
-		*            NAND : ---> /media/nand/cfg/fbx_cfg.ini
-		* 
-		* NEXX360/NEXXONE CFG Path 
-		*            MMC  : --> /mmc/cfg/nexx_cfg.ini
-		*            NAND : --> /media/nand/cfg/nexx_cfg.ini 
-		*/
-		if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL) //# sd read first.
-			ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);  //# nand read if sd read fail
+	/* 
+	* Fitt360 CFG Path 
+	*            MMC  : ---> /mmc/cfg/fbx_cfg.ini
+	*            NAND : ---> /media/nand/cfg/fbx_cfg.ini
+	* 
+	* NEXX360/NEXXONE CFG Path 
+	*            MMC  : --> /mmc/cfg/nexx_cfg.ini
+	*            NAND : --> /media/nand/cfg/nexx_cfg.ini 
+	*/
+	    if (cfg_read(CFG_MMC, NEXX_CFG_FILE_MMC) == EFAIL) //# sd read first.
+		    ret = cfg_read(CFG_NAND, NEXX_CFG_FILE_NAND);  //# nand read if sd read fail
+		else
+			ret = SOK ;
 	}
 
 	if (ret == EFAIL) 
@@ -1157,6 +1162,26 @@ int app_set_write(void)
 {
 	char path[128] ={0,};
 
+#if ENABLE_JSON_CONFIG_FILE 	
+	if (app_cfg->ste.b.mmc && !app_cfg->ste.b.mmc_err)
+	{
+		if (-1 == access(CFG_DIR_MMC, 0)) {
+			mkdir(CFG_DIR_MMC, 0775);
+			chmod(CFG_DIR_MMC, 0775);
+		}
+        if(js_write_settings(app_set, NEXX_CFG_JSON_MMC) != OSA_SOK)
+			eprintf("couldn't open %s file\n", path);
+	}
+	//# save cfg in nand.
+
+	if (-1 == access(CFG_DIR_NAND, 0)) {
+		mkdir(CFG_DIR_NAND, 0775);
+		chmod(CFG_DIR_NAND, 0775);
+	}
+    if(js_write_settings(app_set, NEXX_CFG_JSON_NAND) != OSA_SOK)
+	    eprintf("couldn't open %s file\n", path);
+
+#else
 	if (app_cfg->ste.b.mmc && !app_cfg->ste.b.mmc_err)
 	{
 		if (-1 == access(CFG_DIR_MMC, 0)) {
@@ -1182,9 +1207,6 @@ int app_set_write(void)
 	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
 		eprintf("couldn't open %s file\n", path);
 	}
-
-#if ENABLE_JSON_CONFIG_FILE 	
-    js_write_settings(app_set, NEXX_CFG_JSON_MMC);
 #endif
 
 	sync();
