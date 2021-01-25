@@ -239,3 +239,55 @@ int ctrl_leds(int index, int state)
 
 	return 0;
 }
+
+/*****************************************************************************
+* @brief    rate control (VRB/CBR)
+* @section  [desc]
+*****************************************************************************/
+int ctrl_vid_rate(int ch, int rc)
+{
+	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
+    
+	params.rateControl = rc;
+	Venc_setDynamicParam(ch, 0, &params, VENC_RATECONTROL);  // set rate control
+
+	if (rc == RATE_CTRL_VBR) {
+		params.qpMax 	= 45;
+		params.qpInit 	= -1;
+        params.qpMin    = 10;
+	}
+	else	//# RATE_CTRL_CBR
+	{
+		params.qpMin	= 10;//10;	//# for improve quality: 10->0
+		params.qpMax 	= 40;
+		params.qpInit 	= -1;
+	}
+
+	Venc_setDynamicParam(ch, 0, &params, VENC_QPVAL_P);  // set QP range
+	return SOK;
+}
+
+int ctrl_enc_multislice(void)
+{
+	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
+
+    /* fixed HD */
+	params.packetSize = 12;  // --> slice count 8
+    Venc_setDynamicParam(MODEL_CH_NUM, 0, &params, VENC_PACKETSIZE);
+
+    return SOK ;
+}
+
+/*****************************************************************************
+* @brief    set video gop
+* @section  [desc]
+*****************************************************************************/
+int ctrl_vid_gop_set(int ch, int gop)
+{
+    VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
+
+    params.intraFrameInterval = gop;
+    Venc_setDynamicParam(ch, 0, &params, VENC_IPRATIO);
+
+    return SOK ;
+}

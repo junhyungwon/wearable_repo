@@ -63,5 +63,8 @@ int ctrl_get_hw_version(char *version);
 int ctrl_get_mcu_version(char *version);
 
 int ctrl_leds(int index, int state);
+int ctrl_vid_rate(int ch, int rc);
+int ctrl_enc_multislice(void);
+int ctrl_vid_gop_set(int ch, int gop);
 
 #endif	/* _APP_CTRL_H_ */
