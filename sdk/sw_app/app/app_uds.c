@@ -639,7 +639,7 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 		strcpy(app_set->voip.userid, t->userid);
 		isChanged++;
 	}
-	if(strcmp( app_set->voip.passwd,t->passwd)){
+	if(strlen(t->passwd) && strcmp( app_set->voip.passwd,t->passwd)){
 		strcpy(app_set->voip.passwd,t->passwd);
 		isChanged++;
 	}
@@ -848,7 +848,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		strcpy(app_set->voip.userid, t->voip.userid);
 		isChanged++;
 	}
-	if(strcmp( app_set->voip.passwd,t->voip.passwd)){
+	if(strlen(t->voip.passwd) && strcmp( app_set->voip.passwd,t->voip.passwd)){
 		strcpy(app_set->voip.passwd,t->voip.passwd);
 		isChanged++;
 	}

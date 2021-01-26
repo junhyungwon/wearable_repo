@@ -596,7 +596,9 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 #endif
 
 	// Finish
+	printf("Write JSON Data\n");
 	printf("%s\n", json_object_to_json_string(rootObject));
+	printf("\n");
 
 	ret = json_object_to_file_ext((char*)fname, rootObject, JSON_C_TO_STRING_PLAIN);
 	if(ret == -1){
