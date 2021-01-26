@@ -1119,7 +1119,12 @@ int app_set_open(void)
     if( EFAIL == ret)
 		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
 	
-	if(EFAIL == ret)
+	// data 검사..cfg_read 아래부분에 있는거 복붙..
+	if(EFAIL != ret){
+	    cfg_param_check_nexx(app_set);
+		app_set_version_read();
+	}
+	else
 #endif
 	{
 	/* 
