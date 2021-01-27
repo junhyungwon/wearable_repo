@@ -206,7 +206,6 @@ static void *THR_snd_cap(void *prm)
 	int read_sz = 0;
 	int si_size, enc_size;
 	
-	char *enc_buf = NULL;
 	char *addr = NULL;
 
 	struct timeval tv ;
@@ -235,13 +234,6 @@ static void *THR_snd_cap(void *prm)
 	}
 	
 	si_size  = (read_sz * APP_SND_CH * (SND_PCM_BITS / 8));
-	/* G.711로 Encoding 시 16bit -> 8bit로 변경됨 */
-	enc_buf = (char *)malloc(si_size/2);
-	if (enc_buf == NULL) {
-		eprintf("ulaw buffer malloc\n");
-		return NULL;
-	}
-	
 	dev_snd_start(&isnd->snd_in);
 #if SYS_CONFIG_VOIP	
 	dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
@@ -271,8 +263,7 @@ static void *THR_snd_cap(void *prm)
 		if (isnd->snd_rec_enable)
 		{
 			//# audio codec : g.711
-			enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
-			addr = g_mem_get_addr(enc_size, &idx);
+			addr = g_mem_get_addr(bytes, &idx);
 			if(addr == NULL) {
 				eprintf("audio gmem is null\n");
 				continue;
@@ -283,15 +274,14 @@ static void *THR_snd_cap(void *prm)
 			ifr->ch = 0;
 			ifr->addr = addr;
 			ifr->offset = (int)addr - g_mem_get_virtaddr();
-			ifr->b_size = enc_size;
+			ifr->b_size = bytes;
 			//ifr->t_sec = (Uint32)(captime/1000);
 			//ifr->t_msec = (Uint32)(captime%1000);
-			app_memcpy(addr, enc_buf, enc_size);
+			app_memcpy(addr, isnd->snd_in.sampv, bytes);
 		}
 #else		
 			//# audio codec : g.711
-		enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)isnd->snd_in.sampv, si_size);
-		addr = g_mem_get_addr(enc_size, &idx);
+		addr = g_mem_get_addr(bytes, &idx);
 		if(addr == NULL) {
 			eprintf("audio gmem is null\n");
 			continue;
@@ -302,10 +292,10 @@ static void *THR_snd_cap(void *prm)
 		ifr->ch = 0;
 		ifr->addr = addr;
 		ifr->offset = (int)addr - g_mem_get_virtaddr();
-		ifr->b_size = enc_size;
+		ifr->b_size = bytes;
 		//ifr->t_sec = (Uint32)(captime/1000);
 		//ifr->t_msec = (Uint32)(captime%1000);
-		app_memcpy(addr, enc_buf, enc_size);
+		app_memcpy(addr, isnd->snd_in.sampv, bytes);
 /*
 		gettimeofday(&tv, NULL) ;
 		timestamp = tv.tv_sec + tv.tv_usec*1000 ;
@@ -320,8 +310,6 @@ static void *THR_snd_cap(void *prm)
 	dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
 	dev_snd_stop(&isnd->snd_in, SND_PCM_CAP);
 #endif	
-	/* free memory alloc */
-	free(enc_buf);
 	dev_snd_param_free(&isnd->snd_in);
 #if SYS_CONFIG_VOIP	
 	dev_snd_param_free(&isnd->snd_dup);

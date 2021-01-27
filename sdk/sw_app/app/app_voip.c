@@ -686,4 +686,5 @@ int app_voip_is_registered(void)
 		res = 1; 
 	return res;	
 }
+
 #endif /* end of #ifdef SYS_CONFIG_VOIP */

@@ -29,10 +29,60 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 static unsigned int gmem_addr;
+extern char *enc_buf;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------
+ audio codec function
+-----------------------------------------------------------------------------*/
+static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, int bufsize)
+{
+    int i, isNegative;
+    short data;
+    short nOut;
+    short lowByte = 1;
+    int outputSize = bufsize / 2;
+
+    for (i=0; i<outputSize; i++)
+    {
+        data = *(src + i);
+        data >>= 2;
+        isNegative = (data < 0 ? 1 : 0);
+
+        if (isNegative)
+            data = -data;
+
+        if (data <= 1) 			nOut = (char) data;
+        else if (data <= 31) 	nOut = ((data - 1) >> 1) + 1;
+        else if (data <= 95)	nOut = ((data - 31) >> 2) + 16;
+        else if (data <= 223)	nOut = ((data - 95) >> 3) + 32;
+        else if (data <= 479)	nOut = ((data - 223) >> 4) + 48;
+        else if (data <= 991)	nOut = ((data - 479) >> 5) + 64;
+        else if (data <= 2015)	nOut = ((data - 991) >> 6) + 80;
+        else if (data <= 4063)	nOut = ((data - 2015) >> 7) + 96;
+        else if (data <= 7903)	nOut = ((data - 4063) >> 8) + 112;
+        else 					nOut = 127;
+
+        if (isNegative) {
+            nOut = 127 - nOut;
+        } else {
+            nOut = 255 - nOut;
+        }
+
+        // Pack the bytes in a word
+        if (lowByte)
+            *(dst + (i >> 1)) = (nOut & 0x00FF);
+        else
+            *(dst + (i >> 1)) |= ((nOut << 8) & 0xFF00);
+
+        lowByte ^= 0x1;
+    }
+
+	return (outputSize);
+}
 
 /*----------------------------------------------------------------------------
  avi file open/close function
@@ -88,24 +138,38 @@ void avi_file_close(FILE *favi, char *fname)
 int avi_file_write(FILE *favi, stream_info_t *ifr)
 {
 	AVI_FRAME_PARAM frame;
-
+	int enc_size=0, sz;
+	char *tmp=NULL;
+	
 	if (favi)
 	{
-		frame.buf	= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
-		frame.size	= ifr->b_size;
-
-		if (ifr->d_type == DATA_TYPE_VIDEO) {
+		if (ifr->d_type == DATA_TYPE_VIDEO) 
+		{
+			frame.buf			= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
+			frame.size			= ifr->b_size;
 			frame.data_type		= ifr->d_type;
 			frame.channel 		= ifr->ch;
 			frame.iskey_frame 	= ifr->is_key;
 		}
-		else if(ifr->d_type == DATA_TYPE_AUDIO) {
-			frame.data_type		= ifr->d_type;
+		else if(ifr->d_type == DATA_TYPE_AUDIO) 
+		{
+			/* muraw encoding required */
+			tmp = (char *)(gmem_addr+ifr->offset);
+			sz  = ifr->b_size;
+			enc_size=alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)tmp, sz);
+			
+			frame.buf       = enc_buf;
+			frame.size      = enc_size;
+			frame.data_type	= ifr->d_type;
 		}
-		else if(ifr->d_type == DATA_TYPE_META) {
-			frame.data_type		= ifr->d_type;
+		else if(ifr->d_type == DATA_TYPE_META) 
+		{
+			frame.buf		= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
+			frame.size		= ifr->b_size;
+			frame.data_type	= ifr->d_type;
  		}
-		else {
+		else 
+		{
 			dprintf("unknown data type\n");
 			return 0;
 		}

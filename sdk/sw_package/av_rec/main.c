@@ -29,19 +29,20 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define SD_MOUNT_PATH   				"/mmc"
-#define REC_DIR							"DCIM"
-#define PRE_REC_SEC                     15      // max 15 secs.
+#define SD_MOUNT_PATH   	"/mmc"
+#define REC_DIR				"DCIM"
+#define PRE_REC_SEC          15          //# max 15 secs.
+#define MURAW_BUFF_SZ		(1024*1024)  //# 1MB
 
 typedef struct {
 	app_thr_obj eObj;		//# event rec thread
 	FILE *fevt;				//# for event file
 	
-	int init;		/* task init */
+	int init;				/* task init */
 	int qid;
 	
-	int en_pre;     //# todo
-	int fr;  		//# frame rate..
+	int en_pre;     		//# todo
+	int fr;  				//# frame rate..
 	unsigned int rec_min;
 	
 	int rec_first;
@@ -60,7 +61,7 @@ typedef struct {
 	int ch3_keyframe;
 	int ch4_keyframe;
 	#endif
-
+	
 } app_rec_ctrl_t;
 
 /*----------------------------------------------------------------------------
@@ -73,7 +74,10 @@ static app_rec_ctrl_t rec_ctrl;
 static app_rec_ctrl_t *irec = &rec_ctrl;
 
 //# gmem
-static g_mem_info_t	*imem;
+static g_mem_info_t	*imem=NULL;
+
+//# enc_buf
+char *enc_buf=NULL;
 
 extern int cmem_fd;	//# cmem lib
 /*----------------------------------------------------------------------------
@@ -305,8 +309,9 @@ static int evt_file_write(stream_info_t *ifr, int snd_on)
 	if (ifr->d_type==DATA_TYPE_VIDEO)
 		ret = avi_file_write(irec->fevt, ifr);
 	else if ((ifr->d_type==DATA_TYPE_AUDIO)) {
-		if (snd_on)
+		if (snd_on) {
 			ret = avi_file_write(irec->fevt, ifr);
+		}
 	}
 
 	return ret;
@@ -596,11 +601,21 @@ int main(int argc, char **argv)
 	}
 	
 	avi_file_init((unsigned int)gmem_addr);
+	//# encoder buffer init
+	/* G.711로 Encoding 시 16bit -> 8bit로 변경됨 */
+	enc_buf = (char *)malloc(MURAW_BUFF_SZ);
+	if (enc_buf == NULL) {
+		eprintf("ulaw buffer malloc\n");
+		return 0;
+	}
 		
 	//#--- main --------------
 	app_main();
 	//#-----------------------
-
+	
+	if (enc_buf != NULL) {
+		free(enc_buf);
+	}
 	CMEM_exit();
 	printf(" [rec process] process exit!\n");
 	

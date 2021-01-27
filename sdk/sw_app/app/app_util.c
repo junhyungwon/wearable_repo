@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>		//# fork...
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/wait.h>	//# waitpid
 #include <sys/socket.h>
@@ -411,6 +412,8 @@ int utf8_unescape(const char *dst, char *src)
 		data_buf[xfred] = c;
 		xfred++;	
 	}
+	
+	return 0;
 }
 
 //# ------------------------------------------------------------------------------------------------------------------

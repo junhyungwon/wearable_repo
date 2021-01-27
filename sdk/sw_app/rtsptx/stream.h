@@ -23,7 +23,9 @@
 #include <semaphore_util.h>
 
 #define USE_GMEM
-#define SYS_DEBUG
+
+/* refer to /makerules/build_config.mk */
+//#define SYS_DEBUG
 
 enum{
 	STREAM_FAILURE   = -1,
@@ -133,6 +135,7 @@ typedef struct _STREAM_PARM{
  Declares variables
 -----------------------------------------------------------------------------*/
 #define eprintf_rt(x...) do { printf(" [rtsp ERR] %s: ", __func__); printf(x); } while(0)
+
 #ifdef SYS_DEBUG
 #define dprintf(x...) do { printf(" [rtsp ] %s: ", __func__); printf(x); } while(0)
 #else
