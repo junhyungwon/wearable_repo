@@ -18,7 +18,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define APP_SND_SRATE			8000 //# for baresip
-#define APP_SND_PTIME			250 //# fixed 고정해야 함.
+#define APP_SND_PTIME			40 //250 //# fixed 고정해야 함.
 #define APP_SND_CH				1   /* sound channel */
 
 /*----------------------------------------------------------------------------

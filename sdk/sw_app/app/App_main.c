@@ -247,7 +247,7 @@ int app_cfg_init(void)
 	memset((void *)app_cfg, 0, sizeof(app_cfg_t));
 
 	//# save mmc status
-	app_cfg->ste.b.mmc = dev_ste_mmc();;
+	app_cfg->ste.b.mmc = dev_ste_mmc();
 
 	//# module ctrl
 	app_cfg->en_rec = 1;

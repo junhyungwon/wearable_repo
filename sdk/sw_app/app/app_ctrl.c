@@ -1235,7 +1235,7 @@ void ctrl_sys_reboot(void)
     }
 	app_file_save_flist(); /* save file list */
 #if SYS_CONFIG_VOIP
-	app_voip_save_config(); /* save voip volume */	
+	app_voip_save_config(); /* save voip volume */
 #endif
 //    app_file_exit(); ??
     app_set_write();
