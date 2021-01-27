@@ -4,6 +4,7 @@
 		<META HTTP-EQUIV="EXPIRES" CONTENT="0" />
 		<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
 		<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE" />
+		<meta charset="utf-8">
 
 <script type="text/javascript">
 
@@ -16,6 +17,160 @@ var OS_MACOSX   = 3;
 var OS_MAC      = 4;
 var OS_SOLARIS  = 5;
 var OS_ANDROID  = 6;
+
+/* test.png 이미지는 파일시스템에 있는 것을 활용,
+   사이즈를 미리 알고 있어야합니다
+   Nand와 RAM, 어느 곳에 위치하느냐에 따라 읽는 속도차이는 미미할것으로예상됩니다
+ln -sf images/pages/home/product-b-2-b-small@3x.png test.png
+ln -sf /tmp/test.png test.png
+size : 287654
+*/
+var imageAddr = "test.png?";
+var MAX_TEST_COUNT = 20;
+var downloadSize = 287654*8; // bits
+var load_count = 0;
+
+var testImage = new Array();
+var testT1 = new Array();
+var testT2 = new Array();
+
+function showResults () {
+
+	//console.log("load_count:"+load_count);
+	if(load_count != MAX_TEST_COUNT)
+		return ;
+
+	//var duration = Math.round ((testT2- testT1) / 1000.);
+
+	var duration = 0;
+	var min = 100000000, max = 0;
+	for(var i=0;i<MAX_TEST_COUNT;i++) {
+		min = Math.min(min, (testT2[i] - testT1[i])/1000);
+		max = Math.max(max, (testT2[i] - testT1[i])/1000);
+		duration += (testT2[i] - testT1[i])/1000;
+		//console.log("T2:"+testT2[i] + ", T1:"+testT1[i] +  ", duration:"+duration);
+	}
+
+	min = (downloadSize/min);
+	max = (downloadSize/max);
+
+	var speedBps  = (downloadSize*MAX_TEST_COUNT) / duration;
+	var speedKbps = (speedBps / 1000) .toFixed (2);
+	var speedMbps = (speedKbps / 1000) .toFixed (2);
+	var speedGbps = (speedMbps / 1000) .toFixed (2);
+
+	var strResult = "🔨 Try count : " + MAX_TEST_COUNT + "\n";
+	strResult += "⌛ Test Time : "+ duration.toFixed(2) +" seconds\n";
+	strResult += "⚡ Connection Speed : \n\n";
+
+	strResult += "    AVG: ";
+	if(speedGbps >= 1) {
+		strResult += speedGbps +"Gbps\n";
+	}
+	else if(speedMbps >= 1)
+		strResult += speedMbps +"Mbps\n";
+	else if(speedKbps >= 1)
+		strResult += speedKbps +"Kbps\n";
+	else 
+		strResult += speedBps +"bps\n";
+    strResult += "\n";
+
+	strResult +="    MAX: ";
+	speedKbps = (min/ 1000) .toFixed (2);
+	speedMbps = (speedKbps/ 1000) .toFixed (2);
+	speedGbps = (speedMbps/ 1000) .toFixed (2);
+	if(speedGbps >= 1){
+		strResult += speedGbps +"Gbps\n";
+	}
+	else if(speedMbps >= 1)
+		strResult += speedMbps +"Mbps\n";
+	else if(speedKbps >= 1)
+		strResult += speedKbps +"Kbps\n";
+	else 
+		strResult += speedBps +"bps\n";
+    strResult += "\n";
+
+	strResult +="    MIN: ";
+	speedKbps = (max/ 1000) .toFixed (2);
+	speedMbps = (speedKbps/ 1000) .toFixed (2);
+	speedGbps = (speedMbps/ 1000) .toFixed (2);
+	if(speedGbps >= 1)
+		strResult += speedGbps +"Gbps\n";
+	else if(speedMbps >= 1)
+		strResult += speedMbps +"Mbps\n";
+	else if(speedKbps >= 1)
+		strResult += speedKbps +"Kbps\n";
+	else 
+		strResult += speedBps +"bps\n";
+
+	alert(strResult);
+}
+
+function sleep(ms) {
+  const wakeUpTime = Date.now() + ms
+  while (Date.now() < wakeUpTime) {}
+}
+
+function ConnectSpeedTest() {
+
+	var i = load_count;
+	if(i>=MAX_TEST_COUNT)return;
+
+	testImage[i].onload = function () {
+		testT2[i] = (new Date()).getTime();
+		//console.log("T2 : " + i);
+		load_count += 1;
+		showResults();
+		g_timer_id = setTimeout('ConnectSpeedTest()', 100);
+	}
+	//console.log("T1 : " + i);
+	testT1[i] = (new Date()).getTime();
+	testImage[i].src = imageAddr + Math.random();
+}
+
+function onConnectionSpeedTest() {
+	load_count = 0;
+
+	var input = prompt('테스트 회수를 입력하세요(1~100).\n큰 숫자일수록 시간이 많이 걸립니다\n100회일때 20초 정도 소요됩니다\n기본값은 20회 입니다(입력없을시)');
+	if(isNaN(input)) {
+		alert("잘못된 입력입니다");
+		return;
+	}
+	if(input == "")
+		MAX_TEST_COUNT = 20;
+	else
+		MAX_TEST_COUNT = Number.parseInt(input);
+
+	console.log("input:"+input+", MAX_TEST_COUNT:"+MAX_TEST_COUNT);
+	if (MAX_TEST_COUNT < 1 || MAX_TEST_COUNT > 100) {
+		alert("입력 숫자가범위를 벗어납니다, count:"+MAX_TEST_COUNT);
+		return;
+	}
+
+	for (var i = 0; i < MAX_TEST_COUNT; i++) {
+		testImage[i] = new Image();
+		testT1[i] = new Number;
+		testT2[i] = new Number;
+	}
+
+	ConnectSpeedTest();
+
+	/*
+	for (var i = 0; i < MAX_TEST_COUNT; i++) 
+	{
+		testImage[load_count].onload = function () {
+			testT2[load_count] = (new Date()).getTime();
+			console.log("end : " + load_count);
+			load_count += 1;
+			showResults();
+		    g_timer_id = setTimeout( 'ConnectSpeedTest()', 1000 );
+		}
+		console.log("start : " + i);
+		testT1[i] = (new Date()).getTime();
+		testImage[i].src = imageAddr + Math.random();
+	}
+	*/
+}
 
 //	alert(navigator.userAgent+ '\n' +navigator.platform);
 
@@ -142,7 +297,7 @@ function pause_ms(millis)
 function start_jpeg() 
 {
 	stop_jpeg();
-    timer_proc();
+    //timer_proc();
 }
 
 function stop_jpeg()
@@ -285,6 +440,13 @@ function clearSelection(id) {
 				</font>
 		      	</td>
 			  </tr>
+		      	<tr>
+			  	<td align="center" valign="top" width="100%">
+				<font class="titlebar"> 									
+					<a href="javascript:onConnectionSpeedTest();">Connection Speed Test</a>
+				</font>
+		      	</td>
+			  </tr>
 			 </table>
 
 			<br/>
@@ -334,10 +496,10 @@ function clearSelection(id) {
 							<td>
 							</td>
 							<td>
-								<img name="btn_play" id="btn_play" alt="play" title="play" src="/image/play_btn.png" onClick="start_jpeg()" />
+								<img name="btn_play" id="btn_play" alt="play" title="play" src="" onClick="start_jpeg()" />
 							</td>
 							<td>
-								<img name="btn_stop" id="btn_stop" alt="stop" title="stop" src="/image/stop_btn.png" onClick="stop_jpeg()" />
+								<img name="btn_stop" id="btn_stop" alt="stop" title="stop" src="" onClick="stop_jpeg()" />
 							</td>	
 						</tr>				
 						</table>	
