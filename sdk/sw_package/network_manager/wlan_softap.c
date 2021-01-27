@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <sys/poll.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -39,6 +40,7 @@
 #define __STAGE_SOFTAP_MOD_WAIT		(0x01)
 #define __STAGE_SOFTAP_MOD_EXEC		(0x02)
 #define __STAGE_SOFTAP_GET_STATUS	(0x03)
+#define __STAGE_SOFTAP_ERROR_STOP	(0x04)
 
 typedef struct {
 	app_thr_obj hObj; /* wlan client mode */
@@ -220,6 +222,54 @@ static void __wlan_hostapd_stop(void)
 		pclose(f);
 }
 
+static int __wlan_hostapd_is_active(const char *process_name)
+{   
+    DIR* pdir;
+    struct dirent *pinfo;
+    int is_live = 0;
+
+    pdir = opendir("/proc");
+    if (pdir == NULL)
+    {
+        eprintf("err: NO_DIR\n");
+        return 0;
+    }
+
+    while (1)
+    {
+		FILE* fp = NULL;
+        char buff[128]={0,};
+        char path[128]={0,};
+		
+        pinfo = readdir(pdir);
+        if (pinfo == NULL)
+            break;
+ 
+        if (pinfo->d_type != 4 || pinfo->d_name[0] == '.' || pinfo->d_name[0] > 57)
+            continue;
+
+        sprintf(path, "/proc/%s/status", pinfo->d_name);
+        fp = fopen(path, "rt");
+        if (fp)
+        {
+            fgets(buff, 128, fp);
+            fclose(fp);
+        
+            if (strstr(buff, process_name))   
+            {
+                is_live = 1;
+                break;
+            }
+        } else {
+            dprintf(" %s inactive!!\n", process_name);
+        }
+    }
+
+    closedir(pdir);
+
+    return is_live;
+}
+
 /*****************************************************************************
 * @brief    network proc function!
 * @section  DESC Description
@@ -250,8 +300,8 @@ static void *THR_wlan_hostapd_main(void *prm)
 			
 			cmd = tObj->cmd;
         	if (cmd == APP_CMD_STOP) {
-				/* TODO */
-            	__wlan_hostapd_stop();
+            	netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
+				__wlan_hostapd_stop();
 				quit = 1;
 				continue;
 			}
@@ -259,11 +309,19 @@ static void *THR_wlan_hostapd_main(void *prm)
 			st = ihost->stage;
 			switch (st) {
 			case __STAGE_SOFTAP_GET_STATUS:
+				/* TODO */
+				st = __wlan_hostapd_is_active("hostapd");
+				if (st > 0)
+					ihost->stage = __STAGE_SOFTAP_GET_STATUS;
+				else 
+					ihost->stage = __STAGE_SOFTAP_ERROR_STOP;
 				break;
+			
 			case __STAGE_SOFTAP_MOD_EXEC:
 				__wlan_hostapd_run();
 				ihost->stage = __STAGE_SOFTAP_GET_STATUS;
 				/* 현재 상태를 알려줘야 함 */
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 				break;
 			
 			case __STAGE_SOFTAP_MOD_WAIT:
@@ -274,8 +332,7 @@ static void *THR_wlan_hostapd_main(void *prm)
 					ihost->hostap_timer++;
 					if (ihost->hostap_timer >= CNT_SOFTWAP_ACTIVE) {
 						/* fail */
-						/* error 상태를 mainapp에 알려줘야 함 */
-						quit = 1; /* exit loop */
+						ihost->stage = __STAGE_SOFTAP_ERROR_STOP;
 					} 
 				}
 				break;	
@@ -284,8 +341,12 @@ static void *THR_wlan_hostapd_main(void *prm)
 				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
 				ihost->stage = __STAGE_SOFTAP_MOD_WAIT;
 				break;
-			
-			default:
+				
+			case __STAGE_SOFTAP_ERROR_STOP:
+				/* error 상태를 mainapp에 알려줘야 함 */
+				quit = 1; /* exit loop */
+				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+				__wlan_hostapd_stop();
 				break;
 			}
 			
