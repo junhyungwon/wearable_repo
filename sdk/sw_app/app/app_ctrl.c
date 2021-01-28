@@ -224,6 +224,7 @@ int ctrl_vid_resolution(int resol_idx)
         app_rec_stop(1);
 	    sleep(1); 
 	}
+	app_cfg->ste.b.rec = 1; // previous flag for capture start
 		
     app_cap_stop() ;
     app_buzz_ctrl(100, 1);

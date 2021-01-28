@@ -150,7 +150,7 @@ typedef struct {
 typedef union {
 	struct {
 		unsigned int cap				: 1;	//# capturing
-		unsigned int rec				: 1;	//# recording
+		unsigned int rec				: 1;	//# recording status
 		unsigned int mmc				: 1;	//# detect mmc
 		unsigned int busy				: 1;	//# system busy (format, update)
 		unsigned int evt				: 1;    //# event recording
