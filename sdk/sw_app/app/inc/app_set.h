@@ -262,6 +262,8 @@ typedef struct {
     char  passwd[MAX_CHAR_16] ;
     char  peerid[MAX_CHAR_16] ;
     short private_network_only;
+    int use_stun ;
+	char reserved[40] ;
 } app_voip_t; // 68 
 #endif
 
@@ -283,7 +285,7 @@ typedef struct {
 
 #if SYS_CONFIG_VOIP
     app_voip_t              voip; // 68
-	char reserved[406];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip)
+	char reserved[362];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip)
 #else
 	char reserved[474];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
 #endif
