@@ -286,7 +286,6 @@ static void *THR_gui(void *prm)
 			if (app_cfg->ste.b.usbnet_run) 
 			{
 				int network = 0;
-				int is_public = 0;
 				
 				res = app_netmgr_get_usbnet_dev();
 				if (res == NETMGR_DEV_TYPE_WIFI) {
@@ -300,10 +299,8 @@ static void *THR_gui(void *prm)
 				/* voip register start */
 				app_cfg->ste.b.voip = 1;
 				igui->voip_tmr = 0;
-				if (app_set->voip.private_network_only) is_public = 0; //# For External LTE Modem
-				else  									is_public = 1;
-				app_voip_start(network, is_public, app_set->voip.port, app_set->voip.userid, app_set->voip.ipaddr, 
-						app_set->voip.passwd, app_set->voip.peerid, VOIP_STUN_PATH);	
+				app_voip_start(network, app_set->voip.use_stun, app_set->voip.port, app_set->voip.userid, 
+							app_set->voip.ipaddr, app_set->voip.passwd, app_set->voip.peerid, VOIP_STUN_PATH);	
 			}
 		} else {
 			/* checking voip registration */
