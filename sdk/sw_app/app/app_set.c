@@ -243,7 +243,6 @@ static void char_memset(void)
 #if SYS_CONFIG_VOIP
 	// VOIP size : 66 
     app_set->voip.port = CFG_INVALID ;
-	app_set->voip.private_network_only=1;
     memset(app_set->voip.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.userid, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.passwd, CHAR_MEMSET, MAX_CHAR_16);

@@ -25,8 +25,8 @@ static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 	sprintf(set->voip.passwd, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "peerid");
 	sprintf(set->voip.peerid, "%s", json_object_get_string(tmp));
-	tmp = json_object_object_get(jobj, "private_network_only");
-	set->voip.private_network_only = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "use_stun");
+	set->voip.use_stun = json_object_get_int(tmp);
 
 	return 0;
 }
@@ -591,7 +591,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(voip_info, "userid",   json_object_new_string(set->voip.userid));
 	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->voip.passwd));
 	json_object_object_add(voip_info, "peerid",   json_object_new_string(set->voip.peerid));
-	json_object_object_add(voip_info, "private_network_only",   json_object_new_int(set->voip.private_network_only));
+	json_object_object_add(voip_info, "use_stun",   json_object_new_int(set->voip.use_stun));
 	json_object_object_add(rootObject,  "voip_info", voip_info);
 #endif
 
