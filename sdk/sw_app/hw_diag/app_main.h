@@ -15,7 +15,9 @@
 -----------------------------------------------------------------------------*/
 #include "app_version.h"
 
-#define APP_RELEASE		1
+#define APP_RELEASE			 1
+#define NET_STR_MAX_SZ		32
+#define ETHER_CFG_NAME		"/mmc/netcfg.txt"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -31,6 +33,7 @@ typedef union {
 		unsigned int led      	: 1;  /* LED Port Valid / invalid */
 		unsigned int rtc      	: 1;  /* RTC Valid / invalid */
 		unsigned int key      	: 1;  /* KEY Valid / invalid */
+		unsigned int eth      	: 1;  /* ETH Valid / invalid */
 	} b;
 	
 } app_state;
@@ -47,6 +50,13 @@ typedef struct {
 	
 } __attribute__((packed)) app_cfg_t;
 
+typedef struct {
+	char ip[NET_STR_MAX_SZ];
+    char mask[NET_STR_MAX_SZ];
+    char gw[NET_STR_MAX_SZ];
+	
+} __attribute__((packed)) app_netcfg_t;
+
 typedef enum {
 	RATE_CTRL_VBR,
 	RATE_CTRL_CBR,
@@ -57,6 +67,7 @@ typedef enum {
  Declares variables
 -----------------------------------------------------------------------------*/
 extern app_cfg_t *iapp;
+extern app_netcfg_t *inetapp;
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype

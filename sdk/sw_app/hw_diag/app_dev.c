@@ -39,9 +39,9 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define LED_BLINK_TEST		  (0)
 #define SENSOR_TEST			  (1)
 #define USB_TEST			  (1)
-#define LED_TEST			  (1)
 #define RTC_TEST			  (1)
 #define GPS_TEST			  (1)
 
@@ -49,19 +49,25 @@
 #define TIME_GPS_CYCLE		  500		//# msec
 #define TIME_LED_CYCLE		  500		//# msec
 #define TIME_RTC_CYCLE		  1000		//# msec
+#define TIME_ETH_CYCLE		  1000		//# msec
 
 #define CNT_GPS_CHECK		(TIME_GPS_CYCLE/TIME_DEV_CYCLE)
 #define CNT_LED_CHECK		(TIME_LED_CYCLE/TIME_DEV_CYCLE)
 #define CNT_RTC_CHECK		(TIME_RTC_CYCLE/TIME_DEV_CYCLE)
+#define CNT_ETH_CHECK		(TIME_ETH_CYCLE/TIME_DEV_CYCLE)
 
 typedef struct {
 	app_thr_obj dObj;	//# dev thread
 	app_thr_obj bObj;	//# buzzer thread
-
+	app_thr_obj cObj;	//# cradle ether thread
+	
 	int init;			//# initialize
 	int gps_tmr;
 	int led_tmr;
 	int rtc_tmr;
+	int eth_tmr;
+	
+	int ether_init;
 	
 } app_dev_t;
 
@@ -81,11 +87,13 @@ static app_dev_t *idev=&dev_obj;
 static void dev_gpio_init(void)
 {
 	gpio_input_init(GPS_PWR_EN);
+	gpio_input_init(BACKUP_DET);
 }
 
 static void dev_gpio_exit(void)
 {
 	gpio_exit(GPS_PWR_EN);
+	gpio_exit(BACKUP_DET);
 }
 
 /*****************************************************************************
@@ -100,6 +108,16 @@ int app_ste_mmc(void)
 	//dprintf("--- value %d\n", status);
 
 	return status;
+}
+
+int app_ste_ether(void)
+{
+	int status;
+	
+	/* 0-> connect 1-> remove */
+	gpio_get_value(BACKUP_DET, &status);
+
+	return (status?0:1);
 }
 
 int app_wait_mmc_remove(void)
@@ -337,7 +355,7 @@ static void *THR_dev(void *prm)
 		}
 		#endif
 		
-		#if LED_TEST
+		#if LED_BLINK_TEST
 		{
 			if (idev->led_tmr >= CNT_LED_CHECK) {
 				idev->led_tmr=0;
@@ -346,8 +364,8 @@ static void *THR_dev(void *prm)
 				}
 				on = 1 - on;
 				/* 한 개라도 fail되면 에러 처리 */
-				if (!ret) 	iapp->ste.b.led = 0;
-				else		iapp->ste.b.led = 1;
+				if (!ret) 	iapp->ste.b.led = 1;
+				else		iapp->ste.b.led = 0;
 			} else 
 				idev->led_tmr++;
 		}
@@ -392,7 +410,7 @@ static void *THR_dev(void *prm)
 		if (idev->gps_tmr >= CNT_GPS_CHECK)
 		{
 			idev->gps_tmr = 0;
-			if(iapp->ste.b.cap)
+			if(iapp->ste.b.gps_jack)
 			{
 				//# get gps value
 				state = dev_gps_get_data(&gps_data);
@@ -446,13 +464,89 @@ static void *THR_dev(void *prm)
 }
 
 /*****************************************************************************
+* @brief    network polling function!
+* @section  DESC Description
+*   - desc
+*****************************************************************************/
+static void *THR_ether_poll(void *prm)
+{
+	app_thr_obj *tObj = &idev->cObj;
+	int exit = 0, cmd;
+	int ret;
+	
+	/* for buzzer alert */
+	ret = ctrl_ether_cfg_read(ETHER_CFG_NAME, inetapp->ip, inetapp->mask, inetapp->gw); 
+	if (ret < 0)
+		/* TODO error alert */
+		iapp->ste.b.eth = 0;
+	else 
+		iapp->ste.b.eth = 1;
+		
+	tObj->active = 1;
+	
+	while (!exit)
+	{
+		cmd = tObj->cmd;
+        if (cmd == APP_CMD_EXIT) {
+		    break;
+		}
+		
+		//# wait cradle Device
+		if (iapp->ste.b.eth)
+		{
+			ret = app_ste_ether();
+			if (ret) {
+				/* set attach event */
+				if (!idev->ether_init) {
+					idev->ether_init = 1;
+					/* eth enable */
+					ctrl_ether_linkup(inetapp->ip, inetapp->mask, inetapp->gw);
+				}
+			} else {
+				/* set remove event */
+				if (idev->ether_init) {
+					idev->ether_init = 0;
+					/* eth disable */
+					ctrl_ether_linkdown();
+				}
+			}
+		} 
+		else 
+		{
+			if (idev->eth_tmr >= CNT_ETH_CHECK) {
+				idev->eth_tmr = 0;
+				app_buzzer(200, 1);
+			} else {
+				idev->eth_tmr++;
+			} 
+		}
+		
+		// for next event : wait
+		OSA_waitMsecs(TIME_DEV_CYCLE);
+	} 
+	
+	tObj->active = 0;
+	
+	return NULL;
+}
+
+/*****************************************************************************
 * @brief    device thread start/stop function
 * @section  [desc]
 *****************************************************************************/
 int app_dev_start(void)
 {
 	app_thr_obj *tObj;
-
+	int i, ret=0;
+	
+	/* default led on */
+	for (i = 0; i < LED_IDX_ALL; i++) {
+		ret |= ctrl_leds(i, 1);
+	}
+	/* 한 개라도 fail되면 에러 처리 */
+	if (!ret) 	iapp->ste.b.led = 1;
+	else		iapp->ste.b.led = 0;
+				
 	//#--- create dev thread
 	tObj = &idev->dObj;
 	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL) < 0) {
@@ -463,6 +557,13 @@ int app_dev_start(void)
 	//#--- create buzzer thread
 	tObj = &idev->bObj;
 	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create thread\n");
+		return EFAIL;
+	}
+	
+	//#--- create cradle ether thread
+	tObj = &idev->cObj;
+	if(thread_create(tObj, THR_ether_poll, APP_THREAD_PRI, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
@@ -489,6 +590,14 @@ void app_dev_stop(void)
 		OSA_waitMsecs(10);
 	}
 	thread_delete(tObj);
+	
+	/* delete ether poll object */
+    tObj = &idev->cObj;
+   	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while (tObj->active)
+		OSA_waitMsecs(10);
+
+    thread_delete(tObj);
 }
 
 /*****************************************************************************

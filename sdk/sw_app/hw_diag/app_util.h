@@ -44,4 +44,6 @@ int util_check_mount(char *dev);
 int menu_get_data(void);
 char menu_get_cmd(void);
 
+void util_hexdump(char *p, int n);
+
 #endif	/* _APP_UTIL_H_ */

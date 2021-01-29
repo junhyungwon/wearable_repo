@@ -39,6 +39,9 @@
 static app_cfg_t cfg_obj;
 app_cfg_t *iapp=&cfg_obj;
 
+static app_netcfg_t netcfg_obj;
+app_netcfg_t *inetapp=&netcfg_obj;
+
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -49,6 +52,7 @@ app_cfg_t *iapp=&cfg_obj;
 int app_cfg_init(void)
 {
 	memset((void *)iapp, 0, sizeof(app_cfg_t));
+	memset((void *)inetapp, 0, sizeof(app_netcfg_t));
 
 	return SOK;
 }
