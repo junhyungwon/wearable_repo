@@ -282,8 +282,8 @@ static int SetFactoryDefault(int type)
 #else // 바로 응답을 주는 경우....
 	static pthread_t tid_factoryset; // restart onvif
 	int status = pthread_create(&tid_factoryset, NULL, thdSetFactoryDefault, (void *)&type);
-	return 0;
 #endif
+	return 0;
 }
 
 void *thdRestartOnvifServer(void *arg)
@@ -605,7 +605,7 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	// voip
-	t->private_network_only = app_set->voip.private_network_only;
+	t->use_stun = app_set->voip.use_stun;
 	t->port   = app_set->voip.port;
 	strcpy(t->ipaddr, app_set->voip.ipaddr);
 	strcpy(t->userid, app_set->voip.userid);
@@ -623,8 +623,8 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 	int isChanged=0;
 
 	// voip config
-	if(app_set->voip.private_network_only!= t->private_network_only){
-		app_set->voip.private_network_only = t->private_network_only;
+	if(app_set->voip.use_stun != t->use_stun){
+		app_set->voip.use_stun = t->use_stun;
 		isChanged++;
 	}
 	if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
@@ -696,7 +696,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 #if SYS_CONFIG_VOIP
 	// voip
 	t->voip.port   = app_set->voip.port;
-	t->voip.private_network_only   = app_set->voip.private_network_only;
+	t->voip.use_stun = app_set->voip.use_stun;
 	strcpy(t->voip.ipaddr, app_set->voip.ipaddr);
 	strcpy(t->voip.userid, app_set->voip.userid);
 	strcpy(t->voip.passwd, app_set->voip.passwd);
@@ -832,8 +832,8 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 #if SYS_CONFIG_VOIP
 	// voip config
-	if(app_set->voip.private_network_only != t->voip.private_network_only){
-		app_set->voip.private_network_only = t->voip.private_network_only;
+	if(app_set->voip.use_stun != t->voip.use_stun){
+		app_set->voip.use_stun = t->voip.use_stun;
 		isChanged++;
 	}
 	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){

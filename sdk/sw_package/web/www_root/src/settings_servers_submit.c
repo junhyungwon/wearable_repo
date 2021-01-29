@@ -132,9 +132,9 @@ static int submit_settings_qcgi()
         }
 
 #if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
-        str= req->getstr(req, "voip_private_network_only", false);
+        str= req->getstr(req, "voip_use_stun", false);
         if (str != NULL) {
-            t.voip.private_network_only = atoi(str);
+            t.voip.use_stun = atoi(str);
         }
         str= req->getstr(req, "txt_voip_ip", false);
         if (str != NULL) {
@@ -162,7 +162,7 @@ static int submit_settings_qcgi()
 		if (str != NULL) {
 			enable_p2p = atoi(str);
 		}
-        CGI_DBG("private network only:%d, voip.ip:%s, voip.id:%s, voip.peerid:%s\n", t.voip.private_network_only, t.voip.ipaddr, t.voip.userid, t.voip.peerid);
+        CGI_DBG("use stun:%d, voip.ip:%s, voip.id:%s, voip.peerid:%s\n", t.voip.use_stun, t.voip.ipaddr, t.voip.userid, t.voip.peerid);
 #endif
 
         //req->free(req);
