@@ -67,4 +67,8 @@ int ctrl_vid_rate(int ch, int rc);
 int ctrl_enc_multislice(void);
 int ctrl_vid_gop_set(int ch, int gop);
 
+int ctrl_ether_linkup(const char *naddr, const char *nmask, const char *ngate);
+void ctrl_ether_linkdown(void);
+int ctrl_ether_cfg_read(const char *fname, const char *ip, const char *mask, const char *gate);
+
 #endif	/* _APP_CTRL_H_ */

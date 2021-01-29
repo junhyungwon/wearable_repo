@@ -121,50 +121,65 @@ int ctrl_swms_set(int win_num, int ch)
 }
 
 /*****************************************************************************
-* @brief    Network check function
+* @brief    Network function. set ip and linkup
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-int ctrl_chk_network(void)
+int ctrl_ether_linkup(const char *naddr, const char *nmask, const char *ngate)
 {
-	FILE *fp = NULL;
-	size_t readSize = 0;
-	char buf[1024];
-	char *p;
-	int recv_pack=0;
-
-	#if APP_RELEASE
-	fp = popen("ifconfig eth0 192.168.1.200 up", "r");
-	if(!fp) {
+	FILE *f = NULL;
+	char cmd[256]={0,};
+	
+	if ((naddr == NULL) || (nmask == NULL) || (ngate == NULL)) {
 		return -1;
 	}
-	pclose(fp);
-	#endif
-
+	
+	if ((strcmp(naddr, "0.0.0.0") == 0) || 
+		(strcmp(nmask, "0.0.0.0") == 0) || 
+		(strcmp(ngate, "0.0.0.0") == 0))
+	{	
+		return -1;
+	}
+	
+	memset(cmd, 0 , sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/sbin/ifconfig eth0 %s netmask %s up", naddr, nmask);
+	f = popen(cmd, "r");
+	if (f != NULL) {
+		pclose(f);
+	} else {
+		return -1;
+	}
+	/* required wait */
 	sleep(2);
-	fp = popen("ping -c 2 -W 1 192.168.1.1", "r");
-	if(!fp) {
+	
+	memset(cmd, 0 , sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/sbin/route add default gw %s dev eth0", ngate);
+	f = popen(cmd, "r");
+	if (f != NULL) {
+		pclose(f);
+	} else {
 		return -1;
 	}
+		
+	return 0;
+}
 
-	// read the result
-	readSize = fread( (void*)buf, sizeof(char), 1024-1, fp);
-
-	pclose(fp);
-
-	p = strstr(buf, "packets received") - 2;
-	recv_pack = (int)atoi(p);
-	dprintf("recv_pack : %d\n", recv_pack);
-
-	#if APP_RELEASE
-	fp = popen("ifconfig eth0 down", "r");
-	if(!fp) {
-		return -1;
+/*****************************************************************************
+* @brief    Network deactive function
+* @section  DESC Description
+*   - desc
+*****************************************************************************/
+void ctrl_ether_linkdown(void)
+{
+	FILE *f = NULL;
+	char buf[128]={0,};
+	
+	f = popen("/sbin/ifconfig eth0 down", "r");
+	if (f != NULL) {
+		pclose(f);
 	}
-	pclose(fp);
-	#endif
-
-	return recv_pack;
+	/* required wait */
+	sleep(2);
 }
 
 /*****************************************************************************
@@ -290,4 +305,83 @@ int ctrl_vid_gop_set(int ch, int gop)
     Venc_setDynamicParam(ch, 0, &params, VENC_IPRATIO);
 
     return SOK ;
+}
+
+/*****************************************************************************
+* @brief    read network config from ethernet.conf
+* @section  [desc]
+*****************************************************************************/
+int ctrl_ether_cfg_read(const char *fname, const char *ip, const char *mask, const char *gate)
+{
+	FILE *f = NULL;
+	char lineBuf[256 + 1];
+	/*
+	 * IPADDR="xxx.xxx.xxx.xxx"
+	 * NETMASK="xxx.xxx.xxx.xxx"
+	 * GATEWAY="xxx.xxx.xxx.xxx"
+	 */ 
+	f = fopen(fname, "r");
+	if (f == NULL) {
+		eprintf("Can't read %s\n", fname);
+		return -1;
+	}
+	
+	while (fgets(lineBuf, sizeof(lineBuf), f) != NULL)
+	{
+		char *s, *data;
+		int i;
+		
+		if ((s = strstr(lineBuf, "IPADDR=")) != NULL)
+		{
+			/* skip IPADDR=" ==>8 */
+			s += 8; data = (char *)ip;
+			for (i = 0; i < 16; i++) /* xxx.xxx.xxx.xxx */ 
+			{
+				if ((s[i] == '\0') || (s[i] == '"')) {
+					/* break character */
+					break;
+				}
+				/* fill ssid */
+				data[i] = s[i];
+			}
+			data[i] = '\0';
+			dprintf("IP: %s\n", data);
+		}
+		else if ((s = strstr(lineBuf, "NETMASK=")) != NULL)
+		{
+			/* skip NETMASK=" ==>9 */
+			s += 9; data = (char *)mask;
+			for (i = 0; i < 16; i++) /* xxx.xxx.xxx.xxx */ 
+			{
+				if ((s[i] == '\0') || (s[i] == '"')) {
+					/* break character */
+					break;
+				}
+				/* fill ssid */
+				data[i] = s[i];
+			}
+			data[i] = '\0';
+			dprintf("MASK: %s\n", data);
+		}
+		else if ((s = strstr(lineBuf, "GATEWAY=")) != NULL)
+		{
+			/* skip GATEWAY=" ==>9 */
+			s += 9; data = (char *)gate;
+			for (i = 0; i < 16; i++) /* xxx.xxx.xxx.xxx */ 
+			{
+				if ((s[i] == '\0') || (s[i] == '"')) {
+					/* break character */
+					break;
+				}
+				/* fill ssid */
+				data[i] = s[i];
+			}
+			data[i] = '\0';
+			dprintf("GATE: %s\n", data);
+		}
+	}
+	
+	fclose(f);
+	
+    return 0;
 }

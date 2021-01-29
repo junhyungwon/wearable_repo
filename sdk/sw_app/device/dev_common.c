@@ -64,6 +64,8 @@
 #define DAY		((__DATE__[4] == ' ' ? 0 : __DATE__[4] - '0') * 10 \
 				+ (__DATE__[5] - '0'))
 
+#define SRAM_SZ		64
+#define SRAM_PATH	"/sys/devices/platform/omap/omap_i2c.1/i2c-1/1-006f/rtcram"
 
 /****************************************************
  * NAME : int dev_input_get_bus_num(const char *dev_name)
@@ -280,7 +282,6 @@ speed_t dev_tty_get_baudrate(int rate)
 	 default: 		return B38400;
 	}
 }
-
 
 /****************************************************
  * NAME : dev_net_link_detect(const char *ifce)
@@ -814,4 +815,52 @@ int dev_rtc_set_time(struct tm set_tm)
 	close(fd);
 
 	return ret;
+}
+
+/******************************************************
+ * NAME : int dev_rtcmem_setdata(const char *data, int len)
+ ******************************************************/
+int dev_rtcmem_setdata(const char *data, int len)
+{
+	char buf[SRAM_SZ]={0,};
+	int fd;
+	
+	if ((data == NULL) || (len > SRAM_SZ))
+		return -1;
+		
+	fd = open(SRAM_PATH, O_RDWR);
+	if (fd < 0) {
+		dev_err("Failed to open %s\n", SRAM_PATH);
+		return -1;
+	}
+	
+	memcpy(buf, data, len);
+	write(fd, buf, SRAM_SZ);
+	close(fd);
+	
+	return 0;
+}
+
+/******************************************************
+ * NAME : int dev_rtcmem_getdata(char *data)
+ ******************************************************/
+int dev_rtcmem_getdata(char *data, int len)
+{
+	char buf[SRAM_SZ]={0,};
+	int fd;
+	
+	if ((data == NULL) || (len > SRAM_SZ))
+		return -1;
+		
+	fd = open(SRAM_PATH, O_RDWR);
+	if (fd < 0) {
+		dev_err("Failed to open %s\n", SRAM_PATH);
+		return -1;
+	}
+	
+	read(fd, buf, SRAM_SZ);
+	memcpy(data, buf, len);
+	close(fd);
+	
+	return 0;
 }

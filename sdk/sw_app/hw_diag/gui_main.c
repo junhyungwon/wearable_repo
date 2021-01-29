@@ -23,6 +23,7 @@
 #include "app_dev.h"
 #include "dev_gpio.h"
 #include "dev_snd.h"
+#include "dev_common.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -180,7 +181,8 @@ static int test_info(app_thr_obj *tObj)
 {
 	int res;
 	char ver[64]={0,};
-
+	char buf[64]={0,};
+	
 	aprintf("version test start...\n");
 
 	//# sw version
@@ -196,6 +198,14 @@ static int test_info(app_thr_obj *tObj)
 	iapp->mcu_ver = res;
 	/* sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF); */
 	dprintf("mcu version %s\n", ver);
+	
+	memset(buf, 0, sizeof(buf));
+	dev_rtcmem_setdata("ABCDEFG", 8);
+	dev_rtcmem_getdata(buf, 8);
+	
+	dprintf("sram data= %s\n", buf);
+	
+//	util_hexdump(buf, 64);
 	
 	printf(menu_exit);
 	res = wait_result(tObj);
@@ -237,29 +247,6 @@ static int test_key(app_thr_obj *tObj)
 	printf(menu_exit);
 	res = wait_result(tObj);
 	
-	return res;
-}
-
-/* Network (ethernet) */
-static int test_net(app_thr_obj *tObj)
-{
-	int res, count=0;
-
-	aprintf("net test start...\n");
-	while (count >= 10)
-	{
-		res = ctrl_chk_network();
-		if (res <= 0 ) {
-			count++;
-		} else {
-			dprintf("ping test ok!!\n");
-			break;
-		}
-	}
-
-	printf(menu_exit);
-	res = wait_result(tObj);
-
 	return res;
 }
 
@@ -386,8 +373,7 @@ static char menu_main[] = {
 	"\r\n 2: Get version"
 	"\r\n 3: Buzzer test"
 	"\r\n 4: Key test"
-	"\r\n 5: Network test"
-	"\r\n 6: Sound test"
+	"\r\n 5: Sound test"
 	"\r\n"
 	"\r\n Enter Choice: "
 };
@@ -396,8 +382,6 @@ static int gui_test_main(void *thr)
 {
 	app_thr_obj *tObj = (app_thr_obj *)thr;
 	char cmd, exit=0;
-	
-	app_buzzer(100, 2);
 	
 	while (!exit)
 	{
@@ -437,10 +421,6 @@ static int gui_test_main(void *thr)
 				break;
 			
 			case '5':
-				test_net(tObj);
-				break;
-			
-			case '6':
 				test_snd(tObj);
 				break;		
 			}
@@ -494,18 +474,18 @@ static void *THR_gui_run(void *prm)
 int gui_main(void)
 {
 	app_thr_obj *tObj = (app_thr_obj *)&igui->mObj;
-
+	
 	//#--- create thread - for communcation
 	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
 	tObj->active = 1;
-
+	
 	app_cap_start();
-
+	
 	gui_test_main((void *)tObj);
-
+	
 	app_cap_stop();
 
 	//#--- stop thread

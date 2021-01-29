@@ -266,7 +266,7 @@ static int __set_net_if_gate(const char *ifce, const char *gate)
 	if (ret < 0)
 		return -1;
 
-	if (strcmp((char*)tmp, "0.0.0.0")) {
+	if (strcmp((char*)tmp, "0.0.0.0") != 0) {
 		snprintf((char*)cmd, sizeof(cmd), "/sbin/route del default gw %s dev %s", tmp, ifce);
 		f = popen(cmd, "r");
 		if (f != NULL)

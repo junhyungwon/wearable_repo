@@ -23,6 +23,8 @@
 
 #define GPS_PWR_EN 			GPIO_N(2, 4)	//# gps power enable
 #define REC_KEY				GPIO_N(0, 6)	//# record switch
+#define BACKUP_DET			GPIO_N(1, 13)	//# cradle detect
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -37,6 +39,7 @@ void app_dev_stop(void);
 int app_gps_ctrl(int en);
 
 int app_ste_mmc(void);
+int app_ste_ether(void);
 int app_get_gsn(int *x, int *y, int *z);
 int app_wait_mmc_remove(void);
 
