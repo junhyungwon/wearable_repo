@@ -597,8 +597,8 @@ ssize_t dev_snd_read(snd_prm_t *prm)
 				break;
 
 			case -EPIPE:
+				dev_dbg(" pcm overrun(count = %d)!!\n", count);
 				snd_pcm_prepare(handle);
-				//dprintf(" pcm overrun(count = %d)!!\n", count);
 				break;
 
 			default:
