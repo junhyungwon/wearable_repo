@@ -27,7 +27,9 @@
 -----------------------------------------------------------------------------*/
 #define __WAVE_DUMP__		0
 
-#if __WAVE_DUMP__	
+#if __WAVE_DUMP__
+#define WAV_FILE_NAME		"/mmc/dump.wav"
+#define DUMP_FRAME_CNT		100	
 #define MKTAG(a,b,c,d)		((a) | ((b)<<8) | ((c)<<16) | ((d)<<24))
 #define TAG_RIFF			MKTAG('R','I','F','F')
 #define TAG_WAVE			MKTAG('W','A','V','E')
@@ -59,7 +61,10 @@ typedef struct {
 	FILE *f;
 	struct wav_header header;   
 	
+	int wave_frame_cnt;
+	int dump_done;
 } app_wave_t;
+
 #endif /* #if __WAVE_DUMP__ */
 
 #define SND_IN_DEV				"plughw:0,0"
@@ -81,6 +86,11 @@ typedef struct {
 -----------------------------------------------------------------------------*/
 static app_snd_t snd_obj;
 static app_snd_t *isnd=&snd_obj;
+
+#if __WAVE_DUMP__
+static app_wave_t wave_obj;
+static app_wave_t *iwave=&wave_obj;
+#endif
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -140,6 +150,7 @@ static void close_wav_file(void)
 	fseek(iwave->f, 0, SEEK_SET);
 	fwrite(pHead, sizeof(struct wav_header), 1, iwave->f);
 	fclose(iwave->f);
+	fprintf(stderr, "wave dump done!!\n");
 }
 #endif /* #if __WAVE_DUMP__ */ 
 
@@ -212,9 +223,10 @@ static void *THR_snd_cap(void *prm)
     unsigned int timestamp ;
 	aprintf("enter...\n");
 	tObj->active = 1;
-	
-	//init_wav_file(WAV_FILE_NAME, 1, ALSA_SAMPLE_RATE);
-	
+
+#if __WAVE_DUMP__	
+	init_wav_file(WAV_FILE_NAME, 1, APP_SND_SRATE);
+#endif	
 	/* get alsa period size (in sec) */
 	read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
 	ret = dev_snd_set_param("aic3x", &isnd->snd_in, SND_PCM_CAP, 
@@ -278,6 +290,19 @@ static void *THR_snd_cap(void *prm)
 			//ifr->t_sec = (Uint32)(captime/1000);
 			//ifr->t_msec = (Uint32)(captime%1000);
 			app_memcpy(addr, isnd->snd_in.sampv, bytes);
+			
+			#if __WAVE_DUMP__
+			if (iwave->wave_frame_cnt >= DUMP_FRAME_CNT) 
+			{
+				if (iwave->dump_done == 0) {
+					iwave->dump_done = 1;
+					close_wav_file();
+				}
+			} else {
+				write_wav_file(addr, bytes);
+				iwave->wave_frame_cnt++;
+			}
+			#endif
 		}
 #else		
 			//# audio codec : g.711
