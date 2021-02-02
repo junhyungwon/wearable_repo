@@ -277,6 +277,28 @@ static void *THR_dev(void *prm)
 				ctrl_auto_update(); 
 			}
 		}
+#elif defined(NEXX360H)
+		if (!app_cfg->ste.b.ftp_run)
+		{
+			rkey = chk_rec_key();
+			/* NEXX360, Fitt360 */
+			if (rkey == KEY_SHORT) {
+				if (app_rec_state()) {
+					app_rec_stop(1);
+				} else {
+					app_rec_start();
+				}
+			} else if (rkey == KEY_LONG) {
+				/* record stop */
+				if (app_rec_state()) {
+					app_rec_stop(1);
+					sleep(1); /* for file close */
+				}
+				//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
+				//# 무조건 Reboot를 하기 위해서 위치를 이곳으로 변경함.
+				ctrl_auto_update(); 
+			}
+		}
 #endif
 		app_msleep(TIME_DEV_CYCLE);
 	}

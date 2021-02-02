@@ -293,7 +293,7 @@ Int32 Vsys_exit()
 *       ERROR_NOERROR       --  while success
 *       ERROR_CODE          --  refer for err defination
 */
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
 Int32 Vsys_create(void)
 #else
 Int32 Vsys_create(int mode)
@@ -302,7 +302,7 @@ Int32 Vsys_create(int mode)
     switch (gVsysModuleContext.vsysConfig.systemUseCase)
     {
 		case VSYS_USECASE_CAPTURE:
-			#if defined(LF_SYS_NEXXONE_VOIP)
+			#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
 			mcfw_capture_display_init();
 			#else
 			mcfw_capture_display_init(mode);

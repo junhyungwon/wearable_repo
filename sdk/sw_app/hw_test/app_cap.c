@@ -80,7 +80,7 @@ int app_cap_start(void)
 	Vdis_init(NULL);
 
 	//#--- start link
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXX360H)
 	Vsys_create();
 #else	
 	Vsys_create(0);

@@ -71,7 +71,7 @@ static int qbr[MAX_RESOL][MAX_QUALITY] = {
  * Nexx360/Fitt360 --> 15,10,5 Fps
  * Nexxone ----------> 30,15,5
  */
-#if defined(NEXXONE) 
+#if defined(NEXXONE) || defined(NEXX360H)
 static int FPS_IDX[FPS_MAX]	= {30, 15, 5};
 #else
 static int FPS_IDX[FPS_MAX]	= {15, 10, 5};
@@ -440,7 +440,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		{
 			if(ich == MODEL_CH_NUM)
 			{
-#if defined(NEXXONE)	
+#if defined(NEXXONE) || defined(NEXX360H)	
 		        pset->ch[ich].framerate	= DEFAULT_FPS/2;
 #else
 		        pset->ch[ich].framerate	= DEFAULT_FPS;
@@ -467,7 +467,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         if(ich == MODEL_CH_NUM)
         {
 	     	//# streaming channel...
-#if defined(NEXXONE)	
+#if defined(NEXXONE)
             if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol >= RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
 #else
@@ -660,7 +660,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif
-#else
+#else //# NEXX360B, NEXX360H
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 #endif		
@@ -1018,7 +1018,7 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#else //# NEXX360B
+#else //# NEXX360B, NEXX360H
     app_set->rec_info.auto_rec      = OFF ;
 #endif
 

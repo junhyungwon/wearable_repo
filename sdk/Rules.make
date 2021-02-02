@@ -13,10 +13,20 @@ endif
 #####################################################################################
 # CONFIGURATION
 #####################################################################################
+#  NEXX360B:
+#    ====> STREAMING: OFF, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF
+#  NEXX360W:
+#    ====> STREAMING: ON, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF
+#  NEXX360H:
+#    ====> STREAMING: OFF, CAM: 1CH, GPS: OFF, HDMI: ON, VOIP: OFF
+#  NEXXONE_VOIP:
+#    ====> STREAMING: ON, CAM: 1CH, GPS: ON, HDMI: OFF, VOIP: ON
+#
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
 #SYSTEM_PLATFORM := NEXX360W
-SYSTEM_PLATFORM := NEXXONE_VOIP
+SYSTEM_PLATFORM := NEXX360H
+#SYSTEM_PLATFORM := NEXXONE_VOIP
 ######################################################################################
 
 #--- Build Type (debug/release)

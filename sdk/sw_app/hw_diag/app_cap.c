@@ -57,7 +57,7 @@ void video_status(void)
 {
 	int i, temp, count;
 	
-#if defined(LF_SYS_NEXXONE_VOIP)	
+#if defined(NEXXONE) || defined(NEXX360H)	
 	int vstatus[1] = {0,};
 	count = Vcap_get_video_status(1, &vstatus[0], &temp);
 #else
@@ -125,7 +125,7 @@ static void proc_vid_cap(void)
 			ifr->b_size = pFullBuf->filledBufSize;
 			ifr->frm_wi = pFullBuf->frameWidth;
 			ifr->frm_he = pFullBuf->frameHeight;
-			#if defined(LF_SYS_NEXXONE_VOIP)
+			#if defined(NEXXONE) || defined(NEXX360H)
 			ifr->frm_rate = 30;
 			#else
 			ifr->frm_rate = 15;
@@ -139,7 +139,7 @@ static void proc_vid_cap(void)
 			
             if(1)
             {
-                #if defined(LF_SYS_NEXXONE_VOIP)
+                #if defined(NEXXONE) || defined(NEXX360H)
 				if (pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 2))
 				#else
 				if (pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 5))
@@ -252,7 +252,7 @@ static int cap_enc_init(VENC_PARAMS_S *vencParams)
 	int i, channels=0;
 	int fr, br;
 	
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(NEXXONE) || defined(NEXX360H)
 	channels = 1+1; /* 1 camera + 1 stream */
 	fr       = 30;
 	br       = 1000; //# 1Mbps
@@ -299,7 +299,7 @@ static void cap_enc_late_init(void)
 	int i, channels=0;
 	int fr;
 	
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(NEXXONE) || defined(NEXX360H)
 	channels = 1+1; /* 1 camera + 1 stream */
 	fr       = 30;
 #else
@@ -368,7 +368,7 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 	
 	vsysParams.captMode = CAPT_MODE_720P;
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(NEXXONE) || defined(NEXX360H)
 	vsysParams.numChs = 1;
 #else
 	vsysParams.numChs = 4;
@@ -385,7 +385,7 @@ int app_cap_start(void)
 	vid_cap_start();
 	
 	//#--- start link
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(NEXXONE) || defined(NEXX360H)
 	Vsys_create();
 #else	
 	Vsys_create(0);
