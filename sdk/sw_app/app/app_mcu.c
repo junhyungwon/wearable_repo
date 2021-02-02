@@ -260,7 +260,12 @@ static void *THR_micom(void *prm)
 						if (!app_cfg->ste.b.nokey)
 				    		change_video_fxn();
 					}
-#endif 
+#elif defined(NEXX360H)
+					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
+						if (!app_cfg->ste.b.nokey)
+				    		change_video_fxn();
+					}
+#endif
 				}
 				break;
 			}

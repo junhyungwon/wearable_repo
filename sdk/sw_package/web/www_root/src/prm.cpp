@@ -35,7 +35,7 @@ static char out_buf[1024];
 #define PUTSTR printf
 #endif
 
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXX360H)
 	#define MAX_FPS 30
 #elif defined(NEXX360B) || defined(NEXX360W)
 	#define MAX_FPS 15

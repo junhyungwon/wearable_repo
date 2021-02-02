@@ -78,7 +78,7 @@ void video_status(void)
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXX360H)
 	app_leds_cam_ctrl(0, vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
@@ -96,7 +96,7 @@ void video_status(void)
 	app_log_write(MSG_LOG_WRITE, msg);
 	
 	if (app_cfg->ste.b.cap == 0) {
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXX360H)
 		if (app_cfg->vid_count > 0) {
 			app_cfg->ste.b.cap = 1;
 			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec) {
@@ -517,7 +517,7 @@ int app_cap_start(void)
 	vid_cap_start();
 
 	//#--- start component
-#if defined(NEXXONE)	
+#if defined(NEXXONE) || defined(NEXX360H)	 
 	Vsys_create();
 #else
 	Vsys_create(0);
