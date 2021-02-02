@@ -903,7 +903,7 @@ static void app_set_default(int default_type)
 		app_set->ch[ich].resol		= RESOL_720P;
 		if(ich == MODEL_CH_NUM)
 		{
-#if defined(NEXXONE)	
+#if defined(NEXXONE) || defined(NEXX360H)	
 		    app_set->ch[ich].framerate	= DEFAULT_FPS/2;  // 15fps
 #else
 		    app_set->ch[ich].framerate	= DEFAULT_FPS;    // 15fps
