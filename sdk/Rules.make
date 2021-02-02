@@ -88,6 +88,14 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = AFO
 endif
+ifeq ($(SYSTEM_PLATFORM), NEXX360H)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP = NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER  = AFO
+endif
 ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
