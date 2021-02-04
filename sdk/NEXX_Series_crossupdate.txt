@@ -1,8 +1,8 @@
-NEXX360 Firmware가 설치된 device에 NEXX_ONE Firmware설치 방법 
-1. Rules.make 에서 SYSTEM_PLATFORM을 NEXXONE_VOIP를 선택 
+NEXX_360 Firmware build 및 update 파일 생성 방법 
+
+1. Rules.make 에서 SYSTEM_PLATFORM을 NEXX360W(network 버전)를 선택, BASIC 버전일 경우 NEXX360B 를선택 
 2. make ubxapp_all
-3. build_fw.sh 에서 FW_PREFIX="NEXX360W" 선택
-4. /build_fw.sh <version> ==> ./build_fw.sh 2.07.05.N 을 실행
+4. /build_fw.sh <version> ==> ./build_fw.sh 2.07.05.N 을 실행(BASIC -->ex)  ./build_fw.sh 2.07.05.B)             
 5. Make the firmware 2.07.05.N Right? (y/n)
 6. ==========================================
            NEXX Device MODEL List
@@ -20,11 +20,35 @@ Please select Model Name..(default 2): 2 or 1
 ps: 2.07.01 이전 버전에 update 시에는 web update 지원이 안되며 update 파일 명이 기존 fitt_firmware_full_N.dat 로 변경 후 update를 진행해야 합니다.
 
 
+######################################################################################################################################################
+
+
+NEXX360 Firmware가 설치된 device에 NEXX_ONE Firmware설치 방법 
+
+1. Rules.make 에서 SYSTEM_PLATFORM을 NEXXONE_VOIP를 선택 
+2. make ubxapp_all
+4. /build_fw.sh <version> ==> ./build_fw.sh 2.07.05.N 을 실행
+5. Make the firmware 2.07.05.N Right? (y/n)
+6. ==========================================
+           NEXX Device MODEL List
+  ==========================================
+1. NEXX360 Basic
+2. NEXX360 Wireless
+3. NEXX ONE
+==========================================
+
+Please select Model Name..(default 2): 2 or 1
+
+7. 생성된 NEXX360W_2.07.05_full.dat / NEXX360W_2.07.05_full_F.dat  /  hw_test_binary_N.zip 3개 파일에서 NEXX360W_2.07.05_full.dat
+   를 SD 카드에 복사 후 UPDATE / web설정 page --> SYSTEM --> Firmware update를 이용해서 UPDATE 할 수 있습니다. 
+
+#####################################################################################################################################################
+
+
 
 NEXX_ONE Firmware가  설치된 NEXX360 device에 NEXX360 Firmware올리는 방법
 1. Rules.make 에서 SYSTEM_PLATFORM을 NEXX360W를 선택 
 2. make ubxapp_all
-3. build_fw.sh 에서 FW_PREFIX="NEXXONE" 선택
 4. ./build_fw.sh <version> ==> ./build_fw.sh 0.09.12 을 실행
 5. Make the firmware 2.07.05.N Right? (y/n)
 6. ==========================================
