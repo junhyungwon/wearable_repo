@@ -608,32 +608,6 @@ void netmgr_udhcpc_stop(const char *ifname)
 }
 
 /*
- * 이 함수는 ifconfig ethX up을 해야 값을 읽을 수 있다.
- */
-int netmgr_is_netdev_active(const char *ifname)
-{
-	FILE *fp = NULL;
-    char buf[32] = {0, };
-    int status=0;
-    unsigned char val;
-
-    snprintf(buf, sizeof(buf), "/sys/class/net/%s/carrier", ifname);
-    
-	fp = fopen(buf, "r") ;
-    if (fp != NULL) {   
-        fread(&val, 1, 1, fp);
-        if (val == '1') {
-            status = 1 ; // connect
-        } else { 
-            status = 0 ; // disconnect
-        } 
-        fclose(fp);
-    }
-	
-    return status;
-}
-
-/*
  * set shared memory response
  */
 

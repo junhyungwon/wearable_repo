@@ -23,6 +23,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define TIME_CRADLE_POLL_CYCLE			200		//# msec
+#define NETMGR_CRADLE_ETH_DEVNAME		"eth0"
 
 typedef struct {
 	app_thr_obj pObj; /* device detect */
@@ -40,12 +41,35 @@ static netmgr_poll_cradle_t *iethX = &t_proc;
 -----------------------------------------------------------------------------*/
 static int __is_connected_cradle(void)
 {
-	int status;
+	int st;
 	
-	/* 0-> connect 1-> remove */
-	gpio_get_value(BACKUP_DET, &status);
+	/* 크래들 연결상태 확인 0-> connect 1-> remove */
+	gpio_get_value(BACKUP_DET, &st);
+	
+	return (st?0:1);
+}
 
-	return (status?0:1);
+static int __is_ether_active(void)
+{
+	FILE *fp = NULL;
+    char buf[32] = {0, };
+    int status=0;
+    unsigned char val;
+
+    snprintf(buf, sizeof(buf), "/sys/class/net/eth0/carrier");
+    
+	fp = fopen(buf, "r") ;
+    if (fp != NULL) {   
+        fread(&val, 1, 1, fp);
+        if (val == '1') {
+            status = 1 ; // connect
+        } else { 
+            status = 0 ; // disconnect
+        } 
+        fclose(fp);
+    }
+	
+    return status;
 }
 
 /*****************************************************************************
@@ -75,11 +99,25 @@ static void *THR_cradle_poll(void *prm)
 			if (app_cfg->ste.bit.cradle == 0) {
 				app_cfg->ste.bit.cradle = 1;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_CRADLE, 1);
+			} 
+			else {
+				if (app_cfg->ste.bit.eth0 == 1) {
+					/* 크래들 연결한 상태에서 ethernet 케이블을 제거하는 경우 */
+					ret = __is_ether_active();
+					if (ret == 0) {
+						app_cfg->ste.bit.cradle = 0;
+						app_cfg->ste.bit.eth0   = 0;
+						/* ethernet stop */
+						netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_CRADLE, 0);
+					}
+				}
 			}
 		} else {
 			/* set remove event */
-			if (app_cfg->ste.bit.cradle == 1) {
+			if (app_cfg->ste.bit.cradle == 1) 
+			{
 				app_cfg->ste.bit.cradle = 0;
+				app_cfg->ste.bit.eth0   = 0;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_CRADLE, 0);
 			}
 		}

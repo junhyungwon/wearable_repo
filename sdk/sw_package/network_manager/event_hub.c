@@ -108,6 +108,7 @@ static void *THR_event_hub_main(void *prm)
 		
 		switch (cmd) {
 		case APP_KEY_UP: //# 6 polldev noty
+			//dprintf("NETMGR_CMD_DEV_DETECT done!!\n");
 			send_msg(NETMGR_CMD_DEV_DETECT, tObj->param0, tObj->param1);
 			break;
 		

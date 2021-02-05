@@ -32,7 +32,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define TIME_RNDIS_CYCLE			200		//# msec
-#define TIME_RNDIS_WAIT_ACTIVE		10000   //# 10sec
+#define TIME_RNDIS_WAIT_ACTIVE		20000   //# max 20sec
 #define CNT_RNDIS_WAIT_ACTIVE  		(TIME_RNDIS_WAIT_ACTIVE/TIME_RNDIS_CYCLE)
 
 #define TIME_RNDIS_WAIT_DHCP		10000   //# 10sec
@@ -95,7 +95,7 @@ static int __wait_for_active(void)
 		strcpy(devname, "eth1");
 		ret = RNDIS_DEV_NAME_ETH;
 	} else {
-		eprintf("unknown rndis device!!\n");
+		//eprintf("unknown rndis device!!\n");
 		return ret;
 	}
 	
@@ -124,6 +124,32 @@ static int __wait_for_active(void)
 	} 
 
 	return ret;
+}
+
+/*
+ * 이 함수는 ifconfig ethX up을 해야 값을 읽을 수 있다.
+ */
+static int __is_rndis_active(const char *ifname)
+{
+	FILE *fp = NULL;
+    char buf[32] = {0, };
+    int status=0;
+    unsigned char val;
+
+    snprintf(buf, sizeof(buf), "/sys/class/net/%s/carrier", ifname);
+    
+	fp = fopen(buf, "r") ;
+    if (fp != NULL) {   
+        fread(&val, 1, 1, fp);
+        if (val == '1') {
+            status = 1 ; // connect
+        } else { 
+            status = 0 ; // disconnect
+        } 
+        fclose(fp);
+    }
+	
+    return status;
 }
 
 /*****************************************************************************
@@ -166,7 +192,7 @@ static void *THR_rndis_main(void *prm)
 			switch (st) {
 			case __STAGE_RNDIS_GET_STATUS:
 				/* TODO */
-				res = netmgr_is_netdev_active(RNDIS_DEVNAME(irndis->iftype));
+				res = __is_rndis_active(RNDIS_DEVNAME(irndis->iftype));
 				if (!res) {
 					irndis->first = 0;
 					irndis->stage = __STAGE_RNDIS_WAIT_ACTIVE;
@@ -218,7 +244,7 @@ static void *THR_rndis_main(void *prm)
 						irndis->iftype = res;
 						irndis->first = 1;
 					}
-					dprintf("active rndis %d(%s)\n", irndis->iftype, RNDIS_DEVNAME(irndis->iftype));
+					//dprintf("active rndis %d(%s)\n", irndis->iftype, RNDIS_DEVNAME(irndis->iftype));
 					netmgr_set_ip_dhcp(RNDIS_DEVNAME(irndis->iftype));
 					irndis->stage = __STAGE_RNDIS_WAIT_DHCP;
 					irndis->rndis_timer = 0;
