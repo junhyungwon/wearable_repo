@@ -24,6 +24,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define TIME_USBNET_POLL_CYCLE			200		//# msec
+#define BLACKLIST_USB_VID				0x1076   //# PID9082 or 9003
 
 typedef struct {
 	app_thr_obj pObj; /* device detect */
@@ -39,6 +40,51 @@ static netmgr_poll_usbdev_t *iudev = &t_proc;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+/*
+ * lsusb. (format)
+ * 1076:9082
+ */
+static int __check_blacklist(int usb_v)
+{
+	FILE *f=NULL;
+
+	char cmd[128] = {0,};
+	char buffer[256] = {0,};
+	char vendor[5]={0,};
+	char *save_ptr;
+
+	snprintf(vendor, sizeof(vendor), "%04x", usb_v);
+
+	snprintf(cmd, sizeof(cmd), "/usr/bin/lsusb");
+	f = popen(cmd, "r");
+	if (f == NULL) {
+		eprintf("couldn't access %s\n", cmd);
+		return 0;
+	}
+
+	while (fgets(buffer, 255, f) != NULL) 
+	{
+		char *v, *p;
+		/* %*s->discard input */
+		memset(cmd, 0, sizeof(cmd));
+		sscanf(buffer, "%*s%*s%*s%*s%*s%s", cmd);
+		/* splite ":" */
+		if (cmd != NULL) {
+			v = strtok_r(cmd, ":", &save_ptr);
+			//dprintf("compare %s with %s\n", v, vendor);	
+			if (strncmp(v, vendor, 4) == 0)
+			{
+				pclose(f);
+				//dprintf("detected usb %s\n", vendor);
+				return 1; //# founded usb
+			}
+		}
+	}
+	pclose(f);
+
+	return 0;
+}
+
 static int __is_rndis_connect(void)
 {
 	FILE *f;
@@ -73,14 +119,19 @@ static int __is_usb2eth_connnect(void)
 	FILE *f = NULL;
 	struct stat sb;
 	char path[1024 + 1]={0,};
-	int ret = 0;
+	int ret = 0, res;
 	
 	if (0 == access(USBETHER_OPER_PATH, R_OK)) {
-		/* USB2Ether Device */
-		f = fopen(USBETHER_OPER_PATH, "r");
-		if (f != NULL) {
-			fclose(f);
-			ret = 1;
+		/* 특정 제조사 동글이 검색되는 경우 무시함 */
+		res = __check_blacklist(BLACKLIST_USB_VID);
+		if (!res) 
+		{
+			/* USB2Ether Device */
+			f = fopen(USBETHER_OPER_PATH, "r");
+			if (f != NULL) {
+				fclose(f);
+				ret = 1;
+			}
 		}
 	}
 	

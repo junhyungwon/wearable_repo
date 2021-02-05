@@ -182,6 +182,7 @@ static void *THR_rndis_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
+				dprintf("rndis stopping.....\n");
 				netmgr_udhcpc_stop(RNDIS_DEVNAME(irndis->iftype));
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
 				quit = 1;
