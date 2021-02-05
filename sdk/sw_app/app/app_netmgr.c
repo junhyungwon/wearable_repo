@@ -335,11 +335,13 @@ static void __netmgr_dev_ip_status_handler(void)
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_RESPONSE_INFO_OFFSET);
 	info = (netmgr_shm_response_info_t *)databuf;
-	
+
+#if 0	
 	//# for debugging
-//	dprintf("Get dhcp ip address is %s\n", info->ip_address);
-//	dprintf("Get dhcp mask address is %s\n", info->mask_address);
-//	dprintf("Get dhcp gateway address is %s\n", info->gw_address);
+	dprintf("[Dev %x] Get dhcp ip address is %s\n", device, info->ip_address);
+	dprintf("[Dev %x] Get dhcp mask address is %s\n", device, info->mask_address);
+	dprintf("[Dev %x] Get dhcp gateway address is %s\n", device, info->gw_address);
+#endif
 	
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
 	if (device == NETMGR_DEV_TYPE_CRADLE) {

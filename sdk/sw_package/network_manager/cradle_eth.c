@@ -61,6 +61,32 @@ static netmgr_cradle_eth_t *icradle = &t_cradle_eth;
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 
+/*
+ * 이 함수는 ifconfig ethX up을 해야 값을 읽을 수 있다.
+ */
+static int __is_ether_active(void)
+{
+	FILE *fp = NULL;
+    char buf[32] = {0, };
+    int status=0;
+    unsigned char val;
+
+    snprintf(buf, sizeof(buf), "/sys/class/net/eth0/carrier");
+    
+	fp = fopen(buf, "r") ;
+    if (fp != NULL) {   
+        fread(&val, 1, 1, fp);
+        if (val == '1') {
+            status = 1 ; // connect
+        } else { 
+            status = 0 ; // disconnect
+        } 
+        fclose(fp);
+    }
+	
+    return status;
+}
+
 /*****************************************************************************
 * @brief    network proc function!
 * @section  DESC Description
@@ -91,6 +117,7 @@ static void *THR_cradle_eth_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
+				dprintf("cradle ether stopping....\n");
 				if (icradle->dhcp == 1) {
 					netmgr_udhcpc_stop(NETMGR_CRADLE_ETH_DEVNAME);
 				}
@@ -102,19 +129,12 @@ static void *THR_cradle_eth_main(void *prm)
 			
 			st = icradle->stage;
 			switch (st) {
-			case __STAGE_CRADLE_ETH_GET_STATUS:
-				res = netmgr_is_netdev_active(NETMGR_CRADLE_ETH_DEVNAME);
-				if (!res) {
-					icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
-					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
-				}
-				break;
-			
 			case __STAGE_CRADLE_ETH_DHCP_NOTY:
 				/* ip copy */
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_CRADLE, icradle->ip, icradle->mask, icradle->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_CRADLE);
 				icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
+				app_cfg->ste.bit.eth0 = 1;
 				break;
 			
 			case __STAGE_CRADLE_ETH_DHCP_VERIFY:
@@ -130,7 +150,7 @@ static void *THR_cradle_eth_main(void *prm)
 						icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
 					} else {
-						dprintf("cradle ip is %s\n", icradle->ip);
+						dprintf("cradle dhcp ip is %s\n", icradle->ip);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
 						icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;	
 					}
@@ -155,15 +175,17 @@ static void *THR_cradle_eth_main(void *prm)
 				break;
 			
 			case __STAGE_CRADLE_ETH_WAIT_ACTIVE:
-				res = netmgr_is_netdev_active(NETMGR_CRADLE_ETH_DEVNAME);
+				res = __is_ether_active();
 				if (res) {
 					/* 케이블이 연결되고 IP 할당이 안된 경우 */
 					if (icradle->dhcp == 0) {
 						/* static ip alloc */
+						dprintf("cradle: set static ip %s\n", icradle->ip);
 						netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, 
 									icradle->mask, icradle->gw);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);			
 						icradle->stage = __STAGE_CRADLE_ETH_GET_STATUS;
+						app_cfg->ste.bit.eth0 = 1;
 					} else {
 						/* dhcp ip alloc */
 						netmgr_set_ip_dhcp(NETMGR_CRADLE_ETH_DEVNAME);
@@ -171,6 +193,7 @@ static void *THR_cradle_eth_main(void *prm)
 					}
 				}
 				break;
+			case __STAGE_CRADLE_ETH_GET_STATUS:	
 			default:
 				break;	
 			}

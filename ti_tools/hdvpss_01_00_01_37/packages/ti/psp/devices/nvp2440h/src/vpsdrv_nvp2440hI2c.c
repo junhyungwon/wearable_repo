@@ -24,8 +24,9 @@
 #define NVP2440H_I2C_ID		2
 
 //# for partron 0x66, afo 0x7F
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
 #define NVP2440H_I2C_ADDR	0x66 //# 0xcc
+//#define NVP2440H_I2C_ADDR	0x7F //# 양산카메라 I2C 주소
 #else
 #define NVP2440H_I2C_ADDR	0x7F //# 0xFE
 #endif
@@ -372,7 +373,7 @@ static int nvp2440h_sensor_init(int idx)
 
 	//# mirror 0:VH, 1:V, 2:H, 3:off (for 3100k)
 	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
-	#if defined(LF_SYS_NEXXONE_VOIP)
+	#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
 	val = 0x03; //0x01
 	#else
 	if(idx == 0) {

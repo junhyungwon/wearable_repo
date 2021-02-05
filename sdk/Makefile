@@ -63,15 +63,17 @@ app_web_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root clean
 
 voip:
+ifeq ($(USE_VOIP),YES)
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re all
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem all
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip all
-
+endif
 voip_clean:
+ifeq ($(USE_VOIP),YES)
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/re clean
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/rem clean
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/voip/baresip clean
-
+endif
 av_rec:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/av_rec all
 
@@ -349,7 +351,7 @@ SYSLINK_BUILD_OPT = USE_SYSLINK_NOTIFY=0 SYSLINK_PLATFORM=TI81XX SYSLINK_VARIANT
 
 syslinkbuild:
 	cp $(MCFW_ROOT_PATH)/makerules/syslink_products.mak $(syslink_PATH)/products.mak
-	$(MAKE) -C$(syslink_PATH) $(SYSLINK_BUILD_OPT) $(TARGET)
+	$(MAKE) -j$(CPU_NUM) -C$(syslink_PATH) $(SYSLINK_BUILD_OPT) $(TARGET)
 
 syslink:
 	$(MAKE) syslinkbuild DEVICE=TI814X TARGET=syslink
@@ -365,9 +367,9 @@ syslink_all: syslink_clean syslink
 ##### CMEM MAKE #####
 
 cmem:
-	$(MAKE) -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/interface \
+	$(MAKE) -j$(CPU_NUM) -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/interface \
 	LINUXKERNEL_INSTALL_DIR=$(KERNELDIR) MVTOOL_PREFIX=$(BUILD_TOOL_PREFIX)
-	$(MAKE) -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module \
+	$(MAKE) -j$(CPU_NUM) -C $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module \
 	LINUXKERNEL_INSTALL_DIR=$(KERNELDIR) MVTOOL_PREFIX=$(BUILD_TOOL_PREFIX)
 	cp $(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/src/module/cmemk.ko \
 	$(TARGET_MCFW_DIR)/kermod/.
@@ -390,8 +392,6 @@ fsupdate:
 	-sudo /bin/mkdir -p $(EXEC_DIR)
 	-sudo /bin/mkdir -p $(EXEC_DIR)/bin
 	sudo /bin/cp $(APP_DIR)/lib/libfont_db.so $(TARGET_FS)/usr/lib/.
-	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/re/libre.so $(TARGET_FS)/usr/lib/.
-	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/rem/librem.so $(TARGET_FS)/usr/lib/.
 	sudo /bin/cp -Rp $(TARGET_MCFW_DIR)/* $(EXEC_DIR)/.
 	sudo /bin/cp -f $(TFTP_HOME)/wis-streamer $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
@@ -401,13 +401,19 @@ fsupdate:
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/network_manager/net_mgr.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.
+ifeq ($(USE_VOIP),YES)
+	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/re/libre.so $(TARGET_FS)/usr/lib/.
+	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/rem/librem.so $(TARGET_FS)/usr/lib/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/baresip.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/*.so $(TARGET_FS)/usr/baresip/modules/.
+endif
+ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd $(TARGET_FS)/usr/sbin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd_cli $(TARGET_FS)/usr/sbin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_cli $(TARGET_FS)/usr/sbin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_passphrase $(TARGET_FS)/usr/sbin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_supplicant $(TARGET_FS)/usr/sbin/.
+endif
 	sudo /bin/cp -f $(TFTP_HOME)/onvifserver $(EXEC_DIR)/bin/
 	sudo /bin/cp -f $(TFTP_HOME)/onvifconfig.xml $(EXEC_DIR)/bin/
 	sudo /bin/cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/

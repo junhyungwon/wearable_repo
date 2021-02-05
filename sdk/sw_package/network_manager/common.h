@@ -66,7 +66,6 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
 void netmgr_net_link_down(const char *ifce);
 int netmgr_net_link_up(const char *ifce);
 int netmgr_net_link_detect(const char *ifce);
-int netmgr_is_netdev_active(const char *ifname);
 
 int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mask, const char *gateway);
 int netmgr_set_ip_dhcp(const char *ifname);

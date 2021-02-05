@@ -62,6 +62,32 @@ static netmgr_usb2ether_t *iusb2eth = &t_usb2ether;
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 
+/*
+ * 이 함수는 ifconfig ethX up을 해야 값을 읽을 수 있다.
+ */
+static int __is_usb2ether_active(const char *ifname)
+{
+	FILE *fp = NULL;
+    char buf[32] = {0, };
+    int status=0;
+    unsigned char val;
+
+    snprintf(buf, sizeof(buf), "/sys/class/net/%s/carrier", ifname);
+    
+	fp = fopen(buf, "r") ;
+    if (fp != NULL) {   
+        fread(&val, 1, 1, fp);
+        if (val == '1') {
+            status = 1 ; // connect
+        } else { 
+            status = 0 ; // disconnect
+        } 
+        fclose(fp);
+    }
+	
+    return status;
+}
+
 /*****************************************************************************
 * @brief    network proc function!
 * @section  DESC Description
@@ -102,7 +128,7 @@ static void *THR_usb2eth_main(void *prm)
 			st = iusb2eth->stage;
 			switch (st) {
 			case __STAGE_USB2ETH_GET_STATUS:
-				res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
+				res = __is_usb2ether_active(NETMGR_USB2ETH_DEVNAME);
 				if (!res) {
 					iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_INACTIVE);
@@ -112,6 +138,7 @@ static void *THR_usb2eth_main(void *prm)
 			case __STAGE_USB2ETH_DHCP_NOTY:
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_USB2ETHER, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_USB2ETHER);
+				iusb2eth->stage = __STAGE_USB2ETH_GET_STATUS;
 				break;
 			
 			case __STAGE_USB2ETH_DHCP_VERIFY:
@@ -121,10 +148,10 @@ static void *THR_usb2eth_main(void *prm)
 				} else {
 					if (!strcmp(iusb2eth->ip, "0.0.0.0")) {
 						/* dhcp로부터 IP 할당이 안된 경우 */
-						dprintf("couln't get dhcp ip address!\n");
+						dprintf("couln't get usb2ether dhcp ip address!\n");
 						iusb2eth->stage = __STAGE_USB2ETH_ERROR_STOP;
 					} else {
-						dprintf("usb2eth ip is %s\n", iusb2eth->ip);
+						dprintf("usb2ether dhcp ip is %s\n", iusb2eth->ip);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
 						iusb2eth->stage = __STAGE_USB2ETH_DHCP_NOTY;
 					}
@@ -145,7 +172,7 @@ static void *THR_usb2eth_main(void *prm)
 				break;
 			
 			case __STAGE_USB2ETH_WAIT_ACTIVE:
-				res = netmgr_is_netdev_active(NETMGR_USB2ETH_DEVNAME);
+				res = __is_usb2ether_active(NETMGR_USB2ETH_DEVNAME);
 				if (res) {
 					/* 케이블이 연결되고 IP 할당이 안된 경우 */
 					if (iusb2eth->dhcp == 0) {

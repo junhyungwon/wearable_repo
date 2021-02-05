@@ -222,7 +222,7 @@ static int netlink_usb_detach_parse(char *buffer, size_t len, int *v, int *p)
 	}
 
 	if (i >= NETMGR_USB_MAX_NUM) {
-		eprintf("Not found usb session id (det = %lx)!!\n", session_id);
+		//dprintf("Not found usb session id (det = %lx)!!\n", session_id);
 		return -1;
 	}
 

@@ -39,37 +39,51 @@ static netmgr_poll_usbdev_t *iudev = &t_proc;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-static int __is_connected_rndis(void)
+static int __is_rndis_connect(void)
 {
-	struct stat sb;
-	char path[1024 + 1];
+	FILE *f;
+	char buf[256] = {0,};
 	int ret = 0;
 	
-	//# /sys/module/rndis_host ????? ???? ??? ??? ???.
-	memset(path, 0, sizeof(path));
-	snprintf(path, sizeof(path), "/sys/module/rndis_host");
+    if ((f = fopen("/proc/modules", "r")) == NULL) {
+        return ret;
+    }
 	
-	if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-		/* mdev?? usb ??? ?? */
-		ret = 1;
-	} 
-	
-	return ret;
+	/*
+	 * rndis_host 5101 0 - Live 0xbf1a4000
+	 */  
+    while ((fgets(buf, sizeof(buf), f)) != NULL) {
+		char *s;
+		if ((s = strstr(buf, "rndis_host")) != NULL) {
+			ret = 1;
+			break;
+        }
+    }
+    fclose(f);
+	#if 0
+	if (ret > 0) {
+		dprintf("search --> %s\n", buf);
+	}
+	#endif
+    return ret;
 }
 
-static int __is_connected_usb2eth(void)
+static int __is_usb2eth_connnect(void)
 {
-    FILE *f = NULL;
-    int ret = 0;
-
-    if (0 == access(USBETHER_OPER_PATH, R_OK)) {
-	    f = fopen(USBETHER_OPER_PATH, "r");
-	    if (f != NULL) {
-	        ret = 1;
-	    }
-    	fclose(f);
+	FILE *f = NULL;
+	struct stat sb;
+	char path[1024 + 1]={0,};
+	int ret = 0;
+	
+	if (0 == access(USBETHER_OPER_PATH, R_OK)) {
+		/* USB2Ether Device */
+		f = fopen(USBETHER_OPER_PATH, "r");
+		if (f != NULL) {
+			fclose(f);
+			ret = 1;
+		}
 	}
-
+	
 	return ret;
 }
 
@@ -82,7 +96,7 @@ static void *THR_usbnet_poll(void *prm)
 {
 	app_thr_obj *tObj = &iudev->pObj;
 	int exit = 0, cmd;
-	int ret;
+	int ret, is_rndis = 0;
 	
 	tObj->active = 1;
 	
@@ -94,37 +108,44 @@ static void *THR_usbnet_poll(void *prm)
 		}
 		
 		//# wait USB Rndis Device
-		ret = __is_connected_rndis();
-		if (ret) {
-			/* set attach event */
+		ret = __is_rndis_connect();
+		if (ret > 0) {
+			/* set rndis attach event */
 			if (app_cfg->ste.bit.rndis == 0) {
+				dprintf("detected rndis_host device!!\n");
 				app_cfg->ste.bit.rndis = 1;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_RNDIS, 1);
 			}
 		} else {
-			/* set remove event */
+			/* rndis remove event */
 			if (app_cfg->ste.bit.rndis == 1) {
+				dprintf("removed rndis_host device!!\n");
 				app_cfg->ste.bit.rndis = 0;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_RNDIS, 0);
+			} 
+			else {
+				/* rndis flag가 0일 경우에만 usb2eth 장치를 확인:
+				 * rndis 장치가 usb2eth와 동일하게 eth1으로 생성되는 경우.
+				 */
+				ret = __is_usb2eth_connnect();
+				if (ret > 0) {
+					/* set usb2eth attach event */
+					if (app_cfg->ste.bit.usb2eth == 0) {
+						dprintf("detected usb2ether device!!\n");
+						app_cfg->ste.bit.usb2eth = 1;
+						netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_USB2ETHER, 1);
+					}	
+				} else {
+					/* usb2eth remove event */
+					if (app_cfg->ste.bit.usb2eth == 1) {
+						dprintf("removed usb2ether device!!\n");
+						app_cfg->ste.bit.usb2eth = 0;
+						netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_USB2ETHER, 0);
+					}
+				}
+				
 			}
 		}
-		
-		//# wait USB2Ether Device
-		ret = __is_connected_usb2eth();
-		if (ret) {
-			/* set attach event */
-			if (app_cfg->ste.bit.usb2eth == 0) {
-				app_cfg->ste.bit.usb2eth = 1;
-				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_USB2ETHER, 1);
-			}
-		} else {
-			/* set remove event */
-			if (app_cfg->ste.bit.usb2eth == 1) {
-				app_cfg->ste.bit.usb2eth = 0;
-				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_USB2ETHER, 0);
-			}
-		}
-		
 		delay_msecs(TIME_USBNET_POLL_CYCLE);
 	} 
 	
