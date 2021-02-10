@@ -284,8 +284,8 @@ typedef struct {
     app_account_t           account_info;
 
 #if SYS_CONFIG_VOIP
-    app_voip_t              voip; // 68
-	char reserved[362];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip)
+    app_voip_t              voip; // 68 4 byte align => 72
+	char reserved[358];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip) + 4(byte align)
 #else
 	char reserved[474];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
 #endif
