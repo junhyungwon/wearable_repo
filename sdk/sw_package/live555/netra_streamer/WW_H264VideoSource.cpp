@@ -114,7 +114,8 @@ WW_H264VideoSource::~WW_H264VideoSource(void)
 
 unsigned int WW_H264VideoSource::maxFrameSize() const
 {
-	return 1024*200;
+	return 1024*2000;
+	//return 0; // 0 means unlimited
 }
 
 void WW_H264VideoSource::doGetNextFrame()
