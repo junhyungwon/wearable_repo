@@ -713,8 +713,8 @@ void Vsys_get_device_status(Int32 *dev_iss, Int32 *dev_dss)
 
 void mcfw_linux_init(int pal)
 {
-    int display = 0 ;
-
+	int display = 1 ; /* HD display */
+	
 	System_init();
 	Vdis_set_standard(pal);
 	Vdis_disp_ctrl_init(display);
