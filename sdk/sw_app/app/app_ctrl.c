@@ -81,7 +81,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 
 		params.qpMax 	= 45;
 		params.qpInit 	= -1;
-        params.qpMin    = 10 ;
+        params.qpMin    = 2;
 /*
         if(br >= 8000) {
             params.qpMin = 10;
@@ -101,7 +101,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	{
         sprintf(log, "[APP_CTRL] --- ch %d set vid rate control to CBR ---",ch);
  
-		params.qpMin	= 10;//10;	//# for improve quality: 10->0
+		params.qpMin	= 2;//10;	//# for improve quality: 10->0
 		params.qpMax 	= 40;
 		params.qpInit 	= -1;
 	}
