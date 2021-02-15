@@ -392,8 +392,8 @@ static void cap_jpeg_quality(int ch, int value)
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
 
-	params.qpMin 	= 1;
-	params.qpMax 	= 100;
+	params.qpMin 	= 10;
+	params.qpMax 	= 40;
 	params.qpInit	= value;
 
 	Venc_setDynamicParam(ch, 0, &params, VENC_QPVAL_I);
