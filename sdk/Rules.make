@@ -24,8 +24,8 @@ endif
 #
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
-#SYSTEM_PLATFORM := NEXX360W
-SYSTEM_PLATFORM := NEXX360H
+SYSTEM_PLATFORM := NEXX360W
+#SYSTEM_PLATFORM := NEXX360H
 #SYSTEM_PLATFORM := NEXXONE_VOIP
 ######################################################################################
 
@@ -94,7 +94,7 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360H)
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = AFO
+	CAM_MANUFACTURER  = PARTRON
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#--- Select Wi-Fi method (YES/NO)

@@ -157,7 +157,6 @@ typedef union {
 		unsigned int usbnet_ready		: 1;    //# usb device detect (Wi-Fi, LTE, USB2Ether)
 		unsigned int usbnet_run			: 1;    //# usb device run (Wi-Fi, LTE, USB2Ether) ip allocation succeed
 		unsigned int rtsptx 			: 1;
-	    unsigned int mmc_err    		: 1;  	//# mmc error
 	    unsigned int log        		: 1;
 	    unsigned int sock       		: 1;
         unsigned int gps        		: 1;

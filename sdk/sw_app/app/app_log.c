@@ -355,11 +355,6 @@ static void *THR_log(void *prm)
             break;
         }
 
-		if (app_cfg->ste.b.mmc_err) {
-			exit = 1;
-			continue;
-		}
-
 		switch(msg_buf.msgCmd)
 		{
 			case MSG_LOG_WRITE:
@@ -394,7 +389,7 @@ static void *THR_log(void *prm)
 		}
     }
 
-	if(ilog->fd != NULL && !app_cfg->ste.b.mmc_err){
+	if(ilog->fd != NULL){
 		fclose(ilog->fd);
 		ilog->fd = NULL;
 		sync();
@@ -418,7 +413,7 @@ int app_log_init(void)
     app_thr_obj *tObj;
 	char filter[MAX_CHAR_64] = {0,};
 
-	if (!app_cfg->ste.b.mmc || app_cfg->ste.b.mmc_err)
+	if (!app_cfg->ste.b.mmc)
 		return EFAIL;
 
     memset(ilog, 0, sizeof(app_log_t));
