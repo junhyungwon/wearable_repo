@@ -828,7 +828,7 @@ static int cfg_read(int is_mmc, char* cfg_path)
 	char msg[MAX_CHAR_255]={0,};
 	
 	if(is_mmc){
-		if (!app_cfg->ste.b.mmc || app_cfg->ste.b.mmc_err) {
+		if (!app_cfg->ste.b.mmc) {
 			eprintf("#### NO INSERTED SD CARD !! ####\n");
 			return EFAIL;
 		}
@@ -1180,7 +1180,7 @@ int app_set_write(void)
 	char path[128] ={0,};
 
 #if ENABLE_JSON_CONFIG_FILE 	
-	if (app_cfg->ste.b.mmc && !app_cfg->ste.b.mmc_err)
+	if (app_cfg->ste.b.mmc)
 	{
 		if (-1 == access(CFG_DIR_MMC, 0)) {
 			mkdir(CFG_DIR_MMC, 0775);
@@ -1199,7 +1199,7 @@ int app_set_write(void)
 	    eprintf("couldn't open %s file\n", path);
 
 #else
-	if (app_cfg->ste.b.mmc && !app_cfg->ste.b.mmc_err)
+	if (app_cfg->ste.b.mmc)
 	{
 		if (-1 == access(CFG_DIR_MMC, 0)) {
 			mkdir(CFG_DIR_MMC, 0775);

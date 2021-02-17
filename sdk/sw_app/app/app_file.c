@@ -16,6 +16,7 @@
 #include <fnmatch.h>
 
 #include "dev_disk.h"
+#include "dev_micom.h"
 #include "dev_common.h"
 
 #include "app_main.h"
@@ -24,6 +25,7 @@
 #include "app_leds.h"
 #include "app_dev.h"
 #include "app_set.h"
+#include "app_mcu.h"
 #include "app_file.h"
 #include "app_buzz.h"
 
@@ -105,23 +107,20 @@ static void _check_rec_dir(const char *dir)
  * @section  DESC Description
  *	 - desc : 
  *****************************************************************************/
-static int _check_threshold_size(app_file_t *pInfo)
+static void _check_threshold_size(app_file_t *pInfo)
 {
 	disk_info_t idisk;
-	int ret = EFAIL;
 
-	ret = util_disk_info(&idisk, SD_MOUNT_PATH);
-	if (ret != EFAIL) {
-		pInfo->disk_max 	= idisk.total;
-		pInfo->disk_avail 	= idisk.avail;
-		pInfo->disk_used	= (idisk.total-idisk.avail);
-//		dprintf("MAX capacity %ld(KB)\n", pInfo->disk_max);
-//		dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
-	} else {
-		eprintf("%s fault!!\n", SD_MOUNT_PATH);
-	}
-
-	return ret;
+	/* SD 카드 오류 시 마운트가 안돼서 자동으로 리부팅 됨. 
+	 * 따라서 error가 발생하지 않으므로 리턴값 체크하는 부분 삭제
+	 */
+	util_disk_info(&idisk, SD_MOUNT_PATH);
+	
+	pInfo->disk_max 	= idisk.total;
+	pInfo->disk_avail 	= idisk.avail;
+	pInfo->disk_used	= (idisk.total-idisk.avail);
+//	dprintf("MAX capacity %ld(KB)\n", pInfo->disk_max);
+//	dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
 }
 
 /*****************************************************************************
@@ -131,12 +130,11 @@ static int _check_threshold_size(app_file_t *pInfo)
  *****************************************************************************/
 int app_file_check_disk_free_space(void)
 {
-//	unsigned long sum = ifile->disk_max;
 //	unsigned long used = ifile->disk_used;
 	unsigned long avail = ifile->disk_avail;
 	int ret = 0;
 	
-//	dprintf("Check free : %ld(KB) / USED: %ld(KB) / threshold : %ld(KB)!\n", avail, used, MIN_THRESHOLD_SIZE);
+//	dprintf("Check free : %lu(KB) / USED: %lu(KB) / threshold : %lu(KB)!\n", avail, used, MIN_THRESHOLD_SIZE);
 	if ( avail < MIN_THRESHOLD_SIZE ) 
 		ret = -1; /* disk full state */
 	
@@ -220,7 +218,7 @@ static int _cmpold(const void *a, const void *b)
  * @section  DESC Description
  *	 - desc : return the size of file
  *****************************************************************************/
-static Uint32 find_first_and_delete(struct list_head *head)
+static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 {
 	struct disk_list *ptr = NULL;
 	Uint32 sz = 0;
@@ -228,8 +226,10 @@ static Uint32 find_first_and_delete(struct list_head *head)
 	ptr = list_last_entry(head, struct disk_list, queue);
 	if (ptr != NULL)
 	{
-		if (delete_file(ptr->fullname) < 0)
+		if (delete_file(ptr->fullname) < 0) {
+			*del_sz = 0;
 			return -1;
+		}
 			
 		sz = ptr->filesz; /* return file size */
 		dprintf("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
@@ -237,8 +237,9 @@ static Uint32 find_first_and_delete(struct list_head *head)
 		ifile->file_count--;
 		free(ptr);
 	}
-
-	return sz;
+	
+	*del_sz = sz;
+	return 0;
 }
 
 /*****************************************************************************
@@ -368,8 +369,7 @@ static int _delete_files(unsigned long del_sz)
 		{
 			Uint32 fsize;
 			
-			fsize = find_first_and_delete(head);
-			if (fsize < 0) {
+			if (find_first_and_delete(head, &fsize) < 0) {
 				/* file is empty */
 				return -1;
 			}
@@ -630,7 +630,7 @@ static void *THR_file_mng(void *prm)
 		app_cfg->wd_flags |= WD_FILE;
 		
 		cmd = tObj->cmd;
-		if (cmd == APP_CMD_EXIT || app_cfg->ste.b.mmc_err) {
+		if (cmd == APP_CMD_EXIT) {
 			exit = 1;
 			break;
 		}
@@ -643,13 +643,7 @@ static void *THR_file_mng(void *prm)
 				int capacity_full = 0;
 
 				//# Get Disk MAX Size.
-				if (_check_threshold_size(ifile) < 0) {
-					sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!") ;
-					app_log_write(MSG_LOG_WRITE, msg);
-					exit = 1;
-					break;
-				}
-				
+				_check_threshold_size(ifile);
 				app_file_update_disk_usage();
 				capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
 
@@ -661,11 +655,13 @@ static void *THR_file_mng(void *prm)
 						r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
 						OSA_mutexUnlock(&ifile->mutex_file);
 						if (r == EFAIL) {
-							sprintf(msg, "[APP_FILE] !! Delete file Error...reboot!!");
-							app_log_write(MSG_LOG_WRITE, msg);
-							eprintf("Delete file Error!!\n");
-							app_cfg->ste.b.mmc_err = 1;
-							app_rec_stop(ON);
+							eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
+							if (app_rec_state() > 0) {
+								app_rec_stop(ON); /* Buzzer On */
+								app_msleep(500); /* wait for record done!! */
+							}
+							app_buzz_ctrl(80, 2); //# Power Off Buzzer
+							app_mcu_pwr_off(OFF_RESET);
 							continue;
 						}
 					}
@@ -734,13 +730,25 @@ int app_file_init(void)
 	}
 	
 	/* To check mmc threshold size */
-	memset(msg, 0, sizeof(msg));
-	if (_check_threshold_size(ifile) < 0) {
-		sprintf(msg, "[APP_FILE] !! Get threshold size failed !!!");
-		app_log_write(MSG_LOG_WRITE, msg);
-		eprintf("%s\n", msg);
-	}
+	_check_threshold_size(ifile);
 	app_file_update_disk_usage();
+	if (app_file_check_disk_free_space() < 0) {
+		/* 최소 공간 보다 작을 경우, overwrite 모드 */
+		if (app_set->rec_info.overwrite) {
+			ifile->file_state = FILE_STATE_OVERWRITE;
+			//# 1GB - available size = delete size
+			res = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
+			if (res < 0)
+			{
+				eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
+				app_buzz_ctrl(80, 2); //# Power Off Buzzer
+				app_mcu_pwr_off(OFF_RESET);
+				return res;
+			}
+		} else {
+			ifile->file_state = FILE_STATE_FULL;
+		}
+	}
 	
     //#--- create normal record thread
 	status = OSA_mutexCreate(&(ifile->mutex_file));
