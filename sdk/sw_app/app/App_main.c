@@ -328,7 +328,8 @@ int main(int argc, char **argv)
 	if (ret < 0) {
 		return -1;
 	}
-	mcfw_linux_init(0); 
+	printf("app_set->ch[%d].resol = %d\n",MODEL_CH_NUM,  app_set->ch[MODEL_CH_NUM].resol) ;
+	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol) ; 
 	g_mem_init();
 
 	//# start log system

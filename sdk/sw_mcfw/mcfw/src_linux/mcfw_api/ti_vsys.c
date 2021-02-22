@@ -711,10 +711,13 @@ void Vsys_get_device_status(Int32 *dev_iss, Int32 *dev_dss)
 	*dev_dss = st.dss_device;
 }
 
-void mcfw_linux_init(int pal)
+void mcfw_linux_init(int pal, int resol)
 {
 	int display = 1 ; /* HD display */
-	
+
+	if(resol == 2)
+		display = 0 ; /* FHD display */
+
 	System_init();
 	Vdis_set_standard(pal);
 	Vdis_disp_ctrl_init(display);

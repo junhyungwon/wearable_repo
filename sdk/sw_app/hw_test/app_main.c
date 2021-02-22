@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 	app_mcu_init();
 
 	//#--- system init
-	mcfw_linux_init(iapp->is_pal);
+	mcfw_linux_init(iapp->is_pal, 1); // HD
 	g_mem_init();
 
 	//# app thread start

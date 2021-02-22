@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	app_mcu_init();
 
 	//#--- system init
-	mcfw_linux_init(0);
+	mcfw_linux_init(0, 2);
 	g_mem_init();
 
 	//# app thread start

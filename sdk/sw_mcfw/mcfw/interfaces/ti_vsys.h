@@ -528,7 +528,7 @@ void Vsys_get_device_status(Int32 *dev_iss, Int32 *dev_dss);
 Void Vsys_switchFormatSD(Int32 standard);
 
 
-void mcfw_linux_init(int pal);
+void mcfw_linux_init(int pal, int resol);
 void mcfw_linux_exit(void);
 
 #ifdef __cplusplus
