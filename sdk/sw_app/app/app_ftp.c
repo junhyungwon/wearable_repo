@@ -30,6 +30,9 @@
 #include <netinet/tcp.h>
 #include <netinet/ip.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+
 #include <fcntl.h>
 #include <errno.h>
 
@@ -257,6 +260,7 @@ static int createDataSock(char * host, int port)
 	int sd, reuse = 1;
 
 	struct sockaddr_in pin;
+	struct ifreq interface ;
 	struct hostent *hp;
     struct timeval tv ;
     struct linger stLinger ;
@@ -284,9 +288,13 @@ static int createDataSock(char * host, int port)
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
+    strncpy(interface.ifr_ifrn.ifrn_name, "eth0", IFNAMSIZ);
+
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
+
+    setsockopt (sd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&interface, sizeof(interface)) ;
 
     setsockopt (sd, SOL_TCP,    TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) ;
     setsockopt (sd, SOL_TCP,    TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) ;
@@ -457,6 +465,7 @@ static int ftp_connect (char *hostname, int port)
 
     int keepalive = 1, keepcnt = 1, keepidle = 1, keepintvl = 1 ;
 
+	struct ifreq interface ;
 	struct sockaddr_in pin;
 	struct hostent *hp;
 
@@ -486,10 +495,13 @@ static int ftp_connect (char *hostname, int port)
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
+    strncpy(interface.ifr_ifrn.ifrn_name, "eth0", IFNAMSIZ);
+
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
 
+    setsockopt (sd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&interface, sizeof(interface)) ;
     setsockopt (sd, SOL_TCP,    TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) ;
     setsockopt (sd, SOL_TCP,    TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) ;
     setsockopt (sd, SOL_TCP,    TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl)) ;
