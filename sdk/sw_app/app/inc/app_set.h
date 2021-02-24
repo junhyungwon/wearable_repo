@@ -255,6 +255,7 @@ typedef struct {
 } app_account_t ; // size:320
 
 #if SYS_CONFIG_VOIP
+#pragma pack(1)
 typedef struct {
     char  ipaddr[MAX_CHAR_16];
     short port ;
@@ -264,7 +265,8 @@ typedef struct {
     short private_network_only;
     int use_stun ;
 	char reserved[40] ;
-} app_voip_t; // 68 
+} app_voip_t; // 72 
+#pragma pack()
 #endif
 
 typedef struct {
@@ -284,8 +286,8 @@ typedef struct {
     app_account_t           account_info;
 
 #if SYS_CONFIG_VOIP
-    app_voip_t              voip; // 68 4 byte align => 72
-	char reserved[358];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 68(voip) + 4(byte align)
+    app_voip_t              voip; //  => 72 + 40
+	char reserved[362];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40)
 #else
 	char reserved[474];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
 #endif
