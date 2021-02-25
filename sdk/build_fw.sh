@@ -175,7 +175,7 @@ if [ ! -f "$masspack_name" ]; then
 mkdir "$masspack_name"
 fi
 
-cp ./fit/bin/hw_test.out ./$masspack_name
+cp ./fit/bin/hw_diag.out ./$masspack_name
 cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs ./$masspack_name
 zip $masspack_name.zip -r $masspack_name
 mv "$masspack_name.zip" ../.
