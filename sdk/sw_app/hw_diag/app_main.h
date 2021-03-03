@@ -41,7 +41,8 @@ typedef union {
 typedef struct {
 	app_state ste;
 
-	char vbuf[16];      /* voltage */
+//	char vbuf[16];      /* voltage */
+    int voltage ;
 	char sw_ver[64];
 	
 	int hw_ver;

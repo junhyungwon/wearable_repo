@@ -15,6 +15,7 @@
 #include "app_ctrl.h"
 #include "gui_main.h"
 #include "app_mcu.h"
+#include "app_udpsock.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -82,6 +83,7 @@ static void *THR_micom(void *prm)
 			case CMD_PSW_EVT:
 			{
 				short key_type = msg.data[0];
+				send_keyPress(1) ; // Right
 				dprintf("[evt] pwr switch %s event\n", key_type==2?"long":"short");
 				if (key_type == 2)
 					gui_ctrl(APP_KEY_PWR, 0, 0);

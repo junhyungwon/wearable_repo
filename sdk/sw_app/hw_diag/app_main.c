@@ -28,6 +28,7 @@
 #include "app_mcu.h"
 #include "gui_main.h"
 #include "app_main.h"
+#include "app_udpsock.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -75,9 +76,10 @@ int main(int argc, char **argv)
 	//# app thread start
 	app_dev_init();
 	app_gui_init();
-
 	app_mcu_start();
 	app_dev_start();
+
+	app_udpsock_init() ;
 
 	//#--- app test main ----------
 	gui_main();
@@ -85,15 +87,15 @@ int main(int argc, char **argv)
 
 	//#--- system de-init
 	g_mem_exit();
+	app_udpsock_exit() ;
 	mcfw_linux_exit();
 		
 	app_mcu_stop();	
 	app_mcu_exit();		//# will power off after 200mS
 	
-//	app_dev_stop();
-//	app_dev_exit();
-	
-//	app_gui_exit();
+	app_dev_stop();
+	app_dev_exit();
+	app_gui_exit();
 	//# wait micom exit
 	sleep(10);
 	
