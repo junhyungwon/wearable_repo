@@ -124,7 +124,15 @@ int create_recvsock()
 {
     int recv_sock = HWSOCK_ERROR;
 
+	struct timeval read_timeout ;
+
+	read_timeout.tv_sec = 0 ;
+	read_timeout.tv_usec = 100 ;
+
     recv_sock = socket(PF_INET, SOCK_DGRAM, 0) ;
+
+    setsockopt(recv_sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout)) ;
+
     if (recv_sock != HWSOCK_ERROR)
     {
         memset(&serv_addr, 0, sizeof(serv_addr)) ;
@@ -437,7 +445,7 @@ int processdata (char *data)
 #ifdef HWTEST_DEBUG
     DEBUG_PRI("recv CMD_BUZZER_REQ \n") ;
 #endif
-   	        app_buzzer(200, 5) ;
+   	        app_buzzer(300, 1) ;
 			break ;
          
 		case CMD_CAMERA_REQ :
@@ -517,9 +525,9 @@ static void *THR_udpsock(void *prm)
                 {
                     case EWOULDBLOCK :
 #ifdef HWTEST_DEBUG
-                  DEBUG_PRI("ReadSocketData EWOULDBLOCK..\n") ;
+//                  DEBUG_PRI("ReadSocketData EWOULDBLOCK..\n") ;
 #endif
-                    close(udpsock->rsock) ;
+//                    close(udpsock->rsock) ;
                     break ;
 
                     case EPIPE :

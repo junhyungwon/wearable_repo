@@ -25,6 +25,7 @@
 #include "dev_gpio.h"
 #include "dev_snd.h"
 #include "dev_common.h"
+#include "dev_micom.h"
 #include "app_udpsock.h"
 
 /*----------------------------------------------------------------------------
@@ -125,25 +126,28 @@ static int chk_rec_key(void)
 static void *thread_key(void *prm)
 {
 	app_thr_obj *tObj = &igui->iObj;
-	int exit=0, ret, sleep = 0 ;
+	int exit=0, res, sleep = 0 ;
     char cmd;
 
 	tObj->active = 1;
 			
 	while (!exit)
 	{
-	    #if USE_MENU
-		    cmd = menu_get_cmd();
-		    gui_ctrl(APP_KEY_OK, cmd, 0);
-		#else
-            sleep += KEY_CYCLE_TIME ;
-		    if(sleep == 5000)
-		    {
-		        gui_ctrl(APP_KEY_OK, '4', 0);
-            }
-	        OSA_waitMsecs(KEY_CYCLE_TIME);
-		#endif
+		cmd = tObj->cmd;
+		if (cmd == APP_CMD_EXIT) {
+			exit = 1 ;
+		    break;
+		}
+
+		res = chk_rec_key();
+		if (res == KEY_SHORT || res == KEY_LONG) {
+			dprintf("REC KEY OK!!\n");
+			send_keyPress(0) ;
+		}
+
+	    OSA_waitMsecs(UI_CYCLE_TIME);
 	}
+	
 
 	tObj->active = 0;
 	aprintf("...exit\n");
@@ -401,7 +405,7 @@ static int gui_test_main(void *thr)
 
     while(iapp->ste.b.cap)
 	{
-		OSA_waitMsecs(100);
+		OSA_waitMsecs(1000);
 		break ;
 	}
 	if(GetMacAddress(Macaddr))
@@ -418,6 +422,7 @@ static int gui_test_main(void *thr)
 	{
 		cmd = event_wait(tObj);
 		if ((cmd == APP_CMD_EXIT) || (cmd == APP_KEY_PWR)) {
+			printf("APP_KEY_PWR Break !!\n") ;
 			break;
 		}
 
@@ -452,9 +457,12 @@ static int gui_test_main(void *thr)
 			case '5':
 				test_snd(tObj);
 				break;		
+
+			default :
+				break ;
 			}
 		}
-		
+
 	}
 	
 	return 0;
@@ -516,6 +524,7 @@ int gui_main(void)
 	
 	gui_test_main((void *)tObj);
 	
+	app_buzzer(50, 2);
 	app_cap_stop();
 
 	//#--- stop thread
