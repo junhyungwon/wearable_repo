@@ -405,7 +405,7 @@ static int gui_test_main(void *thr)
 
     while(iapp->ste.b.cap)
 	{
-		OSA_waitMsecs(1000);
+		OSA_waitMsecs(2000);
 		break ;
 	}
 	if(GetMacAddress(Macaddr))
@@ -522,6 +522,7 @@ int gui_main(void)
 	
 	app_cap_start();
 	
+	app_buzzer(50, 1);
 	gui_test_main((void *)tObj);
 	
 	app_buzzer(50, 2);
