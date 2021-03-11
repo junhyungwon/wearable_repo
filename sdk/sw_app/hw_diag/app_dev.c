@@ -653,7 +653,9 @@ int app_dev_init(void)
 	memset((void *)idev, 0x0, sizeof(app_dev_t));
 
 	dev_gpio_init();
-
+	
+	/* initialize serial number area */
+	dev_rtcmem_initdata();
 	idev->init = 1;
 
 	return SOK;
