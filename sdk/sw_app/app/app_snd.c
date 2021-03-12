@@ -345,6 +345,164 @@ static void *THR_snd_cap(void *prm)
 	return NULL;
 }
 
+#if SYS_CONFIG_BACKCHANNEL
+/*----------------------------------------------------------------------------
+ Declares variables
+-----------------------------------------------------------------------------*/
+#define BCPLAY_MSG_KEY					0x185EA
+#define BCPLAY_MSG_TYPE_TO_MAIN         1
+#define BCPLAY_CMD_READY				(0x624)
+#define BCPLAY_CMD_CONFIG				(0x625)
+#define BCPLAY_CMD_REQ_DATA			    (0x626) /* request audio data */
+#define BCPLAY_CMD_AUD_DATA			    (0x627) /* delivery audio data */
+typedef struct {
+	long mtext;
+	int cmd;
+	int len;
+	unsigned char sbuf[1044];
+} bcplay_to_main_msg_t;
+typedef struct {
+	app_thr_obj rObj;		//# message receive thread
+	
+	int qid;
+	int shmid;
+	
+	int len;
+	unsigned char sbuf[1044];
+	
+	OSA_MutexHndl mutex_bcplay;
+	
+} app_bcplay_obj_t;
+static app_bcplay_obj_t t_bcplay_obj;
+static app_bcplay_obj_t *ibcplay=&t_bcplay_obj;
+
+static int bcplay_recv_msg(void)
+{
+	bcplay_to_main_msg_t msg;
+	
+	if ( msgrcv( ibcplay->qid, &msg, sizeof(bcplay_to_main_msg_t)-sizeof(long), 0, 0) == -1){
+		perror("msgrcv:");
+		return -1;
+	}
+	ibcplay->len = msg.len;
+	memcpy(ibcplay->sbuf, msg.sbuf, msg.len);
+
+	return msg.cmd;
+}
+
+
+#define	SIGN_BIT	(0x80)		/* Sign bit for a u-law byte. */
+#define	QUANT_MASK	(0xf)		/* Quantization field mask. */
+#define	NSEGS		(8)		/* Number of u-law segments. */
+#define	SEG_SHIFT	(4)		/* Left shift for segment number. */
+#define	SEG_MASK	(0x70)		/* Segment field mask. */
+#define	BIAS		(0x84)		/* Bias for linear code. */
+/*
+ * ulaw2linear() - Convert a u-law value to 16-bit linear PCM
+ *
+ * First, a biased linear code is derived from the code word. An unbiased
+ * output can then be obtained by subtracting 33 from the biased code.
+ *
+ * Note that this function expects to be passed the complement of the
+ * original code word. This is in keeping with ISDN conventions.
+ */
+static int ulaw2linear(unsigned char u_val)
+{
+	int t;
+
+	/* Complement to obtain normal u-law value. */
+	u_val = ~u_val;
+
+	/*
+	 * Extract and bias the quantization bits. Then
+	 * shift up by the segment number and subtract out the bias.
+	 */
+	t = ((u_val & QUANT_MASK) << 3) + BIAS;
+	t <<= ((unsigned)u_val & SEG_MASK) >> SEG_SHIFT;
+
+	return ((u_val & SIGN_BIT) ? (BIAS - t) : (t - BIAS));
+}
+
+static void *THR_bc_play(void *prm)
+{
+	int ret, cmd, exit=0;
+	int bytes = 0;
+	short lbuf[1040];
+	
+	/* get alsa period size (in sec) */
+	int read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
+	ret = dev_snd_set_param("aic3x", &isnd->snd_dup, SND_PCM_PLAY, 
+				APP_SND_CH, APP_SND_SRATE, read_sz);
+	aprintf("ret:%d\n", ret);
+	
+	ret = dev_snd_open(SND_IN_DEV, &isnd->snd_dup);
+	aprintf("ret:%d\n", ret);
+
+	if (ret) {
+		eprintf("Failed to init sound device for bc play!\n");
+		return NULL;
+	}
+
+	dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
+
+	//# message queue
+	ibcplay->qid = Msg_Init(BCPLAY_MSG_KEY);
+
+	aprintf("ibcplay->qid:0x%X\n", ibcplay->qid);
+	
+
+	while(!exit){
+		//# wait cmd
+		cmd = bcplay_recv_msg();
+		if (cmd < 0) {
+			eprintf("failed to receive gps process msg!\n");
+			continue;
+		}
+		bytes = 0;
+
+		switch (cmd)
+		{
+		case BCPLAY_CMD_READY:
+			dprintf("received ready!\n");
+			break;
+		case BCPLAY_CMD_AUD_DATA:
+			{
+				bytes = ibcplay->len;
+				//dprintf("received audio data, len=%d\n", bytes);
+
+				if (bytes == 0)
+				{
+					eprintf("bc sound size error!!\n");
+					continue;
+				}
+				memset(lbuf, 0, sizeof lbuf);
+
+				int i;
+				for(i=0;i<bytes;i++){
+
+					lbuf[i] = ulaw2linear(ibcplay->sbuf[i]);
+
+				}
+
+				//# copy to dup device
+				app_memcpy(isnd->snd_dup.sampv, lbuf, bytes*2);
+				/* VOIP를 사용할 경우에만 copy ?? */
+				ret = dev_snd_write(&isnd->snd_dup, bytes);
+				//aprintf("dev_snd_write ret:%d\n", ret);
+			}
+			break;
+		}
+	}
+
+	dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
+	dev_snd_param_free(&isnd->snd_dup);
+
+	aprintf("...exit\n");
+
+	return NULL;
+}
+#endif // SYS_CONFIG_BACKCHANNEL
+
 /*****************************************************************************
 * @brief    sound init/exit function
 * @section  [desc]
@@ -370,6 +528,14 @@ int app_snd_start(void)
 		eprintf("create thread\n");
 		return -1;
 	}
+
+#if SYS_CONFIG_BACKCHANNEL
+	//#--- create backchannel play thread bkkim
+	if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL) < 0) {
+		eprintf("create bc play thread\n");
+		return -1;
+	}
+#endif//SYS_CONFIG_BACKCHANNEL
 
 	aprintf("... done!\n");
 
