@@ -216,10 +216,14 @@ static void *THR_dev(void *prm)
 		//# For button enable, when camera didn't connected 
 		if (rkey == KEY_SHORT) {		
 			/* Short KEY */
+		#if SYS_CONFIG_VOIP
 			app_voip_event_noty();
+		#endif
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
+		#if SYS_CONFIG_VOIP
 			app_voip_set_play_volume();
+		#endif
 		}
 #elif defined(NEXX360W)
 		#if SYS_CONFIG_VOIP
