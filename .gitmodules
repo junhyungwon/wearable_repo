@@ -1,0 +1,6 @@
+[submodule "third_party/srs-librtmp"]
+	path = third_party/srs-librtmp
+	url = git@github.com:linkflowlab/srs-librtmp.git
+[submodule "third_party/libuv"]
+	path = third_party/libuv
+	url = git@github.com:linkflowlab/libuv.git
