@@ -40,6 +40,9 @@
 #endif
 
 #define MAX_STR_LEN		128		//# string length
+#define MAX_CHAR_32     32
+#define MAX_CHAR_16     16
+#define MAX_CHAR_8       8
 
 /*----------------------------------------------------------------------------
  Declares variables

@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 
 #include "app_comm.h"
 #include "app_main.h"
@@ -24,11 +25,13 @@
 #include "dev_gpio.h"
 #include "dev_snd.h"
 #include "dev_common.h"
+#include "dev_micom.h"
+#include "app_udpsock.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define USE_MENU				1
+#define USE_MENU				0
 
 //# For sound
 #define APP_SND_SRATE			8000 //# for baresip
@@ -36,6 +39,7 @@
 #define APP_SND_CH				1   /* sound channel */
 
 #define UI_CYCLE_TIME			200	//# ms
+#define KEY_CYCLE_TIME          100
 
 typedef enum {
 	KEY_NONE = 0,
@@ -122,20 +126,28 @@ static int chk_rec_key(void)
 static void *thread_key(void *prm)
 {
 	app_thr_obj *tObj = &igui->iObj;
-	int exit=0, ret;
-	char cmd;
+	int exit=0, res, sleep = 0 ;
+    char cmd;
 
 	tObj->active = 1;
-
+			
 	while (!exit)
 	{
-		#if USE_MENU
-		cmd = menu_get_cmd();
-		gui_ctrl(APP_KEY_OK, cmd, 0);
-		#else
-		/* TODO */
-		#endif
+		cmd = tObj->cmd;
+		if (cmd == APP_CMD_EXIT) {
+			exit = 1 ;
+		    break;
+		}
+
+		res = chk_rec_key();
+		if (res == KEY_SHORT || res == KEY_LONG) {
+			dprintf("REC KEY OK!!\n");
+			send_keyPress(0) ;
+		}
+
+	    OSA_waitMsecs(UI_CYCLE_TIME);
 	}
+	
 
 	tObj->active = 0;
 	aprintf("...exit\n");
@@ -231,17 +243,15 @@ static int test_key(app_thr_obj *tObj)
 {
 	int res = 0, exit=0;
 	
-	aprintf("key test start...\n");
-	printf("Press REC Key!!\n");
 	while (!exit) 
 	{
 		res = chk_rec_key();
-		if (res == KEY_SHORT) {
-			dprintf("KEY OK!!\n");
-			break;
+		if (res == KEY_SHORT || res == KEY_LONG) {
+			dprintf("REC KEY OK!!\n");
+			send_keyPress(0) ;
 		}
 		
-		app_msleep(UI_CYCLE_TIME);	
+	    OSA_waitMsecs(UI_CYCLE_TIME);
 	}
 	
 	printf(menu_exit);
@@ -378,53 +388,81 @@ static char menu_main[] = {
 	"\r\n Enter Choice: "
 };
 
+
+
+
 static int gui_test_main(void *thr)
 {
 	app_thr_obj *tObj = (app_thr_obj *)thr;
 	char cmd, exit=0;
-	
+	INFO_REQ Inforeq ;
+	struct tm ts;
+	time_t tm1;
+	char Macaddr[20] ;
+
+    time(&tm1) ;
+	localtime_r(&tm1, &ts) ;
+
+    while(iapp->ste.b.cap)
+	{
+		OSA_waitMsecs(2000);
+		break ;
+	}
+	if(GetMacAddress(Macaddr))
+         sprintf(Macaddr, "%s", "UNKNOWN");
+
+	Inforeq.identifier = htons(IDENTIFIER) ;
+	Inforeq.cmd = htons(CMD_INFO_REQ) ;
+	Inforeq.length = htons(sizeof(INFO_REQ)) ;
+  
+   // Inforeq packet transmission immediately after system booting is completed	
+	send_sysinfo((char*)&Inforeq) ;   
+
 	while (!exit)
 	{
-		//# wait cmd
-		printf(menu_main);
 		cmd = event_wait(tObj);
 		if ((cmd == APP_CMD_EXIT) || (cmd == APP_KEY_PWR)) {
+			printf("APP_KEY_PWR Break !!\n") ;
 			break;
 		}
-		
+
 		if (cmd == APP_KEY_OK) 
 		{
 			switch (tObj->param0) {
 			case '0':
-				/* exit program */
+				// exit program 
 				exit=1;
 				continue;
 				
 			case '1':
-				/* camera */
+				// camera 
 				iapp->snapshot = 1; //# temp
 				break;
 			
 			case '2':
-				/* Get Version */
+				// Get Version 
 				test_info(tObj);
 				break;
 			
 			case '3':
-				/* Buzzer Version */
+				// Buzzer Version 
 				test_buzzer(tObj);
 				break;
 			
 			case '4':
-				/* REC KEY */
+				// REC KEY 
 				test_key(tObj);
 				break;
 			
 			case '5':
 				test_snd(tObj);
 				break;		
+
+			default :
+				break ;
 			}
 		}
+
 	}
 	
 	return 0;
@@ -458,7 +496,7 @@ static void *THR_gui_run(void *prm)
 		//# cmd clear
 		tObj->cmd = 0;
 		//# wait time
-		app_msleep(UI_CYCLE_TIME);
+		OSA_waitMsecs(UI_CYCLE_TIME);
 	}
 
 	tObj->active = 0;
@@ -484,8 +522,10 @@ int gui_main(void)
 	
 	app_cap_start();
 	
+	app_buzzer(50, 1);
 	gui_test_main((void *)tObj);
 	
+	app_buzzer(50, 2);
 	app_cap_stop();
 
 	//#--- stop thread
@@ -547,7 +587,7 @@ int app_gui_exit(void)
 	tObj = &igui->uObj;
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while(tObj->active) {
-		app_msleep(10);
+		OSA_waitMsecs(10);
 	}
 	thread_delete(tObj);
 	

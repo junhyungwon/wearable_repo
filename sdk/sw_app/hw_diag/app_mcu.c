@@ -15,6 +15,7 @@
 #include "app_ctrl.h"
 #include "gui_main.h"
 #include "app_mcu.h"
+#include "app_udpsock.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -84,10 +85,14 @@ static void *THR_micom(void *prm)
 				short key_type = msg.data[0];
 				dprintf("[evt] pwr switch %s event\n", key_type==2?"long":"short");
 				if (key_type == 2)
+				{
+					dprintf("APP_KEY_PWR.....\n") ;
 					gui_ctrl(APP_KEY_PWR, 0, 0);
+				}
 				else
-					//gui_ctrl(APP_KEY_OK, 0, 0);
-					gui_ctrl(APP_KEY_RIGHT, 0, 0);
+				{
+				    send_keyPress(1) ; // Right
+                }
 				break;
 			}
 			case CMD_DAT_STOP:		//# response data send stop
@@ -174,6 +179,7 @@ int app_mcu_init(void)
 int app_mcu_exit(void)
 {
     mic_msg_exit();
+	mic_exit_state(OFF_NORMAL, 0);	//# for test - no power off
 
 	return 0;
 }

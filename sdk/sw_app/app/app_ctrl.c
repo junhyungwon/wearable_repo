@@ -893,6 +893,9 @@ static int _sw_update(const char *disk)
 	
 	aprintf("start...\n");
 	
+	//# buzz: update
+	app_buzz_ctrl(50, 3);		
+
 	app_cfg->ste.b.busy = 1;
 	pFile = _findFirmware(disk);
 	if(pFile == NULL) {
@@ -918,8 +921,6 @@ static int _sw_update(const char *disk)
 	}
 	app_cfg->ste.b.busy = 0;
 	
-	//# buzz: update
-	app_buzz_ctrl(50, 3);		
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);

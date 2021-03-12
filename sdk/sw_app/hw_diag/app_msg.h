@@ -61,6 +61,8 @@ typedef enum {
 	APP_KEY_MENU,
 	APP_KEY_PWR,
 
+    APP_CHECK_LED,
+	
 	MAX_APP_CMD
 } app_cmd_e;
 

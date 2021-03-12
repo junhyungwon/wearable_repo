@@ -39,7 +39,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define LED_BLINK_TEST		  (0)
+#define LED_BLINK_TEST		  (1)
 #define SENSOR_TEST			  (1)
 #define USB_TEST			  (1)
 #define RTC_TEST			  (1)
@@ -77,6 +77,7 @@ typedef struct {
 static app_dev_t dev_obj;
 static app_dev_t *idev=&dev_obj;
 
+char Gpsdata[32] ;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -280,7 +281,7 @@ int app_sys_time(struct tm *ts)
 
 int app_get_hwtime(struct tm *rd_tm)
 {
-	int fd = -1, ret;
+	int fd = -1;
 
 	fd = open("/dev/rtc0", O_RDONLY);
 	if (fd < 0) {
@@ -295,6 +296,27 @@ int app_get_hwtime(struct tm *rd_tm)
 }
 
 /*****************************************************************************
+* @brief	led check function
+* @section  [desc]
+*****************************************************************************/
+int check_led_operate()
+{
+	//#--- check led operate
+	event_send(&idev->dObj, APP_CHECK_LED, 0, 0);
+
+	return 0;
+}
+
+
+void get_gpsdata(char *data) 
+{
+	memcpy(data, Gpsdata, 32) ;
+	return ;
+}
+
+
+
+/*****************************************************************************
 * @brief	device thread function
 * @section  [desc] check hotplug
 *****************************************************************************/
@@ -305,7 +327,7 @@ static void *THR_dev(void *prm)
 	gps_nmea_t *gps_nmea;
 	
 	int cmd, exit=0;
-	int ret, val, state;
+	int ret, val, state, timewait = 0;
 	int i, on=ON;
 	
 	aprintf("enter...\n");
@@ -329,13 +351,14 @@ static void *THR_dev(void *prm)
 		#if SENSOR_TEST
 		{
 			/* MAIN Power (ADC) Test */
-			memset(iapp->vbuf, 0, sizeof(iapp->vbuf));
+//			memset(iapp->vbuf, 0, sizeof(iapp->vbuf));
 			val = app_get_volt();
 			//# min 1600mV
 			if (val > 1600) iapp->ste.b.pwr = 1;
 			else 			iapp->ste.b.pwr = 0;
-			
-			sprintf(iapp->vbuf, "%02d.%02d V", (val/100), (val%100));
+            
+            iapp->voltage = val ;			
+//			sprintf(iapp->vbuf, "%02d.%02d V", (val/100), (val%100));
 			//dprintf("current input voltage %s\n", iapp->vbuf);
 		}
 		#endif
@@ -356,18 +379,31 @@ static void *THR_dev(void *prm)
 		#endif
 		
 		#if LED_BLINK_TEST
+		if(cmd ==  APP_CHECK_LED)
 		{
-			if (idev->led_tmr >= CNT_LED_CHECK) {
-				idev->led_tmr=0;
-				for (i = 0; i < LED_IDX_ALL; i++) {
-					ret |= ctrl_leds(i, on);
-				}
-				on = 1 - on;
-				/* 한 개라도 fail되면 에러 처리 */
-				if (!ret) 	iapp->ste.b.led = 1;
-				else		iapp->ste.b.led = 0;
-			} else 
+		    timewait += TIME_DEV_CYCLE;
+			if(timewait < 100* TIME_DEV_CYCLE)
+			{
+			    if (idev->led_tmr >= CNT_LED_CHECK) {
+				    idev->led_tmr=0;
+				    for (i = 0; i < LED_IDX_ALL; i++) {
+					    ret |= ctrl_leds(i, on);
+				    }
+				    on = 1 - on;
+				    /* 한 개라도 fail되면 에러 처리 */
+				    if (!ret) 	iapp->ste.b.led = 1;
+				    else		iapp->ste.b.led = 0;
+				}else 
 				idev->led_tmr++;
+			}
+			else
+			{
+				for (i = 0; i < LED_IDX_ALL; i++) {
+				     ret |= ctrl_leds(i, 1);
+				}
+			    tObj->cmd = APP_CMD_NONE ;
+				timewait = 0 ;
+			}
 		}
 		#endif
 		
@@ -420,6 +456,8 @@ static void *THR_dev(void *prm)
 					if (gps_data.rmc_status == STATUS_FIX)
 					{
 						gps_nmea = &gps_data.nmea;
+
+						sprintf(Gpsdata, "LAT:%.2f, LOT:%.2f",gps_nmea->latitude, gps_nmea->longitude) ;
 						#if 0
 						dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
 							gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
@@ -437,12 +475,17 @@ static void *THR_dev(void *prm)
 						#endif
 						iapp->ste.b.gps = 1;
 					}
+					else
+				        sprintf(Gpsdata, "%s","LAT:N/A, LOT:N/A") ;
 				}
 				else	//# disconnect
 				{
 					iapp->ste.b.gps = 0;
 				}
 			}
+			else
+		       sprintf(Gpsdata, "%s","LAT:N/A, LOT:N/A") ;
+
 		}
 		/* if (idev->gps_tmr >= CNT_GPS_CHECK) */ 
 		else {
@@ -610,7 +653,9 @@ int app_dev_init(void)
 	memset((void *)idev, 0x0, sizeof(app_dev_t));
 
 	dev_gpio_init();
-
+	
+	/* initialize serial number area */
+	dev_rtcmem_initdata();
 	idev->init = 1;
 
 	return SOK;

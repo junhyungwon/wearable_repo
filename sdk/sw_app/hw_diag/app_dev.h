@@ -38,11 +38,13 @@ int app_dev_start(void);
 void app_dev_stop(void);
 int app_gps_ctrl(int en);
 
+
 int app_ste_mmc(void);
 int app_ste_ether(void);
 int app_get_gsn(int *x, int *y, int *z);
 int app_wait_mmc_remove(void);
-
+int check_led_operate(void) ;
 int app_buzzer(int ms, int cnt);
+void get_gpsdata(char *data) ;
 
 #endif	/* _APP_DEV_H_ */
