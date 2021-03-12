@@ -274,7 +274,7 @@ int set_serialno(char *data)
 	int retval = 0 ;
     SERIAL_SET *Serialset = (SERIAL_SET *)data ; 
     
-	retval = dev_rtcmem_setdata(Serialset->serial_no, 8) ;
+	retval = dev_rtcmem_setdata(Serialset->serial_no, 16) ;
 	return retval;
 }
 
@@ -282,7 +282,7 @@ int get_serial(char *data)
 {
 	int retval = 0 ;
 
-    retval = dev_rtcmem_getdata(data, 8) ;
+    retval = dev_rtcmem_getdata(data, 16) ;
 	return retval;
 }	
 
@@ -352,8 +352,9 @@ void send_sysinfo(char *data)
 
 	if(get_serial(SerialNo) == -1)
 	{
-		memset(SerialNo, "N/A", 3) ;
+		memset(SerialNo, 0x00, MAX_CHAR_16) ;
     }
+
 	ctrl_get_hw_version(Hw_ver) ;
 	ctrl_get_mcu_version(Micom_ver) ;
     ctrl_ether_cfg_read(ETHER_CFG_NAME, ipaddr, subnet, gateway) ;
