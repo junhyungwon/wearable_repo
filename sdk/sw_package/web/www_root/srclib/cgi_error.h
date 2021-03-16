@@ -3,31 +3,31 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 enum _enumCgiError{
-    ERR_RECORD = -1000,
-    ERR_EXIST_ID,
-    ERR_PASSWORD,
-    ERR_UNKNOWN,
-    ERR_SET_FRAME,
-    ERR_SETUP,
-    ERR_INPUT,
-    ERR_HOLIDAY,
-    ERR_EMAIL_TEST,
-    ERR_NO_SDCARD,                // SDCARD 없음(마운트 안됨)
-    ERR_FWUPDATE = -990,
-    ERR_FWUPDATE_NOFILE,          // 파일 없음
-    ERR_FWUPDATE_SIZE,            // 사이즈에 문제가 있음.
-    ERR_FWUPDATE_NOTATION,        // 모델에 맞는 펌웨어 검사..
-    ERR_FWUPDATE_CONTENTS,        // 펌웨어 파일 내용 이상.
-    ERR_FWUPDATE_INVALID_FILE,    // 펌웨어 파일 내용 이상.
-    ERR_FWUPDATE_FTP_RUNNING,
-    ERR_INVALID = 980,
-    ERR_INVALID_PARAM,
-    ERR_INVALID_ACCOUNT,
-    ERR_INVALID_ACTION,			// invalid action name..search, update, delete, ...
-    ERR_INVALID_METHOD,
-    ERR_NOT_SUPPORT,
-    ERR_NOT_AVAILABLE,
-    SUBMIT_ERR,
+    ERR_RECORD                     = -1000,
+    ERR_EXIST_ID                   = -999,
+    ERR_PASSWORD                   = -998,
+    ERR_UNKNOWN                    = -997,
+    ERR_SET_FRAME                  = -996,
+    ERR_SETUP                      = -995,                    // -995
+    ERR_INPUT                      = -994,
+    ERR_HOLIDAY                    = -993,
+    ERR_EMAIL_TEST                 = -992,
+    ERR_NO_SDCARD                  = -991,                // SDCARD 없음(마운트 안됨)
+    ERR_FWUPDATE                   = -990,                 //  -990,
+    ERR_FWUPDATE_NOFILE            = -989,          // 파일 없음
+    ERR_FWUPDATE_SIZE              = -988,            // 사이즈에 문제가 있음.
+    ERR_FWUPDATE_NOTATION          = -987,        // 모델에 맞는 펌웨어 검사..
+    ERR_FWUPDATE_CONTENTS          = -986,        // 펌웨어 파일 내용 이상.
+    ERR_FWUPDATE_INVALID_FILE      = -985,    // -985, 펌웨어 파일 내용 이상.
+    ERR_FWUPDATE_FTP_RUNNING       = -984,
+    ERR_INVALID                    = -983,
+    ERR_INVALID_PARAM              = -982,
+    ERR_INVALID_ACCOUNT            = -981,          // 
+    ERR_INVALID_ACTION             = -980,			  // -980, invalid action name..search, update, delete, ...
+    ERR_INVALID_METHOD             = -979,
+    ERR_NOT_SUPPORT                = -978,
+    ERR_NOT_AVAILABLE              = -977,
+    SUBMIT_ERR                     = -976,
 
     SOK           = 0,
     OK            = 0,
