@@ -80,6 +80,53 @@ static pthread_t  	g_tid;              // uds task id
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+static int setStreamVideoQuality( int stm_res, int stm_fps, int stm_bps, int stm_gop)
+{
+	int ch = STM_CH_NUM;
+	// STM
+#if defined(NEXXONE)
+	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+	{
+	    ctrl_vid_framerate(ch, stm_fps) ;
+	}
+	if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+    {
+	    ctrl_vid_bitrate(ch, stm_bps) ;
+	}
+	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+	{
+	    ctrl_vid_gop_set(ch, stm_gop) ;
+	}
+	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+		ctrl_vid_resolution(stm_res);
+	
+#else
+	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
+	{
+	    ctrl_vid_framerate(ch, stm_fps) ;
+	}
+	if(stm_bps <= MAX_BITRATE && stm_bps >= MIN_BITRATE && app_set->ch[ch].quality != stm_bps)
+    {
+	    ctrl_vid_bitrate(ch, stm_bps) ;
+	}
+	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
+	{
+	    ctrl_vid_gop_set(ch, stm_gop) ;
+	}
+	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+	{
+		ctrl_vid_resolution(stm_res);
+	}
+
+#endif
+	app_set->ch[ch].gop = stm_gop; // save
+
+	DBG_UDS("[STM] ch:%d, fps:%d, bps:%d, gop:%d resolution = %d\n", ch, stm_fps, stm_bps, stm_gop, stm_res);
+
+	return 0;
+
+}
+
 static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbps, int fps, int ei, int gov)
 {
 	if (enctype == ENC_JPEG) // JPEG
@@ -136,13 +183,18 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 		else if (kbps <= 7500) newKbps = 7000;
 		else newKbps = 8000;
 			
+#if 0 // 이건 필요 	없을 듯... dynamic적용..
 		if ( newRes  != app_set->ch[STM_CH_NUM].resol 
 		  || newKbps != app_set->ch[STM_CH_NUM].quality
 	      //|| gov != app_set->ch[STM_CH_NUM].gop // gov eq fps
 		  || fps != app_set->ch[STM_CH_NUM].framerate)
-
-		DBG_UDS("STM_CH_NUM=%d, newRes=%d, newKbps=%d,fps=%d, gov=%d\n",STM_CH_NUM, newRes, newKbps,fps, gov);
 		ctrl_full_vid_setting(STM_CH_NUM, newRes, newKbps, fps, gov);
+		DBG_UDS("STM_CH_NUM=%d, newRes=%d, newKbps=%d,fps=%d, gov=%d\n",STM_CH_NUM, newRes, newKbps,fps, gov);
+#else
+
+		setStreamVideoQuality(newRes, fps, newKbps, gov);
+		DBG_UDS("newRes=%d, newKbps=%d,fps=%d, gov=%d\n", newRes, newKbps,fps, gov);
+#endif
 	}
 	else
 	{
@@ -1184,7 +1236,6 @@ static int setP2PServer(int p2p_enable, char *username, char *password)
 
 	return 0;
 }
-
 
 static int setDynamicVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
               int stm_res, int stm_fps, int stm_bps, int stm_gop, int stm_rc)
@@ -2362,7 +2413,8 @@ void *myFunc(void *arg)
 				DBG_UDS("SetVideoEncoderConfiguration:Enc:%d, width:%d,height=%d,kbps=%d,fps=%d,ei=%d,gov=%d\n", 
 					encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov);
 
-				onvif_setVideoEncoderConfiguration(encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_gov);
+				// fps == gov
+				onvif_setVideoEncoderConfiguration(encoding, rcv_width, rcv_height, rcv_kbps, rcv_fps, rcv_ei, rcv_fps);
 
 			} else {
 				DBG_UDS("ret:%d, ", ret);
