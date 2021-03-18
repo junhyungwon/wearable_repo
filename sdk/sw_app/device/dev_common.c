@@ -31,8 +31,10 @@
 #include <wait.h>
 #include <errno.h>
 #include <linux/rtc.h>
-
+#include <stdint.h>
+#include <stdbool.h>
 #include <asm/types.h>
+
 //# remove warning: 'struct mmsghdr' declared inside parameter list
 #define __USE_GNU
 #include <sys/socket.h>
@@ -45,6 +47,9 @@
 
 #include <linux/types.h>
 #include <linux/netlink.h>
+
+#define  __user	/* nothing */
+#include <mtd/mtd-user.h>
 
 #include "dev_common.h"
 
@@ -64,9 +69,49 @@
 #define DAY		((__DATE__[4] == ' ' ? 0 : __DATE__[4] - '0') * 10 \
 				+ (__DATE__[5] - '0'))
 
-#define SRAM_SZ				64
-#define SRAM_PATH			"/sys/devices/platform/omap/omap_i2c.1/i2c-1/1-006f/rtcram"
-#define SRAM_MAGIC_CODE		"AA55"
+#define MTD_MAGIC			"AA55"
+#define MTD_PATH			"/dev/mtd7"
+#define MTD_SIZE			4194304 //# 4MB, Total 32Blocks
+#define MTD_ERASESIZE		131072  
+#define MTD_PAGESIZE		2048
+
+/* Maximum MTD device name length */
+#define MTD_NAME_MAX 127
+/* Maximum MTD device type string length */
+#define MTD_TYPE_MAX 64
+
+/* some C lib headers define this for us */
+#ifndef MIN	
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+/* glue for linux kernel source */
+#define min(a, b) MIN(a, b) 
+
+struct mtd_dev_info {
+	int mtd_num;
+	int major;
+	int minor;
+	int type;
+	const char type_str[MTD_TYPE_MAX + 1];
+	const char name[MTD_NAME_MAX + 1];
+	long long size;
+	int eb_cnt;
+	int eb_size;
+	int min_io_size;
+	int subpage_size;
+	int oob_size;
+	int region_cnt;
+	unsigned int writable:1;
+	unsigned int bb_allowed:1;
+};
+
+#define PRETTY_ROW_SIZE 16
+#define PRETTY_BUF_LEN 80
+
+static char pagebuf[MTD_PAGESIZE];
 
 /****************************************************
  * NAME : int dev_input_get_bus_num(const char *dev_name)
@@ -738,7 +783,6 @@ int dev_set_net_info(const char *ifce, dev_net_info_t *inet)
 	close(fd);
 
 	return ret;
-
 }
 
 /*
@@ -818,89 +862,534 @@ int dev_rtc_set_time(struct tm set_tm)
 	return ret;
 }
 
-/******************************************************
- * NAME : int dev_rtcmem_setdata(const char *data, int len)
- ******************************************************/
-int dev_rtcmem_setdata(const char *data, int len)
+//########################### MTD #######################################################
+static void pretty_dump_to_buffer(const unsigned char *buf, size_t len,
+		char *linebuf, size_t linebuflen, bool pagedump, bool ascii,
+		unsigned long long prefix)
 {
-	char buf[SRAM_SZ]={0,};
-	int fd;
-	
-	if ((data == NULL) || (len > (SRAM_SZ-4)))
-		return -1;
+	static const char hex_asc[] = "0123456789abcdef";
+	unsigned char ch;
+	unsigned int j, lx = 0, ascii_column;
+
+	if (pagedump)
+		lx += sprintf(linebuf, "0x%.8llx: ", prefix);
+	else
+		lx += sprintf(linebuf, "  OOB Data: ");
+
+	if (!len)
+		goto nil;
 		
-	fd = open(SRAM_PATH, O_RDWR);
-	if (fd < 0) {
-		dev_err("Failed to open %s\n", SRAM_PATH);
+	if (len > PRETTY_ROW_SIZE)	/* limit to one line at a time */
+		len = PRETTY_ROW_SIZE;
+
+	for (j = 0; (j < len) && (lx + 3) <= linebuflen; j++) {
+		ch = buf[j];
+		linebuf[lx++] = hex_asc[(ch & 0xf0) >> 4];
+		linebuf[lx++] = hex_asc[ch & 0x0f];
+		linebuf[lx++] = ' ';
+	}
+	
+	if (j)
+		lx--;
+
+	ascii_column = 3 * PRETTY_ROW_SIZE + 14;
+
+	if (!ascii)
+		goto nil;
+
+	/* Spacing between hex and ASCII - ensure at least one space */
+	lx += sprintf(linebuf + lx, "%*s",
+			MAX((int)MIN(linebuflen, ascii_column) - 1 - lx, 1),
+			" ");
+
+	linebuf[lx++] = '|';
+	for (j = 0; (j < len) && (lx + 2) < linebuflen; j++)
+		linebuf[lx++] = (isascii(buf[j]) && isprint(buf[j])) ? buf[j]
+			: '.';
+	linebuf[lx++] = '|';
+nil:
+	linebuf[lx++] = '\n';
+	linebuf[lx++] = '\0';
+}
+
+static int mtd_valid_erase_block(const struct mtd_dev_info *mtd, int eb)
+{
+	if (eb < 0 || eb >= mtd->eb_cnt) {
+		dev_err("bad eraseblock number %d, mtd has %d eraseblocks",
+		       eb, mtd->eb_cnt);
+		return -1;
+	}
+	return 0;
+}
+
+static int mtd_is_bad(const struct mtd_dev_info *mtd, int fd, int eb)
+{
+	int ret;
+	loff_t seek;
+
+	ret = mtd_valid_erase_block(mtd, eb);
+	if (ret)
+		return ret;
+
+	if (!mtd->bb_allowed)
+		return 0;
+
+	seek = (loff_t)eb * mtd->eb_size;
+	ret = ioctl(fd, MEMGETBADBLOCK, &seek);
+	if (ret == -1) {
+		dev_err("MEMGETBADBLOCK ioctl failed for eraseblock %d\n", eb);
+		return -1;
+	}
+	return ret;
+}
+
+static int mtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
+	     void *buf, int len)
+{
+	int ret, rd = 0;
+	off_t seek;
+
+	ret = mtd_valid_erase_block(mtd, eb);
+	if (ret)
+		return ret;
+
+	if (offs < 0 || offs + len > mtd->eb_size) {
+		dev_err("bad offset %d or length %d, eraseblock size is %d\n",
+		       offs, len, mtd->eb_size);
+		return -1;
+	}
+
+	/* Seek to the beginning of the eraseblock */
+	seek = (off_t)eb * mtd->eb_size + offs;
+	if (lseek(fd, seek, SEEK_SET) != seek) {
+		dev_err("cannot seek offset!\n");
+		return -1;
+	}
+
+	while (rd < len) 
+	{
+		ret = read(fd, buf, len);
+		if (ret < 0) {
+			dev_err("cannot read %d bytes from mtd (eraseblock %d, offset %d)\n",
+					  len, eb, offs);
+			return -1;
+		}
+		rd += ret;
+	}
+
+	return 0;
+}
+
+static int mtd_write(const struct mtd_dev_info *mtd, int fd, int eb,
+	      int offs, void *data, int len)
+{
+	int ret;
+	off_t seek;
+
+	ret = mtd_valid_erase_block(mtd, eb);
+	if (ret)
+		return ret;
+
+	if (offs < 0 || offs + len > mtd->eb_size) {
+		dev_err("bad offset %d or length %d, mtd eraseblock size is %d",
+		       offs, len, mtd->eb_size);
 		return -1;
 	}
 	
-	memcpy(buf, data, len);
-	lseek(fd, 4, SEEK_SET);
-	write(fd, buf, SRAM_SZ-4);
-	lseek(fd, 0, SEEK_SET);
+	/* Calculate seek address */
+	seek = (off_t)eb * mtd->eb_size + offs;
+	//fprintf(stderr, "mtd write seek %ld, eb = %d, offs = %ld\n", seek, eb, offs);
+	if (data) {
+		/* Seek to the beginning of the eraseblock */
+		if (lseek(fd, seek, SEEK_SET) != seek) {
+			dev_err("cannot seek to offset %ld\n", seek);
+			return -1;
+		}
+		
+		ret = write(fd, data, len);
+		if (ret != len) {
+			dev_err("cannot write %d bytes to mtd (eraseblock %d, offset %d)\n",
+					  len, eb, offs);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int mtd_nand_read(char *data, int start, int length)
+{
+	struct mtd_dev_info mtd;
+	
+	int fd = -1;
+	int ofs, bs, count, end_addr;
+	
+	int blockstart = 1;
+	int firstblock = 1;
+	int badblock = 0;
+	
+	unsigned char readbuf[MTD_PAGESIZE];
+	char pretty_buf[PRETTY_BUF_LEN];
+	
+	/* Open the mtd7 device */
+	fd = open(MTD_PATH, O_RDWR);
+	if (fd == -1) {
+		dev_err("failed to open %s\n", MTD_PATH);
+		return -1;
+	}
+	
+	/* set mtd structure */
+	mtd.size        = MTD_SIZE;
+	/* mtd.eb_size = /sys/class/mtd/mtd7/erasesize = 131072bytes(128KB), 1page */
+	mtd.eb_size     = MTD_ERASESIZE;
+	/* mtd.min_io_size = /sys/class/mtd/mtd7/writesize = 2048bytes, 1page */
+	mtd.min_io_size = MTD_PAGESIZE;
+	mtd.eb_cnt = mtd.size / mtd.eb_size;
+	mtd.type   = MTD_NANDFLASH;
+	mtd.bb_allowed = !!(mtd.type == MTD_NANDFLASH);
+	
+	/*
+	 * start --> 0, 2048, 4096......
+	 */
+	if (start & (mtd.min_io_size - 1)) {
+		fprintf(stderr, "the start address is not page-aligned!\n");
+		return -1;
+	}
+	
+	if (length)
+		end_addr = start + length;
+	if (!length || end_addr > mtd.size)
+		end_addr = mtd.size;
+		
+	bs = mtd.min_io_size;
+	memset(readbuf, 0xff, bs);
+	count = 0;
+	
+	for (ofs = start; ofs < end_addr; ofs += bs) 
+	{
+		/* badblock checking... */
+		if (blockstart != (ofs & (~mtd.eb_size + 1)) || firstblock) {
+			blockstart = ofs & (~mtd.eb_size + 1);
+			firstblock = 0;
+			
+			badblock = mtd_is_bad(&mtd, fd, ofs / mtd.eb_size);
+			if (badblock < 0) {
+				dev_err("mtd_is_bad error!\n");
+				close(fd);
+				return -1;
+			}
+		}
+		
+		if (badblock) {
+			/* skip bad block, increase end_addr */
+			end_addr += mtd.eb_size;
+			ofs += mtd.eb_size - bs;
+			if (end_addr > mtd.size)
+				end_addr = mtd.size;
+			continue;
+		} else {
+			if (mtd_read(&mtd, fd, ofs / mtd.eb_size, ofs % mtd.eb_size, readbuf, bs)) {
+				dev_err("mtd_read error!\n");
+				close(fd);
+				return -1;
+			}
+			
+			/* data copy */
+			memcpy(data+count, readbuf, bs);
+			count += bs;
+		}
+		
+		if (0) 
+		{
+			int i;
+			
+			for (i = 0; i < bs; i += PRETTY_ROW_SIZE) {
+				pretty_dump_to_buffer(readbuf + i, PRETTY_ROW_SIZE,
+						pretty_buf, PRETTY_BUF_LEN, true, true, ofs + i);
+				write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
+			}
+		}
+	}
+	
+	close(fd);
+	return 0;
+}
+
+static int mtd_nand_write_page(const char *data, int start, int length)
+{
+	struct mtd_dev_info mtd;
+	
+	int fd = -1;
+	
+	int ebsize_aligned;
+	int pagelen;
+	long blockstart = -1;
+	long offs;
+	long mtdoffset = 0;
+	int ret;
+	int	blockalign = 1;
+	
+	bool baderaseblock = false;
+	unsigned char writebuf[MTD_PAGESIZE];
+	
+	if (length > MTD_PAGESIZE) {
+		dev_err("Input size is big!!!\n");
+		return -1;
+	}
+	
+	/* Open the mtd7 device */
+	fd = open(MTD_PATH, O_RDWR);
+	if (fd == -1) {
+		dev_err("failed to open %s\n", MTD_PATH);
+		return -1;
+	}
+	
+	/* set mtd structure */
+	mtd.size        = MTD_SIZE;
+	/* mtd.eb_size = /sys/class/mtd/mtd7/erasesize = 131072bytes(128KB), 1page */
+	mtd.eb_size     = MTD_ERASESIZE;
+	/* mtd.min_io_size = /sys/class/mtd/mtd7/writesize = 2048bytes, 1page */
+	mtd.min_io_size = MTD_PAGESIZE;
+	mtd.eb_cnt = mtd.size / mtd.eb_size;
+	mtd.type   = MTD_NANDFLASH;
+	mtd.bb_allowed = !!(mtd.type == MTD_NANDFLASH);
+	
+	ebsize_aligned = mtd.eb_size * blockalign;
+	pagelen = mtd.min_io_size;
+	mtdoffset = (long)start;
+	
+	//# erase write buffer
+	memset(writebuf, 0xff, MTD_PAGESIZE);
+	//# data copy
+	memcpy(writebuf, data, length);
+	
+	/*
+	 * New eraseblock, check for bad block(s)
+	 */
+	while (blockstart != (mtdoffset & (~ebsize_aligned + 1))) 
+	{
+		blockstart = mtdoffset & (~ebsize_aligned + 1);
+		offs = blockstart;
+
+		baderaseblock = false;
+
+		do {
+			ret = mtd_is_bad(&mtd, fd, offs / ebsize_aligned);
+			if (ret < 0) {
+				dev_err("MTD get bad block failed\n");
+				close(fd);
+				return -1;
+			} else if (ret == 1) {
+				baderaseblock = true;
+			}
+
+			if (baderaseblock) {
+				mtdoffset = blockstart + ebsize_aligned;
+				if (mtdoffset > mtd.size) {
+					dev_err("too many bad blocks, cannot complete request\n");
+					close(fd);
+					return -1;
+				}
+			}
+
+			offs +=  ebsize_aligned / blockalign;
+		} while (offs < blockstart + ebsize_aligned);
+	}
+	
+	/* Write out data */
+	mtd_write(&mtd, fd, mtdoffset / mtd.eb_size, 
+			mtdoffset % mtd.eb_size, writebuf, mtd.min_io_size);
 	close(fd);
 	
 	return 0;
 }
 
 /******************************************************
- * NAME : int dev_rtcmem_getdata(char *data)
+ * NAME : int dev_board_serial_init(void)
+ * MTD7 block 0 ~ Block 9
+ *      Serial ID 
  ******************************************************/
-int dev_rtcmem_getdata(char *data, int len)
+int dev_board_serial_init(void)
 {
-	char buf[SRAM_SZ]={0,};
-	int fd;
+	char tmpbuf[16];
+	char strbuf[16];
 	
-	if ((data == NULL) || (len > (SRAM_SZ-4)))
-		return -1;
+	int ret;
+	
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	memset(tmpbuf, 0, 16);
+	memset(strbuf, 0, 16);
+	
+	/* Dump the 1 page contents 1st block, page 0 */
+	mtd_nand_read(pagebuf, 0, MTD_PAGESIZE);
+	/* 4byte copy and compare AA55 */
+	memcpy(tmpbuf, pagebuf, 4);
+	snprintf(strbuf, sizeof(strbuf), "%s", tmpbuf); 
+	if (strncmp(strbuf, MTD_MAGIC, 4) != 0) 
+	{
+		dev_err("Not founded MTD magic code(%s)! clear memory...\n", strbuf);
+		/* erase block /dev/mtd7 block 0 ~ 4 */
+		system("/usr/sbin/flash_erase /dev/mtd7 0 5");
+		/* wait erase done!! */
+		sleep(1);
 		
-	fd = open(SRAM_PATH, O_RDWR);
-	if (fd < 0) {
-		dev_err("Failed to open %s\n", SRAM_PATH);
-		return -1;
-	}
-	
-	/* magic code location : 4byte */
-	lseek(fd, 4, SEEK_SET);
-	read(fd, buf, SRAM_SZ-4);
-	memcpy(data, buf, len);
-	/* set first offset */
-	lseek(fd, 0, SEEK_SET);
-	close(fd);
-	
-	return 0;
-}
-
-/******************************************************
- * NAME : int dev_rtcmem_initdata(char *data)
- ******************************************************/
-int dev_rtcmem_initdata(void)
-{
-	char buf[SRAM_SZ]={0,};
-	int fd;
-	
-	fd = open(SRAM_PATH, O_RDWR);
-	if (fd < 0) {
-		dev_err("Failed to open %s\n", SRAM_PATH);
-		return -1;
-	}
-	
-	read(fd, buf, SRAM_SZ);
-	lseek(fd, 0, SEEK_SET); /* for sysfs */
-	
-	if (strncmp(buf, SRAM_MAGIC_CODE, 4) != 0) {
-		//dev_err("Not founded RTCMEM magic code(%s)! clear memory...\n", buf);
+		/* write magic code aa55 */
+		memset(pagebuf, 0xff, MTD_PAGESIZE);
+		strcpy(pagebuf, MTD_MAGIC);
+		strcpy(pagebuf+4, "empty");
 		
-		/* clear data */
-		memset(buf, 0, SRAM_SZ);
-		/* write magic code aa55aa55 */
-		strcpy(buf, SRAM_MAGIC_CODE);
-		strcpy(buf+4, "empty");
-		write(fd, buf, SRAM_SZ);
-		lseek(fd, 0, SEEK_SET);
+		mtd_nand_write_page(pagebuf, 0, 16);	
 	} 
-	close(fd);
+		
+	return 0;
+}
+
+int dev_board_serial_read(char *data, int length)
+{
+	char *tmpbuf;
+	char strbuf[16];
 	
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	memset(strbuf, 0, 16);
+	
+	/* Dump the 1 page contents 1st block, page 0 */
+	mtd_nand_read(pagebuf, 0, MTD_PAGESIZE);
+	
+	tmpbuf = pagebuf + 4; //# except magic code AA55
+	memcpy(data, tmpbuf, 16);
+	
+	return 0;
+}
+
+int dev_board_serial_write(const char *data, int length)
+{
+	char *tmpbuf;
+	char pretty_buf[PRETTY_BUF_LEN];
+	
+	if (length > MTD_PAGESIZE) {
+		dev_err("invalid length (< 2048)\n");
+		return -1;
+	}
+		
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	
+	/* data copy */
+	strcpy(pagebuf, MTD_MAGIC);
+	
+	tmpbuf = pagebuf + 4;
+	memcpy(tmpbuf, data, length);
+	
+	/* erase block /dev/mtd7 block 0 ~ 4 */
+	system("/usr/sbin/flash_erase /dev/mtd7 0 5");
+	sleep(1);
+	
+	if (0) 
+	{
+		int i;
+		
+		for (i = 0; i < MTD_PAGESIZE; i += PRETTY_ROW_SIZE) {
+			pretty_dump_to_buffer(tmpbuf + i, PRETTY_ROW_SIZE,
+					pretty_buf, PRETTY_BUF_LEN, true, true, i);
+			write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
+		}
+	}
+		
+	mtd_nand_write_page(pagebuf, 0, (length + 4));
+		
+	return 0;
+}
+
+/******************************************************
+ * NAME : int dev_board_uid_init(void)
+ * MTD7 block 0 ~ Block 9
+ *      Serial ID 
+ ******************************************************/
+int dev_board_uid_init(void)
+{
+	char tmpbuf[16];
+	char strbuf[16];
+	
+	int ret;
+	
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	memset(tmpbuf, 0, 16);
+	memset(strbuf, 0, 16);
+	
+	/* Dump the 1 page contents 1st block, page 0 */
+	mtd_nand_read(pagebuf, 0, MTD_PAGESIZE);
+	/* 4byte copy and compare AA55 */
+	memcpy(tmpbuf, pagebuf, 4);
+	snprintf(strbuf, sizeof(strbuf), "%s", tmpbuf); 
+	if (strncmp(strbuf, MTD_MAGIC, 4) != 0) 
+	{
+		dev_err("Not founded MTD magic code(%s)! clear memory...\n", strbuf);
+		/* erase block /dev/mtd7 block 5 ~ 10, 1page=2048, 1block 64page */
+		system("/usr/sbin/flash_erase /dev/mtd7 0xA0000 5");
+		/* wait erase done!! */
+		sleep(1);
+		
+		/* write magic code aa55 */
+		memset(pagebuf, 0xff, MTD_PAGESIZE);
+		strcpy(pagebuf, MTD_MAGIC);
+		strcpy(pagebuf+4, "empty");
+		
+		mtd_nand_write_page(pagebuf, 0xA0000, 16);	
+	} 
+		
+	return 0;
+}
+
+int dev_board_uid_read(char *data, int length)
+{
+	char *tmpbuf;
+	char strbuf[16];
+	
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	memset(strbuf, 0, 16);
+	
+	/* Dump the 1 page contents 1st block, page 0 */
+	mtd_nand_read(pagebuf, 0xA0000, MTD_PAGESIZE);
+	
+	tmpbuf = pagebuf + 4; //# except magic code AA55
+	memcpy(data, tmpbuf, 16);
+	
+	return 0;
+}
+
+int dev_board_uid_write(const char *data, int length)
+{
+	char *tmpbuf;
+	char pretty_buf[PRETTY_BUF_LEN];
+	
+	if (length > MTD_PAGESIZE) {
+		dev_err("invalid length (< 2048)\n");
+		return -1;
+	}
+		
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	
+	/* data copy */
+	strcpy(pagebuf, MTD_MAGIC);
+	
+	tmpbuf = pagebuf + 4;
+	memcpy(tmpbuf, data, length);
+	
+	/* erase block /dev/mtd7 block 0 ~ 4 */
+	system("/usr/sbin/flash_erase /dev/mtd7 0xA0000 5");
+	sleep(1);
+	
+	if (0) 
+	{
+		int i;
+		
+		for (i = 0; i < MTD_PAGESIZE; i += PRETTY_ROW_SIZE) {
+			pretty_dump_to_buffer(tmpbuf + i, PRETTY_ROW_SIZE,
+					pretty_buf, PRETTY_BUF_LEN, true, true, i);
+			write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
+		}
+	}
+		
+	mtd_nand_write_page(pagebuf, 0xA0000, (length + 4));
+		
 	return 0;
 }

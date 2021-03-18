@@ -649,13 +649,33 @@ void app_dev_stop(void)
 *****************************************************************************/
 int app_dev_init(void)
 {
+//	char tmpbuf[16];
+	
 	//# static config clear
 	memset((void *)idev, 0x0, sizeof(app_dev_t));
 
 	dev_gpio_init();
 	
 	/* initialize serial number area */
-	dev_rtcmem_initdata();
+	dev_board_serial_init();
+	/* initialize uid area */
+	dev_board_uid_init();
+	
+//	memset(tmpbuf, 0, sizeof(tmpbuf));
+//	strcpy(tmpbuf, "1234567890");
+	
+//	dev_board_serial_write(tmpbuf, 16);
+//	dev_board_serial_read(tmpbuf, 16);
+	
+//	fprintf(stderr, "serial %s\n", tmpbuf);
+	
+//	memset(tmpbuf, 0, sizeof(tmpbuf));
+//	strcpy(tmpbuf, "A15678");
+//	dev_board_uid_write(tmpbuf, 16);
+//	dev_board_uid_read(tmpbuf, 16);
+		
+//	fprintf(stderr, "UID %s\n", tmpbuf);
+		
 	idev->init = 1;
 
 	return SOK;
