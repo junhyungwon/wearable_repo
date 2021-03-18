@@ -233,6 +233,7 @@ static void *THR_rndis_main(void *prm)
 				} else {
 					irndis->rndis_timer++;
 					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_DHCP) {
+						dprintf("rndis can't alloc ip address..stopping...\n");
 						irndis->stage = __STAGE_RNDIS_ERROR_STOP;
 					} 
 				}

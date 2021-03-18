@@ -274,7 +274,7 @@ int set_serialno(char *data)
 	int retval = 0 ;
     SERIAL_SET *Serialset = (SERIAL_SET *)data ; 
     
-	retval = dev_rtcmem_setdata(Serialset->serial_no, 16) ;
+	retval = dev_board_serial_write(Serialset->serial_no, 16) ;
 	return retval;
 }
 
@@ -282,7 +282,7 @@ int get_serial(char *data)
 {
 	int retval = 0 ;
 
-    retval = dev_rtcmem_getdata(data, 16) ;
+	retval = dev_board_serial_read(data, 16) ;
 	return retval;
 }	
 

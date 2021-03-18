@@ -124,10 +124,15 @@ int dev_set_net_info(const char *ifce, dev_net_info_t *inet);
 int dev_set_net_if_gate(const char *ifce, char *gate);
 int dev_usb_is_exist(int usb_v, int usb_p);
 int dev_rtc_set_time(struct tm set_tm);
-int dev_rtcmem_setdata(const char *data, int len);
-int dev_rtcmem_getdata(char *data, int len);
-int dev_rtcmem_initdata(void);
 speed_t dev_tty_get_baudrate(int rate);
+
+int dev_board_serial_init(void);
+int dev_board_serial_write(const char *data, int length);
+int dev_board_serial_read(char *data, int length);
+
+int dev_board_uid_init(void);
+int dev_board_uid_read(char *data, int length);
+int dev_board_uid_write(const char *data, int length);
 
 #ifdef __cplusplus
 }

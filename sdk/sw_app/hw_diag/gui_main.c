@@ -211,12 +211,6 @@ static int test_info(app_thr_obj *tObj)
 	/* sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF); */
 	dprintf("mcu version %s\n", ver);
 	
-	memset(buf, 0, sizeof(buf));
-	dev_rtcmem_setdata("ABCDEFG", 8);
-	dev_rtcmem_getdata(buf, 8);
-	
-	dprintf("sram data= %s\n", buf);
-	
 //	util_hexdump(buf, 64);
 	
 	printf(menu_exit);
@@ -387,9 +381,6 @@ static char menu_main[] = {
 	"\r\n"
 	"\r\n Enter Choice: "
 };
-
-
-
 
 static int gui_test_main(void *thr)
 {
