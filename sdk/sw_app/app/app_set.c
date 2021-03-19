@@ -129,6 +129,24 @@ static size_t get_cfg_size (const char *file_name)
     return sb.st_size;
 }
 
+static void set_uid()
+{
+	int retval = 0 ;
+    char uid[MAX_CHAR_32] = {0, };
+
+    if(dev_board_uid_read(uid, MAX_CHAR_16) == 0)
+    {
+	    if(!strncmp(uid, "LFS", 3))
+	    {
+            sprintf(app_set->sys_info.uid, "%s", uid); 
+#if SYS_CONFIG_VOIP
+	        sprintf(app_set->voip.userid, "%d%d%s", 'A', 1, &uid[12]);
+            sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
+#endif
+        }
+	}	
+}
+
 static void char_memset(void)
 {
     int i = 0 ;
@@ -1158,6 +1176,8 @@ int app_set_open(void)
 	    app_set_default(FULL_RESET);
 	
     app_set_delete_cfg(); // another verion setting file
+    set_uid() ;  // read uid from nand and then set uid to app_set
+
 	app_set_write();
 	printf("done\n");
 
@@ -1171,6 +1191,7 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
     if (type >= 0 && type < 2)
     {
         app_set_default(type);  // onvif factory default
+        set_uid() ;  // read uid from nand and then set uid to app_set
 	    ctrl_sys_reboot();
     } 
 }

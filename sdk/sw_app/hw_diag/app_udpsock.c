@@ -286,6 +286,25 @@ int get_serial(char *data)
 	return retval;
 }	
 
+int set_board_uid(char *data)
+{
+	int retval = 0 ;
+    UID_SET *Uidset = (UID_SET *)data ;
+
+	retval = dev_board_uid_write(Uidset->uid , 16) ;
+	return retval ;
+
+}
+
+
+int get_board_uid(char *data)
+{
+	int retval = 0 ;
+
+	retval = dev_board_uid_read(data , 16) ;
+	return retval ;
+}
+
 int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
 {
     struct tm ts;
@@ -295,7 +314,7 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
     ts.tm_year = year;
     ts.tm_mon  = mon;
     ts.tm_mday = day;
-    ts.tm_hour = hour;
+
     ts.tm_min  = min;
     ts.tm_sec  = sec;
 
@@ -326,6 +345,7 @@ void send_sysinfo(char *data)
 	char Micom_ver[8] ;
 	char Hw_ver[8];
 	char SerialNo[MAX_CHAR_16] ;
+	char Uid[MAX_CHAR_32] ;
 	char ipaddr[MAX_CHAR_16] ;
 	char subnet[MAX_CHAR_16] ;
 	char gateway[MAX_CHAR_16] ;
@@ -333,6 +353,8 @@ void send_sysinfo(char *data)
     Inforeq = (INFO_REQ *)data ;
     
 	memset(Macaddr, 0x00, MAX_CHAR_16 + 2);
+	memset(SerialNo, 0x00, MAX_CHAR_16);
+	memset(Uid, 0x00, MAX_CHAR_32);
 	
 	if(GetMacAddress(Macaddr))
 	    sprintf(Macaddr, "%s", "UNKNOWN");  
@@ -354,6 +376,11 @@ void send_sysinfo(char *data)
 	{
 		memset(SerialNo, 0x00, MAX_CHAR_16) ;
     }
+	
+	if(get_board_uid(Uid) == -1)
+	{
+		memset(Uid, 0x00, MAX_CHAR_32) ;
+	}
 
 	ctrl_get_hw_version(Hw_ver) ;
 	ctrl_get_mcu_version(Micom_ver) ;
@@ -388,6 +415,7 @@ void send_sysinfo(char *data)
 	get_gpsdata(Gpsdata) ;
 
     sprintf(Infores.gps_data, "%s",Gpsdata ) ; 	
+	sprintf(Infores.uid, "%s", Uid) ;
     
 	if(udpsock->ssock != HWSOCK_ERROR)
 	{
@@ -461,6 +489,13 @@ int processdata (char *data)
     DEBUG_PRI("recv CMD_SERIAL_SET \n") ;
 #endif
             set_serialno(data) ;
+			break ;
+
+		case CMD_UID_SET :
+#ifdef HWTEST_DEBUG
+    DEBUG_PRI("recv CMD_UID_SET \n") ;
+#endif
+            set_board_uid(data) ;
 			break ;
 
 		default :

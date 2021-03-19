@@ -45,6 +45,7 @@
 #define CMD_SERIAL_SET  0x0007
 #define CMD_CAMERA_REQ  0x0008
 #define CMD_CAMERA_RES  0x0009
+#define CMD_UID_SET     0x000A
 
 
 #define BROADCAST_ADDR "255.255.255.255"
@@ -93,6 +94,7 @@ typedef struct TAG_INFO_RES
     unsigned short usb_status;
     unsigned short gps_status ;
 	char gps_data[32] ;
+	char uid[32] ;
 } INFO_RES ;
 #pragma pack()
 
@@ -147,6 +149,18 @@ typedef struct TAG_SERIAL_SET
     char macaddr[18];
 	char serial_no[16] ;
 } SERIAL_SET ;
+#pragma pack()
+
+
+#pragma pack(1)
+typedef struct TAG_UID_SET
+{
+    unsigned short identifier ;
+    unsigned short cmd ;
+    unsigned short length ;
+    char macaddr[18];
+	char uid[32] ;
+} UID_SET ;
 #pragma pack()
 
 
