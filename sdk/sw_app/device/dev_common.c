@@ -1227,7 +1227,7 @@ int dev_board_serial_init(void)
 	snprintf(strbuf, sizeof(strbuf), "%s", tmpbuf); 
 	if (strncmp(strbuf, MTD_MAGIC, 4) != 0) 
 	{
-		dev_err("Not founded MTD magic code(%s)! clear memory...\n", strbuf);
+		dev_err("Not founded serial magic code! clear memory...\n");
 		/* erase block /dev/mtd7 block 0 ~ 4 */
 		system("/usr/sbin/flash_erase /dev/mtd7 0 5");
 		/* wait erase done!! */
@@ -1315,14 +1315,14 @@ int dev_board_uid_init(void)
 	memset(tmpbuf, 0, 16);
 	memset(strbuf, 0, 16);
 	
-	/* Dump the 1 page contents 1st block, page 0 */
-	mtd_nand_read(pagebuf, 0, MTD_PAGESIZE);
+	/* Dump the 1 page contents page 0xA0000 */
+	mtd_nand_read(pagebuf, 0xA0000, MTD_PAGESIZE);
 	/* 4byte copy and compare AA55 */
 	memcpy(tmpbuf, pagebuf, 4);
 	snprintf(strbuf, sizeof(strbuf), "%s", tmpbuf); 
 	if (strncmp(strbuf, MTD_MAGIC, 4) != 0) 
 	{
-		dev_err("Not founded MTD magic code(%s)! clear memory...\n", strbuf);
+		dev_err("Not founded UID magic code! clear memory...\n");
 		/* erase block /dev/mtd7 block 5 ~ 10, 1page=2048, 1block 64page */
 		system("/usr/sbin/flash_erase /dev/mtd7 0xA0000 5");
 		/* wait erase done!! */
