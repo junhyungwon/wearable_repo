@@ -18,7 +18,7 @@ LIB_DIR=$(LIB_BASE_DIR)/$(CONFIG)
 endif
 
 #CC_OPTS=-c -Wall -Warray-bounds
-CC_OPTS=-c -Wall -Warray-bounds -march=armv7-a -mcpu=cortex-a8 -mfloat-abi=softfp
+CC_OPTS=-c -Wall -Warray-bounds -march=armv7-a -mcpu=cortex-a8 -mfloat-abi=softfp -fPIC
 
 ifeq ($(TREAT_WARNINGS_AS_ERROR), yes)
 CC_OPTS+= -Werror
@@ -41,6 +41,10 @@ LD_OPTS=-lpthread -lstdc++ -lm
 
 DEFINE += $(IPNC_RDK_CFLAGS)
 DEFINE += -DLF_SYS_$(SYSTEM_PLATFORM)
+
+ifeq ($(USE_RTMP), YES)
+DEFINE += -DUSE_RTMP
+endif
 
 FILES=$(subst ./, , $(foreach dir,.,$(wildcard $(dir)/*.c)) )
 

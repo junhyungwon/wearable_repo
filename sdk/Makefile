@@ -12,6 +12,10 @@ include $(ROOTDIR)/component.mk
 ##### APP BUILD #####
 
 app:
+ifeq ($(USE_RTMP),YES)
+	$(MAKE) libuv
+	$(MAKE) librtmp
+endif
 	$(MAKE) -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux
 	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) app
 	@echo -e "\n--- make app done! (`date +'%H:%M:%S'`)---\n"
@@ -156,6 +160,23 @@ p2p_clean:
 	$(MAKE) platform=ti -fMakefile -C $(EXTERNAL_PACKAGE)/p2p/samples/Linux clean
 
 p2p_all: p2p_clean p2p p2p_install
+
+libuv:
+	@cd $(THIRD_PARTY)/libuv \
+	&& CC=$(BUILD_TOOL_PREFIX)gcc cmake . \
+	&& $(MAKE) -j$(CPU_NUM)
+
+libuv_clean:
+	@cd $(THIRD_PARTY)/libuv \
+	&& $(MAKE) clean \
+	&& rm -rf CMakeFiles CMakeCache.txt
+
+librtmp:
+	@cd $(THIRD_PARTY)/srs-librtmp/src/srs/ \
+	&& $(BUILD_TOOL_PREFIX)gcc -c srs_librtmp.cpp
+
+librtmp_clean:
+	rm -rf $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
 
 app_pkg: libavi wlan_scan live555
 

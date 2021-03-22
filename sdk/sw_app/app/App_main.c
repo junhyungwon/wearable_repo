@@ -140,6 +140,11 @@ int app_main(void)
     sprintf(msg, "SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s",FITT360_SW_VER, FITT360_HW_VER, micom_ver);
     app_log_write(MSG_LOG_WRITE, msg);
 
+#ifdef USE_RTMP
+    app_libuv_start();
+    app_rtmp_start();
+#endif
+
     app_cap_start();
 	app_snd_start(); 
 	app_netmgr_init();
@@ -209,6 +214,11 @@ int app_main(void)
     app_rec_stop(0);
     app_snd_stop(); 
     app_cap_stop();
+
+#ifdef USE_RTMP
+    app_rtmp_stop();
+    app_libuv_stop();
+#endif
 
     if (app_cfg->ste.b.rtsptx) {
         app_rtsptx_stop();

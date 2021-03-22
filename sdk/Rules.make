@@ -72,6 +72,9 @@ TILER_ENABLE := NO
 #--- Teardown method (YES/NO)
 TEARDOWN_LOAD_UNLOAD := YES
 
+#--- RTMP Publishing feature
+USE_RTMP = NO
+
 ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
@@ -170,6 +173,9 @@ APP_INC_DIR       := $(APP_DIR)/app
 
 # The directory that points RDK external package
 EXTERNAL_PACKAGE  := $(RDK_INSTALL_DIR)/sw_package
+
+# 3rd party git submodules
+THIRD_PARTY       := $(BASE_INSTALL_DIR)/third_party
 
 # IPC
 ipc_INCLUDE 	  := $(ipc_PATH)/packages
@@ -294,6 +300,8 @@ export SYSTEM_PLATFORM
 export USE_ISP
 export USE_WIFI
 export USE_VOIP
+export USE_RTMP
+export THIRD_PARTY
 export CAM_MANUFACTURER
 export EXTERNAL_PACKAGE
 export SYSROOT
