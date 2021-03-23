@@ -1,23 +1,26 @@
 #ifdef USE_RTMP
 
+#include <stdbool.h>
+
 #include "app_comm.h"
 #include "app_libuv.h"
 #include "app_rtmp.h"
 
 // wowza. fixme : need a config file
 // $ ffplay rtmp://3.35.55.222:1935/live2/myStream/key
-const char *rtmp_endpoint  = "rtmp://3.35.55.222:1935/live2/myStream/key";
+char rtmp_endpoint[256] = "rtmp://3.35.55.222:1935/live2/myStream/key";
 
 uv_async_t *async_rtmp_connect;
 uv_timer_t *timer;
 
 // librtmp
-static srs_rtmp_t rtmp = NULL;
-static int rtmp_ready = 0;
+srs_rtmp_t rtmp = NULL;
+bool rtmp_ready = false;
+bool rtmp_enabled = false;
 
 void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
     fprintf(stderr, "[RTMP] timer check rtmp status %d.\n", rtmp_ready);
-    if (rtmp_ready == 0) {
+    if (rtmp_enabled && !rtmp_ready) {
         int r = uv_async_send(async_rtmp_connect);
     }
 }
@@ -54,6 +57,9 @@ void rtmp_connect_async_cb(uv_async_t* async) {
 
 
 void rtmp_video_async_cb(uv_async_t* async) {
+	if (!rtmp_enabled)
+		return;
+
     // fixme : imem will be in a short time.
     stream_info_t *ifr = (stream_info_t*)async->data;
 
@@ -114,18 +120,60 @@ int app_rtmp_start(void)
     async_rtmp_connect = malloc(sizeof(uv_async_t));
     int r = uv_async_init(loop, async_rtmp_connect, rtmp_connect_async_cb);
 
-    // fixme : keep the loop alive. timer every 10s
+    // connection check timer.
     timer = malloc(sizeof(uv_timer_t));
     uv_timer_init(loop, timer);
-    uv_timer_start(timer, rtmp_connect_timer_cb, 1000* 10, 1000* 10);
 
 	return SOK;
 }
 
 void app_rtmp_stop(void)
 {
-	uv_timer_stop(timer);
+	if (uv_is_active((uv_handle_t*)&timer))
+		uv_timer_stop(timer);
+
+	uv_close((uv_handle_t*)&timer, NULL);
+    uv_close((uv_handle_t*)async_rtmp_connect, NULL);
+
+    // close
+    if (rtmp != NULL)
+        srs_rtmp_destroy(rtmp);
 }
 
+bool app_rtmp_is_ready(void)
+{
+    return rtmp_enabled && rtmp_ready;
+}
+
+void app_rtmp_enable(void)
+{
+	rtmp_enabled = true;
+    uv_timer_start(timer, rtmp_connect_timer_cb, 1000* 10, 1000* 10);
+}
+
+void app_rtmp_disable(void)
+{
+	rtmp_enabled = false;
+
+    if (uv_is_active((uv_handle_t*)&timer))
+		uv_timer_stop(timer);
+
+    // close
+    if (rtmp != NULL)
+        srs_rtmp_destroy(rtmp);
+
+	rtmp_ready = false;
+}
+
+void app_rtmp_set_endpoint(const char* endpoint)
+{
+    // fixme : validate the endpoint
+	strcpy(rtmp_endpoint, endpoint);
+}
+
+const char* app_rtmp_get_endpoint()
+{
+	return rtmp_endpoint;
+}
 
 #endif // USE_RTMP
