@@ -12,6 +12,7 @@
 #ifdef USE_RTMP
 
 #include <uv.h>
+#include <stdbool.h>
 
 #include "srs_librtmp.h"
 #include "app_gmem.h"
