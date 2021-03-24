@@ -143,6 +143,9 @@ int app_main(void)
 #ifdef USE_RTMP
     app_libuv_start();
     app_rtmp_start();
+
+    // enable in default
+    app_rtmp_enable();
 #endif
 
     app_cap_start();
