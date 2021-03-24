@@ -1,7 +1,5 @@
 #ifdef USE_RTMP
 
-#include <stdbool.h>
-
 #include "app_comm.h"
 #include "app_libuv.h"
 #include "app_rtmp.h"
