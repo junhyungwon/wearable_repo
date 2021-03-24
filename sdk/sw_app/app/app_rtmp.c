@@ -15,48 +15,21 @@ uv_timer_t *timer;
 srs_rtmp_t rtmp = NULL;
 bool rtmp_ready = false;
 bool rtmp_enabled = false;
+static int rtmp_async_queue_lenth = 0;
 
-void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
-    fprintf(stderr, "[RTMP] timer check rtmp status %d.\n", rtmp_ready);
-    if (rtmp_enabled && !rtmp_ready) {
-        int r = uv_async_send(async_rtmp_connect);
-    }
-}
-
-void rtmp_connect_async_cb(uv_async_t* async) {
-    rtmp_ready = 0;
-
-    // close first
+static void _rtmp_close() {
     if (rtmp != NULL)
         srs_rtmp_destroy(rtmp);
 
-    // librtmp
-    rtmp = srs_rtmp_create(rtmp_endpoint);
-    if (srs_rtmp_handshake(rtmp) != 0) {
-        srs_human_trace("[RTMP] simple handshake failed.");
-        return;
-    }
-    srs_human_trace("[RTMP] simple handshake success");
-
-    if (srs_rtmp_connect_app(rtmp) != 0) {
-        srs_human_trace("[RTMP] connect vhost/app failed.");
-        return;
-    }
-    srs_human_trace("[RTMP] connect vhost/app success");
-
-    if (srs_rtmp_publish_stream(rtmp) != 0) {
-        srs_human_trace("[RTMP] publish stream failed.");
-        return;
-    }
-    srs_human_trace("[RTMP] publish stream success");
-
-    rtmp_ready = 1;
+    rtmp_ready = false;
+    rtmp_async_queue_lenth = 0;
 }
 
+static void _rtmp_video_async_cb(uv_async_t* async) {
+    rtmp_async_queue_lenth--;
 
-void rtmp_video_async_cb(uv_async_t* async) {
-	if (!rtmp_enabled)
-		return;
+    if (!rtmp_enabled)
+        return;
 
     // fixme : imem will be in a short time.
     stream_info_t *ifr = (stream_info_t*)async->data;
@@ -67,7 +40,7 @@ void rtmp_video_async_cb(uv_async_t* async) {
         isFirst = 1;
     }
 
-    if (isFirst == 1 && rtmp_ready == 1) {
+    if (isFirst == 1 && rtmp_ready) {
         char* data = ifr->addr;
         auto size = ifr->b_size;
         int nb_start_code = 0;
@@ -92,7 +65,7 @@ void rtmp_video_async_cb(uv_async_t* async) {
             } else {
                 srs_human_trace("[RTMP] send h264 raw data failed. ret=%d", ret);
 
-                rtmp_ready = 0;
+                rtmp_ready = false;
             }
         }
 
@@ -112,6 +85,39 @@ void rtmp_video_async_cb(uv_async_t* async) {
     uv_close((uv_handle_t*)async, NULL);
 }
 
+void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
+    fprintf(stderr, "[RTMP] timer check rtmp status %d.\n", rtmp_ready);
+    if (rtmp_enabled && !rtmp_ready) {
+        int r = uv_async_send(async_rtmp_connect);
+    }
+}
+
+void rtmp_connect_async_cb(uv_async_t* async) {
+    // close first
+    _rtmp_close();
+
+    // librtmp
+    rtmp = srs_rtmp_create(rtmp_endpoint);
+    if (srs_rtmp_handshake(rtmp) != 0) {
+        srs_human_trace("[RTMP] simple handshake failed.");
+        return;
+    }
+    srs_human_trace("[RTMP] simple handshake success");
+
+    if (srs_rtmp_connect_app(rtmp) != 0) {
+        srs_human_trace("[RTMP] connect vhost/app failed.");
+        return;
+    }
+    srs_human_trace("[RTMP] connect vhost/app success");
+
+    if (srs_rtmp_publish_stream(rtmp) != 0) {
+        srs_human_trace("[RTMP] publish stream failed.");
+        return;
+    }
+    srs_human_trace("[RTMP] publish stream success");
+
+    rtmp_ready = true;
+}
 
 int app_rtmp_start(void)
 {
@@ -134,13 +140,25 @@ void app_rtmp_stop(void)
     uv_close((uv_handle_t*)async_rtmp_connect, NULL);
 
     // close
-    if (rtmp != NULL)
-        srs_rtmp_destroy(rtmp);
+    _rtmp_close();
 }
 
-bool app_rtmp_is_ready(void)
+void app_rtmp_publish_video(stream_info_t *ifr)
 {
-    return rtmp_enabled && rtmp_ready;
+    if (!rtmp_enabled  || !rtmp_ready)
+        return;
+
+    // max async queue to (DEFAULT_FPS * 10)
+    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10))
+        return;
+
+    // fire async_cb
+    uv_async_t *async = malloc(sizeof(uv_async_t));
+    int r = uv_async_init(loop, async, _rtmp_video_async_cb);
+    async->data = (void*)ifr;
+
+    r = uv_async_send(async);
+    rtmp_async_queue_lenth++;
 }
 
 void app_rtmp_enable(void)
@@ -157,10 +175,7 @@ void app_rtmp_disable(void)
 		uv_timer_stop(timer);
 
     // close
-    if (rtmp != NULL)
-        srs_rtmp_destroy(rtmp);
-
-	rtmp_ready = false;
+    _rtmp_close();
 }
 
 void app_rtmp_set_endpoint(const char* endpoint)
