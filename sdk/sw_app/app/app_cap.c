@@ -227,14 +227,7 @@ static void proc_vid_cap(void)
 #endif
 
 #ifdef USE_RTMP
-                    if (app_rtmp_is_ready()) {
-	                    // fire async_cb
-	                    uv_async_t *async = malloc(sizeof(uv_async_t));
-	                    int r = uv_async_init(loop, async, rtmp_video_async_cb);
-	                    async->data = (void*)ifr;
-
-	                    r = uv_async_send(async);
-                    }
+                    app_rtmp_publish_video(ifr);
 #endif
                     app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
