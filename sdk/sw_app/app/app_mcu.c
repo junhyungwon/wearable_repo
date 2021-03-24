@@ -317,6 +317,7 @@ int app_mcu_start(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	return SOK;
 }

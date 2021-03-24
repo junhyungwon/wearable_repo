@@ -758,7 +758,8 @@ int app_file_init(void)
 		eprintf("create thread\n");
 		return -1;
 	}
-	
+	pthread_setname_np(ifile->fObj.thr, __FILENAME__);
+
 	/* watchdog file enable */
 	app_cfg->wd_tot |= WD_FILE;
 	aprintf("... done!\n");

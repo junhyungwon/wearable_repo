@@ -508,6 +508,7 @@ int app_ipins_init(void)
         eprintf("create sock thread\n") ;
         return EFAIL ;
     }
+    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 	
 	aprintf("... done!\n");
 

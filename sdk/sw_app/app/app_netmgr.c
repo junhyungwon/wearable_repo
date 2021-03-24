@@ -405,7 +405,8 @@ static void __netmgr_start(void)
 	if (thread_create(tObj, THR_netmgr_send_msg, APP_THREAD_PRI, tObj) < 0) {
 		eprintf("create thread\n");
 	}
-	
+	pthread_setname_np(tObj->thr, __FILENAME__);
+
 	send_msg(NETMGR_CMD_PROG_START);
 }
 
@@ -626,6 +627,7 @@ int app_netmgr_init(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 	#endif
 	
 	//#--- create msg receive thread
@@ -634,6 +636,7 @@ int app_netmgr_init(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	aprintf("... done!\n");
 

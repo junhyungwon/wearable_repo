@@ -299,6 +299,7 @@ int app_rec_init(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	//#--- create msg send thread
 	tObj = &irec->sObj;
@@ -306,6 +307,7 @@ int app_rec_init(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	aprintf("... done!\n");
 

@@ -179,7 +179,7 @@ int app_p2p_init(void)
         eprintf("create p2p thread\n");
         return EFAIL;
     }   
-
+    pthread_setname_np(tObj->thr, __FILENAME__);
     aprintf(".done!\n");
 
     return 0;

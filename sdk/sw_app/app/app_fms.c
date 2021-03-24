@@ -844,6 +844,7 @@ int app_fms_init(void)
             eprintf("create sock thread\n") ;
             return EFAIL ;
         }
+        pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 
         tObj = &ifms->metaObj ;
         if(thread_create(tObj, THR_fms_meta, APP_THREAD_PRI, NULL) < 0)
@@ -851,6 +852,7 @@ int app_fms_init(void)
             eprintf("create meta thread\n") ;
             return EFAIL ;
         }
+        pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 
         tObj = &ifms->jpegObj ;
         if(thread_create(tObj, THR_jpeg, APP_THREAD_PRI, NULL) < 0)
@@ -858,6 +860,7 @@ int app_fms_init(void)
             eprintf("create jpeg thread\n") ;
             return EFAIL ;
         }
+        pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 
         app_cfg->ste.b.sock = 1 ;
     }
