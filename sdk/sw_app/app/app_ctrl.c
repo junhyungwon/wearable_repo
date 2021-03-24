@@ -1085,6 +1085,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 			eprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
 			return -1;
 		}
+		pthread_setname_np(tid_fw, __FILENAME__);
 		pthread_detach(tid_fw);
 	}
 #endif

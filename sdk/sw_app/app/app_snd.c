@@ -528,6 +528,7 @@ int app_snd_start(void)
 		eprintf("create thread\n");
 		return -1;
 	}
+	pthread_setname_np(&isnd->cObj.thr, __FILENAME__);
 
 #if SYS_CONFIG_BACKCHANNEL
 	//#--- create backchannel play thread bkkim

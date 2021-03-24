@@ -214,6 +214,7 @@ int CSock_init()
         eprintf("create sock thread\n");
         return EFAIL;
     }
+    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 
     // ddns thread
     if(app_set->ddns_info.ON_OFF)
@@ -224,6 +225,7 @@ int CSock_init()
             eprintf("create ddns thread\n");
             return EFAIL;
         }
+        pthread_setname_np(tObj->thr.hndl, __FILENAME__);
     }
 
     return 0;

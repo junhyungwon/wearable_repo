@@ -39,6 +39,7 @@ int app_libuv_start(void)
 
     // create libuv thread
     pthread_create(&thread, NULL, uv_thread, NULL);
+    pthread_setname_np(thread, __FILENAME__);
 
     return SOK;
 }

@@ -346,6 +346,7 @@ int vid_cap_start(void)
 		eprintf("create thread\n");
 		return EFAIL;
     }
+    pthread_setname_np(icap->vObj.thr, __FILENAME__);
 
 	return SOK;
 }

@@ -378,6 +378,7 @@ static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)
 		int nCS = cs;
 		static pthread_t tid_restart_onvif; // restart onvif
 		int status = pthread_create(&tid_restart_onvif, NULL, thdRestartOnvifServer, (void *)&nCS);
+		pthread_setname_np(tid_restart_onvif, __FILENAME__);
 
 		return 0;
 	}
@@ -2650,7 +2651,7 @@ int app_uds_start()
 		g_thd_running = 0;
 		return -1;
 	}
-
+	pthread_setname_np(g_tid, __FILENAME__);
 	pthread_detach(g_tid);
 
 	return 0;

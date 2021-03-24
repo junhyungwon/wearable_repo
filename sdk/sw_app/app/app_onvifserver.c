@@ -102,7 +102,7 @@ pthread_t sys_os_create_thread(void * thread_func, void * argv)
 	{
 		log_print(LOG_ERR, "sys_os_create_thread::pthread_create failed, ret = %d\r\n", ret);
 	}
-
+	pthread_setname_np(tid, __FILENAME__);
 	pthread_detach(tid);
 
 #elif __WIN32_OS__
@@ -649,6 +649,7 @@ int app_onvifserver_start(void)
 		g_running= 0;
 		return -1;
 	}
+	pthread_setname_np(g_tid, __FILENAME__);
 	pthread_detach(g_tid);
 
 	return 0;

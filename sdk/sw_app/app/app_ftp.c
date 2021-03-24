@@ -847,6 +847,7 @@ int app_ftp_init(void)
 		    eprintf("create ftp thread\n");
 		    return EFAIL;
 	    }
+	    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
     }
 
 	dprintf(".done!\n");

@@ -543,13 +543,15 @@ int app_voip_init(void)
     	eprintf("create SIP Client Receive Msg thread\n");
 		return EFAIL;
     }
-	
+	pthread_setname_np(tObj->thr, __FILENAME__);
+
 	tObj = &ivoip->eObj;
 	if (thread_create(tObj, THR_voip_main, APP_THREAD_PRI, NULL) < 0) {
     	eprintf("create SIP Client event poll thread\n");
 		return EFAIL;
     }
-	
+	pthread_setname_np(tObj->thr, __FILENAME__);
+
 	/* mutex create */
 	status = OSA_mutexCreate(&ivoip->lock);
 	OSA_assert(status == OSA_SOK);

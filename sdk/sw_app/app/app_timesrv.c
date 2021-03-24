@@ -542,7 +542,7 @@ int app_tsync_init(void)
         eprintf("create tsync thread\n") ;
         return EFAIL ;
     }
-
+    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
     aprintf("... done!\n");
     
 	return 0 ;

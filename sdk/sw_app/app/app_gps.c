@@ -239,6 +239,7 @@ static int __gps_ready_event_handle(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	//#--- create gps jack detect thread
 	tObj = &igps->pObj;
@@ -246,7 +247,8 @@ static int __gps_ready_event_handle(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	
+	pthread_setname_np(tObj->thr, __FILENAME__);
+
 	igps->shmid = shmget((key_t)GNSS_SHM_KEY, 0, 0);
 	if (igps->shmid == -1) {
 		eprintf("shared memory for gps is not created!!\n");
@@ -460,6 +462,7 @@ int app_gps_init(void)
 		eprintf("create thread\n");
 		return EFAIL;
 	}
+	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	aprintf("... done!\n");
 

@@ -331,6 +331,7 @@ int app_dev_init(void)
     	eprintf("create dev thread\n");
 		return EFAIL;
     }
+    pthread_setname_np(tObj->thr, __FILENAME__);
 
 	aprintf("... done!\n");
 
