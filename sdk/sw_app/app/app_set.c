@@ -1311,6 +1311,7 @@ int app_set_web_password(char *id, char *pw, int lv, int authtype)
 		app_set->account_info.webuser.lv = lv;
 		app_set->account_info.webuser.authtype = authtype;
 
+		app_set_write() ;
 		return 0;
 	}
 	eprintf(" Can't set %s's password\n", id);
