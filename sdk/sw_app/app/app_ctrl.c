@@ -1178,7 +1178,11 @@ int ctrl_is_live_process(const char *process_name)
         pinfo = readdir(pdir);
         if (pinfo == NULL)
             break;
- 
+		
+		/*
+		 * d_type = 4->DT_DIR, d_name : filename
+		 * if d_name[0] > 57, then character (ascii 57-->'9')
+		 */
         if (pinfo->d_type != 4 || pinfo->d_name[0] == '.' || pinfo->d_name[0] > 57)
             continue;
 
