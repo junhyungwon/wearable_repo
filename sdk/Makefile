@@ -324,18 +324,12 @@ lsp_all: lsp_clean lsp
 ##### Wi-Fi Driver BUILD #####
 wlan:
 ifeq ($(USE_WIFI),YES)
-	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188eu_driver modules
-	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188cu_driver modules
 	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver modules
 	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver modules
 endif
 
 wlan_clean:
 ifeq ($(USE_WIFI), YES)
-	-rm -f $(TARGET_FS)/lib/modules/8188eu.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188eu_driver clean
-	-rm -f $(TARGET_FS)/lib/modules/8192cu.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8188cu_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/8821au.ko
 	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/8812au.ko
@@ -445,8 +439,6 @@ endif
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh
 
 ifeq ($(USE_WIFI),YES)
-	sudo /bin/cp $(KMODDIR)/wlan/8188eu_driver/8188eu.ko $(TARGET_FS)/lib/modules/.
-	sudo /bin/cp $(KMODDIR)/wlan/8188cu_driver/8192cu.ko $(TARGET_FS)/lib/modules/.
 	sudo /bin/cp $(KMODDIR)/wlan/8821au_driver/8821au.ko $(TARGET_FS)/lib/modules/.
 	sudo /bin/cp $(KMODDIR)/wlan/8812au_driver/8812au.ko $(TARGET_FS)/lib/modules/.
 endif

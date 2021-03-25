@@ -27,16 +27,7 @@
 #define GPIO_IRQ_FALLING		2
 #define GPIO_IRQ_BOTH			3
 
-#define NETMGR_USB_MAX_NUM		5
-
-#define RTL_8188E_VID			0x0bda
-#define RTL_8188E_PID			0x8179
-
-#define RTL_8188C_VID			0x0bda
-#define RTL_8188C_PID			0x8176
-
-#define RTL_8192C_VID			0x0bda
-#define RTL_8192C_PID			0x8178
+#define NETMGR_USB_MAX_NUM		2
 
 #define RTL_8821A_VID			0x0bda
 #define RTL_8821A_PID			0xA811
