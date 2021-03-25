@@ -29,7 +29,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define NETLINK_POLL_TIMEOUT	100//300
+#define NETLINK_POLL_TIMEOUT	200//300
 #define NETLINK_GROUP_KERNEL	1
 #define NETLINK_USB_PATH		"/sys/bus/usb/devices"
 
@@ -277,13 +277,7 @@ static int netlink_usb_attach_parse(char *buffer, size_t len, int *v, int *p)
 		}
 	}
 
-	if (vendor == RTL_8188E_VID && product == RTL_8188E_PID) {
-		pusb_ss = &iwlan->usb_ss[0];
-	} else if (vendor == RTL_8188C_VID && product == RTL_8188C_PID) {
-		pusb_ss = &iwlan->usb_ss[1];
-	} else if (vendor == RTL_8192C_VID && product == RTL_8192C_PID) {
-		pusb_ss = &iwlan->usb_ss[2];
-	} else if (vendor == RTL_8821A_VID && product == RTL_8821A_PID) {
+	if (vendor == RTL_8821A_VID && product == RTL_8821A_PID) {
 		pusb_ss = &iwlan->usb_ss[3];
 	} else if (vendor == RTL_8812A_VID && product == RTL_8812A_PID) {
 		pusb_ss = &iwlan->usb_ss[4];
@@ -326,19 +320,7 @@ static int __is_connected_wlan(void)
 		fscanf(f, "%d", &value);
 		fclose(f);
 
-		if ((d_vid == RTL_8188E_VID) && (d_pid == RTL_8188E_PID)) {
-			iwlan->usb_ss[0].sid = (busnum << 8 | value);
-			iwlan->usb_ss[0].vid = RTL_8188E_VID;
-			iwlan->usb_ss[0].pid = RTL_8188E_PID;
-		} else if((d_vid == RTL_8188C_VID) && (d_pid == RTL_8188C_PID)) {
-			iwlan->usb_ss[1].sid = (busnum << 8 | value);
-			iwlan->usb_ss[1].vid = RTL_8188C_VID;
-			iwlan->usb_ss[1].pid = RTL_8188C_PID;
-		} else if((d_vid == RTL_8192C_VID) && (d_pid == RTL_8192C_PID)) {
-			iwlan->usb_ss[2].sid = (busnum << 8 | value);
-			iwlan->usb_ss[2].vid = RTL_8192C_VID;
-			iwlan->usb_ss[2].pid = RTL_8192C_PID;
-		} else if((d_vid == RTL_8821A_VID) && (d_pid == RTL_8821A_PID)) {
+		if((d_vid == RTL_8821A_VID) && (d_pid == RTL_8821A_PID)) {
 			iwlan->usb_ss[3].sid = (busnum << 8 | value);
 			iwlan->usb_ss[3].vid = RTL_8821A_VID;
 			iwlan->usb_ss[3].pid = RTL_8821A_PID;
@@ -451,7 +433,8 @@ static void *THR_wlan_poll(void *prm)
 		}
 		
 		//# wait USB Wi-Fi event
-		ret = poll(&pfd, 1, NETLINK_POLL_TIMEOUT); //# timeout 100ms
+		//# processing time 200ms
+		ret = poll(&pfd, 1, NETLINK_POLL_TIMEOUT);
 		if (ret > 0)
 		{
 			if (pfd.revents & POLLIN) 
@@ -473,10 +456,8 @@ static void *THR_wlan_poll(void *prm)
 							if (detached) {
 								if (netlink_usb_detach_parse(msg, len, &v, &p) == 0)
 								{
-									if (((v == RTL_8188E_VID) && (p == RTL_8188E_PID)) ||
-										((v == RTL_8188C_VID) && (p == RTL_8188C_PID)) ||
-										((v == RTL_8192C_VID) && (p == RTL_8192C_PID)) ||
-										((v == RTL_8821A_VID) && (p == RTL_8821A_PID))
+									if (((v == RTL_8821A_VID) && (p == RTL_8821A_PID)) ||
+										((v == RTL_8812A_VID) && (p == RTL_8812A_PID))
 									   )
 									{
 										app_cfg->wlan_vid = -1; /* device가 제거된 상태 */
@@ -488,10 +469,8 @@ static void *THR_wlan_poll(void *prm)
 							} else {
 								if (netlink_usb_attach_parse(msg, len, &v, &p) == 0)
 								{
-									if (((v == RTL_8188E_VID) && (p == RTL_8188E_PID)) ||
-										((v == RTL_8188C_VID) && (p == RTL_8188C_PID)) ||
-										((v == RTL_8192C_VID) && (p == RTL_8192C_PID)) ||
-										((v == RTL_8821A_VID) && (p == RTL_8821A_PID))
+									if (((v == RTL_8821A_VID) && (p == RTL_8821A_PID)) ||
+										((v == RTL_8812A_VID) && (p == RTL_8812A_PID))
 									   )
 									{
 										/* 현재 연결되 USB 장치의 VID와 PID를 저장 */
@@ -506,11 +485,11 @@ static void *THR_wlan_poll(void *prm)
 					}
 				} //# if (len > 32)
 			} //# if (pfd.revents & POLLIN)
-			delay_msecs(50);
 		} else {
 			/* 간헐적으로 부팅 시 인식 안되는 경우가 있어서 poll 형태로 감시 */
 			if (!app_cfg->ste.bit.wlan) 
 			{
+				//# processing time 100ms
 				ret = __is_connected_wlan();
 				if (!ret) {
 					app_cfg->ste.bit.wlan = 1; 
@@ -518,6 +497,7 @@ static void *THR_wlan_poll(void *prm)
 				} 
 			}
 		}
+		delay_msecs(100);
 	} 
 	
 	tObj->active = 0;

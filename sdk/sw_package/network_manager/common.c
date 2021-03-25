@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <sys/time.h>
 
 #include "netmgr_ipc_cmd_defs.h"
 #include "main.h"
@@ -27,14 +28,10 @@
 #include "common.h"
 
 /* Wi-Fi Module Path */
-#define RTL_8188E_PATH			"/lib/modules/8188eu.ko"
-#define RTL_8188C_PATH			"/lib/modules/8192cu.ko"
 #define RTL_8821A_PATH			"/lib/modules/8821au.ko"
 #define RTL_8812A_PATH			"/lib/modules/8812au.ko"
 
 /* Wi-Fi Module name */
-#define RTL_8188E_NAME			"8188eu"
-#define RTL_8188C_NAME			"8192cu"
 #define RTL_8821A_NAME			"8821au"
 #define RTL_8812A_NAME			"8812au"
 
@@ -92,9 +89,6 @@ typedef struct {
 } usb_dev_id_t;
 
 static usb_dev_id_t usb_wlan_list[NETMGR_USB_MAX_NUM] = {
-	{ .d_vid = RTL_8188E_VID, .d_pid = RTL_8188E_PID, },
-	{ .d_vid = RTL_8188C_VID, .d_pid = RTL_8188C_PID, },
-	{ .d_vid = RTL_8192C_VID, .d_pid = RTL_8192C_PID, },
 	{ .d_vid = RTL_8821A_VID, .d_pid = RTL_8821A_PID, },
 	{ .d_vid = RTL_8812A_VID, .d_pid = RTL_8812A_PID, }
 };
@@ -943,18 +937,12 @@ int netmgr_wlan_load_kermod(int vid, int pid)
 	char name[128] = {0,};
 	
 	/* kernel module 파일명을 확인 */
-	if ((vid == RTL_8188E_VID) && (pid == RTL_8188E_PID)) {
-		strcpy(path, RTL_8188E_PATH);
-		strcpy(name, RTL_8188E_NAME);
-	} else if ((vid == RTL_8188C_VID) && (pid == RTL_8188C_PID)) {
-		strcpy(path, RTL_8188C_PATH);
-		strcpy(name, RTL_8188C_NAME);
-	} else if ((vid == RTL_8192C_VID) && (pid == RTL_8192C_PID)) {
-		strcpy(path, RTL_8188C_PATH);
-		strcpy(name, RTL_8188C_NAME);
-	} else if ((vid == RTL_8821A_VID) && (pid == RTL_8821A_PID)) {
+	if ((vid == RTL_8821A_VID) && (pid == RTL_8821A_PID)) {
 		strcpy(path, RTL_8821A_PATH);
 		strcpy(name, RTL_8821A_NAME);
+	} else if ((vid == RTL_8812A_VID) && (pid == RTL_8812A_PID)) {
+		strcpy(path, RTL_8812A_PATH);
+		strcpy(name, RTL_8812A_NAME);
 	} else {
 		/* invalid wifi usb module */
 		eprintf("Not Supported WiFi USB Module!!(%x, %x)\n", vid, pid);
@@ -1108,3 +1096,45 @@ int utf8_unescape(const char *dst, char *src)
 	return 0;
 }
 //#----------------------------------------------------------------------------------------------------------
+
+/*****************************************************************************
+* @brief    time trace function
+* @section  [act] 1 : start time trace
+*                 0 : end time trace and print elapsed time
+*****************************************************************************/
+static unsigned int __getCurTimeInMsec(void)
+{
+	static int isInit = 0;
+	static unsigned int initTime=0;
+	struct timeval tv;
+
+	if (isInit == 0)
+	{
+		isInit = 1;
+
+		if (gettimeofday(&tv, NULL) < 0)
+			return 0;
+
+		initTime = (Uint32)(tv.tv_sec * 1000u + tv.tv_usec/1000u);
+	}
+
+	if (gettimeofday(&tv, NULL) < 0)
+		return 0;
+
+	return (unsigned int)(tv.tv_sec * 1000u + tv.tv_usec/1000u)-initTime;
+}
+
+static unsigned long btime=0;
+void __time_trace(int act)
+{
+	unsigned long elapsed_time;
+
+	if(act) {
+		btime = __getCurTimeInMsec();
+	}
+	else {
+		elapsed_time = __getCurTimeInMsec() - btime;
+		printf("--- %ld ms\n", elapsed_time);
+		btime += elapsed_time;
+	}
+}
