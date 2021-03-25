@@ -184,8 +184,12 @@ static int	parseSystemInfo(app_set_t* const set, json_object* rootObj)
 	memcpy(set->sys_info.p2p_id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "p2p_passwd");
 	memcpy(set->sys_info.p2p_passwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_32, &dec_size), dec_size);
+
+#if 0 // Block NSS UID
 	tmp = json_object_object_get(jobj, "uid");
 	sprintf(set->sys_info.uid, "%s", json_object_get_string(tmp));
+#endif
+
 	tmp = json_object_object_get(jobj, "dev_cam_ch");
 	set->sys_info.dev_cam_ch = json_object_get_int(tmp);
 
@@ -532,7 +536,9 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(sys_info, "P2P_ON_OFF", json_object_new_int(set->sys_info.P2P_ON_OFF));
 	json_object_object_add(sys_info, "p2p_id",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->sys_info.p2p_id, MAX_CHAR_32, &enc_size)));
 	json_object_object_add(sys_info, "p2p_passwd", json_object_new_string((const char*)base64_encode((const unsigned char*)set->sys_info.p2p_passwd, MAX_CHAR_32, &enc_size)));
-	json_object_object_add(sys_info, "uid",        json_object_new_string(set->sys_info.uid));
+#if 0 // Block NSS UID
+	json_object_object_add(sys_info, "uid",        json_object_new_string(set->sys_info.uid)); 
+#endif
 	json_object_object_add(sys_info, "dev_cam_ch", json_object_new_int(set->sys_info.dev_cam_ch));
 	json_object_object_add(rootObject,  "sys_info", sys_info);
 

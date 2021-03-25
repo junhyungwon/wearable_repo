@@ -1069,10 +1069,12 @@ int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 		//return -1;
 	}
 
+#if 0 // Block NSS UID
 	if(strlen(t->uid) > 0 && 0!=strcmp(t->uid, app_set->sys_info.uid)) {
 		sprintf(app_set->sys_info.uid, "%s", t->uid);
 		isChanged++;
 	}
+#endif
 
 	return isChanged;
 }
