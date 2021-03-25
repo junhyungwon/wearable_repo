@@ -325,6 +325,9 @@ int app_dev_init(void)
 	memset((void *)idev, 0x0, sizeof(app_dev_t));
 	dev_gpio_init();
 
+	/* initialize uid area */
+	dev_board_uid_init();
+
 	//#--- create thread
     tObj = &idev->devObj;
     if (thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL) < 0) {

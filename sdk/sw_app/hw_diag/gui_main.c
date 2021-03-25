@@ -126,7 +126,7 @@ static int chk_rec_key(void)
 static void *thread_key(void *prm)
 {
 	app_thr_obj *tObj = &igui->iObj;
-	int exit=0, res, sleep = 0 ;
+	int exit=0, res;
     char cmd;
 
 	tObj->active = 1;
@@ -169,10 +169,11 @@ static int wait_result(app_thr_obj *tObj)
 		//# wait cmd
 		cmd = event_wait(tObj);
 		switch (cmd) {
-		case APP_KEY_OK:
-		default:
-			exit = 1;
-			break;
+		    case APP_KEY_PWR:
+				exit = 1 ;
+			    break ;
+		    default:
+			    break;
 		}
 	}
 
@@ -193,7 +194,7 @@ static int test_info(app_thr_obj *tObj)
 {
 	int res;
 	char ver[64]={0,};
-	char buf[64]={0,};
+//	char buf[64]={0,};
 	
 	aprintf("version test start...\n");
 
@@ -351,7 +352,7 @@ int test_snd(app_thr_obj *tObj)
 	thread_create(&igui->sndOut, thr_snd_out, APP_THREAD_PRI, NULL);
 	
 	//# Question
-	printf(menu_exit);
+//	printf(menu_exit);
 	res = wait_result(tObj);
 	
 	thread_delete(&igui->sndOut);
@@ -366,6 +367,7 @@ int test_snd(app_thr_obj *tObj)
 * @brief    test menu function
 * @section  [desc]
 *****************************************************************************/
+/*
 static char menu_main[] = {
 	"\r\n ============="
 	"\r\n Demo Menu"
@@ -381,6 +383,7 @@ static char menu_main[] = {
 	"\r\n"
 	"\r\n Enter Choice: "
 };
+*/
 
 static int gui_test_main(void *thr)
 {
@@ -408,6 +411,10 @@ static int gui_test_main(void *thr)
   
    // Inforeq packet transmission immediately after system booting is completed	
 	send_sysinfo((char*)&Inforeq) ;   
+
+#if defined(NEXXONE) || defined(NEXX360H)
+    test_snd(tObj) ;
+#endif
 
 	while (!exit)
 	{

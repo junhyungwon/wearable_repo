@@ -37,6 +37,7 @@
 #include <netdb.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include "ti_vsys.h"
 #include "app_main.h"
 #include "app_dev.h"
 #include "dev_common.h"
@@ -309,7 +310,7 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
 {
     struct tm ts;
     time_t set;
-    char buf[64];
+//    char buf[64];
 
     ts.tm_year = year;
     ts.tm_mon  = mon;

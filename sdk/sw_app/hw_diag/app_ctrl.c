@@ -172,7 +172,7 @@ int ctrl_ether_linkup(const char *naddr, const char *nmask, const char *ngate)
 void ctrl_ether_linkdown(void)
 {
 	FILE *f = NULL;
-	char buf[128]={0,};
+//	char buf[128]={0,};
 	
 	f = popen("/sbin/ifconfig eth0 down", "r");
 	if (f != NULL) {

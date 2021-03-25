@@ -440,6 +440,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
     char enc_Passwd[32] = {0, } ;
     char MacAddr[12]  ;
     char compbuff[32];
+    char uid[MAX_CHAR_32] = {0, };
 	int ich=0, channels = 0;
 	
 	channels = MODEL_CH_NUM+1;
@@ -599,6 +600,16 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		if(strcmp(compbuff, "FITT360_Security") != 0)
 		{
             strcpy(app_set->sys_info.uid ,"LFS-LSCS-A1-xxxx");
+		}
+	}
+	else
+	{
+        if(dev_board_uid_read(uid, MAX_CHAR_16) == 0)
+        {
+	        if(!strncmp(uid, "empty", 5))   // not exist uid on nand area
+	        {
+                dev_board_uid_write(pset->sys_info.uid, 16) ;
+			}
 		}
 	}
 

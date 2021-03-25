@@ -289,6 +289,8 @@ void change_info(char *data)
 		if(strcmp(app_set->sys_info.uid, Changeinfo->uid))
 		{
 			sprintf(app_set->sys_info.uid, "%s", Changeinfo->uid); 
+            dev_board_uid_write(app_set->sys_info.uid, 16) ;
+
 			ret = 1 ;
 		}
 
