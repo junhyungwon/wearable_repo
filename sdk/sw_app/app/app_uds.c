@@ -1058,7 +1058,7 @@ static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 	return 0;
 }
 
-int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
+static int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 {
 	int isChanged=0;
 	if(strlen(t->devid) > 0 && 0!=strcmp(t->devid, app_set->sys_info.deviceId)) {
