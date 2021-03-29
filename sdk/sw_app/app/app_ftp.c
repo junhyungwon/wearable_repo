@@ -401,6 +401,15 @@ static int ftp_send_file(int sd, char *filename)
 
 		if(data_sock > 0)
 		{
+		    if(ftpNewCmd(sd,buf,"REST", 0) != 0)
+				return -1 ;
+	
+			if(ftpRecvResponse(sd, buf) != 0)
+                return -1 ;
+
+            if(strncmp(buf, "350", 3) == 0) 
+	            ftp_dbg("ftpRecvResponse REST success = %s\n", buf);
+
 		    if(ftpNewCmd(sd,buf,"STOR",&filename[strlen(iftp->path) + 1]) != 0)
                 return -1 ;
 
