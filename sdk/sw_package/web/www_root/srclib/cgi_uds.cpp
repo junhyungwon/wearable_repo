@@ -702,9 +702,16 @@ CGI_DBG("\nw:%d, h:%d, kbps:%d, fps:%d, ei:%d, gov:%d\n", w, h, kbps, fps, ei, g
 			break;
 
 		case UDS_CMD_CONTROL_TELNETD:
+		case UDS_CMD_CONTROL_RTMP:
 			{
 				// 1. write command
-				sprintf(wbuf, "%s", STR_MSG_CMD_CONTRL_TELNETD);
+				if (cmd == UDS_CMD_CONTROL_TELNETD) {
+					sprintf(wbuf, "%s", STR_MSG_CMD_CONTRL_TELNETD);
+				} else if (cmd == UDS_CMD_CONTROL_RTMP) {
+					sprintf(wbuf, "%s", STR_MSG_CMD_CONTRL_RTMP);
+				} else {
+					__builtin_unreachable();
+				}
 				ret = write(cs, wbuf, sizeof(wbuf));
 				CGI_DBG("Sent %s: cs:(%d), wrtten len = %d \n", wbuf, cs, ret);
 
