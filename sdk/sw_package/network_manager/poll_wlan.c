@@ -278,9 +278,9 @@ static int netlink_usb_attach_parse(char *buffer, size_t len, int *v, int *p)
 	}
 
 	if (vendor == RTL_8821A_VID && product == RTL_8821A_PID) {
-		pusb_ss = &iwlan->usb_ss[3];
+		pusb_ss = &iwlan->usb_ss[0];
 	} else if (vendor == RTL_8812A_VID && product == RTL_8812A_PID) {
-		pusb_ss = &iwlan->usb_ss[4];
+		pusb_ss = &iwlan->usb_ss[1];
 	} else
 		/* not supported device. */
 		return -1;
@@ -321,13 +321,13 @@ static int __is_connected_wlan(void)
 		fclose(f);
 
 		if((d_vid == RTL_8821A_VID) && (d_pid == RTL_8821A_PID)) {
-			iwlan->usb_ss[3].sid = (busnum << 8 | value);
-			iwlan->usb_ss[3].vid = RTL_8821A_VID;
-			iwlan->usb_ss[3].pid = RTL_8821A_PID;
+			iwlan->usb_ss[0].sid = (busnum << 8 | value);
+			iwlan->usb_ss[0].vid = RTL_8821A_VID;
+			iwlan->usb_ss[0].pid = RTL_8821A_PID;
 		} else if((d_vid == RTL_8812A_VID) && (d_pid == RTL_8812A_PID)) {
-			iwlan->usb_ss[4].sid = (busnum << 8 | value);
-			iwlan->usb_ss[4].vid = RTL_8812A_VID;
-			iwlan->usb_ss[4].pid = RTL_8812A_PID;
+			iwlan->usb_ss[1].sid = (busnum << 8 | value);
+			iwlan->usb_ss[1].vid = RTL_8812A_VID;
+			iwlan->usb_ss[1].pid = RTL_8812A_PID;
 		}
 		
 		/* USB을 연결하고 부팅하면 netlink에서 검색을 못한다. 수동으로 검색하는 루틴에서 
