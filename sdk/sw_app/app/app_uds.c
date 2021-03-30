@@ -51,6 +51,9 @@
 #include "app_encrypt.h"
 #include "app_decrypt.h"
 
+#ifdef USE_RTMP
+#include "app_rtmp.h"
+#endif
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -1424,6 +1427,39 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
+#ifdef USE_RTMP
+		else if (strcmp(rbuf, "ControlRtmp") == 0) {
+			sprintf(wbuf, "[APP_UDS] --- ControlRtmp ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			// 1. send READY
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+
+			if(ret > 0){
+
+				int flag=0; // 0:disable 1:enable
+				ret = read(cs_uds, &flag, sizeof flag);
+				DBG_UDS("ControlRtmp read Data, ret:%d, flag:%d\n", ret, flag);
+				if(ret>0) {
+					if (flag == 0) {
+						app_rtmp_disable();
+					} else if (flag == 1) {
+						app_rtmp_enable();
+					} else {
+						__builtin_unreachable();
+					}
+				}
+				else {
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed read:");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
+#endif
 		else if (strcmp(rbuf, "GetSystemDateAndTime") == 0)
 		{
 			sprintf(wbuf, "[APP_UDS] --- GetSystemDateAndTime---");
