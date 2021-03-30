@@ -144,6 +144,9 @@ int app_main(void)
     app_libuv_start();
     app_rtmp_start();
 
+    // disable SIGPIPE
+    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
+
     // enable in default
     app_rtmp_enable();
 #endif
