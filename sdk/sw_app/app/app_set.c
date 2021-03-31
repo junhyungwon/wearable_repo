@@ -141,7 +141,8 @@ static void set_uid()
             sprintf(app_set->sys_info.uid, "%s", uid); 
 #if SYS_CONFIG_VOIP
 	        sprintf(app_set->voip.userid, "%d%d%s", 'A', 1, &uid[12]);
-            sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
+			if(!strcmp(app_set->voip.peerid, ""))
+                sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
 #endif
         }
 	}	
