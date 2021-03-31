@@ -38,6 +38,57 @@ static int shmem_id;
  * @pre Must have called NetraDrvInit() and func_get_mem()
  *
  */
+
+char enc_buf[1280];
+/*----------------------------------------------------------------------------
+ audio codec function
+-----------------------------------------------------------------------------*/
+static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, int bufsize)
+{
+    int i, isNegative;
+    short data;
+    short nOut;
+    short lowByte = 1;
+    int outputSize = bufsize / 2;
+
+    for (i=0; i<outputSize; i++)
+    {
+        data = *(src + i);
+        data >>= 2;
+        isNegative = (data < 0 ? 1 : 0);
+
+        if (isNegative)
+            data = -data;
+
+        if (data <= 1) 			nOut = (char) data;
+        else if (data <= 31) 	nOut = ((data - 1) >> 1) + 1;
+        else if (data <= 95)	nOut = ((data - 31) >> 2) + 16;
+        else if (data <= 223)	nOut = ((data - 95) >> 3) + 32;
+        else if (data <= 479)	nOut = ((data - 223) >> 4) + 48;
+        else if (data <= 991)	nOut = ((data - 479) >> 5) + 64;
+        else if (data <= 2015)	nOut = ((data - 991) >> 6) + 80;
+        else if (data <= 4063)	nOut = ((data - 2015) >> 7) + 96;
+        else if (data <= 7903)	nOut = ((data - 4063) >> 8) + 112;
+        else 					nOut = 127;
+
+        if (isNegative) {
+            nOut = 127 - nOut;
+        } else {
+            nOut = 255 - nOut;
+        }
+
+        // Pack the bytes in a word
+        if (lowByte)
+            *(dst + (i >> 1)) = (nOut & 0x00FF);
+        else
+            *(dst + (i >> 1)) |= ((nOut << 8) & 0xFF00);
+
+        lowByte ^= 0x1;
+    }
+
+	return (outputSize);
+}
+
 int GetAVData( unsigned int channel, unsigned int field, int serial, AV_DATA * ptr )
 {
 	int ret=RET_SUCCESS;
@@ -502,19 +553,23 @@ printf("AV_OP_LOCK_MP4_IFRAME ...................\n") ;
 							ret = RET_NO_MEM;
 							break;
 						case 0:
+							{// ulaw encoding...
+								char *tmp = (unsigned char *)virptr + frame.offset;
+								int enc_size = alg_ulaw_encode((unsigned short *)enc_buf, (unsigned short *)tmp, frame.size);
+
+								ptr->ptr  = enc_buf;
+								ptr->size = enc_size;
+							}
 							ptr->serial 	= serial;
-							ptr->size 		= frame.size;
 							ptr->width 		= frame.width;
 							ptr->height 	= frame.height;
 							ptr->quality 	= frame.quality;
 							ptr->flags 		= frame.flags;
 							ptr->timestamp 	= frame.timestamp;
-//							for (cnt = 0; cnt < FMT_MAX_NUM; cnt++ )
 							for (cnt = FMT_AUDIO_CH1; cnt < FMT_MAX_NUM; cnt++ )
 							{
 								ptr->ref_serial[cnt] = frame.ref_serial[cnt];
 							}
-							ptr->ptr = (unsigned char *)virptr + frame.offset;
 							break;
 						default:
 							ret = RET_UNKNOWN_ERROR;
@@ -524,7 +579,7 @@ printf("AV_OP_LOCK_MP4_IFRAME ...................\n") ;
 			}
 			break;
 		case AV_OP_UNLOCK_ULAW:
-printf("AV_OP_UNLOCK_ULAW ...................\n") ;
+//printf("AV_OP_UNLOCK_ULAW ...................\n") ;
 			if(serial == -1){
 				ret = RET_INVALID_PRM;
 			} else {
