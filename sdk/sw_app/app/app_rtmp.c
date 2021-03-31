@@ -61,7 +61,8 @@ static void _rtmp_video_async_cb(uv_async_t* async) {
             } else if (srs_h264_is_duplicated_sps_error(ret)) {
                 srs_human_trace("[RTMP] ignore duplicated sps, code=%d", ret);
             } else if (srs_h264_is_duplicated_pps_error(ret)) {
-                srs_human_trace("[RTMP] ignore duplicated pps, code=%d", ret);
+                // ignore a 'known error'.
+                // srs_human_trace("[RTMP] ignore duplicated pps, code=%d", ret);
             } else {
                 srs_human_trace("[RTMP] send h264 raw data failed. ret=%d", ret);
 
