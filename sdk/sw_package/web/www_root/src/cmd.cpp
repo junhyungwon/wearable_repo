@@ -113,7 +113,7 @@ int do_sysmng(char *pContents)
 				else if(!strcmp(prm[i].value, "rtmp_on")){
 					CGI_DBG("rtmp_on\n");
 					NS_CMD::gRefreshSec = 3;
-					int nFlag = 0;
+					int nFlag = 1;
 					if(0 != sysctl_message(UDS_CMD_CONTROL_RTMP, (void*)&nFlag, sizeof(int))) {
 						ret = SUBMIT_ERR;
 					}
@@ -121,7 +121,7 @@ int do_sysmng(char *pContents)
 				else if(!strcmp(prm[i].value, "rtmp_off")){
 					CGI_DBG("rtmp_off\n");
 					NS_CMD::gRefreshSec = 3;
-					int nFlag = 1;
+					int nFlag = 0;
 					if(0 != sysctl_message(UDS_CMD_CONTROL_RTMP, (void*)&nFlag, sizeof(int))) {
 						ret = SUBMIT_ERR;
 					}

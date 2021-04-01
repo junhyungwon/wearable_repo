@@ -5,8 +5,8 @@
 #include "app_rtmp.h"
 
 // wowza. fixme : need a config file
-// $ ffplay rtmp://3.35.55.222:1935/live2/myStream/key
-char rtmp_endpoint[256] = "rtmp://3.35.55.222:1935/live2/myStream/key";
+// $ ffplay rtmp://3.36.1.29:1935/live2/myStream/key
+char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
 
 uv_async_t *async_rtmp_connect;
 uv_timer_t *timer;
@@ -18,8 +18,10 @@ bool rtmp_enabled = false;
 static int rtmp_async_queue_lenth = 0;
 
 static void _rtmp_close() {
-    if (rtmp != NULL)
+    if (rtmp != NULL) {
         srs_rtmp_destroy(rtmp);
+        rtmp = NULL;
+    }
 
     rtmp_ready = false;
     rtmp_async_queue_lenth = 0;
@@ -97,6 +99,8 @@ void rtmp_connect_async_cb(uv_async_t* async) {
     // close first
     _rtmp_close();
 
+    fprintf(stderr, "[RTMP] try to connect : %s.\n", rtmp_endpoint);
+
     // librtmp
     rtmp = srs_rtmp_create(rtmp_endpoint);
     if (srs_rtmp_handshake(rtmp) != 0) {
@@ -134,8 +138,7 @@ int app_rtmp_start(void)
 
 void app_rtmp_stop(void)
 {
-	if (uv_is_active((uv_handle_t*)&timer))
-		uv_timer_stop(timer);
+	uv_timer_stop(timer);
 
 	uv_close((uv_handle_t*)&timer, NULL);
     uv_close((uv_handle_t*)async_rtmp_connect, NULL);
@@ -164,16 +167,18 @@ void app_rtmp_publish_video(stream_info_t *ifr)
 
 void app_rtmp_enable(void)
 {
+    fprintf(stderr, "[RTMP] app_rtmp_enable.\n");
 	rtmp_enabled = true;
+
     uv_timer_start(timer, rtmp_connect_timer_cb, 1000* 10, 1000* 10);
 }
 
 void app_rtmp_disable(void)
 {
+    fprintf(stderr, "[RTMP] app_rtmp_disable.\n");
 	rtmp_enabled = false;
 
-    if (uv_is_active((uv_handle_t*)&timer))
-		uv_timer_stop(timer);
+	uv_timer_stop(timer);
 
     // close
     _rtmp_close();
@@ -181,6 +186,8 @@ void app_rtmp_disable(void)
 
 void app_rtmp_set_endpoint(const char* endpoint)
 {
+    fprintf(stderr, "[RTMP] set endpoint from %s to %s.\n", rtmp_endpoint, endpoint);
+
     // fixme : validate the endpoint
 	strcpy(rtmp_endpoint, endpoint);
 }
