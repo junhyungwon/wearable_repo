@@ -45,7 +45,7 @@
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"1.01.02
+#	define FITT360_SW_VER      		"1.01.02"
 #	else
 #	define FITT360_SW_VER      		"1.01.02.D"
 #	endif
