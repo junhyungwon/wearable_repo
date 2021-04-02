@@ -852,11 +852,10 @@ int app_ftp_init(void)
     {
 	//# create ftp thread
 	    tObj = &iftp->ftpObj;
-	    if (thread_create(tObj, THR_ftp, APP_THREAD_PRI, NULL) < 0) {
+	    if (thread_create(tObj, THR_ftp, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
 		    eprintf("create ftp thread\n");
 		    return EFAIL;
 	    }
-	    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
     }
 
 	dprintf(".done!\n");

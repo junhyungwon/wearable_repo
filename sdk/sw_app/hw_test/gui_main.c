@@ -129,7 +129,7 @@ int gui_main(void)
 	app_thr_obj *tObj = (app_thr_obj *)&igui->mObj;
 
 	//#--- create thread - for communcation
-	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
@@ -177,7 +177,7 @@ int app_gui_init(void)
 
 	//#--- create gui run thread
 	tObj = &igui->uObj;
-	if(thread_create(tObj, THR_gui_run, UI_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_gui_run, UI_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

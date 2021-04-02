@@ -410,18 +410,16 @@ int app_gui_init(void)
     igui->tmr_cnt = 0;
 	igui->voip_tmr = 0;
 	tObj = &igui->uObj;
-    if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL) < 0) {
+    if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create gui thread\n");
 		return EFAIL;
     }
-    pthread_setname_np(tObj->thr, __FILENAME__);
 	
     tObj = &igui->hObj;
-    if (thread_create(tObj, THR_hdmi, APP_THREAD_PRI, NULL) < 0) {
+    if (thread_create(tObj, THR_hdmi, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create chagen video output thread\n");
 		return EFAIL;
     }
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
     aprintf("... done!\n");
 

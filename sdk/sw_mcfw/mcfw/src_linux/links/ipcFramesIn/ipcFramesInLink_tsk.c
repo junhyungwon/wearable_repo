@@ -76,7 +76,7 @@ static Int32 IpcFramesInLink_createPrdObj(IpcFramesInLink_Obj * pObj)
     pObj->prd.exitThread = FALSE;
     OSA_thrCreate(&pObj->prd.thrHandle,
                   IpcFramesInLink_periodicTaskFxn,
-                  IPC_LINK_TSK_PRI, IPC_LINK_TSK_STACK_SIZE, pObj);
+                  IPC_LINK_TSK_PRI, IPC_LINK_TSK_STACK_SIZE, pObj, NULL);
     return IPC_FRAMES_IN_LINK_S_SUCCESS;
 }
 

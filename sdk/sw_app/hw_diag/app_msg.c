@@ -102,7 +102,7 @@ int event_send(app_thr_obj *tObj, int cmd, int prm0, int prm1)
 * @brief    create/delete thread function
 * @section  [desc]
 *****************************************************************************/
-int thread_create(app_thr_obj *tObj, void *fxn, int pri, void *prm)
+int thread_create(app_thr_obj *tObj, void *fxn, int pri, void *prm, const char *name)
 {
 	int ret;
 
@@ -115,7 +115,7 @@ int thread_create(app_thr_obj *tObj, void *fxn, int pri, void *prm)
 	}
 
 	if(fxn != NULL) {
-		ret = OSA_thrCreate(&tObj->thr, fxn, pri, 0, prm);
+		ret = OSA_thrCreate(&tObj->thr, fxn, pri, 0, prm, name);
 		if(ret != 0) {
 			OSA_semDelete(&tObj->sem);
 			return EFAIL;

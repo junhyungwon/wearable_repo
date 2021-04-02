@@ -472,7 +472,7 @@ int test_gps(app_thr_obj *tObj)
 	draw_sub_title("GPS 테스트");
 
 	//# action read sens
-	thread_create(testObj, thr_gps, APP_THREAD_PRI, NULL);
+	thread_create(testObj, thr_gps, APP_THREAD_PRI, NULL, NULL);
 
 	//# Question
 	ret = draw_qna(tObj, "GPS가 연결 되었습니까?", RGB_F_GRAY, OKFAILSKIP);
@@ -614,7 +614,7 @@ int test_usb(app_thr_obj *tObj)
 
 	//# action read sens
 	itvo->exit = 0;
-	thread_create(testObj, thr_usb, APP_THREAD_PRI, NULL);
+	thread_create(testObj, thr_usb, APP_THREAD_PRI, NULL, NULL);
 
 	//# Question
 	ret = draw_qna(tObj, "USB가 연결 되었습니까?", RGB_F_GRAY, OKFAILSKIP);
@@ -661,7 +661,7 @@ int test_sens(app_thr_obj *tObj)
 	draw_sub_title("센서 및 입력 테스트");
 
 	//# action read sens
-	thread_create(testObj, thr_sens, APP_THREAD_PRI, NULL);
+	thread_create(testObj, thr_sens, APP_THREAD_PRI, NULL, NULL);
 
 	//# Question
 	ret = draw_qna(tObj, "센서 및 입력이 정상입니까?", RGB_F_GRAY, OKFAIL);
@@ -700,7 +700,7 @@ int test_led(app_thr_obj *tObj)
 	draw_sub_text("모든 LED가 점멸합니다", 1, RGB_B_GRAY);
 
 	//# action led blink
-	thread_create(testObj, thr_led, APP_THREAD_PRI, NULL);
+	thread_create(testObj, thr_led, APP_THREAD_PRI, NULL, NULL);
 
 	//# Question
 	ret = draw_qna(tObj, "LED가 점멸을 합니까?", RGB_F_GRAY, OKFAIL);
@@ -806,9 +806,9 @@ int test_snd(app_thr_obj *tObj)
 	pipe(snd_pipe);
 
 	/* create sound input thread */
-	OSA_thrCreate(&sndInThr, thr_snd_in, APP_THREAD_PRI, 0, NULL);
+	OSA_thrCreate(&sndInThr, thr_snd_in, APP_THREAD_PRI, 0, NULL, NULL);
 	/* create sound output thread */
-	OSA_thrCreate(&sndOutThr, thr_snd_out, APP_THREAD_PRI, 0, NULL);
+	OSA_thrCreate(&sndOutThr, thr_snd_out, APP_THREAD_PRI, 0, NULL, NULL);
 
 	//# Question
 	ret = draw_qna(tObj, "스피커로 사운드가 출력됩니까?", RGB_F_GRAY, OKFAIL);
@@ -921,7 +921,7 @@ int test_snd(app_thr_obj *tObj)
 	draw_sub_title("오디오 입력 테스트");
 
 	/* create sound input thread */
-	OSA_thrCreate(&sndInThr, thr_snd_in, APP_THREAD_PRI, 0, NULL);
+	OSA_thrCreate(&sndInThr, thr_snd_in, APP_THREAD_PRI, 0, NULL, NULL);
 
 	//# Question
 	ret = draw_qna(tObj, "사운드가 입력됩니까?", RGB_F_GRAY, OKFAIL);

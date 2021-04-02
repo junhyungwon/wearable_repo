@@ -168,7 +168,7 @@ int app_key_start(void)
 
 	//#--- create ir thread
 	tObj = &ikey->iObj;
-	if(thread_create(tObj, thread_key, UI_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, thread_key, UI_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return -1;
 	}

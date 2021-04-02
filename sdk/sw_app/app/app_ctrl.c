@@ -22,6 +22,8 @@
 #include "ti_venc.h"
 #include "ti_vdis.h"
 #include <errno.h>
+#define __USE_GNU
+#include <pthread.h>
 
 #include "dev_common.h"
 #include "dev_micom.h"

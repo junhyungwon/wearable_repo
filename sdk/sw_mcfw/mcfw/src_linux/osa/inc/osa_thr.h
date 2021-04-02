@@ -23,7 +23,8 @@ typedef struct {
   
 } OSA_ThrHndl;
 
-int OSA_thrCreate(OSA_ThrHndl *hndl, OSA_ThrEntryFunc entryFunc, Uint32 pri, Uint32 stackSize, void *prm);
+int OSA_thrCreate(OSA_ThrHndl *hndl, OSA_ThrEntryFunc entryFunc, Uint32 pri, Uint32 stackSize, 
+				void *prm, const char *thrName);
 int OSA_thrDelete(OSA_ThrHndl *hndl);
 int OSA_thrJoin(OSA_ThrHndl *hndl);
 int OSA_thrChangePri(OSA_ThrHndl *hndl, Uint32 pri);

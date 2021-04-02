@@ -175,11 +175,10 @@ int app_p2p_init(void)
     memset(ip2p, 0, sizeof(app_p2p_t));
 
     tObj = &ip2p->p2pObj;
-    if (thread_create(tObj, THR_p2p, APP_THREAD_PRI, NULL) < 0) {
+    if (thread_create(tObj, THR_p2p, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
         eprintf("create p2p thread\n");
         return EFAIL;
     }   
-    pthread_setname_np(tObj->thr, __FILENAME__);
     aprintf(".done!\n");
 
     return 0;

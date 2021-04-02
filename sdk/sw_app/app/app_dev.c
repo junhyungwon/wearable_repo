@@ -330,11 +330,10 @@ int app_dev_init(void)
 
 	//#--- create thread
     tObj = &idev->devObj;
-    if (thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL) < 0) {
+    if (thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create dev thread\n");
 		return EFAIL;
     }
-    pthread_setname_np(tObj->thr, __FILENAME__);
 
 	aprintf("... done!\n");
 

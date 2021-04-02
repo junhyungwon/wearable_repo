@@ -79,7 +79,8 @@ Int32 System_ipcMsgQTskCreate()
                 System_ipcMsgQTaskMain,
                 SYSTEM_MSGQ_TSK_PRI,
                 SYSTEM_MSGQ_TSK_STACK_SIZE,
-                NULL
+                NULL,
+				NULL
             );
     UTILS_assert(status==OSA_SOK);
 

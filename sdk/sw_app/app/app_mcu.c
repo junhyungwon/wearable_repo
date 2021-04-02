@@ -313,11 +313,10 @@ int app_mcu_start(void)
 	//#--- create mcu thread
 	app_cfg->wd_tot |= WD_MICOM;
 	tObj = &imcu->cObj;
-	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	return SOK;
 }

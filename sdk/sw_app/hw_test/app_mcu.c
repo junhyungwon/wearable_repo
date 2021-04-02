@@ -138,7 +138,7 @@ int app_mcu_start(void)
 
 	//#--- create dio thread
 	tObj = &imcu->cObj;
-	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

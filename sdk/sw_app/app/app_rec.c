@@ -295,19 +295,17 @@ int app_rec_init(void)
 	
 	//#--- create msg receive thread
 	tObj = &irec->rObj;
-	if(thread_create(tObj, THR_rec_recv_msg, APP_THREAD_PRI, tObj) < 0) {
+	if(thread_create(tObj, THR_rec_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	//#--- create msg send thread
 	tObj = &irec->sObj;
-	if(thread_create(tObj, THR_rec_send_msg, APP_THREAD_PRI, tObj) < 0) {
+	if(thread_create(tObj, THR_rec_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	aprintf("... done!\n");
 
