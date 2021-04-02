@@ -505,12 +505,11 @@ int app_ipins_init(void)
 
     //# create meta thread ;
     tObj = &ipins->ipinsObj ;
-    if(thread_create(tObj, THR_ipinstall, APP_THREAD_PRI, NULL) < 0)
+    if(thread_create(tObj, THR_ipinstall, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
     {
         eprintf("create sock thread\n") ;
         return EFAIL ;
     }
-    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 	
 	aprintf("... done!\n");
 

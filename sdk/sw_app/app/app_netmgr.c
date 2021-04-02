@@ -402,10 +402,9 @@ static void __netmgr_start(void)
 	}
 	
 	//#--- create msg send thread
-	if (thread_create(tObj, THR_netmgr_send_msg, APP_THREAD_PRI, tObj) < 0) {
+	if (thread_create(tObj, THR_netmgr_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	send_msg(NETMGR_CMD_PROG_START);
 }
@@ -527,7 +526,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			__netmgr_dev_ip_status_handler();
 			snprintf(msg, sizeof(msg), "app: get device type %x, ip status!", 
 						inetmgr->device);
-			//dprintf("%s\n", msg);
+			dprintf("%s\n", msg);
 			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 			
@@ -623,20 +622,18 @@ int app_netmgr_init(void)
 	#if SYS_CONFIG_WLAN
 	//# --create wlan event thread
 	tObj = &inetmgr->wObj;
-	if(thread_create(tObj, THR_netmgr_wlan_thr, APP_THREAD_PRI, tObj) < 0) {
+	if(thread_create(tObj, THR_netmgr_wlan_thr, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 	#endif
 	
 	//#--- create msg receive thread
 	tObj = &inetmgr->rObj;
-	if(thread_create(tObj, THR_netmgr_recv_msg, APP_THREAD_PRI, tObj) < 0) {
+	if(thread_create(tObj, THR_netmgr_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	aprintf("... done!\n");
 

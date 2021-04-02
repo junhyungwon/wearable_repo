@@ -754,11 +754,10 @@ int app_file_init(void)
 	status = OSA_mutexCreate(&(ifile->mutex_file));
     OSA_assert(status == OSA_SOK);
 	
-	if (thread_create(&ifile->fObj, THR_file_mng, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(&ifile->fObj, THR_file_mng, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return -1;
 	}
-	pthread_setname_np(ifile->fObj.thr, __FILENAME__);
 
 	/* watchdog file enable */
 	app_cfg->wd_tot |= WD_FILE;

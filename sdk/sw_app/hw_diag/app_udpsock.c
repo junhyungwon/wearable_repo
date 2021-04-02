@@ -681,7 +681,7 @@ int app_udpsock_init(void)
 
     //# create meta thread ;
     tObj = &udpsock->udpObj ;
-    if(thread_create(tObj, THR_udpsock, APP_THREAD_PRI, NULL) < 0)
+    if(thread_create(tObj, THR_udpsock, APP_THREAD_PRI, NULL, NULL) < 0)
     {
         eprintf("create sock thread\n") ;
         return EFAIL ;

@@ -539,18 +539,16 @@ int app_voip_init(void)
 	
 	//# create recv msg thread.
 	tObj = &ivoip->rObj;
-	if (thread_create(tObj, THR_voip_recv_msg, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(tObj, THR_voip_recv_msg, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create SIP Client Receive Msg thread\n");
 		return EFAIL;
     }
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	tObj = &ivoip->eObj;
-	if (thread_create(tObj, THR_voip_main, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(tObj, THR_voip_main, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create SIP Client event poll thread\n");
 		return EFAIL;
     }
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	/* mutex create */
 	status = OSA_mutexCreate(&ivoip->lock);

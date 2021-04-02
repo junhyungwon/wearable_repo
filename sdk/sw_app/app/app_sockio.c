@@ -209,23 +209,21 @@ int CSock_init()
     // sock thread
 
     tObj = &inet->sockObj ;
-    if(thread_create(tObj, THR_csock, APP_THREAD_PRI, NULL) < 0) 
+    if(thread_create(tObj, THR_csock, APP_THREAD_PRI, NULL, __FILENAME__) < 0) 
     {
         eprintf("create sock thread\n");
         return EFAIL;
     }
-    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
 
     // ddns thread
     if(app_set->ddns_info.ON_OFF)
     {
         tObj = &inet->ddnsObj ;
-        if(thread_create(tObj, THR_ddns, APP_THREAD_PRI, NULL) < 0) 
+        if(thread_create(tObj, THR_ddns, APP_THREAD_PRI, NULL, __FILENAME__) < 0) 
         {
             eprintf("create ddns thread\n");
             return EFAIL;
         }
-        pthread_setname_np(tObj->thr.hndl, __FILENAME__);
     }
 
     return 0;

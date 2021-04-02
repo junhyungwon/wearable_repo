@@ -592,21 +592,21 @@ int app_dev_start(void)
 				
 	//#--- create dev thread
 	tObj = &idev->dObj;
-	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
 
 	//#--- create buzzer thread
 	tObj = &idev->bObj;
-	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create cradle ether thread
 	tObj = &idev->cObj;
-	if(thread_create(tObj, THR_ether_poll, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_ether_poll, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

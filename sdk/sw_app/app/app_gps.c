@@ -235,19 +235,17 @@ static int __gps_ready_event_handle(void)
 	app_thr_obj *tObj;
 	
 	tObj = &igps->hObj;
-	if (thread_create(tObj, THR_gps_main, APP_THREAD_PRI, tObj) < 0) {
+	if (thread_create(tObj, THR_gps_main, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	//#--- create gps jack detect thread
 	tObj = &igps->pObj;
-	if (thread_create(tObj, THR_gps_jack_detect, APP_THREAD_PRI, tObj) < 0) {
+	if (thread_create(tObj, THR_gps_jack_detect, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 
 	igps->shmid = shmget((key_t)GNSS_SHM_KEY, 0, 0);
 	if (igps->shmid == -1) {
@@ -458,11 +456,10 @@ int app_gps_init(void)
 	
 	//#--- create msg receive thread
 	tObj = &igps->rObj;
-	if (thread_create(tObj, THR_gps_recv_msg, APP_THREAD_PRI, tObj) < 0) {
+	if (thread_create(tObj, THR_gps_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
-	pthread_setname_np(tObj->thr, __FILENAME__);
 	
 	aprintf("... done!\n");
 

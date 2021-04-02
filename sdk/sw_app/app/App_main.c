@@ -51,6 +51,11 @@
 #include "app_ipinstall.h"
 #include "app_buzz.h"
 
+#ifdef USE_RTMP
+#include "app_libuv.h"
+#include "app_rtmp.h"
+#endif
+
 #if SYS_CONFIG_VOIP
 #include "app_voip.h"
 #endif
@@ -77,7 +82,7 @@ static int main_thread_init(void)
 	app_thr_obj *tObj = &app_cfg->mObj;
 
 	//#--- create thread
-	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return -1;
 	}

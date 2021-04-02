@@ -76,7 +76,7 @@ int proc_msg_send(int qid, void *pdata , int size);
 int proc_msg_recv(int qid, int msg_type, void *pdata , int size);
 int proc_msg_exit(int qid);
 
-int thread_create(app_thr_obj *tObj, void *fxn, int pri, void *prm);
+int thread_create(app_thr_obj *tObj, void *fxn, int pri, void *prm, const char *name);
 void thread_delete(app_thr_obj *tObj);
 
 int event_wait(app_thr_obj *tObj);

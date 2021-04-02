@@ -66,7 +66,7 @@ Int32 IpcBitsInLink_createPrdObj(IpcBitsInLink_Obj * pObj)
     pObj->prd.exitThread = FALSE;
     OSA_thrCreate(&pObj->prd.thrHandle,
                   IpcBitsInLink_periodicTaskFxn,
-                  IPC_LINK_TSK_PRI, IPC_LINK_TSK_STACK_SIZE, pObj);
+                  IPC_LINK_TSK_PRI, IPC_LINK_TSK_STACK_SIZE, pObj, NULL);
     return IPC_BITS_IN_LINK_S_SUCCESS;
 }
 

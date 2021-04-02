@@ -151,7 +151,8 @@ Int32 Vsys_datetimeCreate(void)
                   Vsys_dateTimeTaskMain,                   // entryFunc
                   VSYS_TIMER_TSK_PRI,                      // pri
                   VSYS_TIMER_TSK_STACK_SIZE,               // stackSize
-                  NULL);                                   // prm
+                  NULL,									   // prm	
+				  NULL);                                   // thread name
 
     return 0;
 }

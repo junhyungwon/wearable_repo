@@ -222,7 +222,7 @@ int vid_cap_start(void)
 	Venc_registerCallback(&callback, NULL);
 
 	//#--- create thread
-	if (thread_create(&icap->vObj, THR_vid_cap, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(&icap->vObj, THR_vid_cap, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
     }

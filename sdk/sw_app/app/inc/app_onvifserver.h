@@ -85,6 +85,7 @@ typedef struct tagOnvifUser {
 extern "C" {
 #endif
 
+int init_onvifserver();
 int app_onvifserver_start(void);
 int app_onvifserver_stop(void);
 int app_onvifserver_restart(void);

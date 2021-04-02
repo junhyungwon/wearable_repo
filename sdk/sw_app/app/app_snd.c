@@ -523,15 +523,14 @@ int app_snd_start(void)
 	isnd->imem = imem;
 
 	//#--- create thread
-	if (thread_create(&isnd->cObj, THR_snd_cap, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(&isnd->cObj, THR_snd_cap, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return -1;
 	}
-	pthread_setname_np(&isnd->cObj.thr, __FILENAME__);
 
 #if SYS_CONFIG_BACKCHANNEL
 	//#--- create backchannel play thread bkkim
-	if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL) < 0) {
+	if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
 		eprintf("create bc play thread\n");
 		return -1;
 	}

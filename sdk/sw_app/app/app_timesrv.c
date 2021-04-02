@@ -537,12 +537,11 @@ int app_tsync_init(void)
     //# create tsync thread ;
 
     tObj = &itsync->tsyncObj ;
-    if(thread_create(tObj, THR_tsync, APP_THREAD_PRI, NULL) < 0)
+    if(thread_create(tObj, THR_tsync, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
     {
         eprintf("create tsync thread\n") ;
         return EFAIL ;
     }
-    pthread_setname_np(tObj->thr.hndl, __FILENAME__);
     aprintf("... done!\n");
     
 	return 0 ;

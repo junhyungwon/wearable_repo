@@ -310,7 +310,7 @@ int app_gps_ctrl(int en)
 
 	if(en) {
 		tObj = &idev->gObj;
-		if(thread_create(tObj, THR_gps, APP_THREAD_PRI, NULL) < 0) {
+		if(thread_create(tObj, THR_gps, APP_THREAD_PRI, NULL, NULL) < 0) {
 			eprintf("create thread\n");
 			return EFAIL;
 		}
@@ -338,7 +338,7 @@ int app_dev_start(void)
 
 	//#--- create dev thread
 	tObj = &idev->dObj;
-	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
@@ -348,7 +348,7 @@ int app_dev_start(void)
 
 	//#--- create buzzer thread
 	tObj = &idev->bObj;
-	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL) < 0) {
+	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL, NULL) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}
