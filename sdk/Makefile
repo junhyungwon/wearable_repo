@@ -12,8 +12,8 @@ include $(ROOTDIR)/component.mk
 ##### APP BUILD #####
 
 app:
-ifeq ($(USE_RTMP),YES)
 	$(MAKE) libuv
+ifeq ($(USE_RTMP),YES)
 	$(MAKE) librtmp
 endif
 	$(MAKE) -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux

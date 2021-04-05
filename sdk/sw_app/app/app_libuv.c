@@ -1,5 +1,3 @@
-#ifdef USE_RTMP
-
 #include <stdlib.h>
 
 #include "app_libuv.h"
@@ -50,5 +48,3 @@ void app_libuv_stop(void)
     uv_timer_stop(timer);
     uv_loop_close(loop);
 }
-
-#endif // USE_RTMP
