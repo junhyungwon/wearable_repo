@@ -25,8 +25,8 @@
 
 //# for partron 0x66, afo 0x7F
 #if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
-#define NVP2440H_I2C_ADDR	0x66 //# 0xcc
-//#define NVP2440H_I2C_ADDR	0x7F //# 양산카메라 I2C 주소
+//#define NVP2440H_I2C_ADDR	0x66 //# 0xcc
+#define NVP2440H_I2C_ADDR	0x7F //# 양산카메라 I2C 주소
 #else
 #define NVP2440H_I2C_ADDR	0x7F //# 0xFE
 #endif
