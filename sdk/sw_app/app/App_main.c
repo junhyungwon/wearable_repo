@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 
 //# include mcfw_linux
 #include "ti_vsys.h"
@@ -118,6 +119,58 @@ static void app_setdns(void)
 		
 		fclose(fp);
 	}
+}
+
+static int __mmc_prepare(void)
+{
+	DIR *logdir = NULL;
+	struct statvfs stat_buf;
+	int res=0;
+	
+	/* mmc mount 확인 */
+	app_cfg->ste.b.mmc = 0; //# default 0
+	res = dev_disk_check_mount("/mmc");
+	if (!res) {
+		/* mmc mount fail!! (system shutdown) */
+		eprintf("mount failed!\n");
+		return -1;
+	}
+	
+	/* SD 카드 속성확인 (read only file system) */
+	if (statvfs("/mmc", &stat_buf) != 0) {
+		eprintf("/mmc directory fault!\n");
+		return -1;
+	}
+	
+	if (stat_buf.f_flag & ST_RDONLY) {
+		eprintf("mounted readonly filesystem!!\n");
+		return -1;
+	}
+	
+	/* log 디렉토리 생성 */
+	logdir = opendir("/mmc/log") ;
+	if (logdir == NULL) {
+		mkdir("/mmc/log", 0775);
+	} else 
+		closedir(logdir);
+	sync();		
+	
+	/* mmc prepare 성공 */
+	app_cfg->ste.b.mmc = 1;
+				
+	return SOK;
+}
+
+static void __syslogd_enable(int en)
+{
+	char command[128]={0,};
+	
+	if (en) {
+		snprintf(command, sizeof(command), "/etc/init.d/logging.sh start");
+	} else {
+		snprintf(command, sizeof(command), "/etc/init.d/logging.sh stop");
+	}
+	system(command);
 }
 
 /*****************************************************************************
@@ -263,12 +316,7 @@ void app_main_ctrl(int cmd, int p0, int p1)
 -----------------------------------------------------------------------------*/
 int app_cfg_init(void)
 {
-	int ret = SOK;
-
 	memset((void *)app_cfg, 0, sizeof(app_cfg_t));
-
-	//# save mmc status
-	app_cfg->ste.b.mmc = dev_ste_mmc();
 
 	//# module ctrl
 	app_cfg->en_rec = 1;
@@ -288,10 +336,7 @@ int app_cfg_init(void)
     app_cfg->tvo_flag |= TVO_BUZZER;
     app_cfg->tvo_flag |= TVO_VERSION;
 
-	if (!app_cfg->ste.b.mmc)
-		ret = -1;
-
-	return ret;
+	return 0;
 }
 
 /*****************************************************************************
@@ -305,31 +350,34 @@ int main(int argc, char **argv)
 
 	printf("\n--- FITT360 start (v%s) ---\n", FITT360_SW_VER);
 	
-	//# check sd over 32GB (64 GB)
-	ret = ctrl_mmc_check_exfat(&part_size);
-	if (ret == 1){
-		ctrl_mmc_exfat_format(part_size);
-	}
-
-	/* set leds off state */
+	/* micom ready 신호 전달 */
 	app_mcu_init();
+	//# LED 초기 상태 설정
 	app_leds_init();
 	app_buzz_init(); //# buzzer mutex init..	
-
-	mmc_state = app_cfg_init();
+	app_cfg_init();
+	
+	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
+	ret = ctrl_mmc_check_exfat(&part_size);
+	if (ret == 1) {
+		ctrl_mmc_exfat_format(part_size);
+	}
+	
+	/* mmc prepare: 쓰기 가능한 지 확인 및 log 디렉토리 생성 */
+	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 #if defined(NEXXONE) || defined(NEXX360W)
 	#if SYS_CONFIG_VOIP
 			/* copy app_fitt.out or full update */
 			ctrl_auto_update();
-			if(app_cfg->ste.b.pwr_off)
+			/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
+			if (app_cfg->ste.b.pwr_off)
 				return 0;
 	#endif
 #endif
 		/* remove update files */
 		ctrl_reset_nand_update();
-		
 	} else {	//# mmc error
 		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
 		app_buzz_ctrl(100, 1);
@@ -339,24 +387,26 @@ int main(int argc, char **argv)
 		mic_msg_exit();
 		return -1;
 	}
-
+	//----------  SD 카드 ----------------------------------------------
 	app_set_open();
     app_setdns() ;  // set resolv.conf
-
 
 	//#--- system init
 	ret = main_thread_init();
 	if (ret < 0) {
 		return -1;
 	}
-	printf("app_set->ch[%d].resol = %d\n",MODEL_CH_NUM,  app_set->ch[MODEL_CH_NUM].resol) ;
+	
+	aprintf("app_set->ch[%d].resol = %d\n", MODEL_CH_NUM, app_set->ch[MODEL_CH_NUM].resol) ;
 	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol) ; 
 	g_mem_init();
 
 	//# start log system
     app_ipins_init();
 	
-#ifndef SYS_LOG_ENABLE
+#ifdef __SYSLOGD_ENABLE__
+	__syslogd_enable(1);
+#else
 	app_log_init();
 #endif	
 	app_gui_init();
@@ -380,8 +430,8 @@ int main(int argc, char **argv)
 	app_rec_exit();
 	app_file_exit();
 	
-#ifdef SYS_LOG_ENABLE
-	system("/etc/init.d/S30logging stop");
+#ifdef __SYSLOGD_ENABLE__
+	__syslogd_enable(0);
 #else
 	app_log_exit();
 #endif	

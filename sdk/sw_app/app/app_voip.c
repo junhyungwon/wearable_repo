@@ -645,7 +645,7 @@ void app_voip_set_play_volume(void)
 	int level = ivoip->snd_level;
 	
 	if (!ivoip->st.call_reg) {
-		eprintf("Not registered!\n");
+		aprintf("Not registered!\n");
 		return;
 	}
 	
