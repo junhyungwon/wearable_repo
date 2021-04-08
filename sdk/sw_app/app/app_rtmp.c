@@ -122,11 +122,16 @@ void rtmp_connect_async_cb(uv_async_t* async) {
 
     fprintf(stderr, "[RTMP] try to connect : %s.\n", rtmp_endpoint);
 
+    if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_eth_run == 0) {
+        fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_eth_run: %d\n",
+            app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_eth_run);
+        return;
+    }
+
     if (_checkCpuLoad() == FAILURE) {
         fprintf(stderr, "[RTMP] the cpu load is still high. try next time.\n");
         return;
     }
-
 
     // librtmp
     rtmp = srs_rtmp_create(rtmp_endpoint);
