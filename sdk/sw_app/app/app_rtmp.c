@@ -9,6 +9,7 @@
 char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
 
 uv_async_t *async_rtmp_connect;
+uv_async_t *async_rtmp_disconnect;
 uv_timer_t *timer;
 
 // librtmp
@@ -110,6 +111,11 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
     }
 }
 
+void rtmp_disconnect_async_cb(uv_async_t* async) {
+    fprintf(stderr, "[RTMP] try to disconnect : %s.\n", rtmp_endpoint);
+    _rtmp_close();
+}
+
 void rtmp_connect_async_cb(uv_async_t* async) {
     // close first
     _rtmp_close();
@@ -142,13 +148,21 @@ void rtmp_connect_async_cb(uv_async_t* async) {
     }
     srs_human_trace("[RTMP] publish stream success");
 
+    // set the default timeout
+    srs_rtmp_set_timeout(rtmp, RTMP_TIMEOUT, RTMP_TIMEOUT);
+
     rtmp_ready = true;
 }
 
 int app_rtmp_start(void)
 {
+    int r;
+
     async_rtmp_connect = malloc(sizeof(uv_async_t));
-    int r = uv_async_init(loop, async_rtmp_connect, rtmp_connect_async_cb);
+    r = uv_async_init(loop, async_rtmp_connect, rtmp_connect_async_cb);
+
+    async_rtmp_disconnect = malloc(sizeof(uv_async_t));
+    r = uv_async_init(loop, async_rtmp_disconnect, rtmp_disconnect_async_cb);
 
     // connection check timer.
     timer = malloc(sizeof(uv_timer_t));
@@ -163,6 +177,7 @@ void app_rtmp_stop(void)
 
 	uv_close((uv_handle_t*)&timer, NULL);
     uv_close((uv_handle_t*)async_rtmp_connect, NULL);
+    uv_close((uv_handle_t*)async_rtmp_disconnect, NULL);
 
     // close
     _rtmp_close();
@@ -174,8 +189,11 @@ void app_rtmp_publish_video(stream_info_t *ifr)
         return;
 
     if (_checkCpuLoad() == FAILURE) {
-        // close
-        _rtmp_close();
+        // disable rtmp_ready in advanced.
+        rtmp_ready = false;
+
+        // disconect in the next eventloop.
+        int r = uv_async_send(async_rtmp_disconnect);
         return;
     }
 
