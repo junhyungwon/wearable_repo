@@ -19,12 +19,27 @@ static int rtmp_async_queue_lenth = 0;
 
 static void _rtmp_close() {
     if (rtmp != NULL) {
+        fprintf(stderr, "[RTMP] close the RTMP connection.\n");
         srs_rtmp_destroy(rtmp);
         rtmp = NULL;
     }
 
     rtmp_ready = false;
     rtmp_async_queue_lenth = 0;
+}
+
+static int _checkCpuLoad() {
+    // max async queue to (DEFAULT_FPS * 10)
+    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10)
+        || *procLoad == -1 || *procLoad >= 60
+        || *cpuLoad == -1 || *cpuLoad >= 90) {
+
+        fprintf(stderr, "[RTMP] async queue overflow(queue length: %d) or high cpu load(self: %d, total: %d) .\n"
+            , rtmp_async_queue_lenth, *procLoad, *cpuLoad);
+
+        return FAILURE;
+    }
+    return SUCCESS;
 }
 
 static void _rtmp_video_async_cb(uv_async_t* async) {
@@ -101,6 +116,12 @@ void rtmp_connect_async_cb(uv_async_t* async) {
 
     fprintf(stderr, "[RTMP] try to connect : %s.\n", rtmp_endpoint);
 
+    if (_checkCpuLoad() == FAILURE) {
+        fprintf(stderr, "[RTMP] the cpu load is still high. try next time.\n");
+        return;
+    }
+
+
     // librtmp
     rtmp = srs_rtmp_create(rtmp_endpoint);
     if (srs_rtmp_handshake(rtmp) != 0) {
@@ -152,9 +173,11 @@ void app_rtmp_publish_video(stream_info_t *ifr)
     if (!rtmp_enabled  || !rtmp_ready)
         return;
 
-    // max async queue to (DEFAULT_FPS * 10)
-    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10))
+    if (_checkCpuLoad() == FAILURE) {
+        // close
+        _rtmp_close();
         return;
+    }
 
     // fire async_cb
     uv_async_t *async = malloc(sizeof(uv_async_t));
