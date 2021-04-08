@@ -9,8 +9,6 @@
 
 #pragma once
 
-#ifdef USE_RTMP
-
 #include <uv.h>
 /*----------------------------------------------------------------------------
  Defines referenced	header files
@@ -30,5 +28,3 @@ extern uv_loop_t *loop;
 -----------------------------------------------------------------------------*/
 int app_libuv_start(void);
 void app_libuv_stop(void);
-
-#endif // USE_RTMP

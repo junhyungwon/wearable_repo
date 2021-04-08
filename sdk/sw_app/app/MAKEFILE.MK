@@ -6,9 +6,9 @@ INCLUDE += -I$(APP_DIR)/device/inc -I$(APP_DIR)/rtsptx -I$(APP_DIR)/control_sock
 INCLUDE += -I$(EXTERNAL_PACKAGE)/iw_scan #for wifi client
 INCLUDE += -I$(EXTERNAL_PACKAGE)/web/www_root/include
 INCLUDE += -I$(APP_DIR)/settings
+INCLUDE += -I$(THIRD_PARTY)/libuv/include/
 
 ifeq ($(USE_RTMP), YES)
-INCLUDE += -I$(THIRD_PARTY)/libuv/include/
 INCLUDE += -I$(THIRD_PARTY)/srs-librtmp/src/srs/
 endif
 
@@ -17,10 +17,11 @@ LIBS= $(LIB_DIR)/app_fitt.a $(MCFW_LIBS) $(AUDIO_LIBS) $(CMEM_LIB) $(BLKID_LIBS)
 # app addition
 LIBS += -L$(SHLIB_DIR) -lfont_db -ljson-c
 
-ifeq ($(USE_RTMP), YES)
 LIBS += $(THIRD_PARTY)/libuv/libuv_a.a
-LIBS += $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
 LIBS += -lpthread
+
+ifeq ($(USE_RTMP), YES)
+LIBS += $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
 endif
 
 include $(MCFW_ROOT_PATH)/makerules/common_footer_a8.mk
