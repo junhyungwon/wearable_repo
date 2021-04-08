@@ -47,7 +47,7 @@ int OSA_thrCreate(OSA_ThrHndl *hndl, OSA_ThrEntryFunc entryFunc, Uint32 pri, Uin
 
 	if (thrName != NULL)
 	{
-		pthread_setname_np(&hndl->hndl, thrName);
+		pthread_setname_np(hndl->hndl, thrName);
 	}
 
 error_exit:
