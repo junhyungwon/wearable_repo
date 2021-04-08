@@ -99,7 +99,7 @@ Declares a function prototype
 /*----------------------------------------------------------------------------
 local function
 -----------------------------------------------------------------------------*/
-#ifndef SYS_LOG_ENABLE
+#ifndef __SYSLOGD_ENABLE__
 /*****************************************************************************
  * @brief	 filelist create/delete function
  * @section  DESC Description
@@ -435,7 +435,7 @@ int app_log_init(void)
 
 	    //#--- create log write thread
 	    tObj = &ilog->lObj;
-		if (thread_create(tObj, THR_log, FXN_TSK_PRI+2, NULL) < 0) {
+		if (thread_create(tObj, THR_log, FXN_TSK_PRI+2, NULL, NULL) < 0) {
 			eprintf("create log write thread\n");
 			return EFAIL;
 		}

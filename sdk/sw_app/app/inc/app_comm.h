@@ -40,7 +40,7 @@
 #define MB	(KB*KB)
 #endif
 
-#define SYS_LOG_ENABLE
+#define __SYSLOGD_ENABLE__
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 /*----------------------------------------------------------------------------

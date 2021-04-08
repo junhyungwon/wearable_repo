@@ -589,23 +589,14 @@ int ctrl_mmc_exfat_format(unsigned long size)
 	mount_dir = opendir("/mmc");
 	if (mount_dir == NULL) {
 		mkdir("/mmc", 0775);
-
-        mount_dir = opendir("/mmc/log") ;
-        if(mount_dir == NULL)
-		{
-		    mkdir("/mmc/log", 0775);
-		}
-        else
-			closedir(mount_dir) ;
-
-		sync();
 	} else
 		closedir(mount_dir);
 
 	snprintf(cmd, sizeof(cmd),
 			"/bin/mount -t vfat /dev/mmcblk%d""p1 /mmc", blkid);
-	dev_execlp(cmd);
-
+	system(cmd);
+	sync();
+	
     return 0;
 }
 

@@ -91,8 +91,8 @@ void app_mcu_pwr_off(int type)
 
 	OSA_mutexLock(&imcu->mutex_3delay);
 
-#ifdef SYS_LOG_ENABLE
-	system("/etc/init.d/S30logging stop");
+#ifdef __SYSLOGD_ENABLE__
+	system("/etc/init.d/logging.sh stop");
 #else	
 	app_log_exit();
 #endif
