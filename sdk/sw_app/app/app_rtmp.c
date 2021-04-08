@@ -29,14 +29,21 @@ static void _rtmp_close() {
     rtmp_async_queue_lenth = 0;
 }
 
-static int _checkCpuLoad() {
+static int _checkAsyncQueue() {
     // max async queue to (DEFAULT_FPS * 10)
-    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10)
-        || *procLoad == -1 || *procLoad >= 60
-        || *cpuLoad == -1 || *cpuLoad >= 90) {
+    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10)) {
+        fprintf(stderr, "[RTMP] async queue overflow(queue length: %d).\n"
+            , rtmp_async_queue_lenth);
 
-        fprintf(stderr, "[RTMP] async queue overflow(queue length: %d) or high cpu load(self: %d, total: %d) .\n"
-            , rtmp_async_queue_lenth, *procLoad, *cpuLoad);
+        return FAILURE;
+    }
+    return SUCCESS;
+}
+
+static int _checkCpuLoad() {
+    if (*procLoad == -1 || *procLoad >= 50) {
+        fprintf(stderr, "[RTMP] high cpu load(self: %d, total: %d).\n"
+            , *procLoad, *cpuLoad);
 
         return FAILURE;
     }
@@ -105,8 +112,24 @@ static void _rtmp_video_async_cb(uv_async_t* async) {
 }
 
 void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
-    fprintf(stderr, "[RTMP] timer check rtmp status %d.\n", rtmp_ready);
-    if (rtmp_enabled && !rtmp_ready) {
+    if (!rtmp_enabled)
+        return;
+
+    fprintf(stderr, "[RTMP] check timer fired. rtmp status %d.\n", rtmp_ready);
+
+    if (_checkCpuLoad() == FAILURE) {
+        fprintf(stderr, "[RTMP] the cpu load is too high.\n");
+        _rtmp_close();
+        return;
+    }
+
+    if (!rtmp_ready) {
+        if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_eth_run == 0) {
+            fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_eth_run: %d\n",
+                app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_eth_run);
+            return;
+        }
+
         int r = uv_async_send(async_rtmp_connect);
     }
 }
@@ -121,17 +144,6 @@ void rtmp_connect_async_cb(uv_async_t* async) {
     _rtmp_close();
 
     fprintf(stderr, "[RTMP] try to connect : %s.\n", rtmp_endpoint);
-
-    if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_eth_run == 0) {
-        fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_eth_run: %d\n",
-            app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_eth_run);
-        return;
-    }
-
-    if (_checkCpuLoad() == FAILURE) {
-        fprintf(stderr, "[RTMP] the cpu load is still high. try next time.\n");
-        return;
-    }
 
     // librtmp
     rtmp = srs_rtmp_create(rtmp_endpoint);
@@ -193,7 +205,7 @@ void app_rtmp_publish_video(stream_info_t *ifr)
     if (!rtmp_enabled  || !rtmp_ready)
         return;
 
-    if (_checkCpuLoad() == FAILURE) {
+    if (_checkAsyncQueue() == FAILURE) {
         // disable rtmp_ready in advanced.
         rtmp_ready = false;
 
