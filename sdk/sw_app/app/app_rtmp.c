@@ -9,6 +9,7 @@
 char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
 
 uv_async_t *async_rtmp_connect;
+uv_async_t *async_rtmp_disconnect;
 uv_timer_t *timer;
 
 // librtmp
@@ -19,12 +20,27 @@ static int rtmp_async_queue_lenth = 0;
 
 static void _rtmp_close() {
     if (rtmp != NULL) {
+        fprintf(stderr, "[RTMP] close the RTMP connection.\n");
         srs_rtmp_destroy(rtmp);
         rtmp = NULL;
     }
 
     rtmp_ready = false;
     rtmp_async_queue_lenth = 0;
+}
+
+static int _checkCpuLoad() {
+    // max async queue to (DEFAULT_FPS * 10)
+    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10)
+        || *procLoad == -1 || *procLoad >= 60
+        || *cpuLoad == -1 || *cpuLoad >= 90) {
+
+        fprintf(stderr, "[RTMP] async queue overflow(queue length: %d) or high cpu load(self: %d, total: %d) .\n"
+            , rtmp_async_queue_lenth, *procLoad, *cpuLoad);
+
+        return FAILURE;
+    }
+    return SUCCESS;
 }
 
 static void _rtmp_video_async_cb(uv_async_t* async) {
@@ -95,11 +111,27 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
     }
 }
 
+void rtmp_disconnect_async_cb(uv_async_t* async) {
+    fprintf(stderr, "[RTMP] try to disconnect : %s.\n", rtmp_endpoint);
+    _rtmp_close();
+}
+
 void rtmp_connect_async_cb(uv_async_t* async) {
     // close first
     _rtmp_close();
 
     fprintf(stderr, "[RTMP] try to connect : %s.\n", rtmp_endpoint);
+
+    if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_eth_run == 0) {
+        fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_eth_run: %d\n",
+            app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_eth_run);
+        return;
+    }
+
+    if (_checkCpuLoad() == FAILURE) {
+        fprintf(stderr, "[RTMP] the cpu load is still high. try next time.\n");
+        return;
+    }
 
     // librtmp
     rtmp = srs_rtmp_create(rtmp_endpoint);
@@ -121,13 +153,21 @@ void rtmp_connect_async_cb(uv_async_t* async) {
     }
     srs_human_trace("[RTMP] publish stream success");
 
+    // set the default timeout
+    srs_rtmp_set_timeout(rtmp, RTMP_TIMEOUT, RTMP_TIMEOUT);
+
     rtmp_ready = true;
 }
 
 int app_rtmp_start(void)
 {
+    int r;
+
     async_rtmp_connect = malloc(sizeof(uv_async_t));
-    int r = uv_async_init(loop, async_rtmp_connect, rtmp_connect_async_cb);
+    r = uv_async_init(loop, async_rtmp_connect, rtmp_connect_async_cb);
+
+    async_rtmp_disconnect = malloc(sizeof(uv_async_t));
+    r = uv_async_init(loop, async_rtmp_disconnect, rtmp_disconnect_async_cb);
 
     // connection check timer.
     timer = malloc(sizeof(uv_timer_t));
@@ -142,6 +182,7 @@ void app_rtmp_stop(void)
 
 	uv_close((uv_handle_t*)&timer, NULL);
     uv_close((uv_handle_t*)async_rtmp_connect, NULL);
+    uv_close((uv_handle_t*)async_rtmp_disconnect, NULL);
 
     // close
     _rtmp_close();
@@ -152,9 +193,14 @@ void app_rtmp_publish_video(stream_info_t *ifr)
     if (!rtmp_enabled  || !rtmp_ready)
         return;
 
-    // max async queue to (DEFAULT_FPS * 10)
-    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10))
+    if (_checkCpuLoad() == FAILURE) {
+        // disable rtmp_ready in advanced.
+        rtmp_ready = false;
+
+        // disconect in the next eventloop.
+        int r = uv_async_send(async_rtmp_disconnect);
         return;
+    }
 
     // fire async_cb
     uv_async_t *async = malloc(sizeof(uv_async_t));
