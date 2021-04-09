@@ -627,62 +627,61 @@ static void *THR_file_mng(void *prm)
 	
 	while (!exit)
 	{
+		if (!app_cfg->ste.b.mmc_err)
+			app_cfg->wd_flags |= WD_FILE;
+				
 		cmd = tObj->cmd;
 		if (cmd == APP_CMD_EXIT) {
 			exit = 1;
 			break;
 		}
 		
-		if (app_cfg->ste.b.mmc) 
+		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) 
 		{
-			app_cfg->wd_flags |= WD_FILE;
-			if (app_cfg->ste.b.cap)
+			//# file size check and delete -- per 1 min
+			if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
 			{
-				//# file size check and delete -- per 1 min
-				if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
-				{
-					int capacity_full = 0;
+				int capacity_full = 0;
 
-					//# Get Disk MAX Size.
-					_check_threshold_size(ifile);
-					app_file_update_disk_usage();
-					capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
+				//# Get Disk MAX Size.
+				_check_threshold_size(ifile);
+				app_file_update_disk_usage();
+				capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
 
-					if (app_set->rec_info.overwrite) {
-						if (capacity_full) {
-							ifile->file_state = FILE_STATE_OVERWRITE;
-							OSA_mutexLock(&ifile->mutex_file);
-							//1GB - available size = delete size
-							r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
-							OSA_mutexUnlock(&ifile->mutex_file);
-							if (r == EFAIL) {
-								eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
-								if (app_rec_state() > 0) {
-									app_rec_stop(ON); /* Buzzer On */
-									app_msleep(500); /* wait for record done!! */
-								}
-								app_buzz_ctrl(80, 2); //# Power Off Buzzer
-								app_mcu_pwr_off(OFF_RESET);
-								continue;
+				if (app_set->rec_info.overwrite) {
+					if (capacity_full) {
+						ifile->file_state = FILE_STATE_OVERWRITE;
+						OSA_mutexLock(&ifile->mutex_file);
+						//1GB - available size = delete size
+						r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
+						OSA_mutexUnlock(&ifile->mutex_file);
+						if (r == EFAIL) {
+							eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
+							if (app_rec_state() > 0) {
+								app_rec_stop(ON); /* Buzzer On */
+								app_msleep(500); /* wait for record done!! */
 							}
+							app_buzz_ctrl(80, 2); //# Power Off Buzzer
+							app_mcu_pwr_off(OFF_RESET);
+							continue;
 						}
-					} else {
-						if (capacity_full) {
-							app_rec_stop(OFF); /* buzzer off */
-							ifile->file_state = FILE_STATE_FULL;
-						} else {
-							ifile->file_state = FILE_STATE_NORMAL;
-						}					 
 					}
-					f_cycle = 0;
+				} else {
+					if (capacity_full) {
+						app_rec_stop(OFF); /* buzzer off */
+						ifile->file_state = FILE_STATE_FULL;
+					} else {
+						ifile->file_state = FILE_STATE_NORMAL;
+					}					 
 				}
-				
-				//# file state check for beep -- per 1 sec
-				if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
-				{
-					_check_overwite_full_led(ifile->file_state);
-					b_cycle = 0;
-				}
+				f_cycle = 0;
+			}
+			
+			//# file state check for beep -- per 1 sec
+			if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
+			{
+				_check_overwite_full_led(ifile->file_state);
+				b_cycle = 0;
 			}
 		}
 		
