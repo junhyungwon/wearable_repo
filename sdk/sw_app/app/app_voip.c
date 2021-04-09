@@ -265,7 +265,6 @@ static void __call_register_handler(void)
 {
 	char msg[256] = {0, };
 	
-	dprintf("baresip user register start.....\n");
 	/* create ua and register */
 	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
@@ -279,7 +278,7 @@ static void __call_register_handler(void)
 	}
     app_log_write(MSG_LOG_WRITE, msg);
 	
-	dprintf("%s\n", msg);
+	dprintf("voip start register--->%s\n", msg);
 }
 
 static void __call_unregister_handler(void)

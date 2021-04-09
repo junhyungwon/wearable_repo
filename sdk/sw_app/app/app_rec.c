@@ -133,6 +133,7 @@ static void *THR_rec_recv_msg(void *prm)
 		case AV_CMD_REC_ERR:
 			dprintf("received rec error!\n");
 			irec->evt_rec = 0; /* record stop...*/
+			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);
 			break;
 		
@@ -181,7 +182,6 @@ static void *THR_rec_send_msg(void *prm)
 			
 			irec->evt_rec = 0;
 			app_leds_rec_ctrl(LED_REC_OFF);
-			/* TODO */
 		}
 	}
 	

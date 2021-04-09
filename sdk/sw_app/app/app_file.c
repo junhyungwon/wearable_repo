@@ -627,8 +627,9 @@ static void *THR_file_mng(void *prm)
 	
 	while (!exit)
 	{
-		app_cfg->wd_flags |= WD_FILE;
-		
+		if (!app_cfg->ste.b.mmc_err)
+			app_cfg->wd_flags |= WD_FILE;
+				
 		cmd = tObj->cmd;
 		if (cmd == APP_CMD_EXIT) {
 			exit = 1;
@@ -638,7 +639,7 @@ static void *THR_file_mng(void *prm)
 		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) 
 		{
 			//# file size check and delete -- per 1 min
-	        if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
+			if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
 			{
 				int capacity_full = 0;
 
@@ -674,12 +675,12 @@ static void *THR_file_mng(void *prm)
 					}					 
 				}
 				f_cycle = 0;
-        	}
+			}
 			
 			//# file state check for beep -- per 1 sec
-	        if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
+			if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
 			{
-				 _check_overwite_full_led(ifile->file_state);
+				_check_overwite_full_led(ifile->file_state);
 				b_cycle = 0;
 			}
 		}
