@@ -182,6 +182,8 @@ static void *THR_rec_send_msg(void *prm)
 			irec->evt_rec = 0;
 			app_leds_rec_ctrl(LED_REC_OFF);
 			/* TODO */
+			/* file manager watchdog reset을 위해서 */
+			app_cfg->ste.b.mmc = 0; 
 		}
 	}
 	

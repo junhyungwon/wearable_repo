@@ -611,7 +611,7 @@ static void *THR_sipc_main(void *prm)
 			continue;
 		}
 		
-//		info("received command is 0x%x\n", cmd);
+		info("Received command is 0x%x\n", cmd);
 		switch (cmd) {
 		case SIPC_CMD_SIP_REGISTER_UA:
 			/* 계정을 등록 */
