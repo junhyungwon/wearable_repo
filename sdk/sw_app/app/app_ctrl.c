@@ -891,7 +891,7 @@ static int _sw_update(const char *disk)
 
 	app_cfg->ste.b.busy = 1;
 	pFile = _findFirmware(disk);
-	if(pFile == NULL) {
+	if (pFile == NULL) {
 		sprintf(msg, "Firmware file is not exist !!!");
 		app_log_write(MSG_LOG_WRITE, msg);
 		printf("%s\n", msg);
@@ -912,7 +912,6 @@ static int _sw_update(const char *disk)
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
 	}
-	app_cfg->ste.b.busy = 0;
 	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
@@ -923,6 +922,8 @@ static int _sw_update(const char *disk)
 	ret = SOK;
 	
 fw_exit:
+	//# clear busy flag...
+	app_cfg->ste.b.busy = 0;
 	if (release) // RELEASE Version .. --> update file delete
     { 
 	    sprintf(cmd, "rm -rf %s", pFile);
