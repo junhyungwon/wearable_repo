@@ -327,7 +327,7 @@ static void *THR_dev(void *prm)
 	gps_nmea_t *gps_nmea;
 	
 	int cmd, exit=0;
-	int ret, val, state, timewait = 0;
+	int ret, val, state, timewait = 0, time_set = 1;
 	int i, on=ON;
 	
 	aprintf("enter...\n");
@@ -461,16 +461,24 @@ static void *THR_dev(void *prm)
 						#if 0
 						dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
 							gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
-							gps_nmea->date.tm_hour, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
+							gps_nmea->date.tm_hour + TIME_ZONE, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
 							gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude
 						);
 						#endif
 
 						//# time sync
-						#if 0
-						if (gps_data.set & G_TIME_SET) {
-							app_sys_time(&gps_nmea->date);
-							time_set = 0;
+						#if 1
+						if (gps_data.set & G_TIME_SET) 
+						{
+							if(time_set)
+							{
+						        dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
+							        gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
+							        gps_nmea->date.tm_hour + TIME_ZONE, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
+							        gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude ) ;
+							    app_sys_time(&gps_nmea->date);
+							    time_set = 0;
+							}
 						}
 						#endif
 						iapp->ste.b.gps = 1;

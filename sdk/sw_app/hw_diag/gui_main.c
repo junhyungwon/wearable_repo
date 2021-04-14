@@ -13,6 +13,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <arpa/inet.h>
 
 #include "app_comm.h"
@@ -67,6 +70,44 @@ static int snd_pipe[2];
 
 static snd_prm_t snd_in_data;
 static snd_prm_t snd_out_data;
+
+#define PATH_LOCALTIME  "/etc/localtime"
+#define PATH_ZONE_INFO  "/usr/share/zoneinfo"
+#define PATH_ZONE_LOCAL "/usr/share/zoneinfo/localtime"
+#define PATH_ZONE_POSIX "/usr/share/zoneinfo/posixrules"
+
+static char *TZfiles[][2] = {
+    {"Etc/GMT+12", "Pacific/Kwajalein"},
+    {"Etc/GMT+11", "Pacific/Midway"},
+    {"Etc/GMT+10", "US/Hawaii"},
+    {"Etc/GMT+9",  "US/Alaska"},
+    {"Etc/GMT+8",  "PST8PDT"},
+    {"MST"      ,  "MST7MDT"},
+    {"Etc/GMT+6",  "US/Central"},
+    {"EST",        "EST5EDT"},                  /* Eastern Standard, Eastern Daylight */
+    {"Etc/GMT+4",  "Canada/Atlantic"},
+    {"Etc/GMT+3",  "America/Buenos_Aires"},
+    {"Etc/GMT+2",  "Etc/GMT+2"},
+    {"Etc/GMT+1",  "Atlantic/Azores"},
+    {"Etc/GMT",    "Europe/London"},
+    {"Etc/GMT-1",  "Europe/Berlin"},
+    {"Etc/GMT-2",  "Europe/Athens"},
+    {"Etc/GMT-3",  "Europe/Moscow"},
+    {"Etc/GMT-4",  "Asia/Muscat"},
+    {"Etc/GMT-5",  "Asia/Karachi"},
+    {"Etc/GMT-6",  "Asia/Dhaka"},
+    {"Etc/GMT-7",  "Asia/Bangkok"},
+    {"Etc/GMT-8",  "Asia/Taipei"},
+    {"Etc/GMT-9",  "Asia/Seoul"},
+    {"Etc/GMT-10", "Australia/Brisbane"},
+    {"Etc/GMT-11", "Asia/Magadan"},
+    {"Etc/GMT-12", "Pacific/Fiji"},
+    {"Etc/GMT-13", "Etc/GMT-13"},
+    {"Etc/GMT-14", "Etc/GMT-14"}
+};
+
+
+
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -385,23 +426,124 @@ static char menu_main[] = {
 };
 */
 
+
+
+int update_m3_time()
+{
+    time_t now;
+    struct tm *pgm;
+    int    retval = FALSE;
+
+ //  dprintf("--- update m3 time ---\n");
+
+ // time(), gmtime(), it represents the number of seconds elapsed since the Epoch, 1970-01-01 00:00:00 (UTC)
+    time(&now);
+    pgm = gmtime(&now);
+
+    if (dev_rtc_set_time(*pgm) < 0)
+	{
+        eprintf("Failed to set system time to rtc\n!!!");
+    }
+    else
+    {
+        char buff[128]={0};
+        sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
+        system(buff) ;
+        retval = TRUE;
+	    app_msleep(100);
+        Vsys_datetime_init2(1);   //# m3 Date/Time init
+    }
+    return retval;
+}
+
+char *get_timezone (int timezone, int daylightsaving)
+{
+    if(daylightsaving<0 || daylightsaving > 1) {
+        eprintf("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
+        daylightsaving = 0;
+    }
+
+    int tz_idx = timezone + 12;
+    static char buffer[128];
+    memset (&buffer, 0, sizeof(buffer));
+
+    sprintf (buffer, "%s", TZfiles[tz_idx][daylightsaving]);
+//  printf("get_timezone:%s\n", buffer);
+    return buffer ;
+}
+
+
+
+int set_time_zone()
+{
+    FILE *Fp ;
+    char buf[120] ;
+    int retval = 0 ;
+
+    int timezone = 9;
+    int daylight  = 1;  //# 0:false, 1:automatically for daylight saving time changes.
+    sprintf(buf,"rm -f /etc/adjtime;rm -f %s; ln -s %s/%s %s",
+    PATH_LOCALTIME,
+    PATH_ZONE_INFO,
+    get_timezone(timezone, daylight),
+    PATH_LOCALTIME) ;
+ //  printf("set_time_zone(), %s\n", buf);
+    Fp = popen(buf, "w") ;
+
+    if(Fp == NULL)
+    {
+        printf("ERROR setting Timezone \n") ;
+        pclose(Fp) ;
+        return retval ;
+    }
+    pclose(Fp) ;
+
+    // No guaranteed completion PIPE???
+    update_m3_time();
+
+    return 1 ;
+}
+
+
+int set_time_via_ntp()
+{
+	char buff[128], server_addr[32], addr[32];
+    struct hostent *hp ;
+
+    sprintf(server_addr, "%s", "time.google.com") ;
+    hp = gethostbyname(server_addr) ;
+    if(!hp)
+		return FALSE ;
+
+	memset(addr, 0x00, 32) ;
+	strncpy(addr, inet_ntoa(*((struct in_addr *)hp->h_addr_list[0])), strlen(inet_ntoa(*((struct in_addr *)hp->h_addr_list[0]))));
+ 
+	sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4",addr) ;
+	system(buff) ;
+
+	sleep(3) ;
+	update_m3_time() ;
+
+}
+
+
+
 static int gui_test_main(void *thr)
 {
 	app_thr_obj *tObj = (app_thr_obj *)thr;
 	char cmd, exit=0;
 	INFO_REQ Inforeq ;
-	struct tm ts;
-	time_t tm1;
 	char Macaddr[20] ;
-
-    time(&tm1) ;
-	localtime_r(&tm1, &ts) ;
 
     while(iapp->ste.b.cap)
 	{
 		OSA_waitMsecs(2000);
 		break ;
 	}
+
+	set_time_zone() ; 
+    set_time_via_ntp() ;
+
 	if(GetMacAddress(Macaddr))
          sprintf(Macaddr, "%s", "UNKNOWN");
 

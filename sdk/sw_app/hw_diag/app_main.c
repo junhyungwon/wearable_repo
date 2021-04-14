@@ -58,6 +58,25 @@ int app_cfg_init(void)
 	return SOK;
 }
 
+void app_setdns(void)
+{
+    FILE *fp = NULL ;
+    char buffer[64]= {0,};
+//   sprintf(buffer, "%s", "nameserver 8.8.8.8") ;
+
+    fp = fopen("/etc/resolv.conf","w") ;
+    if (fp != NULL)
+    {
+        sprintf(buffer, "nameserver %s\n", "8.8.8.8") ;
+		fwrite(buffer, strlen(buffer), 1, fp) ;
+        sprintf(buffer, "nameserver %s\n", "168.154.160.4") ;
+		fwrite(buffer, strlen(buffer), 1, fp) ;
+
+        fclose(fp);
+    }
+}
+
+
 /*****************************************************************************
 * @brief    main function
 * @section  [desc]
@@ -78,6 +97,7 @@ int main(int argc, char **argv)
 	app_gui_init();
 	app_mcu_start();
 	app_dev_start();
+	app_setdns() ;
 
 	app_udpsock_init() ;
 
