@@ -8,14 +8,14 @@
 // $ ffplay rtmp://3.36.1.29:1935/live2/myStream/key
 char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
 
-uv_async_t *async_rtmp_connect;
-uv_async_t *async_rtmp_disconnect;
-uv_timer_t *timer;
+static uv_async_t *async_rtmp_connect;
+static uv_async_t *async_rtmp_disconnect;
+static uv_timer_t *timer;
 
 // librtmp
-srs_rtmp_t rtmp = NULL;
-bool rtmp_ready = false;
-bool rtmp_enabled = false;
+static srs_rtmp_t rtmp = NULL;
+static bool rtmp_ready = false;
+static bool rtmp_enabled = false;
 static int rtmp_async_queue_lenth = 0;
 
 static void _rtmp_close() {
@@ -181,7 +181,7 @@ int app_rtmp_start(void)
     async_rtmp_disconnect = malloc(sizeof(uv_async_t));
     r = uv_async_init(loop, async_rtmp_disconnect, rtmp_disconnect_async_cb);
 
-    // connection check timer.
+    // connection check timer in default loop.
     timer = malloc(sizeof(uv_timer_t));
     uv_timer_init(loop, timer);
 
@@ -214,9 +214,9 @@ void app_rtmp_publish_video(stream_info_t *ifr)
         return;
     }
 
-    // fire async_cb
+    // fire async_cb in loop_video
     uv_async_t *async = malloc(sizeof(uv_async_t));
-    int r = uv_async_init(loop, async, _rtmp_video_async_cb);
+    int r = uv_async_init(loop_video, async, _rtmp_video_async_cb);
     async->data = (void*)ifr;
 
     r = uv_async_send(async);
