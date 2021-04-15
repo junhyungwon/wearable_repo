@@ -29,9 +29,9 @@ static void _rtmp_close() {
     rtmp_async_queue_lenth = 0;
 }
 
-static int _checkAsyncQueue() {
-    // max async queue to (DEFAULT_FPS * 10)
-    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 10)) {
+static inline int _checkAsyncQueue() {
+    // max async queue to (DEFAULT_FPS * 1)
+    if (rtmp_async_queue_lenth > (DEFAULT_FPS * 1)) {
         fprintf(stderr, "[RTMP] async queue overflow(queue length: %d).\n"
             , rtmp_async_queue_lenth);
 
@@ -53,11 +53,17 @@ static int _checkCpuLoad() {
 static void _rtmp_video_async_cb(uv_async_t* async) {
     rtmp_async_queue_lenth--;
 
-    if (!rtmp_enabled)
+    if (rtmp_enabled == false  || rtmp_ready == false)
         return;
 
     // fixme : imem will be in a short time.
     stream_info_t *ifr = (stream_info_t*)async->data;
+
+    if (rtmp == NULL || ifr == NULL || ifr->addr == NULL || ifr->b_size <= 0) {
+        fprintf(stderr, "[RTMP] wrong data.\n");
+        uv_close((uv_handle_t*)async, NULL);
+        return;
+    }
 
     // fprintf(stderr, "async_cb %d\n", ifr->b_size);
     static int isFirst = 0;
@@ -118,8 +124,11 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
     fprintf(stderr, "[RTMP] check timer fired. rtmp status %d.\n", rtmp_ready);
 
     if (_checkCpuLoad() == FAILURE) {
+        // disable rtmp_ready in advanced.
+        rtmp_ready = false;
+
         fprintf(stderr, "[RTMP] the cpu load is too high.\n");
-        _rtmp_close();
+        int r = uv_async_send(async_rtmp_disconnect);
         return;
     }
 
@@ -176,10 +185,10 @@ int app_rtmp_start(void)
     int r;
 
     async_rtmp_connect = malloc(sizeof(uv_async_t));
-    r = uv_async_init(loop, async_rtmp_connect, rtmp_connect_async_cb);
+    r = uv_async_init(loop_video, async_rtmp_connect, rtmp_connect_async_cb);
 
     async_rtmp_disconnect = malloc(sizeof(uv_async_t));
-    r = uv_async_init(loop, async_rtmp_disconnect, rtmp_disconnect_async_cb);
+    r = uv_async_init(loop_video, async_rtmp_disconnect, rtmp_disconnect_async_cb);
 
     // connection check timer in default loop.
     timer = malloc(sizeof(uv_timer_t));
@@ -202,7 +211,7 @@ void app_rtmp_stop(void)
 
 void app_rtmp_publish_video(stream_info_t *ifr)
 {
-    if (!rtmp_enabled  || !rtmp_ready)
+    if (rtmp_enabled == false  || rtmp_ready == false)
         return;
 
     if (_checkAsyncQueue() == FAILURE) {
@@ -228,7 +237,8 @@ void app_rtmp_enable(void)
     fprintf(stderr, "[RTMP] app_rtmp_enable.\n");
 	rtmp_enabled = true;
 
-    uv_timer_start(timer, rtmp_connect_timer_cb, 1000* 10, 1000* 10);
+    // check the connection on every 1sec
+    uv_timer_start(timer, rtmp_connect_timer_cb, 0, 1000* 1);
 }
 
 void app_rtmp_disable(void)
@@ -239,7 +249,7 @@ void app_rtmp_disable(void)
 	uv_timer_stop(timer);
 
     // close
-    _rtmp_close();
+    int r = uv_async_send(async_rtmp_disconnect);
 }
 
 void app_rtmp_set_endpoint(const char* endpoint)

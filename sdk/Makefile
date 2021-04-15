@@ -163,7 +163,7 @@ p2p_all: p2p_clean p2p p2p_install
 
 libuv:
 	@cd $(THIRD_PARTY)/libuv \
-	&& CC=$(BUILD_TOOL_PREFIX)gcc cmake . \
+	&& CFLAGS=-O3 CC=$(BUILD_TOOL_PREFIX)gcc cmake . \
 	&& $(MAKE) -j$(CPU_NUM)
 
 libuv_clean:
@@ -173,7 +173,7 @@ libuv_clean:
 
 librtmp:
 	@cd $(THIRD_PARTY)/srs-librtmp/src/srs/ \
-	&& $(BUILD_TOOL_PREFIX)gcc -c srs_librtmp.cpp
+	&& $(BUILD_TOOL_PREFIX)gcc -O3 -c srs_librtmp.cpp
 
 librtmp_clean:
 	rm -rf $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o

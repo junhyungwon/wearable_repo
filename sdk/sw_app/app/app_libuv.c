@@ -58,12 +58,12 @@ int app_libuv_start(void)
     // keep the loop alive. check cpu load on every 1s
     timer_cpu = malloc(sizeof(uv_timer_t));
     uv_timer_init(loop, timer_cpu);
-    uv_timer_start(timer_cpu, cpuload_timer_cb, 1000* 1, 1000* 1);
+    uv_timer_start(timer_cpu, cpuload_timer_cb, 0, 1000* 1);
 
     // keep the loop alive.
     timer_empty = malloc(sizeof(uv_timer_t));
     uv_timer_init(loop_video, timer_empty);
-    uv_timer_start(timer_empty, empty_timer_cb, 1000* 1, 1000* 1);
+    uv_timer_start(timer_empty, empty_timer_cb, 0, 1000* 1);
 
     // create libuv thread
     pthread_create(&thread, NULL, uv_thread, NULL);
