@@ -46,7 +46,7 @@
 #define CMD_CAMERA_REQ  0x0008
 #define CMD_CAMERA_RES  0x0009
 #define CMD_UID_SET     0x000A
-
+#define CMD_TIME_SET    0x000B
 
 #define BROADCAST_ADDR "255.255.255.255"
 #define PACKETSIZE 8192
@@ -186,6 +186,23 @@ typedef struct TAG_CAMERA_RES
     unsigned short fragno ;
 } CAMERA_RES ;
 #pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_TIME_SET 
+{
+    unsigned short identifier ;
+    unsigned short cmd ;
+    unsigned short length ;
+	unsigned short year ;
+	unsigned short month ;
+	unsigned short day ;
+	unsigned short hour ;
+	unsigned short min ;
+	unsigned short sec ;
+} TIME_SET ;
+#pragma packe()
+
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/

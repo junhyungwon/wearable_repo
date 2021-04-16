@@ -43,6 +43,7 @@
 #include "dev_common.h"
 #include "app_udpsock.h"
 #include "app_ctrl.h"
+#include "gui_main.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -310,28 +311,44 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
 {
     struct tm ts;
     time_t set;
-//    char buf[64];
+    set_time_zone() ;
 
-    ts.tm_year = year;
-    ts.tm_mon  = mon;
+    ts.tm_year = year - 1900;
+    ts.tm_mon  = mon - 1;
     ts.tm_mday = day;
 
+    ts.tm_hour = hour;
     ts.tm_min  = min;
     ts.tm_sec  = sec;
 
     set = mktime(&ts);
 
     stime(&set);
-    Vsys_datetime_init();   //# m3 Date/Time init
-    OSA_waitMsecs(100);
 
-    if (dev_rtc_set_time(ts) < 0) {
-        DEBUG_PRI("Failed to set system time to rtc !!!");
-    }
+    update_m3_time() ;
 
     return 0;
 }
 
+void set_time(void *data) 
+{
+	int year, month, day, hour, min, sec ;
+    TIME_SET *Timeset ;
+
+	Timeset = (TIME_SET *)data ;
+
+    year = ntohs(Timeset->year) ;
+    month = ntohs(Timeset->month) ;
+    day = ntohs(Timeset->day) ;
+    hour = ntohs(Timeset->hour) ;
+    min = ntohs(Timeset->min) ;
+    sec = ntohs(Timeset->sec) ;
+
+    printf("year = %d, month = %d, day = %d, hour = %d, min = %d sec = %d\n", year, month, day, hour, min, sec) ;
+
+    ctrl_time_set(year, month, day, hour, min, sec) ;
+
+}
 
 void send_sysinfo(char *data)
 {
@@ -443,7 +460,7 @@ int processdata (char *data)
 
     cmd = ntohs(Struct_base->cmd) ;
 
-	if(cmd != CMD_INFO_REQ)
+	if(cmd > CMD_INFO_REQ && cmd < CMD_TIME_SET)
 	{
         if(!GetMacAddress(Macaddr))
 		{
@@ -498,6 +515,14 @@ int processdata (char *data)
 #endif
             set_board_uid(data) ;
 			break ;
+          
+		case CMD_TIME_SET :
+#ifdef HWTEST_DEBUG
+    DEBUG_PRI("recv CMD_TIME_SET \n") ;
+#endif
+            set_time(data) ;
+			break ;
+
 
 		default :
 			break ;
