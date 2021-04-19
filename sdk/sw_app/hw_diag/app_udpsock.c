@@ -352,6 +352,44 @@ void set_time(void *data)
 
 }
 
+void get_time() 
+{
+    TIMEGET_RES Timegetres ;
+
+    struct tm ts ;
+	time_t tm1 ;
+
+    int sendlen ;
+
+	time(&tm1) ;
+	localtime_r(&tm1, &ts) ;
+    Timegetres.identifier = htons(IDENTIFIER) ;
+	Timegetres.cmd = htons(CMD_TIMEGET_RES) ;
+	sprintf(Timegetres.macaddr, "%s",Macaddr) ;
+	Timegetres.length = htons(sizeof(TIMEGET_RES)) ;
+
+	Timegetres.year = htons(ts.tm_year + 1900) ;
+	Timegetres.month = htons(ts.tm_mon + 1 ) ;
+	Timegetres.day = htons(ts.tm_mday) ;
+	Timegetres.hour = htons(ts.tm_hour) ;
+	Timegetres.min = htons(ts.tm_min) ;
+	Timegetres.sec = htons(ts.tm_sec) ;
+
+	if(udpsock->ssock != HWSOCK_ERROR)
+	{
+        sendlen = sendto(udpsock->ssock, &Timegetres, sizeof(TIMEGET_RES), 0, (struct sockaddr *)&send_addr, addrlen);
+
+#ifdef HWTEST_DEBUG
+        DEBUG_PRI("send Timeget_res packet sendlen = %d\n",sendlen) ;
+	    if(sendlen < 0)
+	    {
+            DEBUG_PRI("send Timeget_res packet errno = %d\n",errno) ;
+		}
+#endif
+	}
+}
+
+
 void send_sysinfo(char *data)
 {
 	INFO_REQ *Inforeq ;
@@ -523,6 +561,13 @@ int processdata (char *data)
     DEBUG_PRI("recv CMD_TIME_SET \n") ;
 #endif
             set_time(data) ;
+			break ;
+
+		case CMD_TIMEGET_REQ :
+#ifdef HWTEST_DEBUG
+    DEBUG_PRI("recv CMD_TIMEGET_REQ \n") ;
+#endif
+            get_time() ;
 			break ;
 
 

@@ -47,6 +47,9 @@
 #define CMD_CAMERA_RES  0x0009
 #define CMD_UID_SET     0x000A
 #define CMD_TIME_SET    0x000B
+#define CMD_TIMEGET_REQ 0x000C 
+#define CMD_TIMEGET_RES 0x000D 
+
 
 #define BROADCAST_ADDR "255.255.255.255"
 #define PACKETSIZE 8192
@@ -201,7 +204,34 @@ typedef struct TAG_TIME_SET
 	unsigned short min ;
 	unsigned short sec ;
 } TIME_SET ;
-#pragma packe()
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_TIMEGET_REQ
+{
+    unsigned short identifier ;
+    unsigned short cmd ;
+    unsigned short length ;
+    char macaddr[18];
+} TIMEGET_REQ ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_TIMEGET_RES 
+{
+    unsigned short identifier ;
+    unsigned short cmd ;
+    unsigned short length ;
+    char macaddr[18];
+	unsigned short year ;
+	unsigned short month ;
+	unsigned short day ;
+	unsigned short hour ;
+	unsigned short min ;
+	unsigned short sec ;
+} TIMEGET_RES ;
+#pragma pack()
+
 
 
 /*----------------------------------------------------------------------------
