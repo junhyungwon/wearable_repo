@@ -193,6 +193,7 @@ typedef struct TAG_TIME_SET
     unsigned short identifier ;
     unsigned short cmd ;
     unsigned short length ;
+    char macaddr[18];
 	unsigned short year ;
 	unsigned short month ;
 	unsigned short day ;

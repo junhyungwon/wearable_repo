@@ -335,7 +335,9 @@ void set_time(void *data)
 	int year, month, day, hour, min, sec ;
     TIME_SET *Timeset ;
 
+	char macaddr[18] ;
 	Timeset = (TIME_SET *)data ;
+    sprintf(macaddr, "%s", Timeset->macaddr) ;
 
     year = ntohs(Timeset->year) ;
     month = ntohs(Timeset->month) ;
@@ -344,7 +346,7 @@ void set_time(void *data)
     min = ntohs(Timeset->min) ;
     sec = ntohs(Timeset->sec) ;
 
-    printf("year = %d, month = %d, day = %d, hour = %d, min = %d sec = %d\n", year, month, day, hour, min, sec) ;
+    printf("macaddr = %s year = %d, month = %d, day = %d, hour = %d, min = %d sec = %d\n",Timeset->macaddr, year, month, day, hour, min, sec) ;
 
     ctrl_time_set(year, month, day, hour, min, sec) ;
 
@@ -460,7 +462,7 @@ int processdata (char *data)
 
     cmd = ntohs(Struct_base->cmd) ;
 
-	if(cmd > CMD_INFO_REQ && cmd < CMD_TIME_SET)
+	if(cmd != CMD_INFO_REQ )
 	{
         if(!GetMacAddress(Macaddr))
 		{
