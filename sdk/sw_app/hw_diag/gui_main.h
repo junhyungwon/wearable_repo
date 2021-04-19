@@ -30,7 +30,11 @@
 int app_gui_init(void);
 int app_gui_exit(void);
 
+int set_time_zone() ;
+int update_m3_time() ;
+
 int gui_main(void);
 int gui_ctrl(int cmd, int p0, int p1);
+
 
 #endif	/* _GUI_MAIN_H_ */

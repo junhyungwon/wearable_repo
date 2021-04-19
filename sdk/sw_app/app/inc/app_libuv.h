@@ -26,6 +26,7 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 extern uv_loop_t *loop;
+extern uv_loop_t *loop_video;
 extern int* procLoad;
 extern int* cpuLoad;
 

@@ -5,16 +5,18 @@
 
 // libuv mainloop. 
 // fixme : replace 'thread' with the main thread.
-static pthread_t thread;
-static uv_loop_t uv_loop;
+static pthread_t thread, thread_video;
+static uv_loop_t uv_loop, uv_loop_video;
 static int selfLoad = -1;
 static int totalLoad = -1;
 
 uv_loop_t* loop = &uv_loop;
+uv_loop_t* loop_video = &uv_loop_video;
 int *procLoad = &selfLoad;
 int *cpuLoad = &totalLoad;
 
-uv_timer_t *timer;
+uv_timer_t *timer_cpu;
+uv_timer_t *timer_empty;
 
 void cpuload_timer_cb (uv_timer_t* timer, int status) {
     if (getArmCpuLoad(&selfLoad, &totalLoad) == SUCCESS) {
@@ -25,10 +27,21 @@ void cpuload_timer_cb (uv_timer_t* timer, int status) {
     // fprintf(stderr, "[LIBUV] the loop alive.\n");
 }
 
+void empty_timer_cb (uv_timer_t* timer, int status) {
+    // fprintf(stderr, "[LIBUV] the loop alive.\n");
+}
+
 void uv_thread(void* context){
     //Start loop
-    uv_run(loop, UV_RUN_DEFAULT);
+    int r = uv_run(loop, UV_RUN_DEFAULT);
+    fprintf(stderr, "[LIBUV] the default event loop exited with %d\n", r);
+    pthread_exit(NULL);
+}
 
+void uv_thread_video(void* context){
+    //Start loop for video
+    int r = uv_run(loop_video, UV_RUN_DEFAULT);
+    fprintf(stderr, "[LIBUV] the video event loop exited with %d\n", r);
     pthread_exit(NULL);
 }
 
@@ -40,15 +53,24 @@ int app_libuv_start(void)
 {
     fprintf(stderr, "[LIBUV] start the event loop.\n");
     uv_loop_init(loop);
+    uv_loop_init(loop_video);
 
     // keep the loop alive. check cpu load on every 1s
-    timer = malloc(sizeof(uv_timer_t));
-    uv_timer_init(loop, timer);
-    uv_timer_start(timer, cpuload_timer_cb, 1000* 1, 1000* 1);
+    timer_cpu = malloc(sizeof(uv_timer_t));
+    uv_timer_init(loop, timer_cpu);
+    uv_timer_start(timer_cpu, cpuload_timer_cb, 1000* 1, 1000* 1);
+
+    // keep the loop alive.
+    timer_empty = malloc(sizeof(uv_timer_t));
+    uv_timer_init(loop_video, timer_empty);
+    uv_timer_start(timer_empty, empty_timer_cb, 1000* 1, 1000* 1);
 
     // create libuv thread
     pthread_create(&thread, NULL, uv_thread, NULL);
     pthread_setname_np(thread, __FILENAME__);
+
+    pthread_create(&thread_video, NULL, uv_thread_video, NULL);
+    pthread_setname_np(thread_video, __FILENAME__);
 
     return SOK;
 }
@@ -56,8 +78,10 @@ int app_libuv_start(void)
 void app_libuv_stop(void)
 {
     fprintf(stderr, "[LIBUV] the loop exited.\n");
-    uv_timer_stop(timer);
+    uv_timer_stop(timer_cpu);
+    uv_timer_stop(timer_empty);
     uv_loop_close(loop);
+    uv_loop_close(loop_video);
 }
 
 /******************************************************************************
