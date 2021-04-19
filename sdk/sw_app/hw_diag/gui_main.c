@@ -35,6 +35,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define USE_MENU				0
+#define USE_NTP                 0
 
 //# For sound
 #define APP_SND_SRATE			8000 //# for baresip
@@ -540,9 +541,11 @@ static int gui_test_main(void *thr)
 		OSA_waitMsecs(2000);
 		break ;
 	}
-
+ 
+#if USE_NTP	
 	set_time_zone() ; 
     set_time_via_ntp() ;
+#endif
 
 	if(GetMacAddress(Macaddr))
          sprintf(Macaddr, "%s", "UNKNOWN");
