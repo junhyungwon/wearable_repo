@@ -255,6 +255,7 @@ void app_rtmp_stop(void)
 	uv_close((uv_handle_t*)&timer, NULL);
     uv_close((uv_handle_t*)async_rtmp_connect, NULL);
     uv_close((uv_handle_t*)async_rtmp_disconnect, NULL);
+    uv_close((uv_handle_t*)async_rtmp_publish, NULL);
 
     // close
     _rtmp_close();
