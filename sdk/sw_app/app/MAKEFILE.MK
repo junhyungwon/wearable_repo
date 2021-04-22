@@ -7,6 +7,7 @@ INCLUDE += -I$(EXTERNAL_PACKAGE)/iw_scan #for wifi client
 INCLUDE += -I$(EXTERNAL_PACKAGE)/web/www_root/include
 INCLUDE += -I$(APP_DIR)/settings
 INCLUDE += -I$(THIRD_PARTY)/libuv/include/
+INCLUDE += -I$(THIRD_PARTY)/libuv/src/
 
 ifeq ($(USE_RTMP), YES)
 INCLUDE += -I$(THIRD_PARTY)/srs-librtmp/src/srs/
