@@ -335,6 +335,8 @@ static int __is_connected_wlan(void)
 			*/
 		app_cfg->wlan_vid = d_vid;
 		app_cfg->wlan_pid = d_pid;
+		
+		dprintf("USB wifi connected (%x, %x)\n", d_vid, d_pid);
 		return 0;
 	} 
 	
@@ -448,10 +450,7 @@ static void *THR_wlan_poll(void *prm)
 					ret = netlink_subsystem_parse(msg, len, &sub, &detached);
 					if (!ret)
 					{
-						#if 0
-						printf("founded subsystem: usb, removed: %s\n", detached ? "yes" : "no");
-						#endif
-
+						dprintf("subsystem: usb, removed: %s\n", detached ? "yes" : "no");
 						if (sub) {
 							if (detached) {
 								if (netlink_usb_detach_parse(msg, len, &v, &p) == 0)

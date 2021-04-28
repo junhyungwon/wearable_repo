@@ -510,7 +510,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			__netmgr_hotplug_noty();
 			snprintf(msg, sizeof(msg), "app: netdevice type %x, state %s", 
 						inetmgr->device, inetmgr->insert?"insert":"remove");
-			//dprintf("%s\n", msg);
+			dprintf("%s\n", msg);
 			app_log_write(MSG_LOG_WRITE, msg);
 			break;
 		
