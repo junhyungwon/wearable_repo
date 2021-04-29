@@ -22,6 +22,7 @@
 #include <glob.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 
 #include "dev_common.h"
 #include "dev_micom.h"
@@ -1123,14 +1124,28 @@ static void app_set_default(int default_type)
 
 static void app_set_delete_cfg(void)
 {
-    char cmd[MAX_CHAR_128]={0,};
-
-	sprintf(cmd, "rm -Rf %s", CFG_DIR_NAND);
-	dev_execlp(cmd);
-
-	if (app_cfg->ste.b.mmc) {
-		sprintf(cmd, "rm -Rf %s", CFG_DIR_MMC);
-		dev_execlp(cmd);
+	int res=0;
+	
+	/* remove cfg directory in nand */
+	res = access(CFG_DIR_NAND, R_OK|W_OK);
+    if ((res == 0) || (errno == EACCES)) {
+		remove(CFG_DIR_NAND);
+	} else {
+		fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_NAND,
+							strerror(errno));
+		/* TODO 에러가 발생했을 경우??? */	
+	} 
+		
+	if (app_cfg->ste.b.mmc) 
+	{
+		res = access(CFG_DIR_MMC, R_OK|W_OK);
+		if ((res == 0) || (errno == EACCES)) {
+			remove(CFG_DIR_MMC);
+		} else {
+			fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_MMC, 
+							strerror(errno));
+			/* TODO 에러가 발생했을 경우??? */
+		}
 	}
 	sync();
 }
@@ -1144,9 +1159,11 @@ int app_set_open(void)
 	//# delete cfg file
 	pFile = find_reset();
 	if (pFile != NULL) {
-		sprintf(cmd, "rm -f %s", pFile);
-		dev_execlp(cmd);
-
+		ret = access(pFile, R_OK|W_OK);
+		if ((ret == 0) || (errno == EACCES)) {
+			remove(pFile);
+		}
+		
 		app_set_delete_cfg();
 		printf("[%s] CFG delete done!! \n", __func__);
 	}
@@ -1183,7 +1200,9 @@ int app_set_open(void)
 		else
 			ret = SOK ;
 	}
-
+	
+	//# cfg read done!!
+	sync();
 	if (ret == EFAIL) 
 	    app_set_default(FULL_RESET);
 	

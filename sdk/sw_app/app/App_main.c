@@ -123,29 +123,44 @@ static void app_setdns(void)
 
 static int __mmc_prepare(void)
 {
-	DIR *logdir = NULL;
-	struct statvfs stat_buf;
+	DIR *logdir=NULL;
+	FILE *f=NULL;
+	
+	char buf[256 + 1]={0,};
+	char mntd[64]={0,};
 	int res=0;
 	
 	/* mmc mount 확인 */
 	app_cfg->ste.b.mmc = 0; //# default 0
-	res = dev_disk_check_mount("/mmc");
-	if (!res) {
-		/* mmc mount fail!! (system shutdown) */
-		eprintf("mount failed!\n");
-		return -1;
-	}
-	
 	/* SD 카드 속성확인 (read only file system) */
-	if (statvfs("/mmc", &stat_buf) != 0) {
-		eprintf("/mmc directory fault!\n");
+	f = fopen("/proc/mounts", "r");
+	if (f == NULL) {
 		return -1;
 	}
 	
-	if (stat_buf.f_flag & ST_RDONLY) {
-		eprintf("mounted readonly filesystem!!\n");
-		return -1;
+	/* 
+	 * normal fs       -> /dev/mmcblk0p1 /mmc vfat rw,noatime,nodiratime,fmask=0000,
+	 * if read-only fs -> /dev/mmcblk0p1 /mmc vfat ro,noatime,......
+	 */
+	while (fgets(buf, 256, f) != NULL) 
+	{
+		char *tmp, *tmp2;
+		/* %*s->discard input */
+		sscanf(buf, "%*s%s", mntd);
+		if (strcmp(mntd, "/mmc") == 0) {
+			tmp = strtok(buf, ",");
+			if (tmp != NULL) {
+				/* */
+				tmp2 = strstr(tmp, "ro");
+				if (tmp2 != NULL) {
+					fprintf(stderr, "sd card read-only filesystem!!\n");
+					fclose(f);
+					return -1;
+				}
+			}
+		}
 	}
+	fclose(f);
 	
 	/* log 디렉토리 생성 */
 	logdir = opendir("/mmc/log") ;

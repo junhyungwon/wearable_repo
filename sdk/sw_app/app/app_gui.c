@@ -234,8 +234,10 @@ static void *THR_gui(void *prm)
 					pre_wd = 1;
 				}
 				
-				if (wd_detect == WD_LOG_CNT)
+				if (wd_detect == WD_LOG_CNT) {
 					app_log_write(MSG_LOG_SHUTDOWN, msg);
+					sync();
+				}
 			}
 		}
 		//# ------------------ End of watchdog ----------------------------------------------------
