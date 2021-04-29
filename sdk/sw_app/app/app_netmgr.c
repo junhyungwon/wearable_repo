@@ -128,7 +128,6 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 		/* Wi-Fi 장치가 연결되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 1;
 		
-		dprintf("Wi-Fi %s start.........\n", mode?"AP":"CLIENT");
 		if (mode)
 		{
 		    /* AP MODE */
@@ -152,6 +151,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
 			}
 			
+			dprintf("Wi-Fi SOFTAP start (NAME=%s).........\n", info->ssid);
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);
         } else {
 			/* client mode */
@@ -165,8 +165,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				strcpy(info->passwd, app_set->wifiap.pwd);
 			}
 			
-			if (app_set->net_info.wtype == NET_TYPE_STATIC) 
-			{
+			if (app_set->net_info.wtype == NET_TYPE_STATIC) {
 				info->dhcp = 0;
 				strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
 				strcpy(info->mask_address, app_set->net_info.wlan_netmask);
@@ -174,7 +173,13 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			} else {
 				info->dhcp = 1;
 			}
-			send_msg(NETMGR_CMD_WLAN_CLIENT_START);
+			
+			if ((strcmp(info->ssid, "AP_SSID") == 0) && (strcmp(info->passwd, "AP_PASSWORD") == 0)) {
+				/* 기본값이면 Wi-Fi 실행 안 함 : Notice 할 방법은 없다...... */
+			} else {
+				dprintf("Wi-Fi STATION start (NAME=%s).........\n", info->ssid);
+				send_msg(NETMGR_CMD_WLAN_CLIENT_START);
+			}
 		}
 		
 	} else {
