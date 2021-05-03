@@ -442,6 +442,10 @@ ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp $(KMODDIR)/wlan/8821au_driver/8821au.ko $(TARGET_FS)/lib/modules/.
 	sudo /bin/cp $(KMODDIR)/wlan/8812au_driver/8812au.ko $(TARGET_FS)/lib/modules/.
 endif
+
+ifeq ($(USE_KCMVP), YES)
+	sudo /bin/cp -f $(THIRD_PARTY)/kcmvp/linux_dll/2.6_armv7l_32_44_post_limit/libMagicCrypto* $(TARGET_FS)/usr/lib/.
+endif
 	@echo -e "\n--- RFS update for $(RDK_BOARD_TYPE) (`date +'%H:%M:%S'`)---\n"
 
 update:

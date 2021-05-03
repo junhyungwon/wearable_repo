@@ -108,6 +108,9 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	CAM_MANUFACTURER  = PARTRON
 endif
 
+#---  KCMVP 
+USE_KCMVP := NO
+
 ################################################################################
 ################################################################################
 ifeq (exist, $(shell [ -e myRules.make ] && echo exist))
@@ -301,6 +304,7 @@ export USE_ISP
 export USE_WIFI
 export USE_VOIP
 export USE_RTMP
+export USE_KCMVP
 export THIRD_PARTY
 export CAM_MANUFACTURER
 export EXTERNAL_PACKAGE

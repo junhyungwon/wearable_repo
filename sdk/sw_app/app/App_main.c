@@ -61,6 +61,11 @@
 #include "app_voip.h"
 #endif
 
+#ifdef USE_KCMVP
+#include "mcapi.h"
+#include "mcapi_type.h"
+#endif
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -98,6 +103,35 @@ static void main_thread_exit(void)
 	//#--- stop thread
 	thread_delete(tObj);
 }
+
+#ifdef USE_KCMVP
+
+#define MC_STAT_NONE				0x00000000
+#define MC_STAT_INITIALIZED			0x10000000
+#define MC_STAT_FATAL				0x20000000
+
+void getStatus()
+{
+	MC_RV rv = 0;
+	MC_UINT flag = 0;
+	rv = MC_GetStatus(&flag);
+
+	printf("\n MC_GetStatus rv = 0x%04x (%s), flag = 0x%08x \n", rv, MC_GetErrorString(rv), flag);
+
+	if (flag & MC_STAT_INITIALIZED) {
+		printf(" MC status is normal. (%s) \n", MC_GetErrorString(rv));
+
+	} else if (flag & MC_STAT_FATAL) {
+	    printf(" MC status is fatal error ! (%s) \n", MC_GetErrorString(rv));
+		exit(0);
+	}else { /* (flag & MC_STAT_NONE)*/
+		printf(" MC status is not initialized. (%s) \n", MC_GetErrorString(rv));
+	} 
+
+	printf("\n");
+}
+
+#endif 
 
 static void app_setdns(void)
 {
@@ -265,6 +299,46 @@ int app_main(void)
 #endif	
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
+
+#ifdef USE_KCMVP
+    struct tm ts ;
+	time_t tm1 ;
+
+	time(&tm1) ;
+	localtime_r(&tm1, &ts) ;
+
+    printf("%d-%d-%d-%d%d%d\n",	ts.tm_year + 1900, ts.tm_mon + 1, ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec) ;
+
+    MC_RV rv = MC_OK ;
+    MC_VERSION mcVer;
+    MC_HSESSION hSession = 0 ;
+
+    rv = MC_Initialize(NULL) ;
+	if(rv != MC_OK) 
+		printf("%s\n", MC_GetErrorString(rv));
+
+
+
+    MC_GetVersion((MC_VERSION*)&mcVer);
+	printf("===============================================================================\n");
+	printf("          Dreamsecurity %s API Ver.%d.%d.%d Tester \n", mcVer.name, mcVer.major, mcVer.minor, mcVer.release);
+	printf("===============================================================================\n\n");
+
+	rv = MC_OpenSession(&hSession);
+	if(rv != MC_OK) 
+		printf("%s\n", MC_GetErrorString(rv));
+
+
+
+    rv = MC_Selftest(); printf("\n");	
+	if (rv !=0) {
+		printf("%s\n", MC_GetErrorString(rv));
+	}
+		printf("%s\n", MC_GetErrorString(rv));
+
+	getStatus();
+#endif
+
 	while(!exit)
 	{
 		//# wait cmd
@@ -274,6 +348,13 @@ int app_main(void)
 		}
 	}
     CSock_exit() ;
+
+#ifdef USE_KCMVP
+	rv = MC_Finalize();
+	if(rv != MC_OK) printf("%s\n", MC_GetErrorString(rv));
+
+	getStatus();
+#endif
 
 	//if(app_set->net_info.enable_onvif==1)
 	{
@@ -383,13 +464,13 @@ int main(int argc, char **argv)
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 #if defined(NEXXONE) || defined(NEXX360W)
-	#if SYS_CONFIG_VOIP
+//	#if SYS_CONFIG_VOIP
 			/* copy app_fitt.out or full update */
 			ctrl_auto_update();
 			/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
 			if (app_cfg->ste.b.pwr_off)
 				return 0;
-	#endif
+//	#endif
 #endif
 		/* remove update files */
 		ctrl_reset_nand_update();

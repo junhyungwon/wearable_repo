@@ -46,6 +46,10 @@ ifeq ($(USE_RTMP), YES)
 DEFINE += -DUSE_RTMP
 endif
 
+ifeq ($(USE_KCMVP), YES)
+DEFINE += -DUSE_KCMVP
+endif
+
 FILES=$(subst ./, , $(foreach dir,.,$(wildcard $(dir)/*.c)) )
 
 vpath %.a $(LIB_DIR)
