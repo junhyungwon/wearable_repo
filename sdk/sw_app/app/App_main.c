@@ -299,11 +299,11 @@ int app_main(void)
 #endif	
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
-
 #ifdef USE_KCMVP
     struct tm ts ;
 	time_t tm1 ;
-
+	
+	putenv("LD_LIBRARY_PATH=/usr/lib/");
 	time(&tm1) ;
 	localtime_r(&tm1, &ts) ;
 
@@ -317,8 +317,6 @@ int app_main(void)
 	if(rv != MC_OK) 
 		printf("%s\n", MC_GetErrorString(rv));
 
-
-
     MC_GetVersion((MC_VERSION*)&mcVer);
 	printf("===============================================================================\n");
 	printf("          Dreamsecurity %s API Ver.%d.%d.%d Tester \n", mcVer.name, mcVer.major, mcVer.minor, mcVer.release);
@@ -327,8 +325,6 @@ int app_main(void)
 	rv = MC_OpenSession(&hSession);
 	if(rv != MC_OK) 
 		printf("%s\n", MC_GetErrorString(rv));
-
-
 
     rv = MC_Selftest(); printf("\n");	
 	if (rv !=0) {
