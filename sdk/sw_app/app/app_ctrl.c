@@ -475,7 +475,8 @@ int ctrl_get_mcu_version(char *version)
 	int ver;
 
 	ver = (int)mic_get_version();
-	sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF);
+	if (version != NULL)
+		sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF);
 
 	return ver;
 }
@@ -850,8 +851,10 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 {
 	char buf[256]={0,};
 	int ret = SOK;
+	
 	sprintf(buf, "tar xvf %s -C %s", pFile, root);
 	system(buf);
+	sync();
 	/* change 3--> 1*/
 	sleep(1/*3*/);
 
@@ -876,7 +879,7 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-static int _sw_update(const char *disk)
+static int _sw_update(const char *disk, int version)
 {
 	char cmd[256]={0,};
 	char msg[128]={0,};
@@ -911,6 +914,14 @@ static int _sw_update(const char *disk)
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
+	}
+	
+	//# micom version check..
+	if (version == MIC_VERSION) {
+		/* delete mcu_fitt.txt */
+		if (access("/mmc/mcu_fitt.txt", F_OK)==0) {
+			remove("/mmc/mcu_fitt.txt");
+		}
 	}
 	
 	//# LED work for firmware update.
@@ -1016,6 +1027,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
 	printf("fwupdate cmd:%s\n", cmd);
 	system(cmd);
+	sync();
 #endif
 
     if(TRUE != _is_firmware_for_release()) // RELEASE Version .. --> update file delete
@@ -1043,7 +1055,16 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	} else {
 		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
 	}
-
+	
+	//# micom version check..
+	ret = ctrl_get_mcu_version(NULL);
+	if (ret == MIC_VERSION) {
+		/* delete mcu_fitt.txt */
+		if (access("/mmc/mcu_fitt.txt", F_OK)==0) {
+			remove("/mmc/mcu_fitt.txt");
+		}
+	}
+	
 	// check md5sum
 	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
 	FILE *fp = popen(cmd, "r");
@@ -1095,10 +1116,14 @@ void ctrl_auto_update(void)
 {
 	char path[64] = {0, };
 	char cmd[255] = {0, };
+	
+	int mcu_ver=0;
 		
+	mcu_ver = ctrl_get_mcu_version(NULL);
+	
 	/* First, full firmware check.. */
 	//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-	if (_sw_update(SD_MOUNT_PATH) == 0) {
+	if (_sw_update(SD_MOUNT_PATH, mcu_ver) == 0) {
 		app_mcu_pwr_off(OFF_RESET);
 	}
 		
