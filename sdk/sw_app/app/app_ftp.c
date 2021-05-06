@@ -53,7 +53,7 @@
 #define FTP_CYCLE_TIME		100
 #define FTP_TIME_OUT		5	//# 2sec
 #define FTP_RETRY_CNT       5
-#define MSIZE 8192*2  // buffer size
+#define MSIZE 8192*8  // buffer size
 
 typedef struct {
 	app_thr_obj ftpObj;	//# key thread
@@ -248,7 +248,7 @@ static int ftp_transfer_file(int sd, char *filename)
                 break ;
             }
 		}
-        OSA_waitMsecs(5) ;
+        OSA_waitMsecs(1) ;
 	}
 	fclose(in);
 
@@ -660,51 +660,51 @@ static void ftp_send(void)
         app_leds_backup_state_ctrl(LED_FTP_ON);
         app_leds_eth_status_ctrl(LED_FTP_ON);
 
-        if(ftp_change_dir(iftp->sdFtp, app_set->sys_info.deviceId, 0) != 0)
+		iftp->file_cnt = get_recorded_file_count() ;
+
+		for (i = 0; i < iftp->file_cnt; i++)
         {
-            iftp->ftp_state = FTP_STATE_NONE ;
-        }
-		else
-		{
-		    iftp->file_cnt = get_recorded_file_count() ;
+            if(get_ftp_send_file(FileName) == 0)   // do not exist file
+               continue ;
 
-		    for (i = 0; i < iftp->file_cnt; i++)
-            {
-                if(get_ftp_send_file(FileName) == 0)   // do not exist file
-                   continue ;
+            if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
+                break;
 
-                if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
-                    break;
+            strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /deviceID/20190823/
 
-                strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /deviceID/20190823/
-
-			    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
-			    {
-                    if(ftp_change_dir(iftp->sdFtp, temp, i) != 0)
+		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
+		    {
+                if(ftp_change_dir(iftp->sdFtp, temp, i) != 0)
+                {
+                    iftp->ftp_state = FTP_STATE_NONE ;
+                }
+				else
+				{	
+                    if(ftp_change_dir(iftp->sdFtp, app_set->sys_info.deviceId, 0) != 0)
                     {
-                       iftp->ftp_state = FTP_STATE_NONE ;
+                        iftp->ftp_state = FTP_STATE_NONE ;
                     }
 					else
-					{	
+					{
                         if(ftp_send_file(iftp->sdFtp, FileName) == 0)
                         {
 					        ftp_dbg(" \n[ftp] Send image -- %s \n", FileName);
                             delete_ftp_send_file(FileName) ;
-				        }   
+			            }   
                         else
                         {
                             restore_ftp_file(FileName) ;
-					        ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
+				            ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
                             break;
-						}	
-                    }
-			    }
-                else
-                {
-                    break ;
+						}
+					}	
                 }
-            } 
-		}   
+		    }
+            else
+            {
+                break ;
+            }
+        } 
 
 		iftp->file_cnt = get_recorded_file_count() ;
         if(iftp->file_cnt == 0)
