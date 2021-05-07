@@ -881,10 +881,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	}
 #endif
 
+#if 0 // 항상 Enable로 변경됨
 	if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
 		app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
 		isChanged++;
 	}
+#endif
 
 #if SYS_CONFIG_VOIP
 	// voip config
