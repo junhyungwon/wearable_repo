@@ -29,7 +29,7 @@
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
-#	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_CONFIG_BACKCHANNEL		1
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
 #	define MODEL_NAME					"NEXX360B"
