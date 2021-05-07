@@ -337,6 +337,14 @@ static int ftp_change_dir(int sd, char *dirname, int day_dir)
 
         if(ftpRecvResponse(sd, buf) != 0)
             return -1;
+
+        if(ftpNewCmd(sd, buf, "CDUP", "") != 0)
+            return -1 ;
+
+        if(ftpRecvResponse(sd, buf) != 0)
+            return -1;
+
+		return 0 ;
     }
 
     if(ftpNewCmd(sd, buf, "CWD", dirname) != 0)
@@ -674,7 +682,7 @@ static void ftp_send(void)
 
 		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
 		    {
-                if(ftp_change_dir(iftp->sdFtp, temp, i) != 0)
+                if(ftp_change_dir(iftp->sdFtp, temp, 0) != 0)
                 {
                     iftp->ftp_state = FTP_STATE_NONE ;
                 }
@@ -697,6 +705,12 @@ static void ftp_send(void)
 				            ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
                             break;
 						}
+
+                        if(ftp_change_dir(iftp->sdFtp, temp, 1) != 0)
+                        {
+                            iftp->ftp_state = FTP_STATE_NONE ;
+						}
+
 					}	
                 }
 		    }
@@ -704,6 +718,7 @@ static void ftp_send(void)
             {
                 break ;
             }
+
         } 
 
 		iftp->file_cnt = get_recorded_file_count() ;
