@@ -35,7 +35,7 @@ static int submit_settings_qcgi()
 		int  daylight_saving=-1;
 		int  enable_onvif=-1;
 		int  time_zone=-99;
-		int  enable_p2p=-1;
+		int  enable_p2p=1; // 무조건 1...
 
         char *str= req->getstr(req, "bs_enable", false);
         if (str != NULL) {
@@ -203,7 +203,7 @@ static int submit_settings_qcgi()
 		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
 		t.time_zone = time_zone;      // A value of +12 is only device.
 		t.onvif.enable = enable_onvif;
-		t.p2p.enable = enable_p2p;
+		t.p2p.enable = enable_p2p; // FIXED 1.. 사용자 편의성을 위해서, 나중에 다시 풀라고 할지도 모름..-_-;;;
 
         ret = sysctl_message(UDS_SET_SERVERS_CONFIG, (void*)&t, sizeof t );
         CGI_DBG("ret:%d\n", ret);
