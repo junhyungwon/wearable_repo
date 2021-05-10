@@ -59,10 +59,10 @@
 #	define STREAM_CH_NUM				1
 #	define JPEG_CH_NUM					2
 #	define MAX_FPS						30	
-#	define SYS_CONFIG_VOIP				1
+#	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_CONFIG_BACKCHANNEL		1
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif
