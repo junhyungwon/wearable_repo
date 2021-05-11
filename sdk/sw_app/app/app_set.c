@@ -586,8 +586,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->sys_info.osd_set < OFF || pset->sys_info.osd_set > ON)
         pset->sys_info.osd_set = ON ; 
 
-    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)
-        pset->sys_info.P2P_ON_OFF = ON ; 
+//    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)  
+    pset->sys_info.P2P_ON_OFF = ON ;  // Ignore previous version values, Always ON
 
     if((int)pset->sys_info.p2p_id[0] == CHAR_INVALID)
         strcpy(pset->sys_info.p2p_id, P2P_DEFAULT_ID) ;

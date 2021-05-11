@@ -49,7 +49,7 @@ typedef struct {
 	char passwd[NETMGR_WLAN_PASSWD_MAX_SZ+1];  //64
 	
 	int freq;        /* 0-> 2.4GHz 1-> 5GHz */
-	int stealth;     /* Hiddel SSID */
+	int stealth;     /* Hidden SSID */
 	int channel;     /* channel number (2.4GH ->6, 5GHz -> 36) */
 	
 	int stage;
@@ -142,6 +142,7 @@ static int __create_hostapd_conf(const char *usr_id, char *usr_pw, int ch, int i
 	fprintf(fp, "wpa_pairwise=CCMP\n");
 	fprintf(fp, "max_num_sta=2\n");
 	fprintf(fp, "wpa_group_rekey=86400\n");
+	fprintf(fp, "ignore_broadcast_ssid=%d\n",stealth) ;
 
 	fflush(fp);
 	fclose(fp);
