@@ -1031,7 +1031,7 @@ int hextobin(unsigned char c)
 /* referenced from echo.c */
 int utf8_unescape(const char *dst, char *src)
 {
-	char *data_buf = dst;
+	char *data_buf = (char *)dst;
 	char const *s = src;
 	unsigned char c;
 	int xfred = 0;
