@@ -171,7 +171,7 @@ static int __cli_aplist_load(void)
 		if (f != NULL) {
 			/* 첫 번째 4바이트 데이터를 읽어오면 저장된 AP의 개수가 된다. */
 			fread((void *)&count, sizeof(int), 1, f);
-			dprintf("The Number of connected list are %d!\n", count);
+			//dprintf("The Number of connected list are %d!\n", count);
 			if (count > 0) 
 			{
 				/* 데이터를 저장하기 위한 메모리 공간 확보 */
@@ -216,7 +216,7 @@ static int __cli_aplist_add(const char *ssid, const char *passwd, int key)
 		if (obj != NULL)
 			count++;	
 	}
-	dprintf("current %d in AP list!\n", count);
+	//dprintf("current %d in AP list!\n", count);
 	
 	if (count >= MAX_AP_USER_LIST) 
 	{
@@ -224,8 +224,8 @@ static int __cli_aplist_add(const char *ssid, const char *passwd, int key)
 		obj = (struct connect_list *)list_last_entry(head, struct connect_list, node);
 		if (obj != NULL) {
 			list_del(&obj->node);
-			dprintf("delete ssid %s, passwd %s in AP list!\n", 
-					obj->conn_item.ssid, obj->conn_item.passwd);
+			//dprintf("delete ssid %s, passwd %s in AP list!\n", 
+			//		obj->conn_item.ssid, obj->conn_item.passwd);
 			free(obj);
 		}
 	}
@@ -270,7 +270,7 @@ static int __cli_aplist_update(void)
 			strcpy(info.passwd, obj->conn_item.passwd);
 			info.en_key = obj->conn_item.en_key;
 			
-			dprintf("saved name %s, passwd %s in access point list!\n", obj->conn_item.ssid, obj->conn_item.passwd);
+			//dprintf("saved name %s, passwd %s in access point list!\n", obj->conn_item.ssid, obj->conn_item.passwd);
 			fwrite(&info, sizeof(iw_item_t), 1, f);
 			
 			/* 메모리 해제함: start 시 다시 생성한다. */
@@ -280,7 +280,7 @@ static int __cli_aplist_update(void)
 		}
 	}
 	
-	dprintf("%d list saved in access point list\n", count);
+	//dprintf("%d list saved in access point list\n", count);
 	//# total file count
 	fseek(f, 0, SEEK_SET);
 	fwrite(&count, sizeof(size_t), 1, f);    
@@ -305,7 +305,7 @@ static int __cli_check_duplicate(const char *ssid)
 		obj = (struct connect_list *)list_entry(iter, struct connect_list, node);
 		if (obj != NULL) {
 			if (strcmp(obj->conn_item.ssid, ssid) == 0) {
-				dprintf("[%d]th duplicate ssid-> %s\n", i, obj->conn_item.ssid);
+				//dprintf("[%d]th duplicate ssid-> %s\n", i, obj->conn_item.ssid);
 				return 1;
 			}
 			i++;
@@ -325,7 +325,7 @@ static int __cli_make_userList(const char *ssid, const char *passwd, int key)
 	__list_for_each(iter, head) {
 		obj = (struct connect_list *)list_entry(iter, struct connect_list, node);
 		if (obj != NULL) {
-			dprintf("[%d]th user list ssid-> %s, passwd->%s\n", i, obj->conn_item.ssid, obj->conn_item.passwd);
+			//dprintf("[%d]th user list ssid-> %s, passwd->%s\n", i, obj->conn_item.ssid, obj->conn_item.passwd);
 			memcpy(userList[i].ssid, obj->conn_item.ssid, NETMGR_WLAN_SSID_MAX_SZ);
 			memcpy(userList[i].passwd, obj->conn_item.passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
 			userList[i].en_key = obj->conn_item.en_key;
@@ -930,8 +930,8 @@ static int __cli_check_essid(iw_item_t *dst)
 					memcpy(dst->ssid, begin.ssid, NETMGR_WLAN_SSID_MAX_SZ);
 					memcpy(dst->passwd, begin.passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
 					dst->en_key = begin.en_key;
-					dprintf("1. wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
-							dst->passwd, dst->en_key);
+					//dprintf("1. wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
+					//		dst->passwd, dst->en_key);
 					
 					pclose(f);
 					return 0;
@@ -950,8 +950,8 @@ static int __cli_check_essid(iw_item_t *dst)
 					memcpy(dst->passwd, userList[i].passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
 					dst->en_key = userList[i].en_key;
 					
-					dprintf("2. wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
-							dst->passwd, dst->en_key);
+					//dprintf("2. wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
+					//		dst->passwd, dst->en_key);
 					
 					pclose(f);
 					return 0;
