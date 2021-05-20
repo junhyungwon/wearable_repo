@@ -528,7 +528,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		strcpy(pset->net_info.dns_server2, "168.154.160.4");  // Microsoft dns
         
     if(pset->net_info.type < NET_TYPE_STATIC || pset->net_info.type > NET_TYPE_DHCP)
-        pset->net_info.type = NET_TYPE_STATIC ;
+        pset->net_info.type = NET_TYPE_DHCP ;
 
     if(pset->net_info.http_port <= 0 || pset->net_info.http_port >= 65535)
         pset->net_info.http_port = 80 ;
@@ -958,7 +958,7 @@ static void app_set_default(int default_type)
     if (default_type)  // FULL reset or hw reset
     {
     	//# Network information for device
-        app_set->net_info.type = NET_TYPE_STATIC ;
+        app_set->net_info.type = NET_TYPE_DHCP ;
         strcpy(app_set->net_info.wlan_ipaddr, "192.168.0.252");
 	    app_set->wifiap.stealth = OFF;
         strcpy(app_set->net_info.wlan_netmask, "255.255.0.0");
