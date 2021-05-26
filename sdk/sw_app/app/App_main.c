@@ -151,6 +151,9 @@ static void app_setdns(void)
 		fwrite(buffer, strlen(buffer), 1, fp);
 		app_log_write(MSG_LOG_WRITE, buffer);
 		
+		sprintf(buffer, "options timeout:1 retry:1\n") ;
+		fwrite(buffer, strlen(buffer), 1, fp);
+
 		fclose(fp);
 	}
 }
