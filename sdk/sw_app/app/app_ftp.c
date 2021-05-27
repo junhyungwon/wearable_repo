@@ -269,21 +269,17 @@ static int createDataSock(char * host, int port)
 
     stLinger.l_onoff = 1 ;
     stLinger.l_linger = 0 ;
-
-	if ((hp = gethostbyname(host)) == 0) {
-		perror("gethostbyname");
-		return -1;
-	}
-
-	memset(&pin, 0, sizeof(pin));
+	
+ 	memset(&pin, 0, sizeof(pin));
 	pin.sin_family = AF_INET;
-	pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+	pin.sin_addr.s_addr = inet_addr(host);
 	pin.sin_port = htons(port);
 
-	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
+    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+	{
+	    perror("socket");
 		return -1;
-	}
+    }
 
     tv.tv_sec = 10;
     tv.tv_usec = 0;
@@ -487,16 +483,17 @@ static int ftp_connect (char *hostname, int port)
 	struct sockaddr_in pin;
 	struct hostent *hp;
 
-	if ((hp = gethostbyname(hostname)) == 0) {
-		perror ("gethostbyname");
-		return -1;
-	}
+    if ((hp = gethostbyname(hostname)) == 0) 
+	{
+	    perror ("gethostbyname");
+	    return -1;
+    }
 
-	memset (&pin, 0, sizeof(pin));
-	pin.sin_family 		= AF_INET;
-	pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-	pin.sin_port 		= htons(port);
-
+    memset (&pin, 0, sizeof(pin));
+    pin.sin_family 		= AF_INET;
+    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
+    pin.sin_port 		= htons(port);
+	
 	//#--- create socket
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
