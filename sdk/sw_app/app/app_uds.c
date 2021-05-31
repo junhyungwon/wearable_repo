@@ -520,6 +520,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 			isChanged++;
 		}
 	}
+// under working .. needs remove wifiap.ssid part 
 
 	// wifi ap info, NOT NULL
 	if(0!=strcmp(t->wifi_ap.id, app_set->wifiap.ssid)){
@@ -532,6 +533,25 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 		DBG_UDS("app_set->wifiap.pwd=%s\n", app_set->wifiap.pwd);
 		isChanged++;
 	}
+	
+	/* todo
+	for(i = 0; i < 5; i++)
+	{
+	     
+	    if(0!=strcmp(t->wifilist[i].id, app_set->wifilist[i].ssid)){
+		    strcpy(app_set->wifilist[i].ssid, t->wifi_list[i].id);
+		    DBG_UDS("app_set->wifilist.ssid=%s\n", i, app_set->wifilist[i].ssid);
+		    isChanged++;
+	    }
+ 	    if(0!=strcmp(t->wifi_list[i].pw, app_set->wifilist[i].pwd)){
+		    strcpy(app_set->wifilist[i].pwd, t->wifi_list[i].pw);
+		    DBG_UDS("app_set->wifilist[%d].pwd=%s\n", i, app_set->wifilist[i].pwd);
+		    isChanged++;
+	    }
+	}
+	
+	
+	*/
 
 #if 0
 	if(t->live_stream_account_enable != app_set->account_info.ON_OFF) {
@@ -2209,8 +2229,19 @@ void *myFunc(void *arg)
 				strcpy(t.cradle.ipv4, cradle.ipaddr);
 				strcpy(t.cradle.gw,   cradle.gateway);
 				strcpy(t.cradle.mask, cradle.netmask);
+				
+				// needs modify
 				strcpy(t.wifi_ap.id, app_set->wifiap.ssid);
 				strcpy(t.wifi_ap.pw, app_set->wifiap.pwd);
+				/*
+				needs modify 
+				for(i = 0 ; i < 5 ; i++)
+				{
+				    strcpy(t.wifi_list[i].id, app_set->wifilist[i].ssid);
+				    strcpy(t.wifi_list[i].pw, app_set->wifilist[i].pwd);
+				}
+				*/
+				
 				t.live_stream_account_enable  = app_set->account_info.ON_OFF;
 				t.live_stream_account_enctype = app_set->account_info.enctype;
 				strcpy(t.live_stream_account.id, rtsp_user);

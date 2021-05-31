@@ -155,7 +155,10 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);
         } else {
 			/* client mode */
-			/* Wi-Fi Client Mode */
+			/* Wi-Fi Client Mode */    
+			// under working
+			
+			
 			info->en_key = app_set->wifiap.en_key;
 			strcpy(info->ssid, app_set->wifiap.ssid);
 
@@ -164,7 +167,19 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			} else {
 				strcpy(info->passwd, app_set->wifiap.pwd);
 			}
-			
+/*			
+            for(i = 0 ;i < 5; i++)
+			{
+			    info->en_key = app_set->wifilist[i].en_key;
+			    strcpy(info->ssid, app_set->wifilist[i].ssid);
+
+			    if (strlen(app_set->wifilist[i].pwd) == 0) {
+				    info->en_key = 0;
+			    } else {
+				    strcpy(info->passwd, app_set->wifilist[i].pwd);
+			    }
+			}
+*/			
 			if (app_set->net_info.wtype == NET_TYPE_STATIC) {
 				info->dhcp = 0;
 				strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);

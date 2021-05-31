@@ -28,7 +28,7 @@
 #	define MAX_FPS						15
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				1
-#	define SYS_CONFIG_GPS				0
+#	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
@@ -39,7 +39,7 @@
 #	define MAX_FPS						15	
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				0
-#	define SYS_CONFIG_GPS				0
+#	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
 #elif defined(LF_SYS_NEXX360H)
 #	define NEXX360H

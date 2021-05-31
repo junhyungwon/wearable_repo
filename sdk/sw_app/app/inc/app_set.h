@@ -28,6 +28,7 @@
 #define MAX_GOV						MAX_FPS
 #define DEFAULT_FPS					MAX_FPS
 #define DEFAULT_GOV					DEFAULT_FPS
+#define WIFIAP_CNT                  5
 
 #define MIN_FPS 					1
 #define MAX_BITRATE 				8000 // Kbps
@@ -277,6 +278,7 @@ typedef struct {
 	app_network_srv_t		srv_info;	//# server network information for connection.
 	app_network_ftp_t		ftp_info;	//# ftp server information
 	app_network_wifiap_t	wifiap;		//# wifi ap information for client-mode
+	app_network_wifiap_t	wifilist[WIFIAP_CNT];		//# wifi ap list information for client-mode
 
 	app_system_t	   		sys_info;
 	app_rec_cfg_t			rec_info;

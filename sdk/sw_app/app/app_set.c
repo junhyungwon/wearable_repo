@@ -217,6 +217,17 @@ static void char_memset(void)
 	app_set->wifiap.stealth = CFG_INVALID ;
     memset(app_set->wifiap.reserved, CFG_INVALID, 72) ;
 
+    
+	//# Wifilist information
+	for(i = 0; i < 5; i++)
+	{
+		app_set->wifilist[i].en_key = CFG_INVALID ;
+		memset(app_set->wifilist[i].ssid, CHAR_MEMSET, MAX_CHAR_32 + 3) ;
+		memset(app_set->wifilist[i].pwd, CHAR_MEMSET, MAX_CHAR_64 + 1) ;
+		app_set->wifilist[i].stealth = CFG_INVALID ;
+		memset(app_set->wifilist[i].reserved, CFG_INVALID, 72) ;
+    }
+
 	//# Versions
     memset(app_set->sys_info.fw_ver, CHAR_MEMSET, MAX_CHAR_32);
     memset(app_set->sys_info.hw_ver, CHAR_MEMSET, MAX_CHAR_32);
@@ -376,6 +387,15 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->wifiap.stealth    = %d\n", pset->wifiap.stealth);
 	printf("\n");
 
+	for(i = 0 ; i < 5; i++)
+	{
+		printf("pset->wifilist[%d].en_key = %d\n",i,  pset->wifilist[i].en_key);
+		printf("pset->wifilist[%d].ssid   = %s\n",i, pset->wifilist[i].ssid);
+		printf("pset->wifilist[%d].pwd    = %s\n",i, pset->wifilist[i].pwd);
+		printf("pset->wifilist[%d].stealth    = %d\n",i, pset->wifilist[i].stealth);
+		printf("\n");
+	}
+
     printf("pset->sys_info.fw_ver   = %s\n", pset->sys_info.fw_ver);
     printf("pset->sys_info.hw_ver   = %s\n", pset->sys_info.hw_ver);
     printf("pset->sys_info.deviceId = %s\n", pset->sys_info.deviceId); 
@@ -443,7 +463,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
     char MacAddr[12]  ;
     char compbuff[32];
     char uid[MAX_CHAR_32] = {0, };
-	int ich=0, channels = 0;
+	int ich=0, channels = 0, i = 0;
 	
 	channels = MODEL_CH_NUM+1;
 	//# Encoding cfg per channel
@@ -640,6 +660,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if((int)pset->wifiap.ssid[0] == CHAR_INVALID || (int)pset->wifiap.ssid[0] == 0)
 	    strcpy(pset->wifiap.ssid, "AP_SSID");
+	else
+		strcpy(pset->wifilist[0].ssid, pset->wifiap.ssid) ;
 
 	if((int)pset->wifiap.stealth == CFG_INVALID || (int)pset->wifiap.stealth == CHAR_INVALID)
 	        pset->wifiap.stealth = OFF ;
@@ -649,26 +671,39 @@ static void cfg_param_check_nexx(app_set_t *pset)
     #else
 	if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
     #endif
-    strcpy(pset->wifiap.pwd,"AP_PASSWORD");
-/*
+        strcpy(pset->wifiap.pwd,"AP_PASSWORD");
+	else
+		strcpy(pset->wifilist[0].pwd, pset->wifiap.pwd) ;
+
+
+	//# Wifilist information
+
+	for(i = 0 ; i < 5; i++)
 	{
-	    if(pset->wifiap.en_key != ON && pset->wifiap.en_key != OFF)
-		    pset->wifiap.en_key = ON;
+		if(pset->wifilist[i].en_key != ON && pset->wifilist[i].en_key != OFF)
+			pset->wifilist[i].en_key = ON;
 
-	    if((int)pset->wifiap.ssid[0] == CHAR_INVALID || (int)pset->wifiap.ssid[0] == 0)
-		    strcpy(pset->wifiap.ssid, "NEXX360_AP");
+		if((int)pset->wifilist[i].ssid[0] == CHAR_INVALID || (int)pset->wifilist[i].ssid[0] == 0)
+			strcpy(pset->wifilist[i].ssid, "AP_SSID");
+        else if(i == 0)
+			strcpy(pset->wifiap.ssid, pset->wifilist[0].ssid) ;
 
-	    if((int)pset->wifiap.stealth == CFG_INVALID )
-	        pset->wifiap.stealth = OFF ;
 
-        #if 0
-	    if((int)pset->wifiap.pwd[0] == CHAR_INVALID || (int)pset->wifiap.pwd[0] == 0)
-        #else
-	    if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
-        #endif
-		    strcpy(pset->wifiap.pwd,"12345678");
-    }
-*/
+		if((int)pset->wifilist[i].stealth == CFG_INVALID || (int)pset->wifilist[i].stealth == CHAR_INVALID)
+	        pset->wifilist[i].stealth = OFF ;
+		else
+			strcpy(pset->wifiap.ssid, pset->wifilist[0].ssid) ;
+
+		#if 0
+		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID || (int)pset->wifilist[i].pwd[0] == 0)
+		#else
+		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
+		#endif
+		    strcpy(pset->wifilist[i].pwd,"AP_PASSWORD");
+		else if(i == 0)
+			strcpy(pset->wifiap.pwd, pset->wifilist[0].pwd) ;
+	}
+
 	if(pset->rec_info.period_idx < REC_PERIOD_01 && pset->rec_info.period_idx >= REC_PERIOD_MAX)
 		pset->rec_info.period_idx = REC_PERIOD_01;
 
@@ -914,7 +949,7 @@ static void app_set_default(int default_type)
 	
     app_set_t tmp_set ;
 
-	int ich=0, channels = 0;
+	int ich=0, channels = 0, i = 0;
 	
 	snprintf(msg, sizeof(msg), " [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s", MODEL_NAME);
 	app_log_write(MSG_LOG_WRITE, msg);
@@ -1017,6 +1052,15 @@ static void app_set_default(int default_type)
     strcpy(app_set->wifiap.ssid, "AP_SSID") ;
     strcpy(app_set->wifiap.pwd,"AP_PASSWORD") ;
 	app_set->wifiap.stealth = OFF;
+
+	//# Wifilist information
+    for(i = 0 ; i < 5; i++)
+	{
+		app_set->wifilist[i].en_key = ON;
+		strcpy(app_set->wifilist[i].ssid, "AP_SSID") ;
+		strcpy(app_set->wifilist[i].pwd,"AP_PASSWORD") ;
+		app_set->wifilist[i].stealth = OFF;
+    }
 
 	app_set_version_read();
 

@@ -217,6 +217,44 @@ static int	parseNetworkWifiAp(app_set_t* const set, json_object* rootObj)
 
 	return 0;
 }
+
+static int parseNetworkWifilist(app_set_t* const set, json_object* rootObj)
+{
+    int i = 0 ;
+	size_t dec_size = 0;
+	const char* STR_FIELD = "wifilist";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) 
+	{
+        if( type != json_type_array) 
+		{
+		    printf("JSON Parsing Error --- Cannot find wifiap\n");
+		    return -1;
+		}
+		else 
+		{
+			for(i = 0 ; i < json_object_array_length(jobj); i++)
+			{
+                json_object* wifiInfo = json_object_array_get_idx(jobj, i) ;
+			    type = json_object_get_type(wifiInfo) ;
+			    if(type == json_type_object)
+				{
+					json_object* tmp = json_object_object_get(wifiInfo, "en_key") ;
+			        set->wifilist[i].en_key = json_object_get_int(tmp) ;
+					tmp = json_object_object_get(wifiInfo, "ssid") ;
+			        sprintf(set->wifilist[i].ssid, "%s", json_object_get_string(tmp)) ;
+					tmp = json_object_object_get(wifiInfo, "pwd");
+					memcpy(set->wifilist[i].pwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_64, &dec_size), dec_size);
+					tmp = json_object_object_get(wifiInfo, "stealth");
+					set->wifilist[i].stealth = json_object_get_int(tmp);
+				}
+            }
+		}
+	}
+
+}
+
 static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)
 {
 	size_t dec_size = 0;
@@ -414,22 +452,25 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	// 6. read network wifiap
 	parseNetworkWifiAp(set, rootObject);
 
-	// 7. read system info
+	// 7. read wifilist
+	parseNetworkWifilist(set, rootObject) ;
+
+	// 8. read system info
 	parseSystemInfo(set, rootObject);
 
-	// 8. read record info
+	// 9. read record info
 	parseRecInfo(set, rootObject);
 
-	// 9. read ddns info
+	// 10. read ddns info
 	parseDdnsInfo(set, rootObject);
 
-	// 10. read time info
+	// 11. read time info
 	parseTimeInfo(set, rootObject);
 
-	// 11. read account info 
+	// 12. read account info 
 	parseAccountInfo(set, rootObject);
 
-	// 12. read voip info
+	// 13. read voip info
 #if SYS_CONFIG_VOIP
 	parseVoipInfo(set, rootObject);
 #endif
@@ -516,6 +557,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(rootObject,  "ftp_info", network_ftp);
 
 	// 6. wifi ap information
+	
 	json_object* wifiap = json_object_new_object();
 	json_object_object_add(wifiap, "en_key",  json_object_new_int(set->wifiap.en_key));
 	json_object_object_add(wifiap, "ssid",    json_object_new_string(set->wifiap.ssid));
@@ -523,7 +565,25 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(wifiap, "stealth", json_object_new_int(set->wifiap.stealth));
 	json_object_object_add(rootObject,  "wifiap", wifiap);
 
-	// 7. system  information
+    // 7. wifi list information 
+
+    json_object* wifiInfo[5] ;
+	json_object* wifilist = json_object_new_array();
+    
+	for(i = 0 ; i < 5 ; i++)
+	{
+        wifiInfo[i] = json_object_new_object() ;
+
+	    json_object_object_add(wifiInfo[i], "en_key",  json_object_new_int(set->wifilist[i].en_key));
+	    json_object_object_add(wifiInfo[i], "ssid",    json_object_new_string(set->wifilist[i].ssid));
+	    json_object_object_add(wifiInfo[i], "pwd",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->wifilist[i].pwd, MAX_CHAR_64, &enc_size)));
+	    json_object_object_add(wifiInfo[i], "stealth", json_object_new_int(set->wifilist[i].stealth));
+
+		json_object_array_add(wifilist, wifiInfo[i]);
+	}
+	json_object_object_add(rootObject, "wifilist", wifilist) ;
+
+	// 8. system  information
 	json_object* sys_info = json_object_new_object();
 	json_object_object_add(sys_info, "fw_ver",     json_object_new_string(set->sys_info.fw_ver));
 	json_object_object_add(sys_info, "hw_ver",     json_object_new_string(set->sys_info.hw_ver));
@@ -536,7 +596,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(sys_info, "dev_cam_ch", json_object_new_int(set->sys_info.dev_cam_ch));
 	json_object_object_add(rootObject,  "sys_info", sys_info);
 
-	// 8. record information
+	// 9. record information
 	json_object* rec_info = json_object_new_object();
 	json_object_object_add(rec_info, "period_idx", json_object_new_int(set->rec_info.period_idx));
 	json_object_object_add(rec_info, "overwrite",  json_object_new_int(set->rec_info.overwrite));
@@ -545,7 +605,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(rec_info, "audio_rec",  json_object_new_int(set->rec_info.audio_rec));
 	json_object_object_add(rootObject,  "rec_info", rec_info);
 
-	// 9. ddns information
+	// 10. ddns information
 	json_object* ddns_info = json_object_new_object();
 	json_object_object_add(ddns_info, "ON_OFF",     json_object_new_int(set->ddns_info.ON_OFF));
 	json_object_object_add(ddns_info, "userId",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->ddns_info.userId, MAX_CHAR_32, &enc_size)));
@@ -555,7 +615,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(ddns_info, "interval",   json_object_new_int(set->ddns_info.interval));
 	json_object_object_add(rootObject,  "ddns_info", ddns_info);
 
-	// 10. time information
+	// 11. time information
 	json_object* time_info = json_object_new_object();
 	json_object_object_add(time_info, "time_zone",       json_object_new_int(set->time_info.time_zone));
 	json_object_object_add(time_info, "time_server",     json_object_new_string(set->time_info.time_server));
@@ -564,7 +624,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(time_info, "time_zone_abbr",  json_object_new_string(set->time_info.time_zone_abbr));
 	json_object_object_add(rootObject,  "time_info", time_info);
 
-	// 11. account information
+	// 12. account information
 	json_object* account_info = json_object_new_object();
 	json_object_object_add(account_info, "ON_OFF",       json_object_new_int(set->account_info.ON_OFF));
 	json_object_object_add(account_info, "enctype",       json_object_new_int(set->account_info.enctype));
@@ -584,7 +644,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(rootObject,  "account_info", account_info);
 
 #if SYS_CONFIG_VOIP
-	// 12. voip information
+	// 13. voip information
 	json_object* voip_info = json_object_new_object();
 	json_object_object_add(voip_info, "ipaddr",   json_object_new_string(set->voip.ipaddr));
 	json_object_object_add(voip_info, "port",   json_object_new_int(set->voip.port));
@@ -613,6 +673,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(network_srv);
 	json_object_put(network_ftp);
 	json_object_put(wifiap);
+	json_object_put(wifilist);
 	json_object_put(sys_info);
 	json_object_put(rec_info);
 	json_object_put(ddns_info);
