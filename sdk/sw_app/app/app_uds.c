@@ -535,7 +535,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 	}
 	
 	/* todo
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < 4; i++)
 	{
 	     
 	    if(0!=strcmp(t->wifilist[i].id, app_set->wifilist[i].ssid)){
@@ -2235,7 +2235,7 @@ void *myFunc(void *arg)
 				strcpy(t.wifi_ap.pw, app_set->wifiap.pwd);
 				/*
 				needs modify 
-				for(i = 0 ; i < 5 ; i++)
+				for(i = 0 ; i < 4 ; i++)
 				{
 				    strcpy(t.wifi_list[i].id, app_set->wifilist[i].ssid);
 				    strcpy(t.wifi_list[i].pw, app_set->wifilist[i].pwd);

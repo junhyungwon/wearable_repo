@@ -168,7 +168,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				strcpy(info->passwd, app_set->wifiap.pwd);
 			}
 /*			
-            for(i = 0 ;i < 5; i++)
+            for(i = 0 ;i < 4; i++)
 			{
 			    info->en_key = app_set->wifilist[i].en_key;
 			    strcpy(info->ssid, app_set->wifilist[i].ssid);

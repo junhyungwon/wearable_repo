@@ -219,7 +219,7 @@ static void char_memset(void)
 
     
 	//# Wifilist information
-	for(i = 0; i < 5; i++)
+	for(i = 0; i < WIFIAP_CNT; i++)
 	{
 		app_set->wifilist[i].en_key = CFG_INVALID ;
 		memset(app_set->wifilist[i].ssid, CHAR_MEMSET, MAX_CHAR_32 + 3) ;
@@ -387,7 +387,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->wifiap.stealth    = %d\n", pset->wifiap.stealth);
 	printf("\n");
 
-	for(i = 0 ; i < 5; i++)
+	for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		printf("pset->wifilist[%d].en_key = %d\n",i,  pset->wifilist[i].en_key);
 		printf("pset->wifilist[%d].ssid   = %s\n",i, pset->wifilist[i].ssid);
@@ -672,23 +672,18 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
     #endif
         strcpy(pset->wifiap.pwd,"AP_PASSWORD");
-	else
-		strcpy(pset->wifilist[0].pwd, pset->wifiap.pwd) ;
+	
 
 
 	//# Wifilist information
 
-	for(i = 0 ; i < 5; i++)
+	for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		if(pset->wifilist[i].en_key != ON && pset->wifilist[i].en_key != OFF)
 			pset->wifilist[i].en_key = ON;
 
 		if((int)pset->wifilist[i].ssid[0] == CHAR_INVALID || (int)pset->wifilist[i].ssid[0] == 0)
 			strcpy(pset->wifilist[i].ssid, "AP_SSID");
-        else if(i == 0)
-			strcpy(pset->wifiap.ssid, pset->wifilist[0].ssid) ;
-
-
 		if((int)pset->wifilist[i].stealth == CFG_INVALID || (int)pset->wifilist[i].stealth == CHAR_INVALID)
 	        pset->wifilist[i].stealth = OFF ;
 		else
@@ -700,8 +695,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
 		#endif
 		    strcpy(pset->wifilist[i].pwd,"AP_PASSWORD");
-		else if(i == 0)
-			strcpy(pset->wifiap.pwd, pset->wifilist[0].pwd) ;
+
 	}
 
 	if(pset->rec_info.period_idx < REC_PERIOD_01 && pset->rec_info.period_idx >= REC_PERIOD_MAX)
@@ -1054,7 +1048,7 @@ static void app_set_default(int default_type)
 	app_set->wifiap.stealth = OFF;
 
 	//# Wifilist information
-    for(i = 0 ; i < 5; i++)
+    for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		app_set->wifilist[i].en_key = ON;
 		strcpy(app_set->wifilist[i].ssid, "AP_SSID") ;

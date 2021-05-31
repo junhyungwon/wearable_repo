@@ -28,7 +28,7 @@
 #define MAX_GOV						MAX_FPS
 #define DEFAULT_FPS					MAX_FPS
 #define DEFAULT_GOV					DEFAULT_FPS
-#define WIFIAP_CNT                  5
+#define WIFIAP_CNT                  4
 
 #define MIN_FPS 					1
 #define MAX_BITRATE 				8000 // Kbps

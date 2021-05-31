@@ -567,10 +567,10 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 
     // 7. wifi list information 
 
-    json_object* wifiInfo[5] ;
+    json_object* wifiInfo[4] ;
 	json_object* wifilist = json_object_new_array();
     
-	for(i = 0 ; i < 5 ; i++)
+	for(i = 0 ; i < 4 ; i++)
 	{
         wifiInfo[i] = json_object_new_object() ;
 
