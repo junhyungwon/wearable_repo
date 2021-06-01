@@ -421,6 +421,12 @@ static int time_sync(void)
 
     if(gettime_from_ntp(timesrv_addr))
     {
+        if(app_rec_state())
+		{
+			app_rec_stop(1);
+            app_cfg->ste.b.prerec_state = 1 ;
+		}
+
         app_msleep(100);
         Vsys_datetime_init2(app_set->time_info.daylight_saving);   //# m3 Date/Time init
 
@@ -465,6 +471,12 @@ static int time_sync(void)
                 dprintf("--- changed time default 2000 ---\n");
         }
     }
+
+	if(app_cfg->ste.b.prerec_state)
+	{
+		app_rec_start() ;
+	}
+
     return retval;
 }
 

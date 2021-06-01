@@ -73,6 +73,7 @@ static app_gps_obj_t *igps=&t_gps_obj;
 
 static char fitt_meta_str[META_REC_TOTAL];
 static int fitt_cnt = 0;
+static int sync_time = 1;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -130,6 +131,7 @@ static void *THR_gps_jack_detect(void *prm)
 		dprintf("GPS Jack GET value %d\n", val);
 		if (val == 1) {
 			app_cfg->ste.b.gps = 1;
+			sync_time = 1 ;
             app_cfg->wd_tot |= WD_DEV;
 			event_send(&igps->hObj, APP_CMD_START, 0, 0);
 		} else {
@@ -150,6 +152,7 @@ static void *THR_gps_jack_detect(void *prm)
 			dprintf("GPS Jack GPIO value %d\n", val);
 			if ((app_cfg->ste.b.gps == 0) && (val == 1)) {
 				app_cfg->ste.b.gps = 1;
+			    sync_time = 1 ;
 				app_cfg->wd_tot |= WD_DEV;
 				event_send(&igps->hObj, APP_CMD_START, 0, 0);
 			} 
@@ -266,6 +269,9 @@ static int app_sys_time(struct tm *ts)
 	int timezone = app_set->time_info.time_zone - 12;
 	time_t now, set;
 
+    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
+  
+	aprintf("---reached app_sys_time ---\n");
     //# get current time
 	now = time(NULL);
 
@@ -275,13 +281,27 @@ static int app_sys_time(struct tm *ts)
 	//# if difference 1min.
 	if(abs(now-set) > 60)
 	{
+        if (app_rec_state()) 
+		{
+	        app_rec_stop(1);
+            app_cfg->ste.b.prerec_state = 1 ;
+	    } 
+		
 		stime(&set);
 		Vsys_datetime_init();	//# m3 Date/Time init
     	app_msleep(100);
 		if (dev_rtc_set_time(*ts) < 0) {
 			eprintf("Failed to set system time to rtc\n!!!");
 		}
+
+        if (app_cfg->ste.b.prerec_state) 
+		{
+	        app_rec_start();
+	    }
+        app_cfg->ste.b.rec = 0 ;
+
 		aprintf("--- changed time from GPS ---\n");
+
 	}
 
 	return SOK;
@@ -341,7 +361,7 @@ static void send_gps_data()
 static void *THR_gps_recv_msg(void *prm)
 {
 	int exit = 0, cmd;
-	int sync_time = 1;
+//	int sync_time = 1;
 	
 	aprintf("enter...\n");
 	
