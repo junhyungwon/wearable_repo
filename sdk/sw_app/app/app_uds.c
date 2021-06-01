@@ -2451,7 +2451,7 @@ void *myFunc(void *arg)
 				strcpy(t.wifi_ap.pw, app_set->wifiap.pwd);
 				/*
 				needs modify 
-				for(i = 0 ; i < 4 ; i++)
+				for(i = 0 ; i < 5 ; i++)
 				{
 				    strcpy(t.wifi_list[i].id, app_set->wifilist[i].ssid);
 				    strcpy(t.wifi_list[i].pw, app_set->wifilist[i].pwd);

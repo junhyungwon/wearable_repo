@@ -764,7 +764,7 @@ static void *THR_ftp(void *prm)
     iftp->ftp_state = FTP_STATE_NONE;
     iftp->retry_cnt = 0 ;
 
-    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
+//    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
 
 	while (!exit)
 	{

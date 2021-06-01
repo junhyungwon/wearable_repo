@@ -167,7 +167,7 @@ static int	parseSystemInfo(app_set_t* const set, json_object* rootObj)
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
 	if( type != json_type_object) {
-		printf("JSON Parsing Error --- Cannot find wifiap\n");
+		printf("JSON Parsing Error --- Cannot find sys_info\n");
 		return -1;
 	}
 	json_object* tmp = json_object_object_get(jobj, "fw_ver");
@@ -229,7 +229,7 @@ static int parseNetworkWifilist(app_set_t* const set, json_object* rootObj)
 	{
         if( type != json_type_array) 
 		{
-		    printf("JSON Parsing Error --- Cannot find wifiap\n");
+		    printf("JSON Parsing Error --- Cannot find wifilist\n");
 		    return -1;
 		}
 		else 
