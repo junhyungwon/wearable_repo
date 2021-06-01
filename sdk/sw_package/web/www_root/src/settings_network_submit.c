@@ -145,15 +145,19 @@ static int submit_settings_qcgi()
 		for (i = 0; i < 4; i++)
 		{
 			len = strlen(wifilist_ssid[i]);
-			if (len == 0 || len > 32) {
-				CGI_DBG("Invalid Parameter, WIFI[%d] SSID, len=%d\n", i+1, len);
-				return ERR_INVALID_PARAM;
+			if (len == 0){
+				CGI_DBG("WIFI%d SSID is null\n", i+1);
 			}
+			else if(len > 32){
+				CGI_DBG("Invalid Parameter, WIFI%d SSID:%s, len=%d\n", i+1, wifilist_ssid[i], len);
+				return ERR_INPUT;
+			}
+
 			len = strlen(wifilist_pass[i]);
 			if (len != 0 && (len < 8 || len > 64)) // Allow NULL password. since 2020.02.26
 			{
 				CGI_DBG("Invalid Parameter, WIFI[%d] password, len=%d\n", i+1, len);
-				return ERR_INVALID_PARAM;
+				return ERR_INPUT;
 			}
 		}
 
