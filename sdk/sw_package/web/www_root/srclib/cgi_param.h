@@ -153,6 +153,15 @@ typedef struct _tagCgiNetworkConfiguration {
 	int		  live_stream_account_enctype;
     T_CGI_ACCOUNT live_stream_account;
 }T_CGI_NETWORK_CONFIG;
+typedef struct _tagCgiNetworkConfiguration2 {
+    T_CGI_NETWORK_INTERFACE wireless;
+    T_CGI_NETWORK_INTERFACE cradle;
+    T_CGI_ACCOUNT wifi_ap;
+    T_CGI_ACCOUNT wifi_ap_list[4];
+    int       live_stream_account_enable;
+	int		  live_stream_account_enctype;
+    T_CGI_ACCOUNT live_stream_account;
+}T_CGI_NETWORK_CONFIG2;
 
 typedef struct _tagCgiSystemConfiguration{
 	char model[32];
