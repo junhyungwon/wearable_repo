@@ -465,6 +465,96 @@ int setNetworkProtocols(onvif_NetworkProtocol* np){
 	return 0;
 }
 
+static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
+{
+	int isChanged=0, i;
+
+	// wireless
+	if(t->wireless.addr_type != app_set->net_info.wtype) {
+		app_set->net_info.wtype = t->wireless.addr_type;
+		DBG_UDS("app_set->net_info.wtype=%d\n", app_set->net_info.wtype);
+		isChanged++;
+	}
+
+	if(t->wireless.addr_type == NET_TYPE_STATIC){
+
+		if(0!=strcmp(t->wireless.ipv4, app_set->net_info.wlan_ipaddr)){
+			strcpy(app_set->net_info.wlan_ipaddr, t->wireless.ipv4);
+			DBG_UDS("app_set->net_info.wlan_ipaddr=%s\n", app_set->net_info.wlan_ipaddr);
+			isChanged++;
+		}
+		if(0!=strcmp(t->wireless.gw, app_set->net_info.wlan_gateway)){
+			strcpy(app_set->net_info.wlan_gateway, t->wireless.gw);
+			DBG_UDS("app_set->net_info.wlan_gateway=%s\n", app_set->net_info.wlan_gateway);
+			isChanged++;
+		}
+		if(0!=strcmp(t->wireless.mask, app_set->net_info.wlan_netmask)){
+			strcpy(app_set->net_info.wlan_netmask, t->wireless.mask);
+			DBG_UDS("app_set->net_info.wlan_netmask=%s\n", app_set->net_info.wlan_netmask);
+			isChanged++;
+		}
+	}
+
+	// cradle
+	if(t->cradle.addr_type != app_set->net_info.type) {
+		app_set->net_info.type = t->cradle.addr_type;
+		DBG_UDS("app_set->net_info.type=%d\n", app_set->net_info.type);
+		isChanged++;
+	}
+
+	if(t->cradle.addr_type == NET_TYPE_STATIC){
+
+		if(0!=strcmp(t->cradle.ipv4, app_set->net_info.eth_ipaddr)){
+			strcpy(app_set->net_info.eth_ipaddr, t->cradle.ipv4);
+			DBG_UDS("app_set->net_info.eth_ipaddr=%s\n", app_set->net_info.eth_ipaddr);
+			isChanged++;
+		}
+		if(0!=strcmp(t->cradle.gw, app_set->net_info.eth_gateway)){
+			strcpy(app_set->net_info.eth_gateway, t->cradle.gw);
+			DBG_UDS("app_set->net_info.eth_gateway=%s\n", app_set->net_info.eth_gateway);
+			isChanged++;
+		}
+		if(0!=strcmp(t->cradle.mask, app_set->net_info.eth_netmask)){
+			strcpy(app_set->net_info.eth_netmask, t->cradle.mask);
+			DBG_UDS("app_set->net_info.eth_netmask=%s\n", app_set->net_info.eth_netmask);
+			isChanged++;
+		}
+	}
+// under working .. needs remove wifiap.ssid part 
+
+	// wifi ap info, NOT NULL
+	if(0!=strcmp(t->wifi_ap.id, app_set->wifiap.ssid)){
+		strcpy(app_set->wifiap.ssid, t->wifi_ap.id);
+		DBG_UDS("app_set->wifiap.ssid=%s\n", app_set->wifiap.ssid);
+		isChanged++;
+	}
+	if(0!=strcmp(t->wifi_ap.pw, app_set->wifiap.pwd)){
+		strcpy(app_set->wifiap.pwd, t->wifi_ap.pw);
+		DBG_UDS("app_set->wifiap.pwd=%s\n", app_set->wifiap.pwd);
+		isChanged++;
+	}
+	
+	for(i = 0; i < 4; i++)
+	{
+	    if(0!=strcmp(t->wifi_ap_list[i].id, app_set->wifilist[i].ssid)){
+		    strcpy(app_set->wifilist[i].ssid, t->wifi_ap_list[i].id);
+		    DBG_UDS("app_set->wifilist[%d].ssid=%s\n", i, app_set->wifilist[i].ssid);
+		    isChanged++;
+	    }
+ 	    if(0!=strcmp(t->wifi_ap_list[i].pw, app_set->wifilist[i].pwd)){
+		    strcpy(app_set->wifilist[i].pwd, t->wifi_ap_list[i].pw);
+		    DBG_UDS("app_set->wifilist[%d].pwd=%s\n", i, app_set->wifilist[i].pwd);
+		    isChanged++;
+	    }
+	}
+
+	if(isChanged>0) {
+		DBG_UDS("isChanged:%d\n", isChanged);
+	}
+
+	return isChanged;
+}
+
 static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 {
 	int isChanged=0;
@@ -2162,6 +2252,132 @@ void *myFunc(void *arg)
 					ret = write(cs_uds, strOptions, sizeof strOptions);
 				} else {
 					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed read: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
+		else if (strcmp(rbuf, "GetNetworkConfiguration2") == 0)
+		{
+			//sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration2 ---");
+			{
+				int i;
+				/* start init */
+				T_CGI_NETWORK_CONFIG2 t;
+				memset(&t, 0, sizeof t);
+				T_NETWORK_INFO wireless, cradle;
+				char rtsp_user[32] = {0};
+				char rtsp_pass[32] = {0};
+				wireless.dhcp = NET_TYPE_STATIC;
+				sprintf(wireless.ipaddr, "192.168.0.252");
+				sprintf(wireless.gateway, "192.168.0.1");
+				sprintf(wireless.netmask, "255.255.0.0");
+				cradle.dhcp = NET_TYPE_STATIC;
+				sprintf(cradle.ipaddr, "192.168.1.252");
+				sprintf(cradle.gateway, "192.168.1.1");
+				sprintf(cradle.netmask, "255.255.0.0");
+				/* end init */
+
+				wireless.dhcp = app_set->net_info.wtype;
+				if (wireless.dhcp)
+				{
+					getNetworkInfo("wlan0", &wireless);
+				}
+				else
+				{
+					strcpy(wireless.ipaddr, app_set->net_info.wlan_ipaddr);
+					strcpy(wireless.gateway, app_set->net_info.wlan_gateway);
+					strcpy(wireless.netmask, app_set->net_info.wlan_netmask);
+				}
+
+				cradle.dhcp = app_set->net_info.type;
+				if (cradle.dhcp)
+				{
+					getNetworkInfo("eth0", &cradle);
+				}
+				else
+				{
+					strcpy(cradle.ipaddr, app_set->net_info.eth_ipaddr);
+					strcpy(cradle.gateway, app_set->net_info.eth_gateway);
+					strcpy(cradle.netmask, app_set->net_info.eth_netmask);
+				}
+
+				if (app_set->account_info.enctype) // if AES
+				{
+					decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32);
+					decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_pass, 32);
+				}
+				else
+				{
+					strcpy(rtsp_user, app_set->account_info.rtsp_userid);
+					strcpy(rtsp_pass, app_set->account_info.rtsp_passwd);
+				}
+				DBG_UDS("rtsp_user=%s\n", rtsp_user);
+				DBG_UDS("rtsp_pass=%s\n", rtsp_pass);
+
+				t.wireless.addr_type = wireless.dhcp;
+				strcpy(t.wireless.ipv4, wireless.ipaddr);
+				strcpy(t.wireless.gw, wireless.gateway);
+				strcpy(t.wireless.mask, wireless.netmask);
+				t.cradle.addr_type = cradle.dhcp;
+				strcpy(t.cradle.ipv4, cradle.ipaddr);
+				strcpy(t.cradle.gw, cradle.gateway);
+				strcpy(t.cradle.mask, cradle.netmask);
+
+				// needs modify
+				strcpy(t.wifi_ap.id, app_set->wifiap.ssid);
+				strcpy(t.wifi_ap.pw, app_set->wifiap.pwd);
+
+				for(i = 0 ; i < 4 ; i++)
+				{
+				    strcpy(t.wifi_ap_list[i].id, app_set->wifilist[i].ssid);
+				    strcpy(t.wifi_ap_list[i].pw, app_set->wifilist[i].pwd);
+				}
+
+				t.live_stream_account_enable = app_set->account_info.ON_OFF;
+				t.live_stream_account_enctype = app_set->account_info.enctype;
+				strcpy(t.live_stream_account.id, rtsp_user);
+				strcpy(t.live_stream_account.pw, rtsp_pass);
+
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+
+				if (ret > 0)
+				{
+
+					// TODO something...
+				}
+				else
+				{
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed write: ");
+				}
+			}
+		}
+		else if (strcmp(rbuf, "SetNetworkConfiguration2") == 0 ) {
+			sprintf(wbuf, "[APP_UDS] --- SetNetworkConfiguration2 ---");
+			app_log_write(MSG_LOG_WRITE, wbuf);
+
+			// 1. send READY
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+
+			if(ret > 0){
+				T_CGI_NETWORK_CONFIG2 t;
+				memset(&t, 0, sizeof t);
+				ret = read(cs_uds, &t, sizeof t);
+				DBG_UDS("Read, size=%d\n", ret);
+				if(ret > 0){
+					ret = setNetworkConfiguration2(&t);
+
+					char strOptions[128] = "OK";
+					if(ret == 0)
+						sprintf(strOptions, "%s", "NO CHANGE");
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, ", ret);
 					perror("failed read: ");
 				}
 			} else {

@@ -119,12 +119,12 @@ int do_sysmng(char *pContents)
 
 int put_json_all_config()
 {
-	int ret=-1;
+	int ret=-1, i;
 
 	json_object *all_config;
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
-	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj;
+	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4];
 	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
@@ -263,9 +263,10 @@ int put_json_all_config()
 	cradle_obj   = json_object_new_object();
 	wifiap_obj   = json_object_new_object();
 	livestm_obj  = json_object_new_object();
+	wifilist     = json_object_new_array();
 	{
-		T_CGI_NETWORK_CONFIG p;memset(&p, 0, sizeof p);
-		if(0>sysctl_message(UDS_GET_NETWORK_CONFIG, (void*)&p, sizeof p )){
+		T_CGI_NETWORK_CONFIG2 p;memset(&p, 0, sizeof p);
+		if(0>sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&p, sizeof p )){
 			ret = -1;
 			goto _FREE_NETWORK_OBJ;
 		}
@@ -290,6 +291,20 @@ int put_json_all_config()
 		json_object_object_add(livestm_obj, "id",     json_object_new_string(p.live_stream_account.id));
 		json_object_object_add(livestm_obj, "pw",     json_object_new_string(p.live_stream_account.pw));
 		json_object_object_add(network_obj, "live_stream_account", livestm_obj);
+
+		char fname[10];
+		for(i = 0 ; i < 4 ; i++)
+		{
+			wifiInfo[i] = json_object_new_object() ;
+
+			sprintf(fname,"ssid%d", i+1);
+			json_object_object_add(wifiInfo[i], fname,    json_object_new_string(p.wifi_ap_list[i].id));
+			sprintf(fname,"pwd%d", i+1);
+			json_object_object_add(wifiInfo[i], fname,     json_object_new_string(p.wifi_ap_list[i].pw));
+
+			json_object_array_add(wifilist, wifiInfo[i]);
+		}
+		json_object_object_add(network_obj, "wifilist", wifilist) ;
 	}
 	json_object_object_add(all_config, "network_settings", network_obj);
 
@@ -416,6 +431,8 @@ _FREE_NETWORK_OBJ:
 	json_object_put(cradle_obj);
 	json_object_put(wifiap_obj);
 	json_object_put(livestm_obj);
+	for(i = 0; i < 4 ; i++)json_object_put(wifiInfo[i]);
+	json_object_put(wifilist);
 	json_object_put(network_obj);
 
 _FREE_OPERATION_OBJ:
@@ -674,6 +691,73 @@ void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 	json_object_put(myobj);
 }
 
+void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
+{
+	int i;
+	json_object *myobj, *wirelessobj, *cradleobj, *wifiapobj, *livestmobj, *wifilist;
+    json_object* wifiInfo[4];
+
+	myobj       = json_object_new_object();
+	wirelessobj = json_object_new_object();
+	cradleobj   = json_object_new_object();
+	wifiapobj   = json_object_new_object();
+	wifilist    = json_object_new_array();
+	livestmobj  = json_object_new_object();
+
+	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+
+	json_object_object_add(wirelessobj, "addr_type", json_object_new_int(p->wireless.addr_type));
+	json_object_object_add(wirelessobj, "ipv4",      json_object_new_string(p->wireless.ipv4));
+	json_object_object_add(wirelessobj, "gateway",   json_object_new_string(p->wireless.gw));
+	json_object_object_add(wirelessobj, "netmask",   json_object_new_string(p->wireless.mask));
+	json_object_object_add(myobj, "wireless", wirelessobj);
+
+	json_object_object_add(cradleobj, "addr_type", json_object_new_int(p->cradle.addr_type));
+	json_object_object_add(cradleobj, "ipv4",      json_object_new_string(p->cradle.ipv4));
+	json_object_object_add(cradleobj, "gateway",   json_object_new_string(p->cradle.gw));
+	json_object_object_add(cradleobj, "netmask",   json_object_new_string(p->cradle.mask));
+	json_object_object_add(myobj, "cradle", cradleobj);
+
+	json_object_object_add(wifiapobj, "ssid", json_object_new_string(p->wifi_ap.id));
+	json_object_object_add(wifiapobj, "pass",   json_object_new_string(p->wifi_ap.pw));
+	json_object_object_add(myobj, "wifi_ap", wifiapobj);
+
+	char fname[10];
+	for(i = 0 ; i < 4 ; i++)
+	{
+        wifiInfo[i] = json_object_new_object() ;
+
+		sprintf(fname,"ssid");
+		json_object_object_add(wifiInfo[i], fname,    json_object_new_string(p->wifi_ap_list[i].id));
+		sprintf(fname,"pass");
+		json_object_object_add(wifiInfo[i], fname,    json_object_new_string(p->wifi_ap_list[i].pw));
+
+		json_object_array_add(wifilist, wifiInfo[i]);
+	}
+	json_object_object_add(myobj, "wifilist", wifilist) ;
+
+	json_object_object_add(livestmobj, "enable",  json_object_new_int(   p->live_stream_account_enable));
+	json_object_object_add(livestmobj, "enctype", json_object_new_int(   p->live_stream_account_enctype));
+	json_object_object_add(livestmobj, "id",      json_object_new_string(p->live_stream_account.id));
+	json_object_object_add(livestmobj, "pw",      json_object_new_string(p->live_stream_account.pw));
+	json_object_object_add(myobj, "live_stream_account", livestmobj);
+
+	PUT_CACHE_CONTROL_NOCACHE;
+	PUT_CONTENT_TYPE_JSON;
+	PUT_CRLF;
+
+	PUTSTR("%s\r\n", json_object_to_json_string(myobj));
+
+	// free
+	json_object_put(wirelessobj);
+	json_object_put(cradleobj);
+	json_object_put(wifiapobj);
+	for(i = 0 ; i < 4 ; i++) json_object_put(wifiInfo[i]);
+	json_object_put(wifilist);
+	json_object_put(livestmobj);
+	json_object_put(myobj);
+}
+
 void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 {
 	json_object *myobj, *misc_obj, *recordobj;
@@ -853,6 +937,12 @@ int do_search(char *pContents)
 					T_CGI_NETWORK_CONFIG t;memset(&t,0, sizeof t);
 					sysctl_message(UDS_GET_NETWORK_CONFIG, (void*)&t, sizeof t );
 					put_json_network_config(&t);
+					return 0;
+				}
+				else if(!strcmp(prm[i].value, "network_config2")){
+					T_CGI_NETWORK_CONFIG2 t;memset(&t,0, sizeof t);
+					sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&t, sizeof t );
+					put_json_network_config2(&t);
 					return 0;
 				}
 				else if(!strcmp(prm[i].value, "servers_config")){
