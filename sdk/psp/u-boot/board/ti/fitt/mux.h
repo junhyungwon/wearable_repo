@@ -24,7 +24,7 @@
 /* 29-32 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 29->RESERVED,               	30->RESERVED,            			31[AC23]->B_AIC_BCLK,      			32[AB22]->B_AIC_WCLK
 /* 33-36 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 33[AD29]->NC,               	34[AC24]->NC,            			35[Y22]->B_AIC_DIN,        			36[Y21]->B_AIC_DOUT
 /* 37-40 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 37->RESERVED,               	38->RESERVED,            			39->RESERVED,              			40->RESERVED
-/* 41-44 */		BIT(7), BIT(0), BIT(0), BIT(0),	//# 41[AB31]->NC,            		42[AC30]->NC,						43->RESERVED,              			44->RESERVED
+/* 41-44 */		BIT(0), BIT(0), BIT(0), BIT(0),	//# 41[AB31]->NC,            		42[AC30]->NC,						43->RESERVED,              			44->RESERVED
 /* 45-48 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 45->RESERVED,               	46->RESERVED,            			47->RESERVED,              			48->RESERVED
 /* 49-52 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 49->RESERVED,               	50->RESERVED,            			51->RESERVED,              			52->RESERVED
 /* 53-56 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 53->RESERVED,               	54->RESERVED,            			55->RESERVED,              			56->RESERVED
@@ -36,7 +36,7 @@
 /* 77-80 */		BIT(2), BIT(1), BIT(1), BIT(0),	//# 77[N26]->UART1_RXD,         	78[D2]->HDMI_SCL,        			79[D1]->HDMI_SDA,          			80[G28]->NC
 /* 81-84 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 81[G29]->NC,                	82[N24]->NC,             			83[J27]->NC,               			84[J28]->NC
 /* 85-88 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 85[J29]->NC,                	86[M29]->NC,             			87[M27]->NC,               			88[N23]->NC
-/* 99-92 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 89[W6]->GPMC_D[0],          	90[W4]->GPMC_D[1],        			91[W3]->GPMC_D[2],         			92[U2]->GPMC_D[3]
+/* 89-92 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 89[W6]->GPMC_D[0],          	90[W4]->GPMC_D[1],        			91[W3]->GPMC_D[2],         			92[U2]->GPMC_D[3]
 /* 93-96 */		BIT(0), BIT(0), BIT(0), BIT(0), //# 93[W9]->GPMC_D[4],          	94[T5]->GPMC_D[5],         			95[T3]->GPMC_D[6],         			96[T2]->GPMC_D[7]
 /* 97-100 */	BIT(0), BIT(0), BIT(0), BIT(0), //# 97[T1]->BTMODE[8],          	98[T8]->BTMODE[9],         			99[R6]->BTMODE[10],        			100[R4]->BTMODE[11]
 /* 101-104 */	BIT(0), BIT(0), BIT(0), BIT(0), //# 101[R3]->BTMODE[12],        	102[R2]->BTMODE[13],      			103[R1]->BTMODE[14],       			104[P2]->BTMODE[15]
@@ -61,7 +61,7 @@
 /* 177-180 */	BIT(0), BIT(0), BIT(7), BIT(0), //# 177[F21]->NC,               	178[E20]->NC,              			179[C20]->BSL_RTS_GP2[21], 			180[F24]->NC
 /* 181-184 */	BIT(0), BIT(0), BIT(0), BIT(0), //# 181[D21]->NC,               	182[J23]->NC,              			183[H23]->NC,            			184[J24]->NC
 /* 185-188 */	BIT(0), BIT(0), BIT(0), BIT(0), //# 185[E24]->NC,               	186[D24]->NC,              			187[C24]->NC,            			188[C25]->NC
-/* 189-192 */	BIT(0), BIT(0), BIT(0), BIT(7),	//# 189[C26]->NC, 					190[E26]->NC, 						191[B26]->NC, 						192[A26]->NC
+/* 189-192 */	BIT(0), BIT(0), BIT(0), BIT(0),	//# 189[C26]->NC, 					190[E26]->NC, 						191[B26]->NC, 						192[A26]->NC
 /* 193-196 */	BIT(0), BIT(0), BIT(0), BIT(7), //# 193[B25]->NC, 					194[B27]->NC, 						195[A27]->NC, 						196[C28]->MICOM_HOLD_GP2[26]
 /* 197-200 */	BIT(0), BIT(0), BIT(0), BIT(0), //# 197[B28]->NC, 					198[B29]->NC, 						199[A29]->NC, 						200[C30]->NC
 /* 201-204 */	BIT(0), BIT(0), BIT(0), BIT(7),	//# 201[B30]->NC, 					202[A30]->NC, 						203[B31]->NC, 						204[D3]->VIN1_A_LOCK_GP2[28]

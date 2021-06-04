@@ -844,7 +844,7 @@ void set_muxconf_regs(void)
 	 * 0x0005:XXXX --> input/pull-dis
 	 * 0x0004:XXXX --> input/pull-down
 	 */
-	__raw_writel(0x000C0040, 0x48140928); /* MMC/SD pull-down enable */
+	__raw_writel(0x00060040, 0x48140928); /* I2C2 SDA Pull-up Enable */
 
 	/* Board Revision GPIO Init */
 	__raw_writel(0x00040080, 0x4814081C); /* GP0[1] */

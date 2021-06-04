@@ -48,13 +48,6 @@ static int vid_port[] = {
 };
 #else
 #define VPS_FPS				15
-static int vid_port[] = {
-//  display 3<--> 4 change
-	SYSTEM_CAPTURE_INST_VIP1_PORTB,		//# (1)
-	SYSTEM_CAPTURE_INST_VIP0_PORTA,		//# (4)
-	SYSTEM_CAPTURE_INST_VIP0_PORTB,		//# (3)
-	SYSTEM_CAPTURE_INST_VIP1_PORTA,		//# (2)
-};
 #endif
 
 /*----------------------------------------------------------------------------
