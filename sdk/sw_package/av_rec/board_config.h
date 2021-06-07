@@ -23,6 +23,10 @@
 #	define NEXX360W						
 #	define MODEL_CH_NUM					4
 #	define MAX_FPS						15
+#elif defined(LF_SYS_NEXX360V)
+#	define NEXX360V
+#	define MODEL_CH_NUM					4
+#	define MAX_FPS						15
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
 #	define MODEL_CH_NUM					4

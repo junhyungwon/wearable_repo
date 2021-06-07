@@ -225,7 +225,7 @@ static void *THR_dev(void *prm)
 			app_voip_set_play_volume();
 		#endif
 		}
-#elif defined(NEXX360W)
+#elif defined(NEXX360W) || defined(NEXX360V)
 		#if SYS_CONFIG_VOIP
 		/* record key --> call function */
 		rkey = chk_rec_key();

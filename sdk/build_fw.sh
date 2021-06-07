@@ -10,6 +10,7 @@ function fmenu()
  echo "1. NEXX360 Basic                          "
  echo "2. NEXX360 Wireless                       "
  echo "3. NEXX ONE                               "
+ echo "4. NEXX360 VOIP                           "
  echo "=========================================="
 }
 
@@ -88,6 +89,11 @@ do
 			echo " "
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
+			break;;
+		"4" )
+			echo " "
+			echo "select NEXX360 VOIP"
+			FW_PREFIX="NEXX360V"
 			break;;
 		"3" )
 			echo " "
