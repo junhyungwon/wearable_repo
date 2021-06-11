@@ -88,6 +88,20 @@ static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 
 	return 0;
 }
+static int  parseMultiapInfo(app_set_t* const set, json_object* rootObj)
+{
+	size_t dec_size = 0;
+	const char* STR_FIELD = "multi_ap";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find multi_ap\n");
+		return -1;
+	}
+	json_object* tmp = json_object_object_get(jobj, "ON_OFF");
+	set->multi_ap.ON_OFF = json_object_get_int(tmp);
+}
+
 static int	parseTimeInfo(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "time_info";
@@ -470,7 +484,10 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	// 12. read account info 
 	parseAccountInfo(set, rootObject);
 
-	// 13. read voip info
+    // 13. multap info
+	parseMultiapInfo(set, rootObject);
+
+	// 14. read voip info
 #if SYS_CONFIG_VOIP
 	parseVoipInfo(set, rootObject);
 #endif
@@ -643,6 +660,12 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(account_info,  "onvif", onvif);
 	json_object_object_add(rootObject,  "account_info", account_info);
 
+
+	// 13. account information
+	json_object* multi_ap = json_object_new_object();
+	json_object_object_add(multi_ap, "ON_OFF",       json_object_new_int(set->multi_ap.ON_OFF));
+    json_object_object_add(rootObject,  "multi_ap", multi_ap);
+
 #if SYS_CONFIG_VOIP
 	// 13. voip information
 	json_object* voip_info = json_object_new_object();
@@ -681,6 +704,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(webuser);
 	json_object_put(onvif);
 	json_object_put(account_info);
+	json_object_put(multi_ap);
 #if SYS_CONFIG_VOIP
 	json_object_put(voip_info);
 #endif

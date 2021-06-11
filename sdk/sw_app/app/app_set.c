@@ -270,6 +270,7 @@ static void char_memset(void)
 	memset(app_set->account_info.onvif.pw, CHAR_MEMSET, MAX_CHAR_32) ;
 
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
+    app_set->multi_ap.ON_OFF = CFG_INVALID ;
 
 #if SYS_CONFIG_VOIP
 	// VOIP size : 66 
@@ -280,9 +281,9 @@ static void char_memset(void)
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
 	app_set->voip.use_stun = 0 ;
     memset(app_set->voip.reserved, CHAR_MEMSET, 40) ;
-    memset(app_set->reserved, CFG_INVALID, 362) ;
+    memset(app_set->reserved, CFG_INVALID, 360) ;
 #else
-    memset(app_set->reserved, CFG_INVALID, 474) ;
+    memset(app_set->reserved, CFG_INVALID, 472) ;
 #endif
 //    memset(app_set->reserved, CFG_INVALID, 794) ;
 }
@@ -443,6 +444,8 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.lv = %d\n", pset->account_info.onvif.lv) ;
     printf("pset->account_info.onvif.id = %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
+    printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
+
 #if SYS_CONFIG_VOIP
     printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
     printf("pset->voip.port   = %d\n", pset->voip.port);
@@ -761,7 +764,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->account_info.ON_OFF = ON ;
 
     printf("pset->account_info.ON_OFF		= %d\n", pset->account_info.ON_OFF) ;
- 
+
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
 	
@@ -845,6 +848,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
     printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
 
+    if((int)pset->multi_ap.ON_OFF <= CFG_INVALID || (int)pset->multi_ap.ON_OFF > 1 )
+        pset->multi_ap.ON_OFF = OFF ;
+
+    printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
 #if SYS_CONFIG_VOIP	
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
@@ -1145,6 +1152,8 @@ static void app_set_default(int default_type)
 	app_set->account_info.onvif.lv = 0;	// 0:Administrator
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
+
+    app_set->multi_ap.ON_OFF = OFF ; 
 
 #if SYS_CONFIG_VOIP
     strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);

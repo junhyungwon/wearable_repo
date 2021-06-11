@@ -255,6 +255,10 @@ typedef struct {
     char reserved[121] ;
 } app_account_t ; // size:320
 
+typedef struct {
+    short ON_OFF ;
+} app_multi_ap_t; // 66
+
 #if SYS_CONFIG_VOIP
 #pragma pack(1)
 typedef struct {
@@ -286,12 +290,13 @@ typedef struct {
     app_timecfg_t           time_info;
     
     app_account_t           account_info;
+	app_multi_ap_t          multi_ap;
 
 #if SYS_CONFIG_VOIP
     app_voip_t              voip; //  => 72 + 40
-	char reserved[362];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40)
+	char reserved[360];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40)
 #else
-	char reserved[474];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
+	char reserved[472];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
 #endif
 	
 } app_set_t;
