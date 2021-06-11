@@ -189,6 +189,9 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				info->dhcp = 1;
 			}
 			
+			if(app_set->muti_ap.ON_OFF) // using multi ap 
+				info->dhcp = 1 ;
+
 			if ((strcmp(info->ssid, "AP_SSID") == 0) && (strcmp(info->passwd, "AP_PASSWORD") == 0)) {
 				/* 기본값이면 Wi-Fi 실행 안 함 : Notice 할 방법은 없다...... */
 			} else {
