@@ -660,8 +660,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if((int)pset->wifiap.ssid[0] == CHAR_INVALID || (int)pset->wifiap.ssid[0] == 0)
 	    strcpy(pset->wifiap.ssid, "AP_SSID");
-	else
-		strcpy(pset->wifilist[0].ssid, pset->wifiap.ssid) ;
 
 	if((int)pset->wifiap.stealth == CFG_INVALID || (int)pset->wifiap.stealth == CHAR_INVALID)
 	        pset->wifiap.stealth = OFF ;
@@ -684,10 +682,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 		if((int)pset->wifilist[i].ssid[0] == CHAR_INVALID || (int)pset->wifilist[i].ssid[0] == 0)
 			strcpy(pset->wifilist[i].ssid, "AP_SSID");
+
 		if((int)pset->wifilist[i].stealth == CFG_INVALID || (int)pset->wifilist[i].stealth == CHAR_INVALID)
 	        pset->wifilist[i].stealth = OFF ;
-		else
-			strcpy(pset->wifiap.ssid, pset->wifilist[0].ssid) ;
 
 		#if 0
 		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID || (int)pset->wifilist[i].pwd[0] == 0)
