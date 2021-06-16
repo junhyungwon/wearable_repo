@@ -118,7 +118,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	favi = LIBAVI_createAvi(filename, &aviInfo);
 	if (favi == NULL) {
-        log_write(" !!! file open failed !!!");
+        avrec_log(" !!! file open failed !!!");
 		eprintf("avi save handle is NULL!\n");
 	}
 

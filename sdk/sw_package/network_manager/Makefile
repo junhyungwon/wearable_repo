@@ -6,7 +6,7 @@ TARGET = net_mgr.out
 #TARGET_HEADER=ipc_common_def.h
 
 INCLUDE = -I. -I$(APP_DIR)/lib/include
-C_FLAGS += -Wall -Warray-bounds -O3 $(INCLUDE)
+C_FLAGS += -D__NETMGR_DBG__ -Wall -Werror -Warray-bounds -O3 $(INCLUDE)
 LDFLAGS += -lpthread
 
 SOURCES  = $(wildcard *.c)
@@ -18,7 +18,7 @@ all: $(TARGET)
 $(TARGET): $(OBJFILES)
 	$(CC) $(C_FLAGS) $(LDFLAGS) -o $@ $(OBJFILES) $(LIBS)
 	$(STRIP) $@
-	
+
 %.o:%.c
 	$(CC) $(C_FLAGS) $(LDFLAGS) -c $^
 

@@ -5,7 +5,7 @@ STRIP := $(BUILD_TOOL_PREFIX)strip
 TARGET = app_gnss.out
 
 INCLUDE = -I. -I$(APP_INC_DIR)/inc -I$(APP_DIR)/lib/include
-C_FLAGS += -Wall -Warray-bounds -std=gnu99 -O3 $(INCLUDE)
+C_FLAGS += -Wall -Werror -Warray-bounds -std=gnu99 -O3 $(INCLUDE)
 LDFLAGS += -lpthread -lstdc++ -lrt
 
 SOURCES  = $(wildcard *.c)

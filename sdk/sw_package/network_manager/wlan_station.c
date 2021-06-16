@@ -23,7 +23,6 @@
 #include "main.h"
 #include "common.h"
 #include "event_hub.h"
-#include "list.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -31,8 +30,6 @@
 #define MAX_ESSID_LEN			32
 #define CMD_IWLIST				"/sbin/iwlist wlan0 scanning"
 #define CMD_IWLIST_BUFSZ		512
-
-#define MAX_AP_USER_LIST		10
 #define MAX_AP_SCAN_LIST		64
 
 #define TIME_CLI_CYCLE			200		//# msec
@@ -79,11 +76,6 @@ typedef struct {
 	
 } __attribute__((packed)) iw_item_t;
 
-struct connect_list {
-	struct list_head node;
-	iw_item_t conn_item; 
-};
-
 typedef struct {
 	app_thr_obj cObj; /* wlan client mode */
 	
@@ -107,241 +99,15 @@ static const char *cli_dev_name = "wlan0";
 static netmgr_wlan_cli_t t_cli;
 static netmgr_wlan_cli_t *i_cli = &t_cli;
 
-//* 제일 먼저 비교해야할 대상. (여러개의 AP가 검색될 경우 우선순위 조정이 안됨)
-//# 이를 해결하기 위해서 추가함.
-static iw_item_t begin;
-
 //# 사용자 요청 AP 목록
-static iw_item_t userList[MAX_AP_USER_LIST+1];
+static iw_item_t userList[NETMGR_WLAN_CONN_MAX_CNT];
 
 //# 검색된 AP 목록
 static iw_item_t scanList[MAX_AP_SCAN_LIST];
 
-/* 이전에 접속된 정보를 저장 
- * struct list_head saveList = {.prev=&saveList, .next=&saveList};
- */
-static LIST_HEAD(saveList);
-
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-/*****************************************************************************
- * @brief	 add file name to tail of linked-list (normal file list)
- * @section  DESC Description
- *	 - desc : file name is full path
- *****************************************************************************/
-static int __cli_aplist_add_tail(struct list_head *h, const char *ssid, 
-						const char *passwd,  int key)
-{
-	struct connect_list *obj = NULL;
-	int res = 0;
-	
-	obj = (struct connect_list *)malloc(sizeof(struct connect_list));
-	if (obj != NULL) {
-		snprintf(obj->conn_item.ssid, sizeof(obj->conn_item.ssid), "%s", ssid);
-		snprintf(obj->conn_item.passwd, sizeof(obj->conn_item.passwd), "%s", passwd);
-		obj->conn_item.en_key = key;
-
-		INIT_LIST_HEAD(&obj->node);
-		list_add(&obj->node, h);
-	} else {
-		res = -1;	
-		eprintf("memory alloc failed!\n");
-	}
-
-	return res;
-}
-
-static int __cli_aplist_load(void)
-{
-	struct list_head *head = &saveList;
-	iw_item_t *tList, *tmp;
-	FILE *f = NULL;
-	
-	size_t count;
-	int res = 0, i;
-	
-	/* list head 초기화 */
-	INIT_LIST_HEAD(head);
-	
-	res = access(CONNECTED_AP_LIST, R_OK|W_OK);
-    if ((res == 0) || (errno == EACCES)) 
-	{
-		f = fopen(CONNECTED_AP_LIST, "r");
-		if (f != NULL) {
-			/* 첫 번째 4바이트 데이터를 읽어오면 저장된 AP의 개수가 된다. */
-			fread((void *)&count, sizeof(int), 1, f);
-			//dprintf("The Number of connected list are %d!\n", count);
-			if (count > 0) 
-			{
-				/* 데이터를 저장하기 위한 메모리 공간 확보 */
-				tList = (iw_item_t *)malloc(sizeof(iw_item_t)*count);
-				if (tList != NULL) 
-				{
-					fread(tList, sizeof(iw_item_t)*count, 1, f);
-					
-					/* add linked list */
-					tmp = tList;
-					for (i = 0; i < count; i++, tmp++) {
-						//fprintf(stderr, "ssid-> %s, passwd-> %s from AP list\n", tmp->ssid, tmp->passwd);
-						__cli_aplist_add_tail(head, tmp->ssid, tmp->passwd, tmp->en_key);
-					}
-					
-					free(tList);
-					fclose(f);
-					
-					return 0;
-				}
-			}
-		}
-    } 
-
-	if (f != NULL)
-		fclose(f);	
-	
-	eprintf("Failed to load connected AP list!\n");
-	return -1;	
-}
-
-static int __cli_aplist_add(const char *ssid, const char *passwd, int key)
-{
-	struct list_head *head = &saveList;
-	struct list_head *iter;
-	struct connect_list *obj;
-	size_t count=0;
-	
-	/* total 개수 */
-	list_for_each_prev(iter, head) {
-		obj = (struct connect_list *)list_entry(iter, struct connect_list, node);
-		if (obj != NULL)
-			count++;	
-	}
-	//dprintf("current %d in AP list!\n", count);
-	
-	if (count >= MAX_AP_USER_LIST) 
-	{
-		/* 제일 오랜된 데이터를 삭제한다. */
-		obj = (struct connect_list *)list_last_entry(head, struct connect_list, node);
-		if (obj != NULL) {
-			list_del(&obj->node);
-			//dprintf("delete ssid %s, passwd %s in AP list!\n", 
-			//		obj->conn_item.ssid, obj->conn_item.passwd);
-			free(obj);
-		}
-	}
-	__cli_aplist_add_tail(head, ssid, passwd, key);
-	
-	return 0;
-}
-
-static int __cli_aplist_update(void)
-{
-	struct list_head *head = &saveList;
-	struct list_head *iter;
-	struct connect_list *obj;
-	iw_item_t info;
-	
-	FILE *f = NULL;
-	int res, i;
-	size_t count=0;
-	
-	res = access(CONNECTED_AP_LIST, R_OK|W_OK);
-    if ((res == 0) || (errno == EACCES)) {
-		/* delete file */
-      	unlink(CONNECTED_AP_LIST); 
-    }
-	
-	f = fopen(CONNECTED_AP_LIST, "w");
-	if (f == NULL) {
-		eprintf("failed to open %s!\n", CONNECTED_AP_LIST);
-		return -1;
-	}
-	
-	/* 총 개수를 저장하기 위해서 4바이트 이동 */
-	fseek(f, 4, SEEK_SET);
-	
-	/* write file and delete list */
-	while (!list_empty(head))
-	{
-		//obj = (struct connect_list *)list_entry(head, struct connect_list, node);
-		obj = (struct connect_list *)list_last_entry(head, struct connect_list, node);
-		if (obj != NULL) {
-			strcpy(info.ssid, obj->conn_item.ssid);
-			strcpy(info.passwd, obj->conn_item.passwd);
-			info.en_key = obj->conn_item.en_key;
-			
-			//dprintf("saved name %s, passwd %s in access point list!\n", obj->conn_item.ssid, obj->conn_item.passwd);
-			fwrite(&info, sizeof(iw_item_t), 1, f);
-			
-			/* 메모리 해제함: start 시 다시 생성한다. */
-			list_del(&obj->node);
-			free(obj);
-			count++;
-		}
-	}
-	
-	//dprintf("%d list saved in access point list\n", count);
-	//# total file count
-	fseek(f, 0, SEEK_SET);
-	fwrite(&count, sizeof(size_t), 1, f);    
-	
-	fflush(f);
-	fclose(f);
-	sync();
-	
-	chmod(CONNECTED_AP_LIST, 0660);
-	
-	return 0;
-}
-
-static int __cli_check_duplicate(const char *ssid)
-{
-	struct list_head *head = &saveList;
-	struct list_head *iter;
-	struct connect_list *obj=NULL;
-	int i=0;
-	
-	__list_for_each(iter, head) {
-		obj = (struct connect_list *)list_entry(iter, struct connect_list, node);
-		if (obj != NULL) {
-			if (strcmp(obj->conn_item.ssid, ssid) == 0) {
-				//dprintf("[%d]th duplicate ssid-> %s\n", i, obj->conn_item.ssid);
-				return 1;
-			}
-			i++;
-		}
-	}
-	
-	return 0;
-}
-
-static int __cli_make_userList(const char *ssid, const char *passwd, int key)
-{
-	struct list_head *head = &saveList;
-	struct list_head *iter;
-	struct connect_list *obj=NULL;
-	int i=0;
-	
-	__list_for_each(iter, head) {
-		obj = (struct connect_list *)list_entry(iter, struct connect_list, node);
-		if (obj != NULL) {
-			//dprintf("[%d]th user list ssid-> %s, passwd->%s\n", i, obj->conn_item.ssid, obj->conn_item.passwd);
-			memcpy(userList[i].ssid, obj->conn_item.ssid, NETMGR_WLAN_SSID_MAX_SZ);
-			memcpy(userList[i].passwd, obj->conn_item.passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
-			userList[i].en_key = obj->conn_item.en_key;
-			i++;
-		}
-	}
-	
-	if ((ssid != NULL) && (passwd != NULL) && (key != -1)) {
-		memcpy(userList[i].ssid, ssid, NETMGR_WLAN_SSID_MAX_SZ);
-		memcpy(userList[i].passwd, passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
-		userList[i].en_key = key;
-	}
-	
-	return 0; 
-}
-
 static int __cli_get_phrase(const char *ssid, const char *password, char *output)
 {
 	FILE *f = NULL;
@@ -486,6 +252,7 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 		 *   NONE = WPA is not used
 		 *   OPEN = Open System authentication (required for WPA/WPA2)
 		 *   SHARED = Shared Key authentication (requires static WEP keys)
+		 *   FT-PSK ==>802.11r fast roaming
 		 */
 		fprintf(config, "\tkey_mgmt=WPA-PSK\n");
 		/*
@@ -768,7 +535,6 @@ static int __cli_get_link_status(const char *essid, int *level)
 /*
  * 검색된 AP 리스트와 사용자 요구 SSID 리스트를 비교해서 일치하는 항복이 
  * 존재하는 지 확인하는 과정. 연결된 항목은 dst에 전달.
- *
  */
 static char listbuf[CMD_IWLIST_BUFSZ];
 static int __cli_check_essid(iw_item_t *dst)
@@ -923,24 +689,9 @@ static int __cli_check_essid(iw_item_t *dst)
 			} /* if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0') */
 		} /* while (fgets(listBuf, sizeof(listBuf), f) != NULL) */
 		
-		/* scan done!! */
-		for (i = 0; i < cnt; i++) {
-			if (strcmp(begin.ssid, scanList[i].ssid) == 0) {
-					/* founded valid essid return 0 */
-					memcpy(dst->ssid, begin.ssid, NETMGR_WLAN_SSID_MAX_SZ);
-					memcpy(dst->passwd, begin.passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
-					dst->en_key = begin.en_key;
-					//dprintf("1. wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
-					//		dst->passwd, dst->en_key);
-					
-					pclose(f);
-					return 0;
-			}
-		}
-		
 		/* 사용자 요청 List와 비교해서 연결 */
-		for (i = 0; i < MAX_AP_USER_LIST; i++) 
-		{
+		for (i = 0; i < NETMGR_WLAN_CONN_MAX_CNT; i++) {
+			/* 현재 검색된 AP 목록수 */
 			for (j = 0; j < cnt; j++) 
 			{
 				//dprintf("ssid compare %s %s\n", userList[i].ssid, scanList[j].ssid);
@@ -949,9 +700,8 @@ static int __cli_check_essid(iw_item_t *dst)
 					memcpy(dst->ssid, userList[i].ssid, NETMGR_WLAN_SSID_MAX_SZ);
 					memcpy(dst->passwd, userList[i].passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
 					dst->en_key = userList[i].en_key;
-					
-					//dprintf("2. wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
-					//		dst->passwd, dst->en_key);
+					dprintf("wifi connect to AP (ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
+							dst->passwd, dst->en_key);
 					
 					pclose(f);
 					return 0;
@@ -960,8 +710,7 @@ static int __cli_check_essid(iw_item_t *dst)
 			delay_msecs(5);
 		}
 		//dprintf("not matching ap list!!\n");		
-	} 
-	else {
+	} else {
 		dprintf("could not open %s\n", CMD_IWLIST);
 	}
 	
@@ -979,6 +728,8 @@ static int __cli_check_essid(iw_item_t *dst)
 static void *THR_wlan_cli_main(void *prm)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
+	char logbuf[256];
+	
 	int exit = 0;
 	int quit = 0;
 	
@@ -1032,8 +783,9 @@ static void *THR_wlan_cli_main(void *prm)
 						netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, level);
 						i_cli->stage = __STAGE_CLI_CONNECT_STATS;
 					}
-				} else 
+				} else {
 					i_cli->cli_timer++;
+				}
 				break;
 			
 			case __STAGE_CLI_DHCP_NOTY:
@@ -1044,15 +796,27 @@ static void *THR_wlan_cli_main(void *prm)
 			
 			case __STAGE_CLI_DHCP_VERIFY:
 				res = netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-				if (res < 0) {
+				if (res < 0) 
+				{
 					i_cli->stage = __STAGE_CLI_ERROR_STOP;
+					
+					memset(logbuf, 0, sizeof(logbuf));
+					sprintf(logbuf, "dhcp client error...!!");
+					netmgr_syslog(logbuf);
+					eprintf("%s!!\n", logbuf);
 				} else {
 					if (!strcmp(i_cli->ip, "0.0.0.0")) {
 						/* dhcp로부터 IP 할당이 안된 경우 */
-						dprintf("couln't get dhcp ip address!\n");
+						memset(logbuf, 0, sizeof(logbuf));
+						sprintf(logbuf, "couln't get ip from %s!", i_cli->item.ssid);
+						netmgr_syslog(logbuf);
+						eprintf("%s\n", logbuf);
 						i_cli->stage = __STAGE_CLI_ERROR_STOP;
 					} else {
-						dprintf("wlan client ip is %s\n", i_cli->ip);
+						memset(logbuf, 0, sizeof(logbuf));
+						sprintf(logbuf, "ip address of %s is %s", i_cli->item.ssid, i_cli->ip);
+						netmgr_syslog(logbuf);
+						dprintf("%s\n", logbuf);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 						i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 					}
@@ -1086,11 +850,6 @@ static void *THR_wlan_cli_main(void *prm)
 					
 			case __STAGE_CLI_WAIT_AUTH:
 				if (__cli_get_auth_status(i_cli->item.ssid)) {
-					/* auth succeed! */
-					if (__cli_check_duplicate(i_cli->item.ssid)==0)
-						__cli_aplist_add(i_cli->item.ssid, i_cli->item.passwd, i_cli->item.en_key);
-					/* 접속 리스트를 갱신한다. */
-					__cli_aplist_update();
 					/* IP 설정 Stage */
 					i_cli->stage = __STAGE_CLI_SET_IP;
 					i_cli->cli_timer = 0;
@@ -1205,33 +964,28 @@ int netmgr_wlan_cli_exit(void)
 int netmgr_wlan_cli_start(void)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
+	netmgr_iw_supplicant_req_info_t *info;
+	char msg[256]={0,};
 	char *databuf;
-	netmgr_shm_request_info_t *info;
-	int i;
+	int i, key=0;
 	
-	/* shared memory로부터 ssid / password / channel등의 정보를 읽어온다 */
+	/* shared memory로부터 5개의 ssid / password / channel등의 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_iw_supplicant_req_info_t *)databuf;
 	
-	/* 제일 먼저 연결해야 할 대상을 정의 */
-	memcpy(begin.ssid, info->ssid, NETMGR_WLAN_SSID_MAX_SZ);
-	memcpy(begin.passwd, info->passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
-	begin.en_key = info->en_key;
-		
-	/* 검색해야 할 목록의 SSID 초기화 */
-	for (i = 0; i < MAX_AP_USER_LIST; i++)
-		memset(userList[i].ssid, 0, NETMGR_WLAN_SSID_MAX_SZ);
-	
-	/* 이전에 접속된 AP 리스트를 읽어온다 */
-	__cli_aplist_load();
-	
-	/* 리스트에 동일한 이름이 있는 지 확인 */
-	if (__cli_check_duplicate(info->ssid)) {
-		__cli_make_userList(NULL, NULL, -1);
-	} else {
-		__cli_make_userList(info->ssid, info->passwd, info->en_key);
+	for (i = 0; i < NETMGR_WLAN_CONN_MAX_CNT; i++) {
+		/* null 문자 미리 확인된 상태임 */
+		strcpy(userList[i].ssid, info->iw_data[i].ssid);
+		key = info->iw_data[i].en_key;
+		if (key) {
+			/* password copy */
+			strcpy(userList[i].passwd, info->iw_data[i].passwd);
+		} else { 
+			memset(userList[i].passwd, 0, NETMGR_WLAN_PASSWD_MAX_SZ);
+		}
+		userList[i].en_key = key;
 	}
-	
+			
 	/* set default to idle */
 	i_cli->stage = __STAGE_CLI_MOD_LOAD;
 	i_cli->cli_timer = 0;
@@ -1245,13 +999,13 @@ int netmgr_wlan_cli_start(void)
 		strcpy(i_cli->ip, info->ip_address);
 		strcpy(i_cli->mask, info->mask_address);
 		strcpy(i_cli->gw, info->gw_address);
-		dprintf("Wi-Fi client set ip static!\n");
+		sprintf(msg, "Wi-Fi client ip address set static!");
 	} else {
-		dprintf("Wi-Fi client set ip dhcp!\n");
+		sprintf(msg, "Wi-Fi client ip address set dhcp!");
 	}
+	netmgr_syslog(msg);
+	dprintf("%s\n", msg);
 	
-	//# insmod 후에 wlan0가 생성됨.	
-	//netmgr_net_link_up(cli_dev_name); 
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

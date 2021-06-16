@@ -84,7 +84,7 @@ static int __wait_for_active(void)
     FILE *f = NULL;
 	char devname[16];
 	char path[128]={0,};
-	int ret = -1, r;
+	int ret = -1;
 	
 	memset(devname, 0, sizeof(devname));
 	

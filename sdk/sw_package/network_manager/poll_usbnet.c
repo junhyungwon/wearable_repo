@@ -64,7 +64,7 @@ static int __check_blacklist(int usb_v)
 
 	while (fgets(buffer, 255, f) != NULL) 
 	{
-		char *v, *p;
+		char *v;
 		/* %*s->discard input */
 		memset(cmd, 0, sizeof(cmd));
 		sscanf(buffer, "%*s%*s%*s%*s%*s%s", cmd);
@@ -117,8 +117,6 @@ static int __is_rndis_connect(void)
 static int __is_usb2eth_connnect(void)
 {
 	FILE *f = NULL;
-	struct stat sb;
-	char path[1024 + 1]={0,};
 	int ret = 0, res;
 	
 	if (0 == access(USBETHER_OPER_PATH, R_OK)) {
@@ -147,7 +145,7 @@ static void *THR_usbnet_poll(void *prm)
 {
 	app_thr_obj *tObj = &iudev->pObj;
 	int exit = 0, cmd;
-	int ret, is_rndis = 0;
+	int ret;
 	
 	tObj->active = 1;
 	

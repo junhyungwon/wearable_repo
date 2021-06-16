@@ -78,7 +78,6 @@ static int send_msg(int cmd, int param1, int param2)
 static int recv_msg(void)
 {
 	to_netmgr_msg_t msg;
-	int size;
 	
 	//# blocking
 	if (Msg_Rsv(ievt->qid, NETMGR_MSG_TYPE_TO_NETMGR, (void *)&msg, sizeof(to_netmgr_msg_t)) < 0) {

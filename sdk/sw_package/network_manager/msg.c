@@ -170,13 +170,6 @@ static int OSA_thrDelete(OSA_ThrHndl *hndl)
 	return status;    
 }
 
-static int OSA_thrExit(void *returnVal)
-{
-	pthread_exit(returnVal);
-	
-	return OSA_SOK;
-}
-
 //-------------------------------- End of OS Abstration Layer ------------------------------------------------
 /*****************************************************************************
 * @brief    OSA_waitMsecs
