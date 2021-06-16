@@ -189,7 +189,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				info->dhcp = 1;
 			}
 			
-			if(app_set->muti_ap.ON_OFF) // using multi ap 
+			if(app_set->multi_ap.ON_OFF) // using multi ap 
 				info->dhcp = 1 ;
 
 			if ((strcmp(info->ssid, "AP_SSID") == 0) && (strcmp(info->passwd, "AP_PASSWORD") == 0)) {
