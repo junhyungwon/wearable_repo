@@ -683,8 +683,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		if(pset->wifilist[i].en_key != ON && pset->wifilist[i].en_key != OFF)
 			pset->wifilist[i].en_key = ON;
 
-		if((int)pset->wifilist[i].ssid[0] == CHAR_INVALID || (int)pset->wifilist[i].ssid[0] == 0)
-			strcpy(pset->wifilist[i].ssid, "AP_SSID");
+		if((int)pset->wifilist[i].ssid[0] == CHAR_INVALID)
+			memset(pset->wifilist[i].ssid, 0, MAX_CHAR_32);
 
 		if((int)pset->wifilist[i].stealth == CFG_INVALID || (int)pset->wifilist[i].stealth == CHAR_INVALID)
 	        pset->wifilist[i].stealth = OFF ;
@@ -694,7 +694,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		#else
 		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
 		#endif
-		    strcpy(pset->wifilist[i].pwd,"AP_PASSWORD");
+		    memset(pset->wifilist[i].pwd, 0, MAX_CHAR_64);
 
 	}
 
@@ -1055,8 +1055,9 @@ static void app_set_default(int default_type)
     for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		app_set->wifilist[i].en_key = ON;
-		strcpy(app_set->wifilist[i].ssid, "AP_SSID") ;
-		strcpy(app_set->wifilist[i].pwd,"AP_PASSWORD") ;
+		//# 0으로 초기화
+		memset(app_set->wifilist[i].ssid, 0, MAX_CHAR_32);
+		memset(app_set->wifilist[i].pwd, 0, MAX_CHAR_64);
 		app_set->wifilist[i].stealth = OFF;
     }
 

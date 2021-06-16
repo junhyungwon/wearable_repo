@@ -30,6 +30,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define __GPSPROC_DBG__			0
 #define GPS_PROC_LENGTH			1000 /*  nmea ?°ì´????1000ê°?76 *1000 = 760KB ê°€ ?„ìš”??*/
 
 /*----------------------------------------------------------------------------
@@ -48,6 +49,7 @@ typedef struct {
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+#if __GPSPROC_DBG__
 static char __mode_chg_nav_bei[] = {
 	0xB5, 0x62, 0x06, 0x3E, 0x3C, 0x00, 0x00, 0x00, 0x20, 0x07,  //# 10
 	0x00, 0x08, 0x10, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x01,  //# 20
@@ -57,6 +59,7 @@ static char __mode_chg_nav_bei[] = {
 	0x05, 0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x01, 0x06, 0x08,  //# 60
 	0x0E, 0x00, 0x00, 0x00, 0x01, 0x01, 0x2F, 0xA1		         //# 68
 };
+#endif
 
 static app_gps_proc_t t_proc_obj;
 static app_gps_proc_t *iproc=&t_proc_obj;
@@ -166,7 +169,7 @@ static void gps_set_rmc_data(struct gps_device_t *csession)
 			//dprintf("Total number of satellites in view = %d\n", visible);
 			for (i = 0; i < visible; i++) {
 				sp = &csession->gpsdata.skyview[i];
-				#if 0
+				#if __GPSPROC_DBG__
 				if (sp->used) {
 					dprintf("[%d]th satellites SNR is = %lf(dB)\n", i, sp->ss);
 				} else {
@@ -196,7 +199,7 @@ static void gps_set_rmc_data(struct gps_device_t *csession)
 			iproc->w_data.gtm.tm_sec  	= csession->nmea.date.tm_sec;
 			iproc->w_data.subsec    	= csession->nmea.subseconds.tv_nsec / 1000000L; //# nano ì´ˆë¡œ ?œì‹œ.. msë¡?ë³€ê²½í•˜ê¸??„í•´??					
 				
-			#if 0	
+			#if __GPSPROC_DBG__
 			dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
 					iproc->w_data.gtm.tm_year+1900, iproc->w_data.gtm.tm_mon+1, iproc->w_data.gtm.tm_mday,
 					iproc->w_data.gtm.tm_hour, iproc->w_data.gtm.tm_min, iproc->w_data.gtm.tm_sec,

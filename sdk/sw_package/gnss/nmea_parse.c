@@ -36,6 +36,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define __PARSER_DBG__ 		0
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -282,6 +283,7 @@ static size_t strlcpy(char *dst, const char *src, size_t siz)
     return len;
 }
 
+#if __PARSER_DBG__
 static const char *__hexdump(char *scbuf, size_t scbuflen, char *binbuf, size_t binbuflen)
 {
     size_t i, j = 0;
@@ -317,6 +319,7 @@ static const char *__packetdump(char *scbuf, size_t scbuflen, char *binbuf, size
     else
 		return __hexdump(scbuf, scbuflen, binbuf, binbuflen);
 }
+#endif
 
 static int faa_mode(char mode)
 {
@@ -555,6 +558,7 @@ static void TS_NORM(struct timespec *ts)
     }
 }
 
+#if __PARSER_DBG__
 static const char *timespec_str(const struct timespec *ts, char *buf, size_t buf_size)
 {
     char sign = ' ';
@@ -569,6 +573,7 @@ static const char *timespec_str(const struct timespec *ts, char *buf, size_t buf
 		   (long)labs(ts->tv_nsec));
     return  buf;
 }
+#endif
 
 static time_t mkgmtime(struct tm * t)
 {
@@ -691,7 +696,8 @@ static int merge_ddmmyy(char *ddmmyy, struct gps_device_t *session)
         session->nmea.date.tm_mon = mon - 1;
         session->nmea.date.tm_mday = mday;
     }
-#if 0	
+	
+#if __PARSER_DBG__
     dprintf("merge_ddmmyy(%s) %d %d %d\n",
              ddmmyy,
              session->nmea.date.tm_mon,
@@ -702,6 +708,7 @@ static int merge_ddmmyy(char *ddmmyy, struct gps_device_t *session)
     return 0;
 }
 
+#if __PARSER_DBG__
 static int decode_hhmmss(struct tm *date, long *nsec, char *hhmmss,
                          struct gps_device_t *session)
 {
@@ -734,6 +741,7 @@ static int decode_hhmmss(struct tm *date, long *nsec, char *hhmmss,
 
     return 0;
 }
+#endif
 
 static int merge_hhmmss(char *hhmmss, struct gps_device_t *session)
 {
@@ -1666,8 +1674,6 @@ void app_nmea_parse_init(void)
 {
 	struct gps_context_t *context = &app_cfg->t_context;
 	time_t starttime;
-	struct tm *now;
-	char scr[128];
 	
 	starttime = time(NULL);
     context->leap_seconds = BUILD_LEAPSECONDS;

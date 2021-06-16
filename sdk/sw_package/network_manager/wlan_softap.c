@@ -24,6 +24,7 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "wlan_softap.h"
 #include "common.h"
+#include "event_hub.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
@@ -405,11 +406,11 @@ int netmgr_wlan_hostapd_start(void)
 {
 	app_thr_obj *tObj = &ihost->hObj;
 	char *databuf;
-	netmgr_shm_request_info_t *info;
+	netmgr_iw_hostapd_req_info_t *info;
 	
 	/* shared memory로부터 ssid / password / channel등의 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_iw_hostapd_req_info_t *)databuf;
 	
 	memcpy(ihost->ssid, info->ssid, NETMGR_WLAN_SSID_MAX_SZ);
 	memcpy(ihost->passwd, info->passwd, NETMGR_WLAN_PASSWD_MAX_SZ);

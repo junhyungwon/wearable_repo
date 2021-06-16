@@ -254,11 +254,11 @@ int netmgr_usb2eth_event_start(void)
 {
 	app_thr_obj *tObj = &iusb2eth->uObj;
 	char *databuf;
-	netmgr_shm_request_info_t *info;
+	netmgr_usb2eth_req_info_t *info;
 	
 	/* shared memory로부터 IP 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_usb2eth_req_info_t *)databuf;
 	
 	iusb2eth->stage = __STAGE_USB2ETH_WAIT_ACTIVE;
 	iusb2eth->usb2eth_timer = 0;

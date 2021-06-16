@@ -68,6 +68,6 @@ extern app_rec_cfg_t *app_cfg;
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-void log_write(char *msg);
+void avrec_log(char *msg);
 
 #endif	/* __APP_MAIN_H__ */

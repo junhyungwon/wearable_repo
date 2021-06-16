@@ -256,11 +256,11 @@ int netmgr_cradle_eth_event_start(void)
 {
 	app_thr_obj *tObj = &icradle->cObj;
 	char *databuf;
-	netmgr_shm_request_info_t *info;
+	netmgr_cradle_eth_req_info_t *info;
 	
 	/* shared memory로부터 IP 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_cradle_eth_req_info_t *)databuf;
 	
 	icradle->dhcp = info->dhcp;
 	icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;

@@ -364,7 +364,7 @@ static void *THR_rec_evt(void *prm)
 				if (print_limit) {
 					memset(msg, 0, sizeof(msg));
 					sprintf(msg, "can't read frame! plz check capture dev.");
-					log_write(msg);
+					avrec_log(msg);
 					eprintf("%s\n", msg);
 					print_limit = 0;
 				}
@@ -380,7 +380,7 @@ static void *THR_rec_evt(void *prm)
 				send_msg(AV_CMD_REC_ERR, 0, NULL);
 				memset(msg, 0, sizeof(msg));
 				sprintf(msg, "1.Failed to open AVI (%s)!", irec->fname);
-				log_write(msg);
+				avrec_log(msg);
 				eprintf("%s\n", msg);
 				continue;
 			} 
@@ -407,7 +407,7 @@ static void *THR_rec_evt(void *prm)
 						send_msg(AV_CMD_REC_ERR, 0, NULL);
 						memset(msg, 0, sizeof(msg));
 						sprintf(msg, "2.Failed to open AVI (%s)!", irec->fname);
-						log_write(msg);
+						avrec_log(msg);
 						eprintf("%s\n", msg);
 						/* loop exit */
 						break; 
@@ -424,7 +424,7 @@ static void *THR_rec_evt(void *prm)
 							send_msg(AV_CMD_REC_ERR, 0, NULL);
 							memset(msg, 0, sizeof(msg));
 							sprintf(msg, "avi write failed!");
-							log_write(msg);
+							avrec_log(msg);
 							eprintf("%s\n", msg);
 							/* loop exit */
 							break;
@@ -468,7 +468,7 @@ static void *THR_rec_evt(void *prm)
 							send_msg(AV_CMD_REC_ERR, 0, NULL);
 							memset(msg, 0, sizeof(msg));
 							sprintf(msg, "avi write failed!");
-							log_write(msg);
+							avrec_log(msg);
 							eprintf("%s\n", msg);
 							/* loop exit */
 							break;
@@ -557,7 +557,7 @@ static void app_main(void)
 * @brief    system log write
 * @section  [desc]
 *****************************************************************************/
-void log_write(char *msg)
+void avrec_log(char *msg)
 {
 	char tmpMsg[256] = {0,};
 	

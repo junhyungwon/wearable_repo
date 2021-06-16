@@ -114,13 +114,11 @@ static void __netmgr_hotplug_noty(void)
 
 static void __netmgr_wlan_event_handler(int ste, int mode)
 {
-	netmgr_shm_request_info_t *info;
 	char *databuf;
+	int i;
 	
-	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
+	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.(+2048)
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
-	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 					
@@ -130,7 +128,10 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 		
 		if (mode)
 		{
-		    /* AP MODE */
+			netmgr_iw_hostapd_req_info_t *info = 
+							(netmgr_iw_hostapd_req_info_t *)databuf;
+			/* sharded memory 이므로 NULL 검사 안 해도 됨 */
+		    /* AP MODE (5G or 2.4G) */
 			int enable = inetmgr->wlan_5G_enable;
 			
 			/* Wi-Fi AP Mode */
@@ -140,63 +141,64 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			strcpy(info->ip_address, NETMGR_WLAN_AP_IPADDR);
 			strcpy(info->mask_address, NETMGR_WLAN_AP_MASKADDR);
 			strcpy(info->gw_address, NETMGR_WLAN_AP_GWADDR);
+			if (enable) info->channel = NETMGR_WLAN_AP_5G_CHANNEL; //36
+			else 		info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
 			info->stealth = 0;
 			info->freq = enable;
-			info->dhcp = 0;
-			
-			if (enable) {
-				/* 5GHz Wi-Fi */
-				info->channel = NETMGR_WLAN_AP_5G_CHANNEL; //44
-			} else {
-				info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
-			}
 			
 			dprintf("Wi-Fi SOFTAP start (NAME=%s).........\n", info->ssid);
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);
         } else {
-			/* client mode */
 			/* Wi-Fi Client Mode */    
-			// under working
+			netmgr_iw_supplicant_req_info_t *info = 
+							(netmgr_iw_supplicant_req_info_t *)databuf;
 			
-			
-			info->en_key = app_set->wifiap.en_key;
-			strcpy(info->ssid, app_set->wifiap.ssid);
-
-			if (strlen(app_set->wifiap.pwd) == 0) {
-				info->en_key = 0;
+			/* 이전 CFG와 호환성을 위해서 */
+			strcpy(info->iw_data[0].ssid, app_set->wifiap.ssid);
+			if (strcmp(app_set->wifiap.pwd, "")==0) {
+				info->iw_data[0].en_key = 0;
 			} else {
-				strcpy(info->passwd, app_set->wifiap.pwd);
+				info->iw_data[0].en_key = 1;
+				strcpy(info->iw_data[0].passwd, app_set->wifiap.pwd);
 			}
-/*			
-            for(i = 0 ;i < 4; i++)
-			{
-			    info->en_key = app_set->wifilist[i].en_key;
-			    strcpy(info->ssid, app_set->wifilist[i].ssid);
-
-			    if (strlen(app_set->wifilist[i].pwd) == 0) {
-				    info->en_key = 0;
+			
+			/* 신규로 추가된 총 4개의 접속 정보를 저장 */
+            for (i = 1; i <= WIFIAP_CNT; i++) {
+				/* NULL 문자 체크 */
+				if (strcmp(app_set->wifilist[i].ssid, "") != 0)
+			    	strcpy(info->iw_data[i].ssid, app_set->wifilist[i].ssid);
+			    if (strcmp(app_set->wifilist[i].pwd, "")!=0) {
+				    strcpy(info->iw_data[i].passwd, app_set->wifilist[i].pwd);
+					info->iw_data[i].en_key = 1;
 			    } else {
-				    strcpy(info->passwd, app_set->wifilist[i].pwd);
+				    info->iw_data[i].en_key = 0;
 			    }
 			}
-*/			
-			if (app_set->net_info.wtype == NET_TYPE_STATIC) {
-				info->dhcp = 0;
-				strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
-				strcpy(info->mask_address, app_set->net_info.wlan_netmask);
-				strcpy(info->gw_address, app_set->net_info.wlan_gateway);
-			} else {
-				info->dhcp = 1;
-			}
 			
-			if(app_set->multi_ap.ON_OFF) // using multi ap 
+			 // using multi ap 
+			if (app_set->multi_ap.ON_OFF) {
 				info->dhcp = 1 ;
-
-			if ((strcmp(info->ssid, "AP_SSID") == 0) && (strcmp(info->passwd, "AP_PASSWORD") == 0)) {
-				/* 기본값이면 Wi-Fi 실행 안 함 : Notice 할 방법은 없다...... */
 			} else {
-				dprintf("Wi-Fi STATION start (NAME=%s).........\n", info->ssid);
-				send_msg(NETMGR_CMD_WLAN_CLIENT_START);
+				if (app_set->net_info.wtype == NET_TYPE_STATIC) {
+					info->dhcp = 0;
+					strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
+					strcpy(info->mask_address, app_set->net_info.wlan_netmask);
+					strcpy(info->gw_address, app_set->net_info.wlan_gateway);
+				} else {
+					info->dhcp = 1;
+				}
+			}
+
+			for (i = 0; i <= WIFIAP_CNT; i++) {
+				if (((strcmp(info->iw_data[i].ssid, "") == 0) && (strcmp(info->iw_data[i].passwd, "") == 0)) ||
+				    ((strcmp(info->iw_data[i].ssid, "AP_SSID") == 0) && (strcmp(info->iw_data[i].passwd, "AP_PASSWORD") == 0))
+				   ) {
+					/* 기본값이면 Wi-Fi 실행 안 함 : Notice 할 방법은 없다...... */
+				} else {
+					dprintf("Wi-Fi STATION start.........\n");
+					send_msg(NETMGR_CMD_WLAN_CLIENT_START);
+					break;
+				}
 			}
 		}
 		
@@ -216,20 +218,12 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 
 static void __netmgr_rndis_event_handler(int ste)
 {
-	netmgr_shm_request_info_t *info;
-	char *databuf;
-	
-	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
-	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
-	
-	/* memory clear */
-	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
-	
+	/*
+	 * DHCP로 고정되기 때문에 전달해야 할 정보가 필요없다.
+	 */
 	if (ste) {
 		/* rndis 장치가 연결되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 1;
-		info->dhcp = 1;
 		send_msg(NETMGR_CMD_RNDIS_START);
 	} else {
 		/* rndis 장치가 제거되었을 때 필요한 루틴을 수행 */
@@ -240,17 +234,17 @@ static void __netmgr_rndis_event_handler(int ste)
 
 static void __netmgr_usb2eth_event_handler(int ste)
 {
-	netmgr_shm_request_info_t *info;
 	char *databuf;
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
-	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
+		netmgr_usb2eth_req_info_t *info = 
+						(netmgr_usb2eth_req_info_t *)databuf;
+		
 		/* usb2eth 장치가 연결되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 1;
 		if (app_set->net_info.wtype == NET_TYPE_STATIC) {
@@ -271,12 +265,12 @@ static void __netmgr_usb2eth_event_handler(int ste)
 
 static void __netmgr_cradle_eth_event_handler(int ste)
 {
-	netmgr_shm_request_info_t *info;
+	netmgr_cradle_eth_req_info_t *info;
 	char *databuf;
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_cradle_eth_req_info_t *)databuf;
 	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);

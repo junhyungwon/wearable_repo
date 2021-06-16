@@ -151,14 +151,21 @@ static void app_main(void)
 	tObj->active = 0;
 }
 
+void netmgr_syslog(char *msg)
+{
+	char tmpMsg[256] = {0,};
+	
+	memset(tmpMsg, 0, sizeof(tmpMsg));
+	snprintf(tmpMsg, sizeof(tmpMsg), "[NETMGR] %s", msg);
+	syslog(LOG_ERR, "%s\n", tmpMsg);
+}
+
 /*****************************************************************************
 * @brief    main function
 * @section  [desc]
 *****************************************************************************/
 int main(int argc, char **argv)
 {
-	int rc = 0;
-	
 	main_thread_init();
 	shared_mem_init();
 	

@@ -69,7 +69,8 @@ typedef enum {
 #define NETMGR_DEV_TYPE_CRADLE			0x13
 
 #define NETMGR_WLAN_PASSWD_MAX_SZ		64
-#define NETMGR_WLAN_SSID_MAX_SZ			32           //# Wi-Fi 표준에 32 char
+#define NETMGR_WLAN_SSID_MAX_SZ			32          //# Wi-Fi 표준에 32 char
+#define NETMGR_WLAN_CONN_MAX_CNT		5           //# Wi-Fi 접속을 위한 최대 AP 목록
 
 #define NETMGR_NET_STR_MAX_SZ			16
 
@@ -103,8 +104,15 @@ typedef struct {
 	
 } to_netmgr_main_msg_t;
 
+typedef struct {
+	char ssid[NETMGR_WLAN_SSID_MAX_SZ+1];      //32
+	char passwd[NETMGR_WLAN_PASSWD_MAX_SZ+1];  //64
+	
+	int en_key; 	 /* encryption mode (ap mode에서는 사용 안 함) */
+} __attribute__((packed)) iw_conn_data_t;
+
 /*
- * @brief wi-fi 접속 시 필요한 정보를 전달..
+ * @brief 디바이스가 AP모드로 동작.
  */
 typedef struct {
 	char ssid[NETMGR_WLAN_SSID_MAX_SZ+1];      //32
@@ -114,14 +122,51 @@ typedef struct {
     char mask_address[NETMGR_NET_STR_MAX_SZ+1];
     char gw_address[NETMGR_NET_STR_MAX_SZ+1];
 	
-	int level;		 /* signal level (ap mode에서는 사용 안 함) */
-	int en_key; 	 /* encryption mode (ap mode에서는 사용 안 함) */
 	int freq;        /* 0-> 2.4GHz 1-> 5GHz */
 	int stealth;     /* Hiddel SSID */
 	int channel;     /* channel number (2.4GH ->6, 5GHz -> 36) */
+	
+} __attribute__((packed)) netmgr_iw_hostapd_req_info_t;
+
+/*
+ * @brief 디바이스가 외부 AP로 접속 시 필요한 정보를 전달..
+ */
+typedef struct {
+	iw_conn_data_t iw_data[NETMGR_WLAN_CONN_MAX_CNT];
+	
+	char ip_address[NETMGR_NET_STR_MAX_SZ+1];
+    char mask_address[NETMGR_NET_STR_MAX_SZ+1];
+    char gw_address[NETMGR_NET_STR_MAX_SZ+1];
+	
+	int freq;        /* 0-> 2.4GHz 1-> 5GHz */
+	int channel;     /* channel number (2.4GH ->6, 5GHz -> 36) */
 	int dhcp;	 	/* 0-> static, 1-> dhcp */
 	
-} netmgr_shm_request_info_t;
+} __attribute__((packed)) netmgr_iw_supplicant_req_info_t;
+
+/*
+ * @brief 디바이스가 usb2eth 접속 시 필요한 정보를 전달..
+ */
+typedef struct {
+	char ip_address[NETMGR_NET_STR_MAX_SZ+1];
+    char mask_address[NETMGR_NET_STR_MAX_SZ+1];
+    char gw_address[NETMGR_NET_STR_MAX_SZ+1];
+	
+	int dhcp;	 	/* 0-> static, 1-> dhcp */
+	
+} __attribute__((packed)) netmgr_usb2eth_req_info_t;
+
+/*
+ * @brief 디바이스가 usb2eth 접속 시 필요한 정보를 전달..
+ */
+typedef struct {
+	char ip_address[NETMGR_NET_STR_MAX_SZ+1];
+    char mask_address[NETMGR_NET_STR_MAX_SZ+1];
+    char gw_address[NETMGR_NET_STR_MAX_SZ+1];
+	
+	int dhcp;	 	/* 0-> static, 1-> dhcp */
+	
+} __attribute__((packed)) netmgr_cradle_eth_req_info_t;
 
 /*
  * @brief response info..
@@ -133,7 +178,7 @@ typedef struct {
 	
 	int device;
 	
-} netmgr_shm_response_info_t;
+} __attribute__((packed)) netmgr_shm_response_info_t;
 
 #if defined (__cplusplus)
 }
