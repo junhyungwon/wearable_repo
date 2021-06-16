@@ -469,6 +469,12 @@ static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
 {
 	int isChanged=0, i;
 
+	if(t->wifi_ap_multi != app_set->multi_ap.ON_OFF) {
+		app_set->multi_ap.ON_OFF = (short)t->wifi_ap_multi;
+		DBG_UDS("app_set->multi_ap.ON_OFF=%d\n", app_set->multi_ap.ON_OFF);
+		isChanged++;
+	}
+
 	// wireless
 	if(t->wireless.addr_type != app_set->net_info.wtype) {
 		app_set->net_info.wtype = t->wireless.addr_type;
@@ -2270,6 +2276,7 @@ void *myFunc(void *arg)
 				T_NETWORK_INFO wireless, cradle;
 				char rtsp_user[32] = {0};
 				char rtsp_pass[32] = {0};
+
 				wireless.dhcp = NET_TYPE_STATIC;
 				sprintf(wireless.ipaddr, "192.168.0.252");
 				sprintf(wireless.gateway, "192.168.0.1");
@@ -2317,6 +2324,7 @@ void *myFunc(void *arg)
 				DBG_UDS("rtsp_user=%s\n", rtsp_user);
 				DBG_UDS("rtsp_pass=%s\n", rtsp_pass);
 
+				t.wifi_ap_multi = app_set->multi_ap.ON_OFF;
 				t.wireless.addr_type = wireless.dhcp;
 				strcpy(t.wireless.ipv4, wireless.ipaddr);
 				strcpy(t.wireless.gw, wireless.gateway);

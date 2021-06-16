@@ -26,6 +26,7 @@ static int submit_settings_qcgi()
 		char cradle_gw[32]={0};
 		char cradle_mask[32]={0};
 
+		int  wifi_ap_multi =-1;
 		char wifiap_ssid[128]={0};
 		char wifiap_pass[128]={0};
 
@@ -68,6 +69,12 @@ static int submit_settings_qcgi()
         str = req->getstr(req, "txt_cradle_mask", false);
 		if(str != NULL) {
             sprintf(cradle_mask, "%s", str);
+        } 
+
+		// wifi ap multi
+        str = req->getstr(req, "wifi_ap_multi", false);
+		if(str != NULL) {
+            wifi_ap_multi = atoi(str);
         } 
         str = req->getstr(req, "txt_wifi_ap_ssid", false);
 		if(str != NULL) {
@@ -115,11 +122,23 @@ static int submit_settings_qcgi()
 				wireless_iptype, wireless_ipv4, wireless_gw, wireless_mask);
         CGI_DBG("cradle_iptype:%d, cradle_ipv4:%s, cradle_gw:%s, cradle_mask:%s\n", 
 				cradle_iptype, cradle_ipv4, cradle_gw, cradle_mask);
+        CGI_DBG("wifi_ap_multi:%d\n", wifi_ap_multi);
         CGI_DBG("wifi_AP,  ssid:%s, pass:%s\n", wifiap_ssid, wifiap_pass);
         CGI_DBG("wifi_AP1, ssid:%s, pass:%s\n", wifilist_ssid[0], wifilist_pass[0]);
         CGI_DBG("wifi_AP2, ssid:%s, pass:%s\n", wifilist_ssid[1], wifilist_pass[1]);
         CGI_DBG("wifi_AP3, ssid:%s, pass:%s\n", wifilist_ssid[2], wifilist_pass[2]);
         CGI_DBG("wifi_AP4, ssid:%s, pass:%s\n", wifilist_ssid[3], wifilist_pass[3]);
+
+		// check wifi ap multi 1:enable, 0: disable
+		if (wifi_ap_multi == -1)
+		{
+			CGI_DBG("Invalid Parameter, check wifi ap multi, value:%d\n", wifi_ap_multi);
+			return ERR_INVALID_PARAM;
+		}
+		else if (wifi_ap_multi == 1 && wireless_iptype != 1){
+			CGI_DBG("It was not allowed combination, wifi_ap_multi:%d, wireless_iptype:%d\n", wifi_ap_multi, wireless_iptype);
+			return ERR_INVALID_PARAM;
+		}
 
 		// check not null
 		if( wireless_iptype == -1 || cradle_iptype == -1 )//|| live_stream_account_enable == -1) 
@@ -127,6 +146,10 @@ static int submit_settings_qcgi()
 			CGI_DBG("Invalid Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
+
+		//if (wifi_ap_multi == 1){
+		//	wireless_iptype = 1; // dhcp fix mode 
+		//}
 
 		// check wifi AP
 		len = strlen(wifiap_ssid);
@@ -136,7 +159,7 @@ static int submit_settings_qcgi()
 			return ERR_INVALID_PARAM;
 		}
 		len = strlen(wifiap_pass);
-		if ( len != 0 && (len < 8 || len > 64) ) // Allow NULL password. 2020.02.26
+		if ( len != 0 && (len < 8 || len > 64) ) // Allow NULL password. Since 2020.02.26
 		{
 			CGI_DBG("Invalid Parameter, wifi password, len=%d\n", len);
 			return ERR_INVALID_PARAM;
@@ -178,7 +201,7 @@ static int submit_settings_qcgi()
 			return ERR_INVALID_PARAM;
 		}
 
-#if 0 // GUI가 다른 페이지로 이동하여, 이 파라미터들은 안씀..
+#if 0 // GUI가 다른 페이지로 이동하여, 이 파라미터들은 안씀.. server페이지로 이동
 		if( live_stream_account_enable == 1
 		&& (live_stream_account_enctype  == -1
 		||  strlen(live_stream_account_id) == 0
@@ -193,6 +216,8 @@ static int submit_settings_qcgi()
         // check parameter values
         T_CGI_NETWORK_CONFIG2 t;
 		memset(&t, 0, sizeof(t));
+
+		t.wifi_ap_multi = wifi_ap_multi;
 
 		t.wireless.addr_type         = wireless_iptype;
 		if(t.wireless.addr_type == 0) { // static
@@ -216,7 +241,7 @@ static int submit_settings_qcgi()
 			strncpy(t.wifi_ap_list[i].pw, wifilist_pass[i], strlen(wifilist_pass[i]));
 		}
 
-#if 0 // GUI가 다른 페이지로 이동하여, 이 파라미터들은 안씀..
+#if 0 // GUI가 다른 페이지로 이동하여, 이 파라미터들은 안씀.. server page로 이동
 		t.live_stream_account_enable  = live_stream_account_enable;
 		t.live_stream_account_enctype = live_stream_account_enctype;
 		if(live_stream_account_enable){

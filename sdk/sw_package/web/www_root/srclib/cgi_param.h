@@ -158,6 +158,7 @@ typedef struct _tagCgiNetworkConfiguration2 {
     T_CGI_NETWORK_INTERFACE cradle;
     T_CGI_ACCOUNT wifi_ap;
     T_CGI_ACCOUNT wifi_ap_list[4];
+    int       wifi_ap_multi;                // 1:enable, 0:disable
     int       live_stream_account_enable;
 	int		  live_stream_account_enctype;
     T_CGI_ACCOUNT live_stream_account;

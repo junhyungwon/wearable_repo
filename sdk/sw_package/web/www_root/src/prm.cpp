@@ -270,6 +270,8 @@ int put_json_all_config()
 			ret = -1;
 			goto _FREE_NETWORK_OBJ;
 		}
+		json_object_object_add(network_obj, "wifi_ap_multi", json_object_new_int(   p.wifi_ap_multi));
+
 		json_object_object_add(wireless_obj, "addr_type", json_object_new_int(   p.wireless.addr_type));
 		json_object_object_add(wireless_obj, "ipv4",      json_object_new_string(p.wireless.ipv4));
 		json_object_object_add(wireless_obj, "gateway",   json_object_new_string(p.wireless.gw));
@@ -643,6 +645,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(myobj);
 }
 
+// deprecate?
 void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 {
 	json_object *myobj, *wirelessobj, *cradleobj, *wifiapobj, *livestmobj;
@@ -654,6 +657,8 @@ void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 	livestmobj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+
+	//json_object_object_add(myobj, "wifi_ap_multi", json_object_new_int(   p->wifi_ap_multi));
 
 	json_object_object_add(wirelessobj, "addr_type", json_object_new_int(p->wireless.addr_type));
 	json_object_object_add(wirelessobj, "ipv4",      json_object_new_string(p->wireless.ipv4));
@@ -705,6 +710,8 @@ void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 	livestmobj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+
+	json_object_object_add(myobj, "wifi_ap_multi", json_object_new_int(p->wifi_ap_multi));
 
 	json_object_object_add(wirelessobj, "addr_type", json_object_new_int(p->wireless.addr_type));
 	json_object_object_add(wirelessobj, "ipv4",      json_object_new_string(p->wireless.ipv4));
