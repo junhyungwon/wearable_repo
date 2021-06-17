@@ -889,7 +889,6 @@ static int cfg_read(int is_mmc, char* cfg_path)
 {
     int readSize=0, app_set_size=0;
     int saved_cfg_size=0;
-	char msg[MAX_CHAR_255]={0,};
 	
 	if(is_mmc){
 		if (!app_cfg->ste.b.mmc) {
@@ -917,12 +916,10 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
-		snprintf(msg, sizeof(msg), " #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####", cfg_path, app_set_size, saved_cfg_size);
-		app_log_write(MSG_LOG_WRITE, msg);
-		eprintf("%s\n", msg);
+		sysprint(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
+										cfg_path, app_set_size, saved_cfg_size);
 		return EFAIL;
-	}
-	else{
+	} else {
 	    //#--- ucx app setting param
     	OSA_fileReadFile(cfg_path, (Uint8*)app_set, app_set_size, (Uint32*)&readSize);
 		if(readSize == 0 || readSize != app_set_size) {
@@ -937,21 +934,16 @@ static int cfg_read(int is_mmc, char* cfg_path)
 	return SOK;
 }
 
-
 static void app_set_default(int default_type)
 {
     char MacAddr[12] ;
     char enc_ID[32] = {0, } ;
     char enc_Passwd[32] = {0, } ;
-	char msg[MAX_CHAR_255]={0,};
-	
     app_set_t tmp_set ;
 
 	int ich=0, channels = 0, i = 0;
 	
-	snprintf(msg, sizeof(msg), " [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s", MODEL_NAME);
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
+	sysprint(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
 
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;

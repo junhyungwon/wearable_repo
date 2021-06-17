@@ -90,7 +90,7 @@ static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 }
 static int  parseMultiapInfo(app_set_t* const set, json_object* rootObj)
 {
-	size_t dec_size = 0;
+	//size_t dec_size = 0;
 	const char* STR_FIELD = "multi_ap";
 	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
 	int type = json_object_get_type(jobj); // must be json_object
@@ -100,6 +100,7 @@ static int  parseMultiapInfo(app_set_t* const set, json_object* rootObj)
 	}
 	json_object* tmp = json_object_object_get(jobj, "ON_OFF");
 	set->multi_ap.ON_OFF = json_object_get_int(tmp);
+	return 0;
 }
 
 static int	parseTimeInfo(app_set_t* const set, json_object* rootObj)
@@ -266,7 +267,7 @@ static int parseNetworkWifilist(app_set_t* const set, json_object* rootObj)
             }
 		}
 	}
-
+	return 0;
 }
 
 static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)

@@ -148,7 +148,7 @@ int netmgr_poll_cradle_init(void)
 		return EFAIL;
     }
 	
-	aprintf("done!...\n");
+	dprintf("done!...\n");
 	
 	return 0;
 }
@@ -172,7 +172,7 @@ int netmgr_poll_cradle_exit(void)
 	
 	gpio_exit(BACKUP_DET);
 	
-    aprintf("... done!\n");
+    dprintf("... done!\n");
 	
 	return 0;
 }

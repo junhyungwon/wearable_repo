@@ -90,15 +90,9 @@ void app_mcu_pwr_off(int type)
 		return;
 
 	OSA_mutexLock(&imcu->mutex_3delay);
-
-#ifdef __SYSLOGD_ENABLE__
 	system("/etc/init.d/logging.sh stop");
-#else	
-	app_log_exit();
-#endif
 	mic_exit_state(type, 0);
 	app_cfg->ste.b.pwr_off = 1;
-
 	delay_3sec_exit();
 	OSA_mutexUnlock(&imcu->mutex_3delay);
 }
@@ -155,9 +149,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 			c_volt_chk--;
 			if(c_volt_chk == 0) 
 			{
-				snprintf(msg, sizeof(msg), "Peek Low Voltage Detected(%d, %d)", ibatt, ebatt);
-				eprintf("%s!\n", msg);
-                app_log_write(MSG_LOG_SHUTDOWN, msg);
+				sysprint("Peek Low Voltage Detected(%d, %d)", ibatt, ebatt);
 				ctrl_sys_shutdown();
 				
 				return 1;
@@ -182,7 +174,6 @@ static void *THR_micom(void *prm)
 	app_thr_obj *tObj = &imcu->cObj;
 	int exit=0, ret=0;
 	mic_msg_t msg;
-    char log[128] = {0, } ;
 
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -229,9 +220,7 @@ static void *THR_micom(void *prm)
 				if (key_type == PSW_EVT_LONG) 
 				{
 					if (!app_cfg->ste.b.busy) {
-						snprintf(log, sizeof(log), "[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---");
-						app_log_write(MSG_LOG_SHUTDOWN, log);
-						dprintf("%s\n", log);
+						sysprint("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
 						//# add rupy
 						ctrl_sys_shutdown();
 						exit = 1;

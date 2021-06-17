@@ -33,9 +33,12 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define aprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
+/* ANSI Color RED */
+#define aprintf(x, ...)	printf(" [AVREC ] \033[31m%s: \033[0m" x, __func__, ##__VA_ARGS__);
 #define eprintf(x...) do { printf(" [AVREC ERR!] %s: ", __func__); printf(x); } while(0)
 #define dprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
+
+#define sysprint(x...) do { printf(" [AVREC LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
 
 #ifndef TRUE
 #define TRUE 		1

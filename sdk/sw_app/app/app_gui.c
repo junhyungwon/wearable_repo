@@ -235,7 +235,7 @@ static void *THR_gui(void *prm)
 				}
 				
 				if (wd_detect == WD_LOG_CNT) {
-					app_log_write(MSG_LOG_SHUTDOWN, msg);
+					sysprint("%s\n", msg);
 					sync();
 				}
 			}

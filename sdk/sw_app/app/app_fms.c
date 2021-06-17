@@ -253,7 +253,7 @@ int Sock_create()
 
                 if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
                 {
-//                    app_log_write(MSG_LOG_WRITE, "Manager Server_Connect ... FAIL. !!");
+//                    sysprint("Manager Server_Connect ... FAIL. !!\n");
 #ifdef FMS_DEBUG
 //            DEBUG_PRI("fms tcp connect error!\n") ;
 #endif
@@ -262,7 +262,7 @@ int Sock_create()
                 }
                 else
                 {
-                    app_log_write(MSG_LOG_WRITE, "Manager Server_Connect ... SUCCESS. !!");
+                    sysprint("Manager Server_Connect ... SUCCESS. !!\n");
 #ifdef FMS_DEBUG
 //            DEBUG_PRI("fms TCP Connect Ok..\n") ;
 #endif
@@ -273,7 +273,7 @@ int Sock_create()
 #ifdef FMS_DEBUG
                 DEBUG_PRI("socket open error\n") ;
 #endif
-//                app_log_write(MSG_LOG_WRITE, "Manager Socket open Error... !!");
+//                sysprint(MSG_LOG_WRITE, "Manager Socket open Error... !!\n");
                 sock = SOCK_ERROR ;
             }
         }
@@ -487,7 +487,7 @@ static void *THR_sock(void *prm)
 #ifdef FMS_DEBUG
                     DEBUG_PRI("ReadSocketData CONNECTION TIMEOUT\n") ;
 #endif
-                    app_log_write(MSG_LOG_WRITE, "Tcp Connect Timeout... !! on RECEIVER");
+                    sysprint( "Tcp Connect Timeout... !! on RECEIVER\n");
 
                     close(ifms->sockfd) ;
                     break ;

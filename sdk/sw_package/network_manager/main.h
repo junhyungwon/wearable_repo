@@ -30,15 +30,12 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#ifdef __NETMGR_DBG__
-#define aprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x);} while(0)
-#define eprintf(x...) do { printf(" [NETMGR ERR!] %s: ", __func__); printf(x); } while(0)
-#define dprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x); } while(0)
-#else
-#define aprintf(x...)
-#define eprintf(x...)
-#define dprintf(x...)
-#endif
+/* ANSI Color YELLOW */
+#define aprintf(x, ...)	printf(" [NETMGR ] \033[33m%s: \033[0m" x, __func__, ##__VA_ARGS__);
+#define dprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x);} while(0)
+#define eprintf(x...) do { printf(" [NETMGR ERR!] %s: ", __func__); printf(x);} while(0)
+
+#define sysprint(x...) do { printf(" [NETMGR LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
 
 #ifndef TRUE
 #define TRUE 		1
@@ -86,6 +83,5 @@ extern app_netmgr_cfg_t *app_cfg;
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-void netmgr_syslog(char *msg);
 
 #endif	/* __MAIN_H__ */

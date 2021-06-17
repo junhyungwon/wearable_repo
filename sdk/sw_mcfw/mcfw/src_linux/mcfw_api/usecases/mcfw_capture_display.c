@@ -369,6 +369,7 @@ static void encoder_link_delete(void)
 	System_linkDelete(gVsysModuleContext.swOsdId);
 }
 
+#if 0
 /*----------------------------------------------------------------------------
  display link create/delete function
 -----------------------------------------------------------------------------*/
@@ -417,6 +418,7 @@ static void display_link_create(UInt32 prevLinkId, UInt32 prevLinkQueId, int lay
 		System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_SD], &dispPrm, sizeof(dispPrm));
 	}
 }
+#endif
 
 static void display_link_delete(void)
 {
@@ -440,7 +442,7 @@ void mcfw_capture_display_init(int mode)
 #endif
 {
 	CaptureLink_CreateParams		capturePrm;
-	DeiLink_CreateParams			deiPrm;
+	//DeiLink_CreateParams			deiPrm;
 	NsfLink_CreateParams			nsfPrm, nsfPrm1;
 	DupLink_CreateParams			dupPrm0, dupPrm1, dupPrm2;
 	MergeLink_CreateParams			mergePrm0;

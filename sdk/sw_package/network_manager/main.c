@@ -112,6 +112,8 @@ static void ___thread_start(void)
 	netmgr_poll_wlan_init();
 	netmgr_poll_cradle_init();
 	netmgr_poll_usbnet_init();
+	
+	aprintf("enter...!\n");
 }
 
 /*****************************************************************************
@@ -151,15 +153,6 @@ static void app_main(void)
 	tObj->active = 0;
 }
 
-void netmgr_syslog(char *msg)
-{
-	char tmpMsg[256] = {0,};
-	
-	memset(tmpMsg, 0, sizeof(tmpMsg));
-	snprintf(tmpMsg, sizeof(tmpMsg), "[NETMGR] %s", msg);
-	syslog(LOG_ERR, "%s\n", tmpMsg);
-}
-
 /*****************************************************************************
 * @brief    main function
 * @section  [desc]
@@ -175,7 +168,7 @@ int main(int argc, char **argv)
 	
 	main_thread_exit();
 	
-	printf(" [netmgr] process exit!\n");
+	aprintf("...exit!\n");
 	
 	return 0;
 }

@@ -77,8 +77,6 @@ void video_status(void)
     int i, temp, count, ret, vcount = 0;
 	int vstatus[MODEL_CH_NUM] = {0,};
 
-    char msg[128] = {0,};
-
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
@@ -96,8 +94,7 @@ void video_status(void)
 	}
 #endif
 	app_cfg->vid_count = vcount;
-    sprintf(msg, " Camera Detected Count: %d", count);
-	app_log_write(MSG_LOG_WRITE, msg);
+	sysprint("[APP_CAP] Camera Detected Count: %d\n", count);
 	
 	if (app_cfg->ste.b.cap == 0) {
 #if defined(NEXXONE) || defined(NEXX360H)

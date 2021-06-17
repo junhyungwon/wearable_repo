@@ -728,12 +728,12 @@ static int __cli_check_essid(iw_item_t *dst)
 static void *THR_wlan_cli_main(void *prm)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
-	char logbuf[256];
 	
 	int exit = 0;
 	int quit = 0;
 	
 	tObj->active = 1;
+	aprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -796,27 +796,16 @@ static void *THR_wlan_cli_main(void *prm)
 			
 			case __STAGE_CLI_DHCP_VERIFY:
 				res = netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-				if (res < 0) 
-				{
+				if (res < 0) {
+					sysprint("udhcpc error\n");
 					i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					
-					memset(logbuf, 0, sizeof(logbuf));
-					sprintf(logbuf, "dhcp client error...!!");
-					netmgr_syslog(logbuf);
-					eprintf("%s!!\n", logbuf);
 				} else {
 					if (!strcmp(i_cli->ip, "0.0.0.0")) {
 						/* dhcp로부터 IP 할당이 안된 경우 */
-						memset(logbuf, 0, sizeof(logbuf));
-						sprintf(logbuf, "couln't get ip from %s!", i_cli->item.ssid);
-						netmgr_syslog(logbuf);
-						eprintf("%s\n", logbuf);
+						sysprint("couln't get ip from %s!\n", i_cli->item.ssid);
 						i_cli->stage = __STAGE_CLI_ERROR_STOP;
 					} else {
-						memset(logbuf, 0, sizeof(logbuf));
-						sprintf(logbuf, "ip address of %s is %s", i_cli->item.ssid, i_cli->ip);
-						netmgr_syslog(logbuf);
-						dprintf("%s\n", logbuf);
+						sysprint("ip address of %s is %s\n", i_cli->item.ssid, i_cli->ip);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 						i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 					}
@@ -916,6 +905,7 @@ static void *THR_wlan_cli_main(void *prm)
 	}
 	
 	tObj->active = 0;
+	aprintf("...exit!\n");
 	
 	return NULL;
 }
@@ -965,7 +955,6 @@ int netmgr_wlan_cli_start(void)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
 	netmgr_iw_supplicant_req_info_t *info;
-	char msg[256]={0,};
 	char *databuf;
 	int i, key=0;
 	
@@ -999,12 +988,10 @@ int netmgr_wlan_cli_start(void)
 		strcpy(i_cli->ip, info->ip_address);
 		strcpy(i_cli->mask, info->mask_address);
 		strcpy(i_cli->gw, info->gw_address);
-		sprintf(msg, "Wi-Fi client ip address set static!");
+		sysprint("Wi-Fi client ip address set static!\n");
 	} else {
-		sprintf(msg, "Wi-Fi client ip address set dhcp!");
+		sysprint("Wi-Fi client ip address set dhcp!\n");
 	}
-	netmgr_syslog(msg);
-	dprintf("%s\n", msg);
 	
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);

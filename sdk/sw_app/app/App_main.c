@@ -145,11 +145,11 @@ static void app_setdns(void)
 	{
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server1) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		app_log_write(MSG_LOG_WRITE, buffer);
+		sysprint(buffer);
 		
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server2) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		app_log_write(MSG_LOG_WRITE, buffer);
+		sysprint(buffer);
 		
 		sprintf(buffer, "options timeout:1 retry:1\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
@@ -231,7 +231,6 @@ static void __syslogd_enable(int en)
 *****************************************************************************/
 int app_main(void)
 {
-    char msg[128] = {0, };
     char micom_ver[128] = {0, } ;
 
 	app_thr_obj *tObj = &app_cfg->mObj;
@@ -243,12 +242,11 @@ int app_main(void)
 	tObj->active = 1;
 
 	app_mcu_start();
-    sprintf(msg, ">>>>> %s_SYSTEM STARTED!! <<<<<", FITT360_SW_VER);
-    app_log_write(MSG_LOG_WRITE, msg);
+    sysprint("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<", FITT360_SW_VER);
 
     ctrl_get_mcu_version( micom_ver ) ;
-    sprintf(msg, "SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s",FITT360_SW_VER, FITT360_HW_VER, micom_ver);
-    app_log_write(MSG_LOG_WRITE, msg);
+    sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s", 
+					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
     app_libuv_start();
 #ifdef USE_RTMP
@@ -390,9 +388,7 @@ int app_main(void)
 
 	app_leds_init(); /* set leds off state */
 
-	app_log_write(MSG_LOG_WRITE, "[APP_FITT360] app_main() EXIT....");
-
-	aprintf("exit\n");
+	sysprint("[APP_FITT360] app_main() EXIT....\n");
 
 	return SOK;
 }
@@ -499,11 +495,8 @@ int main(int argc, char **argv)
 	//# start log system
     app_ipins_init();
 	
-#ifdef __SYSLOGD_ENABLE__
 	__syslogd_enable(1);
-#else
-	app_log_init();
-#endif	
+	
 	app_gui_init();
 	app_dev_init();
     app_tsync_init() ;
@@ -525,11 +518,7 @@ int main(int argc, char **argv)
 	app_rec_exit();
 	app_file_exit();
 	
-#ifdef __SYSLOGD_ENABLE__
 	__syslogd_enable(0);
-#else
-	app_log_exit();
-#endif	
 	app_mcu_exit();		//# will power off after 200mS
 	app_dev_exit();
 	app_gui_exit();
