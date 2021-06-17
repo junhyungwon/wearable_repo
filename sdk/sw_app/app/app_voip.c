@@ -27,7 +27,6 @@
 #include "app_main.h"
 #include "app_voip.h"
 #include "app_leds.h"
-#include "app_log.h"
 #include "app_ctrl.h"
 
 /*----------------------------------------------------------------------------
@@ -263,22 +262,17 @@ static void __set_voip_play_volume(int level)
 
 static void __call_register_handler(void)
 {
-	char msg[256] = {0, };
-	
 	/* create ua and register */
 	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
-		snprintf(msg, sizeof(msg), "STUN URL %s@%s:%d (pw: %s) ", ivoip->dev_num, ivoip->stun_svr, 
+		sysprint("STUN URL %s@%s:%d (pw: %s) ", ivoip->dev_num, ivoip->stun_svr, 
 				ivoip->svr_port, ivoip->passwd);
 	} else {
-		snprintf(msg, sizeof(msg), "URL %s@%s:%d (pw: %s)", ivoip->dev_num, ivoip->server, 
+		sysprint("URL %s@%s:%d (pw: %s)", ivoip->dev_num, ivoip->server, 
 				ivoip->svr_port, ivoip->passwd);
 	}
-    app_log_write(MSG_LOG_WRITE, msg);
-	
-	dprintf("voip start register--->%s\n", msg);
 }
 
 static void __call_unregister_handler(void)
@@ -290,7 +284,6 @@ static void __call_unregister_handler(void)
 
 static void __call_event_handler(void)
 {
-	char msg[128] = {0,};
 	int action = ivoip->st.call_ste;
 	
 	if (!ivoip->st.call_reg) {
@@ -298,10 +291,7 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-	snprintf(msg, sizeof(msg), "baresip state is %s, send btn...", __action_str(action));
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
-	
+	sysprint("baresip state is %s, send btn...\n", __action_str(action));
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
 		/* 전화를 건다 */
@@ -364,14 +354,11 @@ static void __call_snd_volume_handler(void)
 *****************************************************************************/
 static void __call_status_handler(void)
 {
-	char msg[128] = {0,};
 	int is_reg = ivoip->st.call_reg;
 	int errcode = ivoip->st.call_err;
 	int action = ivoip->st.call_ste;
 	
-	snprintf(msg, sizeof(msg), "baresip response is %s", __action_str(action));
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
+	sysprint("baresip response is %s\n", __action_str(action));
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
 	{

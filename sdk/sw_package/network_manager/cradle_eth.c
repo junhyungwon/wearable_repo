@@ -99,6 +99,7 @@ static void *THR_cradle_eth_main(void *prm)
 	int quit = 0;
 	
 	tObj->active = 1;
+	aprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -203,6 +204,7 @@ static void *THR_cradle_eth_main(void *prm)
 	}
 	
 	tObj->active = 0;
+	aprintf("...exit!\n");
 	
 	return NULL;
 }
@@ -221,7 +223,7 @@ int netmgr_cradle_eth_init(void)
 		return EFAIL;
     }
 	
-	aprintf("done!...\n");
+	aprintf("enter...!\n");
 	
 	return 0;
 }
@@ -242,7 +244,7 @@ int netmgr_cradle_eth_exit(void)
 
     thread_delete(tObj);
 	
-    aprintf("... done!\n");
+    aprintf("...exit!\n");
 	
 	return 0;
 }
@@ -282,7 +284,7 @@ int netmgr_cradle_eth_event_start(void)
 	netmgr_net_link_up(NETMGR_CRADLE_ETH_DEVNAME); 
    	event_send(tObj, APP_CMD_START, 0, 0);
 	
-	aprintf("... done!\n");
+	aprintf("enter...!\n");
 	
 	return 0;
 }
@@ -298,7 +300,7 @@ int netmgr_cradle_eth_event_stop(void)
 	
    	event_send(tObj, APP_CMD_STOP, 0, 0);
 	
-	aprintf("... done!\n");
+	aprintf("...exit!\n");
 	
 	return 0;
 }

@@ -36,7 +36,6 @@
 #include "dev_wifi.h"
 #include "dev_disk.h"
 #include "app_set.h"
-#include "app_log.h"
 #include "app_rec.h"
 #include "app_cap.h"
 #include "app_rtsptx.h"
@@ -68,8 +67,6 @@ static const char *fw_app_name  = "/mmc/app_fitt.out";
 *****************************************************************************/
 int ctrl_vid_rate(int ch, int rc, int br)
 {
-    char log[128] = {0, };
-
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
   
     params.rateControl = rc ;
@@ -79,7 +76,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 
 	if(rc == RATE_CTRL_VBR)
 	{
-        sprintf(log, "[APP_CTRL] --- ch %d set vid rate control to VBR ---",ch);
+        sysprint("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
 
 		params.qpMax 	= 45;
 		params.qpInit 	= -1;
@@ -101,7 +98,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 	else	//# RATE_CTRL_CBR
 	{
-        sprintf(log, "[APP_CTRL] --- ch %d set vid rate control to CBR ---",ch);
+        sysprint("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
  
 		params.qpMin	= 2;//10;	//# for improve quality: 10->0
 		params.qpMax 	= 40;
@@ -109,8 +106,6 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 
 	Venc_setDynamicParam(ch, 0, &params, VENC_QPVAL_P);  // set QP range
-
-    app_log_write( MSG_LOG_WRITE, log );
 
 	return SOK;
 }
@@ -212,7 +207,6 @@ int ctrl_vid_gop_set(int ch, int gop)
 *****************************************************************************/
 int ctrl_vid_resolution(int resol_idx) 
 {
-    char buf[128] = {0, };
     int ret = 0 ;
 
     //# to prevent key input
@@ -220,7 +214,6 @@ int ctrl_vid_resolution(int resol_idx)
     Vdis_disp_ctrl_exit();
 
 // to do rec stop
-
     ret = app_rec_state() ;
     if (ret) {
         app_rec_stop(1);
@@ -233,9 +226,7 @@ int ctrl_vid_resolution(int resol_idx)
     app_msleep(200);
 
 	app_set->ch[MODEL_CH_NUM].resol = resol_idx;
-
     Vdis_disp_ctrl_init(resol_idx);
-
     app_cap_start();    
 
     if (ret) {
@@ -249,20 +240,18 @@ int ctrl_vid_resolution(int resol_idx)
 	switch(resol_idx) {
 	default:
 	case 0:
-		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 480P ---");
+		sysprint("[APP_CTRL] --- change Display Mode to 480P ---\n");
 		break;
 	case 1:
-		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 720P ---");
+		sysprint("[APP_CTRL] --- change Display Mode to 720P ---\n");
 		break;
 	case 2:
-		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 1080P ---");
+		sysprint("[APP_CTRL] --- change Display Mode to 1080P ---\n");
 		break;
     }
 	
-    app_log_write(MSG_LOG_WRITE, buf);
-	
     app_cfg->ste.b.nokey = 0;
-	printf("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
+	dprintf("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
 
     return SOK ;
 }
@@ -396,8 +385,6 @@ int ctrl_set_port(int http_port, int https_port, int rtsp_port)
 *****************************************************************************/
 int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet)
 {
-    char log[256] = {0,};
-	
 	if (!net_type)  // STATIC
 	{
 		if (strcmp(token, "wlan0") == 0) {
@@ -406,16 +393,14 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 			if (subnet != NULL)
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
-			sprintf(log, "[APP] --- Wireless ipaddress changed System Restart ---");
-			app_log_write(MSG_LOG_SHUTDOWN, log);		
+			sysprint("[APP] --- Wireless ipaddress changed System Restart ---\n");
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");
-			app_log_write(MSG_LOG_SHUTDOWN, log);	
+			sysprint("[APP] --- Ethernet ipaddress changed System Restart ---\n");
 		}
 	}	
 	
@@ -431,14 +416,10 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 *****************************************************************************/
 int ctrl_set_gateway(const char *gw)
 {
-    char log[255]={0,};
-
     if (gw != NULL)
         strcpy(app_set->net_info.eth_gateway, gw);
 	
-	sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
-    dprintf("%s\n", log);
-	app_log_write( MSG_LOG_SHUTDOWN, log );
+	sysprint("[APP] --- Ethernet gateway changed System Restart ---\n");
 	ctrl_sys_reboot();	
 
     return SOK;
@@ -485,7 +466,7 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
 {
     struct tm ts;
     time_t set;
-    char msg[MAX_CHAR_128], buf[MAX_CHAR_64];
+    char buf[MAX_CHAR_64]={0,};
 
     ts.tm_year = (year - 1900);
     ts.tm_mon  = (mon - 1);
@@ -497,16 +478,14 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
     set = mktime(&ts);
 
     strftime( buf, sizeof(buf), "%Y%2m%2d_%2H%2M%2S", &ts );
-    sprintf( msg, "[APP_CTRL] Time Change : %s", buf );
-    app_log_write( MSG_LOG_WRITE, msg );
+    sysprint("[APP_CTRL] Time Change : %s\n", buf);
 
     stime(&set);
     Vsys_datetime_init();   //# m3 Date/Time init
     OSA_waitMsecs(100);
 
     if (dev_rtc_set_time(ts) < 0) {
-        sprintf(msg, "[APP_CTRL] !!! Failed to set system time to rtc !!!");
-        app_log_write( MSG_LOG_WRITE, msg );
+        sysprint("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
     }   
 
     return 0;
@@ -747,7 +726,6 @@ static int _is_firmware_for_release(void)
     FILE *F_fw;
     F_fw = fopen(FW_DIR, "r");
     int i=0, ret = FALSE;
-	char buf[256]={0,};
 
     if (F_fw != NULL) {
         while (!feof(F_fw)) {
@@ -760,14 +738,12 @@ static int _is_firmware_for_release(void)
         fclose(F_fw);
 
         if (strcmp(fw[FW_TYPE].value, F_RELEASE) == 0) {
-            printf("\n TYPE RELEASE!!\n");
-            ret = TRUE;
+           	dprintf("\n TYPE RELEASE!!\n");
+        	ret = TRUE;
         }
 
 		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
-			sprintf(buf, "This FW is not for %s !!!", MODEL_NAME);
-			printf("%s\n", buf);
-			app_log_write(MSG_LOG_WRITE, buf);
+			sysprint("This FW is not for %s !!!\n", MODEL_NAME);
 			ret = EFAIL;
 		}
     }
@@ -859,9 +835,7 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	sleep(1/*3*/);
 
 	if(-1 == access(FW_DIR, 0)) {
-		memset(buf, 0, sizeof(buf));
-		sprintf(buf, "Failed to read %s!!!", FW_DIR);
-		app_log_write(MSG_LOG_WRITE, buf);
+		sysprint("Failed to read %s!!!\n", FW_DIR);
 		return EFAIL;
 	}
 
@@ -882,7 +856,6 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 static int _sw_update(const char *disk, int version)
 {
 	char cmd[256]={0,};
-	char msg[128]={0,};
 	char *pFile = NULL;
 	int ret = 0;
 	int release = 1;
@@ -895,9 +868,7 @@ static int _sw_update(const char *disk, int version)
 	app_cfg->ste.b.busy = 1;
 	pFile = _findFirmware(disk);
 	if (pFile == NULL) {
-		sprintf(msg, "Firmware file is not exist !!!");
-		app_log_write(MSG_LOG_WRITE, msg);
-		printf("%s\n", msg);
+		sysprint("Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
 		return EFAIL;
 	}
@@ -908,9 +879,7 @@ static int _sw_update(const char *disk, int version)
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc
 	if (_unpack_N_check((const char *)pFile, (const char *)disk, &release) == EFAIL) {
-		sprintf(msg, "It is not firmware file !!!");
-		app_log_write(MSG_LOG_WRITE, msg);
-		printf("%s\n", msg);
+		sysprint("It is not firmware file !!!\n");
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
@@ -927,9 +896,9 @@ static int _sw_update(const char *disk, int version)
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
-	app_log_write(MSG_LOG_WRITE, "Full version Firmware update done....");
+	sysprint("Full version Firmware update done....\n");
 
-	aprintf("done! will restart\n");
+	dprintf("done! will restart\n");
 	ret = SOK;
 	
 fw_exit:
@@ -949,14 +918,13 @@ fw_exit:
 
 void *thrRunFWUpdate(void *arg)
 {
-	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Web Remote Update Temp version Firmware update done....");
+	sysprint("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
 
 	app_buzz_ctrl(50, 3);		//# buzz: update
 	dev_fw_setenv("nand_update", "1", 0);
 	sync();
 
-	printf("\nfw update ready ! It will restart\n\n");
-
+	dprintf("\nfw update ready ! It will restart\n\n");
 	app_mcu_pwr_off(OFF_RESET);
 
 	return NULL;

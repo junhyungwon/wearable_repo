@@ -157,6 +157,7 @@ static void close_wav_file(void)
 /*----------------------------------------------------------------------------
  audio codec function
 -----------------------------------------------------------------------------*/
+#if 0
 static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, Int32 bufsize)
 {
     int i, isNegative;
@@ -202,6 +203,7 @@ static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, Int32 bufsi
 
 	return (outputSize);
 }
+#endif
 
 /*****************************************************************************
 * @brief    sound capture thread function
@@ -215,15 +217,13 @@ static void *THR_snd_cap(void *prm)
 	int exit=0;
 	int ret, idx;
 	int read_sz = 0;
-	int si_size, enc_size;
+	int si_size;
 	
 	char *addr = NULL;
 
-	struct timeval tv ;
-    unsigned int timestamp ;
-	aprintf("enter...\n");
 	tObj->active = 1;
-
+	aprintf("enter...\n");
+	
 #if __WAVE_DUMP__	
 	init_wav_file(WAV_FILE_NAME, 1, APP_SND_SRATE);
 #endif	

@@ -415,7 +415,7 @@ static void *THR_ipinstall(void *prm)
 #ifdef IPINSTALL_DEBUG
                     DEBUG_PRI("ReadSocketData CONNECTION TIMEOUT\n") ;
 #endif
-                    app_log_write(MSG_LOG_WRITE, "Tcp Connect Timeout... !! on RECEIVER");
+                    sysprint("Tcp Connect Timeout... !! on RECEIVER\n");
 
                     close(ipins->rsock) ;
                     break ;

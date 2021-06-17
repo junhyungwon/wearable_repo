@@ -1,5 +1,5 @@
-
-
+#define _GNU_SOURCE
+#include <pthread.h>
 #include <osa_thr.h>
 
 int OSA_thrCreate(OSA_ThrHndl *hndl, OSA_ThrEntryFunc entryFunc, Uint32 pri, Uint32 stackSize,

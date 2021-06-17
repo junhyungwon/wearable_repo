@@ -870,7 +870,7 @@ Int32 Vcam_get_sensor_reg(UInt8 regaddr, UInt8 *regval)
 		if(status != OSA_SOK)
 			return -1;
 
-		*regval = regPrm.regValue = regval;
+		*regval = regPrm.regValue;
     }
 
 	return 0;

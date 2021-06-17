@@ -23,7 +23,7 @@ CODEC_INC=-I$(xdais_PATH)/packages -I$(h264dec_PATH)/Inc -I$(h264enc_PATH)/Inc
 
 LINUXDEVKIT_INC=-I$(linuxdevkit_PATH)/usr/include
 
-MCFW_INC=-I$(MCFW_ROOT_PATH)/mcfw/interfaces -I$(MCFW_ROOT_PATH)/mcfw/interfaces/common_def
+MCFW_INC=-I$(MCFW_ROOT_PATH)/mcfw/interfaces -I$(MCFW_ROOT_PATH)/mcfw/interfaces/common_def -I$(MCFW_ROOT_PATH)/mcfw/src_linux/mcfw_api/usecases
 
 XDAIS_INC=-I$(xdais_PATH)/packages
 

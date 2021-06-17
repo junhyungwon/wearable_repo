@@ -65,6 +65,16 @@ static app_netmgr_t *inetmgr=&netmgr_obj;
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 static void *THR_netmgr_send_msg(void *prm);
+static const char *netdev_str(int device)
+{
+	switch (device) {
+	case NETMGR_DEV_TYPE_WIFI:          return "WIFI";
+	case NETMGR_DEV_TYPE_USB2ETHER:     return "USB2ETH";
+	case NETMGR_DEV_TYPE_RNDIS:       	return "RNDIS";
+	case NETMGR_DEV_TYPE_CRADLE:   		return "CRADLE";
+	default: return "?";
+	}
+}
 
 static int send_msg(int cmd)
 {
@@ -300,7 +310,7 @@ static void __netmgr_dev_link_status_handler(void)
 	int link   = inetmgr->link_status;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		eprintf("invalid netdevice --> %x\n", device);
+		eprintf("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -334,8 +344,6 @@ static void __netmgr_dev_link_status_handler(void)
 			app_leds_rf_ctrl(LED_RF_OFF);
 		} 
 	}
-	
-	//dprintf("current dev 0x%x link status %d\n", device, link);
 }
 
 static void __netmgr_dev_ip_status_handler(void)
@@ -345,7 +353,7 @@ static void __netmgr_dev_ip_status_handler(void)
 	int device = inetmgr->device;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		eprintf("invalid netdevice --> %x\n", device);
+		eprintf("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -355,9 +363,9 @@ static void __netmgr_dev_ip_status_handler(void)
 
 #if 0	
 	//# for debugging
-	dprintf("[Dev %x] Get dhcp ip address is %s\n", device, info->ip_address);
-	dprintf("[Dev %x] Get dhcp mask address is %s\n", device, info->mask_address);
-	dprintf("[Dev %x] Get dhcp gateway address is %s\n", device, info->gw_address);
+	dprintf("[Dev %s] Get dhcp ip address is %s\n", netdev_str(device), info->ip_address);
+	dprintf("[Dev %s] Get dhcp mask address is %s\n", netdev_str(device), info->mask_address);
+	dprintf("[Dev %s] Get dhcp gateway address is %s\n", netdev_str(device), info->gw_address);
 #endif
 	
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
@@ -386,13 +394,8 @@ static void __netmgr_dev_ip_status_handler(void)
 
 static void __netmgr_rssi_status_handler(int level)
 {
-	int device = inetmgr->device;
-	char msg[128]={0,};
-	
 	if (level < 0) {
-		snprintf(msg, sizeof(msg), "Wi-Fi RSSI is minus, connection closed...");
-		dprintf("%s\n", msg);
-		app_log_write(MSG_LOG_WRITE, msg);					
+		sysprint("Wi-Fi RSSI is minus, connection closed...\n");
 	} else {					
 		//dprintf("current rssi level is (%d/100)\n", level);	
 		/* level 값을 확인 후 추가적인 작업이 필요할 경우를 위해서....*/
@@ -498,7 +501,6 @@ static void *THR_netmgr_send_msg(void *prm)
 *****************************************************************************/
 static void *THR_netmgr_recv_msg(void *prm)
 {
-	char msg[128]={0,};
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
@@ -513,38 +515,27 @@ static void *THR_netmgr_recv_msg(void *prm)
 			continue;
 		}
 		
-		/* log buffer clear */
-		memset(msg, 0, sizeof(msg));
 		switch (cmd) {
 		case NETMGR_CMD_READY:
 			__netmgr_start();
-			snprintf(msg, sizeof(msg), "app: netmgr ready!");
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			dprintf("netmgr starting....!\n");
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
 			__netmgr_hotplug_noty();
-			snprintf(msg, sizeof(msg), "app: netdevice type %x, state %s", 
-						inetmgr->device, inetmgr->insert?"insert":"remove");
-			dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] netdevice type %s, state %s\n", 
+						netdev_str(inetmgr->device), inetmgr->insert?"insert":"remove");
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
 			__netmgr_dev_link_status_handler();
-			snprintf(msg, sizeof(msg), "app: device type %x, link status %x", 
-						inetmgr->device, inetmgr->link_status);
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] device type %s, link status 0x%x\n", 
+						netdev_str(inetmgr->device), inetmgr->link_status);
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
 			__netmgr_dev_ip_status_handler();
-			snprintf(msg, sizeof(msg), "app: get device type %x, ip status!", 
-						inetmgr->device);
-			dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
@@ -554,9 +545,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
-			snprintf(msg, sizeof(msg), "app: netmgr exit!");
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] netmgr exit!\n");
 			break;
 		default:
 			break;	
@@ -652,7 +641,7 @@ int app_netmgr_init(void)
 		return EFAIL;
 	}
 	
-	aprintf("... done!\n");
+	aprintf("... exit!\n");
 
 	return SOK;
 }
@@ -684,7 +673,7 @@ int app_netmgr_exit(void)
 //	tObj = &inetmgr->rObj;
 //	thread_delete(tObj);
 	
-	aprintf("done!...\n");
+	aprintf("...exit!\n");
 
 	return SOK;
 }

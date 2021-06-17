@@ -284,6 +284,7 @@ static void *THR_wlan_hostapd_main(void *prm)
 	int quit = 0;
 	
 	tObj->active = 1;
+	aprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -357,6 +358,7 @@ static void *THR_wlan_hostapd_main(void *prm)
 	}
 	
 	tObj->active = 0;
+	aprintf("...exit!\n");
 	
 	return NULL;
 }

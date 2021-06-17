@@ -159,13 +159,8 @@ static void check_registrations(void)
 	}
 
 	n = list_count(uag_list());
-
 	/* We are ready */
-	info( "\x1b[32mAll %u useragent%s registered successfully!"
-		  " (%u ms)\x1b[;m\n",
-		  n, n==1 ? "" : "s",
-		  (uint32_t)(tmr_jiffies() - ikey->start_ticks));
-
+	sysprint("%u useragents registered successfully!\n", n);
 	ual_ready = true;
 }
 
@@ -185,7 +180,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	
 	pthread_mutex_lock(&ikey->lock);
 	
-	dprintf("c_menu: [ ua=%s call=%s ] event: %s (%s)\n",
+	sysprint("[ ua=%s call=%s ] event: %s (%s)\n",
 	      ua_aor(ua), call_id(call), uag_event_str(ev), prm);
 	
 	cfg = conf_config();
@@ -324,7 +319,7 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 		goto exit_lock;
 	
 	default:
-		warning("unknown ua_event 0x%x\n", (int)ev);
+		sysprint("unknown ua_event 0x%x\n", (int)ev);
 		goto exit_lock;
 	}
 	
@@ -412,28 +407,26 @@ static int __register_user(int network, int enable, short port, int level, const
 					UA_PREFIX, call_num, server_addr, port, passwd);	
 	}
 	
-	info("Creating UA for %s ....\n", ui_buf);
-		 
+	sysprint("Creating UA for %s ....\n", ui_buf);
 	err = ua_alloc(&ua, ui_buf);
 	if (err) {
-		eprintf("custom_menu: create_ua failed: %x\n", err);
+		sysprint("create_ua failed: %x\n", err);
 		return -1;
 	}
 	
 	/* return ua->acc (account) */
 	acc = ua_account(ua);
 	if (!acc) {
-		warning("account: no account for this ua\n");
+		sysprint("account: no account for this ua\n");
 		return ENOENT;
 	}
 		
 	if (account_regint(ua_account(ua))) 
 	{
 		int e;
-		
 		e = ua_register(ua);
 		if (e) {
-			warning("account: failed to register ua"
+			sysprint("account: failed to register ua"
 				" '%s' (%m)\n", account_aor(acc), e);
 		}
 	}
@@ -448,13 +441,11 @@ static void __unregister_user(void)
 	/* stop active call (네트워크 연결이 안되기 때문에 전송할 필요가 없음 */
 	for (le = list_head(uag_list()); le; le = le->next) {
 		struct ua *ua = le->data;
-		
 		if (ua_isregistered(ua)) 
 		{
 			struct account *acc = ua_account(ua);
 			
 			info("unregister %s\n", account_aor(acc));
-			
 			ua_unregister(ua);
 			//mem_deref(ua);
 		}	
@@ -471,7 +462,7 @@ static int __dialer_user(const char *call_num)
 	cfg = conf_config();
 	/* device number와 peer number가 같은 경우 error */
 	if (strcmp(ikey->uri.ua_uri, call_num) == 0) {
-		warning("menu: Don't allow same number between call and ua!\n");
+		sysprint("menu: Don't allow same number between call and ua!\n");
 		
 		ikey->play = mem_deref(ikey->play);
 		(void)play_file(&ikey->play, player, 
@@ -482,7 +473,7 @@ static int __dialer_user(const char *call_num)
 	} else {
 		err = ua_connect(uag_current(), NULL, NULL, call_num, VIDMODE_OFF);
 		if (err) {
-			warning("menu: ua_connect failed: %m\n", err);
+			sysprint("menu: ua_connect failed: %m\n", err);
 		}
 	}
 	
@@ -607,7 +598,7 @@ static void *THR_sipc_main(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			warning("failed to receive sipc process msg!\n");
+			eprintf("failed to receive sipc process msg!\n");
 			continue;
 		}
 		
@@ -672,14 +663,14 @@ static int module_init(void)
 		
 	/* message 수신 및 전송을 위한 Thread 생성 */
 	if (thread_create(tObj, THR_sipc_main, APP_THREAD_PRI, NULL) < 0) {
-		warning("create thread!\n");
+		eprintf("create thread!\n");
 		return -1;
 	}
 	
 	/* baresip의 event_handler에 의해서 전달되는 상태메시지를 main으로 전달하기 위한 thread */
 	tObj = &ikey->sObj;
 	if (thread_create(tObj, THR_sipc_poll, APP_THREAD_PRI-1, NULL) < 0) {
-		warning("create thread!\n");
+		eprintf("create thread!\n");
 		return -1;
 	}
 	

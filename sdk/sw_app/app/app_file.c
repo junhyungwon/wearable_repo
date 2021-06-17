@@ -512,7 +512,6 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 /* avi list save to /usr/share/video.lst */
 static int __save_file_list(const char *path)
 {
-	char msg[128] = {0,};
 	struct list_head *head = &ilist;
 	struct list_head *iter;
 	struct disk_list *ptr;
@@ -534,10 +533,7 @@ static int __save_file_list(const char *path)
 		return -1;
 	}
 	
-	snprintf(msg, sizeof(msg), "%d files saved in video list", scnt);
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
-	
+	sysprint("[APP_FILE] %d files saved in video list\n", scnt);
 	fwrite(&scnt, sizeof(size_t), 1, f);    //# total file count
 	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
@@ -703,7 +699,6 @@ static void *THR_file_mng(void *prm)
 *****************************************************************************/
 int app_file_init(void)
 {
-	char msg[MAX_CHAR_128]={0,};
 	char flist_path[256]={0,};
 	int res, status;
 	size_t num_of_files;
@@ -723,9 +718,7 @@ int app_file_init(void)
 	if (res < 0) {
 		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, num_of_files);
 		if (status == EFAIL) 	{
-			sprintf(msg, "Failed to make file list!!");
-			app_log_write(MSG_LOG_WRITE, msg);
-			eprintf("%s\n", msg);
+			sysprint("Failed to make file list!!\n");
 			return status;
 		}
 	}

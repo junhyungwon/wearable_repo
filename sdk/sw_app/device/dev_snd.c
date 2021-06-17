@@ -314,6 +314,7 @@ int dev_snd_set_volume(int dir, int volume)
 }
 
 //################################ ALSA Capture / Playback Helper Routine##########################################
+#if 0
 static int __pcm_recover (snd_pcm_t *handle)
 {
 	int err = 0;
@@ -339,6 +340,7 @@ static int __pcm_resume (snd_pcm_t *handle)
 
 	return ret;
 }
+#endif
 
 /*****************************************************************************
 * @brief    sound parameter init/close function

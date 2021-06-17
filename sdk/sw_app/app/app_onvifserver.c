@@ -35,7 +35,6 @@
 #include "app_onvifserver.h"
 #include "app_uds.h"
 #include "app_main.h"
-#include "app_log.h"
 #include "app_rec.h"
 #include "app_dev.h"
 #include "app_set.h"

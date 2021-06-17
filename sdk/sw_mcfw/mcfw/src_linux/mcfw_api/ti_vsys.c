@@ -188,7 +188,7 @@ Int32 Vsys_datetime_init(void)
     struct tm *pgm = gmtime(&tv.tv_sec);
     time_t gm_sec  = mktime(pgm);
 
-    printf("%s, timezone = %d, is_dst:%d, tm_zone:%s, gmtoff:%ld\n", __func__, (tv.tv_sec-gm_sec)/3600, pgm->tm_isdst, pgm->tm_zone, pgm->tm_gmtoff);
+    printf("%s, timezone = %ld, is_dst:%d, tm_zone:%s, gmtoff:%ld\n", __func__, (tv.tv_sec-gm_sec)/3600, pgm->tm_isdst, pgm->tm_zone, pgm->tm_gmtoff);
     unsigned int cur_sec = tv.tv_sec + (tv.tv_sec-gm_sec);
 
 	cur_time = (((UInt_64)cur_sec*1000000 + tv.tv_usec)/1000);
