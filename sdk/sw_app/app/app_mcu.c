@@ -113,7 +113,6 @@ static int power_on_lv = 1;
 
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
-    char msg[128] = {0, };
 	int bg_lv = -1;
 
 	if (power_on_lv) {

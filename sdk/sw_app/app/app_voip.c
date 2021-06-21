@@ -76,10 +76,12 @@ typedef enum {
 static app_voip_t t_voip;
 static app_voip_t *ivoip = &t_voip;
 
+#if 0
 /* aic3x audio codec output volume percentage */
 static int __aic3x_output_level[3] = {
 	60, 80, 100 	
 };
+#endif
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -355,7 +357,6 @@ static void __call_snd_volume_handler(void)
 static void __call_status_handler(void)
 {
 	int is_reg = ivoip->st.call_reg;
-	int errcode = ivoip->st.call_err;
 	int action = ivoip->st.call_ste;
 	
 	sysprint("baresip response is %s\n", __action_str(action));
@@ -500,8 +501,7 @@ int app_voip_init(void)
 {
 	app_thr_obj *tObj;
 	struct stat sb;
-	int percent, lv;
-	int status;
+	int lv,status;
 	
 	memset(ivoip, 0, sizeof(app_voip_t));
 	

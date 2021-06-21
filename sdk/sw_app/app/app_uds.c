@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#define __USE_GNU
 #include <pthread.h>
 
 #include <sys/socket.h>
@@ -380,6 +381,9 @@ static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)
 		int nCS = cs;
 		static pthread_t tid_restart_onvif; // restart onvif
 		int status = pthread_create(&tid_restart_onvif, NULL, thdRestartOnvifServer, (void *)&nCS);
+		if (status < 0) {
+			; /* TODO */
+		}
 		pthread_setname_np(tid_restart_onvif, __FILENAME__);
 
 		return 0;
@@ -1256,11 +1260,13 @@ static int getKbps(int ch)
 	return br;
 }
 
+#if 0
 static int getKbpsIdx(int ch)
 {
 	int idx = app_set->ch[ch].quality;
 	return idx;
 }
+#endif
 
 // The parameter "ch" means  Recording or Streaming
 // if ch is 4, it will return streaming information, 
@@ -1280,11 +1286,13 @@ static int getFps(int ch)
 	return fps ;
 }
 
+#if 0
 static int getFpsIdx(int ch)
 {
     int idx = app_set->ch[ch].framerate;
 	return idx;
 }
+#endif
 
 // The parameter "ch" means  Recording or Streaming
 // if ch is 4, it will return streaming information, 

@@ -172,16 +172,20 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				strcpy(info->iw_data[0].passwd, app_set->wifiap.pwd);
 			}
 			
-			/* 신규로 추가된 총 4개의 접속 정보를 저장 */
-            for (i = 1; i <= WIFIAP_CNT; i++) {
+			/* 신규로 추가된 총 4개의 접속 정보를 저장 
+			 * info->iw_data[0]가 wifiap 구조체 값을 저장하기 때문에
+			 * info->iw_data[1]부터 저장해야 함.
+			 */
+            for (i = 0; i < WIFIAP_CNT; i++) 
+			{
 				/* NULL 문자 체크 */
 				if (strcmp(app_set->wifilist[i].ssid, "") != 0)
-			    	strcpy(info->iw_data[i].ssid, app_set->wifilist[i].ssid);
+			    	strcpy(info->iw_data[i+1].ssid, app_set->wifilist[i].ssid);
 			    if (strcmp(app_set->wifilist[i].pwd, "")!=0) {
-				    strcpy(info->iw_data[i].passwd, app_set->wifilist[i].pwd);
-					info->iw_data[i].en_key = 1;
+				    strcpy(info->iw_data[i+1].passwd, app_set->wifilist[i].pwd);
+					info->iw_data[i+1].en_key = 1;
 			    } else {
-				    info->iw_data[i].en_key = 0;
+				    info->iw_data[i+1].en_key = 0;
 			    }
 			}
 			

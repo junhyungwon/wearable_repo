@@ -226,9 +226,6 @@ static int _is_enable_rec_start(void)
 *****************************************************************************/
 int app_rec_start(void)
 {
-	int start = 1;
-	unsigned long sz;
-
 	//# Check the status of recording.
 	if (_is_enable_rec_start() == EFAIL)
 		return EFAIL;
