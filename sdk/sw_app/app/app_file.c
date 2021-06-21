@@ -153,7 +153,6 @@ static Uint32 get_file_count(const char *dpath)
 {
 	struct dirent *entry;
 	DIR *dcim;
-	FILE *f = NULL;
 	Uint32 count = 0;
 	
 	dcim = opendir(dpath);
@@ -271,6 +270,7 @@ static int _get_rec_file_head(struct list_head *head, char *path)
  * @section  DESC Description
  *	 - desc : return the size of file
  *****************************************************************************/
+#if 0
 static void delete_all_node(struct list_head *head)
 {
 	struct list_head *iter;
@@ -285,7 +285,6 @@ redo:
 	}
 }
 
-#if 0
 static void display_node(struct list_head *head)
 {
 	struct list_head *iter;
@@ -518,7 +517,7 @@ static int __save_file_list(const char *path)
 	list_info_t info;
 	
 	FILE *f = NULL;
-	int res, i;
+	int res;
 	size_t scnt = ifile->file_count;
 	
 	res = access(path, R_OK|W_OK);
@@ -615,7 +614,6 @@ static void *THR_file_mng(void *prm)
 	int cmd, exit=0;
 	unsigned int f_cycle=FILE_LIST_CHECK_TIME;
 	unsigned int b_cycle=FILE_STATE_CHECK_BEEP;
-	char msg[MAX_CHAR_255] = {0,};
 	int r = 0;
 	
 	aprintf("enter...\n");
@@ -827,8 +825,6 @@ unsigned long app_file_get_free_size(void)
 *****************************************************************************/
 int app_file_add_list(const char *pathname, int size)
 {
-	int ret = EFAIL;
-	
 	OSA_mutexLock(&ifile->mutex_file);	
 	add_node_tail(pathname, &ilist, (unsigned int)size);
 //	dprintf("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);

@@ -132,7 +132,6 @@ static size_t get_cfg_size (const char *file_name)
 
 static void set_uid()
 {
-	int retval = 0 ;
     char uid[MAX_CHAR_32] = {0, };
 
     if(dev_board_uid_read(uid, MAX_CHAR_16) == 0)
@@ -1191,7 +1190,6 @@ int app_set_open(void)
 {
     int ret=SOK;
     char *pFile = NULL;
-	char cmd[MAX_CHAR_128]={0,};
 
 	//# delete cfg file
 	pFile = find_reset();
@@ -1254,8 +1252,6 @@ int app_set_open(void)
 
 void app_setting_reset(int type)  // sw reset, hw reset(include network setting) 
 {
-    int ret ;
-
     if (type >= 0 && type < 2)
     {
         app_set_default(type);  // onvif factory default

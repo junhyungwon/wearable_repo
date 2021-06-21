@@ -165,7 +165,6 @@ static int __mmc_prepare(void)
 	
 	char buf[256 + 1]={0,};
 	char mntd[64]={0,};
-	int res=0;
 	
 	/* mmc mount 확인 */
 	app_cfg->ste.b.mmc = 0; //# default 0

@@ -175,7 +175,7 @@ static int  onvif_is_wireless_up()
 	return retval;  // if 1 , upped, else down
 }
 
-
+#if 0
 static int  onvif_get_gateway(const char *devName, char *out_gw)
 {
 	int ret = -1;
@@ -289,6 +289,7 @@ static int onvif_get_net_info(const char *devName, ONVIF_NET_INFO * out_info)
 
 	return -1;
 }
+#endif
 
 // You must free the result if result is non-NULL.
 static char *str_replace(char *orig, char *rep, char *with) {

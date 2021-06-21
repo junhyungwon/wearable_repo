@@ -427,7 +427,7 @@ static int __register_user(int network, int enable, short port, int level, const
 		e = ua_register(ua);
 		if (e) {
 			sysprint("account: failed to register ua"
-				" '%s' (%m)\n", account_aor(acc), e);
+				" '%s'\n", account_aor(acc));
 		}
 	}
 	
@@ -473,7 +473,7 @@ static int __dialer_user(const char *call_num)
 	} else {
 		err = ua_connect(uag_current(), NULL, NULL, call_num, VIDMODE_OFF);
 		if (err) {
-			sysprint("menu: ua_connect failed: %m\n", err);
+			sysprint("menu: ua_connect failed\n");
 		}
 	}
 	
