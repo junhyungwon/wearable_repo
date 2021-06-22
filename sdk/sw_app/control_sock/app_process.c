@@ -89,7 +89,6 @@ void gpsdatareq(int channel, char *data, int len)
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdatareq packet receive...\n") ;
 #endif
-    int sendlen = 0;
 /*
 	GPSDATA Gpsdatares ;
 
