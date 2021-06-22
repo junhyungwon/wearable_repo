@@ -37,6 +37,8 @@
 #include <netdb.h>
 #include <dirent.h>
 #include <sys/stat.h>
+
+#include "dev_common.h"
 #include "app_comm.h"
 #include "app_dev.h"
 #include "app_ipinstall.h"
@@ -72,7 +74,6 @@ static char ReadBuffer[RECVBUFFSIZE] ;
 
 static struct sockaddr_in serv_addr, send_addr;
 static int addrlen = sizeof(struct sockaddr_in) ;
-static int change = 0 ;
 
 int create_recvsock()
 {
@@ -196,8 +197,6 @@ void send_sysinfo(void)
 
 void change_info(char *data)
 {
-	struct sockaddr_in addr ;
-
 	CHANGE_INFO *Changeinfo ;
     char Macaddr[MAX_CHAR_16 + 2] ; 
     int ret = 0, eth_type , wireless_type ;;
@@ -302,8 +301,6 @@ void change_info(char *data)
 int processdata (char *data)
 {
     INFO_REQ *Inforeq ;
-	INFO_RES Infores ;
-
     unsigned short cmd ;
 
 	Inforeq = (INFO_REQ *)data ;
@@ -338,7 +335,7 @@ int processdata (char *data)
 static void *THR_ipinstall(void *prm)
 {
     app_thr_obj *tObj = &ipins->ipinsObj;
-    int cmd, retry_cnt = 0, receive_len = 0, E_wouldcnt = 0 ;
+    int cmd, retry_cnt = 0, receive_len = 0;
     int exit = 0;
 
     tObj->active = 1;

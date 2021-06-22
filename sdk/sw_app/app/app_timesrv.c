@@ -46,6 +46,7 @@
 #include "app_ctrl.h"
 #include "ti_vcap.h"
 #include "app_set.h"
+#include "app_rec.h"
 
 /*------------------------------------------------------------------------------
 Defines
@@ -255,8 +256,6 @@ int check_ipaddress(char *addr)
 int set_time_by_ntp()
 {
 	int retval = FALSE, cnt=0;
-    time_t timeval ;
-    struct tm *ptm;
     struct hostent *hp;
     char buff[MAX_CHAR_128], server_addr[MAX_CHAR_32] ;
 	FILE *fd;
@@ -299,6 +298,9 @@ int set_time_by_ntp()
     if((fd = fopen("/mmc/ntp.txt", "r")) != NULL)
     {
         int readsize = fread(buff, sizeof buff, 1,  fd) ;
+		if (readsize < 0) {
+			; /* TODO */
+		}
 
         if(strstr(buff, "Configuration"))
         {

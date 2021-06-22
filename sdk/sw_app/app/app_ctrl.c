@@ -171,7 +171,6 @@ int ctrl_vid_framerate(int ch, int framerate)
 int ctrl_vid_bitrate(int ch, int bitrate) 
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int br;
 
     app_set->ch[ch].quality = bitrate;
 	// resol 480P 0 720P 1 1080P 2

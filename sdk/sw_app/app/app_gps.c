@@ -30,6 +30,7 @@
 #include "app_gps.h"
 #include "app_process.h"
 #include "app_buzz.h"
+#include "app_rec.h"
 
 #include "gnss_ipc_cmd_defs.h"
 

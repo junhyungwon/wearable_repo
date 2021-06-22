@@ -137,9 +137,9 @@ typedef struct _STREAM_PARM{
 #define eprintf_rt(x...) do { printf(" [rtsp ERR] %s: ", __func__); printf(x); } while(0)
 
 #ifdef SYS_DEBUG
-#define dprintf(x...) do { printf(" [rtsp ] %s: ", __func__); printf(x); } while(0)
+#define dprintf_rt(x...) do { printf(" [rtsp ] %s: ", __func__); printf(x); } while(0)
 #else
-#define dprintf(x...)
+#define dprintf_rt(x...)
 #endif
 
 STREAM_PARM *stream_get_handle(void);

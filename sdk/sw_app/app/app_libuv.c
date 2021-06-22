@@ -1,4 +1,7 @@
+#include <stdio.h>
 #include <stdlib.h>
+#define __USE_GNU
+#include <pthread.h>
 
 #include "app_libuv.h"
 #include "app_comm.h"

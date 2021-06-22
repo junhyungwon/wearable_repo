@@ -90,17 +90,17 @@ CACHE_MNG	Cache_mng_default[VIDEO_INFO_END];// =
  */
 void ShowCacheInfo(VIDEO_BLK_INFO *pVidInfo , int blk_use)
 {
-	dprintf("blk_use = %d\n", blk_use);
+	dprintf_rt("blk_use = %d\n", blk_use);
 
 	int cnt = 0;
 	int loops = pVidInfo->cachemng->blk_num;
 
-	dprintf("video_type = %d\n", pVidInfo->cachemng->video_type);
+	dprintf_rt("video_type = %d\n", pVidInfo->cachemng->video_type);
 
 	for( cnt = 0; cnt < loops; cnt++ )
 	{
-		dprintf("blk[%d].IsFree = %d\n", cnt,pVidInfo->cachemng->blk[cnt].IsFree);
-		dprintf("blk[%d].serial = %d\n", cnt,pVidInfo->cachemng->blk[cnt].serial);
+		dprintf_rt("blk[%d].IsFree = %d\n", cnt,pVidInfo->cachemng->blk[cnt].IsFree);
+		dprintf_rt("blk[%d].serial = %d\n", cnt,pVidInfo->cachemng->blk[cnt].serial);
 	}
 }
 

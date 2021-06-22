@@ -29,6 +29,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -261,7 +262,6 @@ static int createDataSock(char * host, int port)
 
 	struct sockaddr_in pin;
 	struct ifreq interface ;
-	struct hostent *hp;
     struct timeval tv ;
     struct linger stLinger ;
 
@@ -472,17 +472,19 @@ static int ftp_login(int sd, char *username, char *password)
 static int ftp_connect (char *hostname, int port)
 {
 	char buf[MSIZE];
-	int sd, res, valopt, reuse = 1;
-	fd_set myset;
+	int sd, res, reuse = 1;
 	struct timeval tv;
-	socklen_t lon;
-
     int keepalive = 1, keepcnt = 1, keepidle = 1, keepintvl = 1 ;
 
 	struct ifreq interface ;
 	struct sockaddr_in pin;
 	struct hostent *hp;
-
+#if 0	
+	socklen_t lon;
+	fd_set myset;
+	int valopt;
+#endif
+	
     if ((hp = gethostbyname(hostname)) == 0) 
 	{
 	    perror ("gethostbyname");
@@ -591,7 +593,7 @@ static int ftp_close(int sd)
 static void ftp_send(void)
 {
 	int i=0;
-	int ret = 0,ftp_cycle = 0, retry_cnt = 0;
+	int ret = 0, retry_cnt = 0;
     char FileName[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
 
@@ -756,7 +758,6 @@ static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
 	int cmd, exit = 0 ;
-	unsigned long ret = 0;
 
 	aprintf("enter...\n");
 	tObj->active = 1;

@@ -74,7 +74,7 @@ static FILE *jfp = NULL;
 -----------------------------------------------------------------------------*/
 void video_status(void)
 {
-    int i, temp, count, ret, vcount = 0;
+    int temp, count, ret, vcount = 0;
 	int vstatus[MODEL_CH_NUM] = {0,};
 
 	/* current maximum video count */
@@ -156,8 +156,8 @@ static void proc_vid_cap(void)
 {
 	VCODEC_BITSBUF_LIST_S fullBufList;
 	VCODEC_BITSBUF_S *pFullBuf;
-	int i, idx, pre_msec = -1;
-	Uint64 captime, pre_captime = -1;
+	int i, idx;
+	Uint64 captime;
 	stream_info_t *ifr;
 	char *addr;
 	int meta_size = 0;
@@ -230,7 +230,7 @@ static void proc_vid_cap(void)
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
 				/* ch == 2 --> JPEG  */
-                else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == JPEG_CH_NUM)
+                else if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == JPEG_CH_NUM)
                 {
 					FILE *jpeg_f = NULL;
 //                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
@@ -425,7 +425,7 @@ static void cap_enc_late_init(void)
 
 static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 {
-	int idx=0, wi, he, br, channels;
+	int idx=0, wi, he, channels;
 	app_ch_cfg_t *ch_prm;
 
 	channels = MODEL_CH_NUM+1;

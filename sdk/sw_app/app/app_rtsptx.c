@@ -28,7 +28,7 @@
 #include "stream.h"
 #include "app_rtsptx.h"
 #include "app_snd.h"
-
+#include "app_decrypt.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -189,10 +189,11 @@ int app_rtsptx_stop(void)
 int app_rtsptx_stop_start()
 {
     FILE *fd = NULL;
+#if 0	
 	char rtsp_user[32] = {0} ;
 	char rtsp_passwd[32] = {0} ;
     char rtsp_cmd[MAX_CHAR_64] = {0, } ;
-
+#endif
      if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
          msg_resol(RESOL_1080P) ;
      if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)
