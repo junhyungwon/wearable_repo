@@ -76,7 +76,8 @@ void video_status(void)
 {
     int temp, count, ret, vcount = 0;
 	int vstatus[MODEL_CH_NUM] = {0,};
-
+	int i;
+	
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
 	
