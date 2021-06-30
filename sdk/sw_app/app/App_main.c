@@ -241,10 +241,10 @@ int app_main(void)
 	tObj->active = 1;
 
 	app_mcu_start();
-    sysprint("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<", FITT360_SW_VER);
+    sysprint("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<\n", FITT360_SW_VER);
 
     ctrl_get_mcu_version( micom_ver ) ;
-    sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s", 
+    sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
     app_libuv_start();
