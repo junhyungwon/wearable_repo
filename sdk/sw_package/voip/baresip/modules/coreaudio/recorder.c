@@ -1,7 +1,7 @@
 /**
  * @file coreaudio/recorder.c  Apple Coreaudio sound driver - recorder
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <AudioToolbox/AudioQueue.h>
 #include <unistd.h>
@@ -16,8 +16,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;      /* inheritance */
-
 	AudioQueueRef queue;
 	AudioQueueBufferRef buf[BUFC];
 	pthread_mutex_t mutex;
@@ -107,7 +105,6 @@ int coreaudio_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
 

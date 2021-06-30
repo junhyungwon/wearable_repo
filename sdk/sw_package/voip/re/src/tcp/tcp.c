@@ -377,7 +377,17 @@ static void tcp_recv_handler(int flags, void *arg)
 		return;
 	}
 	else if (n < 0) {
+#ifdef WIN32
+		err = WSAGetLastError();
+		DEBUG_WARNING("recv handler: recv(): %d\n", err);
+		if (err == WSAECONNRESET || err == WSAECONNABORTED) {
+			mem_deref(mb);
+			conn_close(tc, err);
+			return;
+		}
+#else
 		DEBUG_WARNING("recv handler: recv(): %m\n", errno);
+#endif
 		goto out;
 	}
 
@@ -646,6 +656,33 @@ int tcp_sock_alloc(struct tcp_sock **tsp, const struct sa *local,
 		*tsp = ts;
 
 	return err;
+}
+
+
+/**
+ * Duplicate TCP socket
+ *
+ * @param tso TCP Socket to duplicate
+ *
+ * @return Duplicated TCP Socket if success, otherwise NULL
+ */
+struct tcp_sock *tcp_sock_dup(struct tcp_sock *tso)
+{
+	struct tcp_sock *ts;
+
+	if (!tso)
+		return NULL;
+
+	ts = mem_zalloc(sizeof(*ts), sock_destructor);
+	if (!ts)
+		return NULL;
+
+	ts->fd  = -1;
+	ts->fdc = tso->fdc;
+
+	tso->fdc = -1;
+
+	return ts;
 }
 
 

@@ -1,7 +1,7 @@
 /**
  * @file alsa_src.c  ALSA sound driver - recorder
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _POSIX_SOURCE 1
@@ -18,7 +18,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;  /* pointer to base-class (inheritance) */
 	pthread_t thread;
 	volatile bool run;
 	snd_pcm_t *read;
@@ -29,6 +28,7 @@ struct ausrc_st {
 	struct ausrc_prm prm;
 	char *device;
 };
+
 
 static void ausrc_destructor(void *arg)
 {
@@ -47,6 +47,7 @@ static void ausrc_destructor(void *arg)
 	mem_deref(st->sampv);
 	mem_deref(st->device);
 }
+
 
 static void *read_thread(void *arg)
 {
@@ -92,6 +93,7 @@ static void *read_thread(void *arg)
 	return NULL;
 }
 
+
 int alsa_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		   struct media_ctx **ctx,
 		   struct ausrc_prm *prm, const char *device,
@@ -119,7 +121,6 @@ int alsa_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		goto out;
 
 	st->prm = *prm;
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
 

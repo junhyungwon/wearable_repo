@@ -1,7 +1,7 @@
 /**
  * @file sdl/sdl.c  Simple DirectMedia Layer module for SDL v2.0
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 #include <SDL2/SDL.h>
@@ -18,7 +18,6 @@
 
 
 struct vidisp_st {
-	const struct vidisp *vd;        /**< Inheritance (1st)     */
 	SDL_Window *window;             /**< SDL Window            */
 	SDL_Renderer *renderer;         /**< SDL Renderer          */
 	SDL_Texture *texture;           /**< Texture for pixels    */
@@ -162,7 +161,6 @@ static int alloc(struct vidisp_st **stp, const struct vidisp *vd,
 	if (!st)
 		return ENOMEM;
 
-	st->vd = vd;
 	st->fullscreen = prm ? prm->fullscreen : false;
 
 	tmr_start(&st->tmr, 100, event_handler, st);
@@ -262,6 +260,9 @@ static int display(struct vidisp_st *st, const char *title,
 		if (!SDL_GetRendererInfo(st->renderer, &rend_info)) {
 			info("sdl: created renderer '%s'\n", rend_info.name);
 		}
+
+		SDL_RenderSetLogicalSize(st->renderer,
+					 frame->size.w, frame->size.h);
 	}
 
 	if (!st->texture) {

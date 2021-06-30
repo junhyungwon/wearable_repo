@@ -1,15 +1,15 @@
 /**
  * @file gst/gst.c  Gstreamer 1.0 playbin pipeline
  *
- * Copyright (C) 2010 - 2015 Creytiv.com
+ * Copyright (C) 2010 - 2015 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _POSIX_C_SOURCE 199309L
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <pthread.h>
 #include <gst/gst.h>
+#include <unistd.h>
 #include <re.h>
 #include <rem.h>
 #include <baresip.h>
@@ -44,10 +44,8 @@
  * </pre>
  */
 struct ausrc_st {
-	const struct ausrc *as;     /**< Inheritance             */
-
-	pthread_t tid;              /**< Thread ID               */
 	bool run;                   /**< Running flag            */
+	bool eos;                   /**< Reached end of stream   */
 	ausrc_read_h *rh;           /**< Read handler            */
 	ausrc_error_h *errh;        /**< Error handler           */
 	void *arg;                  /**< Handler argument        */
@@ -55,37 +53,26 @@ struct ausrc_st {
 	struct aubuf *aubuf;        /**< Packet buffer           */
 	size_t psize;               /**< Packet size in bytes    */
 	size_t sampc;
+	uint32_t ptime;
+
+	struct tmr tmr;
 
 	/* Gstreamer */
 	char *uri;
 	GstElement *pipeline, *bin, *source, *capsfilt, *sink;
-	GMainLoop *loop;
 };
 
 
-typedef struct _GstFakeSink GstFakeSink;
 static struct ausrc *ausrc;
 
+static char *uri_regex = "([a-z][a-z0-9+.-]*):(?://).*";
 
-static void *thread(void *arg)
+
+static GstBusSyncReply
+sync_handler(
+	GstBus * bus, GstMessage * msg,
+	struct ausrc_st *st)
 {
-	struct ausrc_st *st = arg;
-
-	/* Now set to playing and iterate. */
-	gst_element_set_state(st->pipeline, GST_STATE_PLAYING);
-
-	while (st->run) {
-		g_main_loop_run(st->loop);
-	}
-
-	return NULL;
-}
-
-
-static gboolean bus_watch_handler(GstBus *bus, GstMessage *msg, gpointer data)
-{
-	struct ausrc_st *st = data;
-	GMainLoop *loop = st->loop;
 	GstTagList *tag_list;
 	gchar *title;
 	GError *err;
@@ -95,50 +82,46 @@ static gboolean bus_watch_handler(GstBus *bus, GstMessage *msg, gpointer data)
 
 	switch (GST_MESSAGE_TYPE(msg)) {
 
-	case GST_MESSAGE_EOS:
-		/* Re-start stream */
-		if (st->run) {
-			gst_element_set_state(st->pipeline, GST_STATE_NULL);
-			gst_element_set_state(st->pipeline, GST_STATE_PLAYING);
-		}
-		else {
-			g_main_loop_quit(loop);
-		}
-		break;
+		case GST_MESSAGE_EOS:
+			st->run = false;
+			st->eos = true;
+			return GST_BUS_DROP;
 
-	case GST_MESSAGE_ERROR:
-		gst_message_parse_error(msg, &err, &d);
+		case GST_MESSAGE_ERROR:
+			gst_message_parse_error(msg, &err, &d);
 
-		warning("gst: Error: %d(%m) message=\"%s\"\n", err->code,
-			err->code, err->message);
-		warning("gst: Debug: %s\n", d);
+			warning("gst: Error: %d(%m) message=\"%s\"\n",
+				err->code,
+				err->code, err->message);
+			warning("gst: Debug: %s\n", d);
 
-		g_free(d);
+			g_free(d);
 
-		/* Call error handler */
-		if (st->errh)
-			st->errh(err->code, err->message, st->arg);
+			/* Call error handler */
+			if (st->errh)
+				st->errh(err->code, err->message, st->arg);
 
-		g_error_free(err);
+			g_error_free(err);
 
-		st->run = false;
-		g_main_loop_quit(loop);
-		break;
+			st->run = false;
+			return GST_BUS_DROP;
 
-	case GST_MESSAGE_TAG:
-		gst_message_parse_tag(msg, &tag_list);
+		case GST_MESSAGE_TAG:
+			gst_message_parse_tag(msg, &tag_list);
 
-		if (gst_tag_list_get_string(tag_list, GST_TAG_TITLE, &title)) {
-			info("gst: title: %s\n", title);
-			g_free(title);
-		}
-		break;
+			if (gst_tag_list_get_string(
+				tag_list,
+				GST_TAG_TITLE,
+				&title)) {
 
-	default:
-		break;
+				info("gst: title: %s\n", title);
+				g_free(title);
+			}
+			return GST_BUS_DROP;
+
+		default:
+			return GST_BUS_PASS;
 	}
-
-	return TRUE;
 }
 
 
@@ -182,8 +165,13 @@ static void play_packet(struct ausrc_st *st)
 	};
 
 	/* timed read from audio-buffer */
-	if (aubuf_get_samp(st->aubuf, st->prm.ptime, buf, st->sampc))
+	if (st->prm.ptime && aubuf_get_samp(st->aubuf, st->prm.ptime, buf,
+				st->sampc))
 		return;
+
+	/* immediate read from audio-buffer */
+	if (!st->prm.ptime)
+		aubuf_read_samp(st->aubuf, buf, st->sampc);
 
 	/* call read handler */
 	if (st->rh)
@@ -230,16 +218,18 @@ static void packet_handler(struct ausrc_st *st, GstBuffer *buffer)
 }
 
 
-static void handoff_handler(GstFakeSink *fakesink, GstBuffer *buffer,
+static void handoff_handler(GstElement *sink, GstBuffer *buffer,
 			    GstPad *pad, gpointer user_data)
 {
 	struct ausrc_st *st = user_data;
 	GstCaps *caps;
-	(void)fakesink;
+	(void)sink;
 
 	caps = gst_pad_get_current_caps(pad);
 
 	format_check(st, gst_caps_get_structure(caps, 0));
+
+	gst_caps_unref(caps);
 
 	packet_handler(st, buffer);
 }
@@ -287,8 +277,6 @@ static int gst_setup(struct ausrc_st *st)
 	GstBus *bus;
 	GstPad *pad;
 
-	st->loop = g_main_loop_new(NULL, FALSE);
-
 	st->pipeline = gst_pipeline_new("pipeline");
 	if (!st->pipeline) {
 		warning("gst: failed to create pipeline element\n");
@@ -321,6 +309,8 @@ static int gst_setup(struct ausrc_st *st)
 		return ENOMEM;
 	}
 
+	g_object_set(st->sink, "async", false, NULL);
+
 	gst_bin_add_many(GST_BIN(st->bin), st->capsfilt, st->sink, NULL);
 	gst_element_link_many(st->capsfilt, st->sink, NULL);
 
@@ -333,8 +323,10 @@ static int gst_setup(struct ausrc_st *st)
 	gst_bin_add_many(GST_BIN(st->pipeline), st->source, NULL);
 
 	/* Override audio-sink handoff handler */
-	g_object_set(G_OBJECT(st->sink), "signal-handoffs", TRUE, NULL);
 	g_signal_connect(st->sink, "handoff", G_CALLBACK(handoff_handler), st);
+	g_object_set(G_OBJECT(st->sink),
+		"signal-handoffs", TRUE,
+		"async", FALSE, NULL);
 
 	g_object_set(G_OBJECT(st->source), "audio-sink", st->bin, NULL);
 
@@ -342,7 +334,12 @@ static int gst_setup(struct ausrc_st *st)
 
 	/* Bus watch */
 	bus = gst_pipeline_get_bus(GST_PIPELINE(st->pipeline));
-	gst_bus_add_watch(bus, bus_watch_handler, st);
+
+	gst_bus_enable_sync_message_emission(bus);
+	gst_bus_set_sync_handler(
+		bus, (GstBusSyncHandler) sync_handler,
+		st, NULL);
+
 	gst_object_unref(bus);
 
 	/* Set URI */
@@ -352,21 +349,66 @@ static int gst_setup(struct ausrc_st *st)
 }
 
 
+static int setup_uri(struct ausrc_st *st, const char *device)
+{
+	int err = 0;
+
+	if (g_regex_match_simple(
+		uri_regex, device, 0, G_REGEX_MATCH_NOTEMPTY)) {
+		err = str_dup(&st->uri, device);
+	}
+	else {
+		if (!access(device, R_OK)) {
+			size_t urilength = strlen(device) + 8;
+			char *uri = mem_alloc(urilength, NULL);
+			if (re_snprintf(uri, urilength, "file://%s",
+					device) < 0)
+				return ENOMEM;
+			st->uri = uri;
+		}
+		else {
+			err = errno;
+		}
+	}
+
+	return err;
+}
+
+
 static void gst_destructor(void *arg)
 {
 	struct ausrc_st *st = arg;
 
 	if (st->run) {
 		st->run = false;
-		g_main_loop_quit(st->loop);
-		pthread_join(st->tid, NULL);
 	}
+
+	tmr_cancel(&st->tmr);
 
 	gst_element_set_state(st->pipeline, GST_STATE_NULL);
 	gst_object_unref(GST_OBJECT(st->pipeline));
 
 	mem_deref(st->uri);
 	mem_deref(st->aubuf);
+}
+
+
+static void timeout(void *arg)
+{
+	struct ausrc_st *st = arg;
+	tmr_start(&st->tmr, st->ptime ? st->ptime : 40, timeout, st);
+
+	/* check if source is still running */
+	if (!st->run) {
+		tmr_cancel(&st->tmr);
+
+		if (st->eos) {
+			info("gst: end of file\n");
+			/* error handler must be called from re_main thread */
+			if (st->errh)
+				st->errh(0, "end of file", st->arg);
+		}
+	}
 }
 
 
@@ -395,18 +437,25 @@ static int gst_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as   = as;
 	st->rh   = rh;
 	st->errh = errh;
 	st->arg  = arg;
 
-	err = str_dup(&st->uri, device);
-	if (err)
-		goto out;
+	err = setup_uri(st, device);
+	if (err) goto out;
+
+	st->ptime = prm->ptime;
+	if (!st->ptime)
+		st->ptime = 20;
+
+	if (!prm->srate)
+		prm->srate = 16000;
+
+	if (!prm->ch)
+		prm->ch = 1;
 
 	st->prm   = *prm;
-
-	st->sampc = prm->srate * prm->ch * prm->ptime / 1000;
+	st->sampc = prm->srate * prm->ch * st->ptime / 1000;
 	st->psize = 2 * st->sampc;
 
 	err = aubuf_alloc(&st->aubuf, st->psize, 0);
@@ -417,12 +466,11 @@ static int gst_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (err)
 		goto out;
 
-	st->run  = true;
-	err = pthread_create(&st->tid, NULL, thread, st);
-	if (err) {
-		st->run = false;
-		goto out;
-	}
+	st->run = true;
+	st->eos = false;
+
+	gst_element_set_state(st->pipeline, GST_STATE_PLAYING);
+	tmr_start(&st->tmr, st->ptime, timeout, st);
 
  out:
 	if (err)

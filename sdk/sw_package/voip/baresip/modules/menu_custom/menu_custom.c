@@ -41,7 +41,7 @@ typedef struct {
 	struct play *play; 			  /**< Current audio player state     */
 	struct tmr tmr_stat;          /**< Call status timer              */
 	struct mbuf *dialbuf;         /**< Buffer for dialled number      */
-	char bell;         			  /**< ANSI Bell alert enabled        */
+	char *callid;                 /**< Call-id of active call         */
 	
 	uint64_t start_ticks;         /**< Ticks when app started         */
 	
@@ -63,9 +63,13 @@ static int __aic3x_output_level[3] = {
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-static int send_msg(int cmd, int state, int dir, int reg, int err);
+static int ipc_send_msg(int cmd, int state, int dir, int reg, int err);
+static int ipc_recv_msg(void);
+static void ipc_set_snd_vol(void);
 
-static int __get_rndis_type(void) 
+//-----------------------------------------------------------------------------------------------
+//###################### Baresip Helper ########################################################
+static int cmenu_get_rndis_type(void) 
 {
 	int res = 1; /* default usb0 */
 	
@@ -75,269 +79,10 @@ static int __get_rndis_type(void)
 	
 	return res;	
 }
-	
-//---------------------------- UI CALL HELPER --------------------------------------------------
-#ifdef DBG_CALL_STAT
-static int print_handler(const char *p, size_t size, void *arg)
+
+static void cmenu_call_stop(void)
 {
-	(void)arg;
-
-	return 1 == fwrite(p, size, 1, stderr) ? 0 : ENOMEM;
-}
-#endif
-
-static const char *translate_errorcode(uint16_t scode)
-{
-	switch (scode) {
-	case 404: return "notfound.wav";
-	case 486: return "busy.wav";
-	case 487: return NULL; /* ignore */
-	default:  return "error.wav";
-	}
-}
-
-static char have_active_calls(void)
-{
-	struct le *le;
-
-	for (le = list_head(uag_list()); le; le = le->next) {
-		struct ua *ua = le->data;
-		if (ua_call(ua))
-			return 1;
-	}
-
-	return 0;
-}
-
-#ifdef DBG_CALL_STAT
-static void tmrstat_handler(void *arg)
-{
-	struct call *call;
-	(void)arg;
-
-	/* the UI will only show the current active call */
-	call = ua_call(uag_current());
-	if (!call)
-		return;
-
-	tmr_start(&ikey->tmr_stat, 100, tmrstat_handler, 0);
-
-	(void)re_fprintf(stderr, "%H\r", call_status, call);
-}
-
-static void update_callstatus(void)
-{
-	/* if there are any active calls, enable the call status view */
-	if (have_active_calls())
-		tmr_start(&ikey->tmr_stat, 100, tmrstat_handler, 0);
-	else
-		tmr_cancel(&ikey->tmr_stat);
-}
-
-static int call_reinvite(struct re_printf *pf, void *unused)
-{
-	(void)pf;
-	(void)unused;
-	return call_modify(ua_call(uag_current()));
-}
-#endif
-
-static void check_registrations(void)
-{
-	static bool ual_ready = false;
-	struct le *le;
-	uint32_t n;
-
-	if (ual_ready)
-		return;
-
-	for (le = list_head(uag_list()); le; le = le->next) {
-		struct ua *ua = le->data;
-
-		if (!ua_isregistered(ua))
-			return;
-	}
-
-	n = list_count(uag_list());
-	/* We are ready */
-	sysprint("%u useragents registered successfully!\n", n);
-	ual_ready = true;
-}
-
-/*
- * user agent에 의해서 이벤트가 발생되면 callback 함수로 호출됨.
- */ 
-static void ua_event_handler(struct ua *ua, enum ua_event ev,
-			     struct call *call, const char *prm, void *arg)
-{
-//	static struct re_printf pf_stderr = {print_handler, NULL};
-	struct player *player = baresip_player();
-	uint16_t err_code = 0;
-	struct config *cfg;
-	
-	(void)prm;
-	(void)arg;
-	
-	pthread_mutex_lock(&ikey->lock);
-	
-	sysprint("[ ua=%s call=%s ] event: %s (%s)\n",
-	      ua_aor(ua), call_id(call), uag_event_str(ev), prm);
-	
-	cfg = conf_config();
-		
-	switch (ev) {
-	case UA_EVENT_REGISTERING:
-		/* 최초 프로그램 시작 시 전달되는 메시지 */
-		goto exit_lock;
-	case UA_EVENT_CALL_INCOMING:
-		/* stop any ringtones (auplay_destructor함수가 mem_deref에 의해서 호출됨) */
-		ikey->play = mem_deref(ikey->play);
-		
-		ikey->ste.call_ste = SIPC_STATE_CALL_INCOMING;
-		ikey->ste.call_dir = call_is_outgoing(call);
-		ikey->ste.call_reg = 1;
-		ikey->ste.call_err = 0;
-		
-		/* set the current User-Agent to the one with the call */
-		uag_current_set(ua);
-		debug("%s: Incoming call from: %s %s\n",
-			ua_aor(ua), call_peername(call), call_peeruri(call));
-		
-		/* 수신 중일 경우 */
-		if (list_count(ua_calls(ua)) > 1) {
-			/* TODO */
-			//(void)play_file(&menu.play, player, "callwaiting.wav", 3);
-		} else {
-			/* Alert user struct player; */
-			play_file(&ikey->play, player, "ring.wav", -1,
-					cfg->audio.alert_mod, cfg->audio.alert_dev);
-		}
-		break;
-	
-	case UA_EVENT_CALL_RINGING:
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
-		/* play ringback (-1 repeat) */
-		(void)play_file(&ikey->play, player, 
-					"ringback.wav", -1, cfg->audio.play_mod, cfg->audio.play_dev);
-		
-		ikey->ste.call_ste = SIPC_STATE_CALL_RINGING;
-		ikey->ste.call_dir = call_is_outgoing(call);
-		ikey->ste.call_reg = 1;
-		ikey->ste.call_err = 0;
-		break;
-	
-	case UA_EVENT_CALL_ESTABLISHED:
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
-		
-		ikey->ste.call_ste = SIPC_STATE_CALL_ESTABLISHED;
-		ikey->ste.call_dir = call_is_outgoing(call);
-		ikey->ste.call_reg = 1;
-		ikey->ste.call_err = 0;
-		break;
-	
-	case UA_EVENT_CALL_CLOSED:
-		/* stop any ringtones */
-		ikey->play = mem_deref(ikey->play);
-		
-		err_code = call_scode(call);
-		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
-		ikey->ste.call_dir = 0;
-		ikey->ste.call_reg = 1;
-		ikey->ste.call_err = (int)err_code;
-		if (err_code) {
-			const char *tone;
-			tone = translate_errorcode(err_code);
-			if (tone) {
-				play_file(&ikey->play, player, 
-						tone, 1, cfg->audio.play_mod, cfg->audio.play_dev);
-			}
-		} else {
-			(void)play_file(&ikey->play, player, 
-					"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
-		}
-		//re_debug(&pf_stderr, NULL);
-		break;
-	
-	case UA_EVENT_REGISTER_OK:
-		/* 통화대기 중 이 REGISTER OK 메세지가 전달될 경우에 hang 걸림 */
-		if (have_active_calls()) {
-			dprintf("invalid REGISTER_OK.....ignore!!\n");
-			goto exit_lock;
-		}
-		check_registrations();
-		/* 최초 resister ok event가 전송됨 */ 
-		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
-		ikey->ste.call_dir = 0;
-		ikey->ste.call_reg = 1;
-		ikey->ste.call_err = 0;
-		break;
-	
-	case UA_EVENT_UNREGISTERING:
-		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
-		ikey->ste.call_dir = 0;
-		ikey->ste.call_reg = 0;
-		ikey->ste.call_err = 0;
-		break;
-		
-	case UA_EVENT_REGISTER_FAIL:
-		if (strcmp(prm, "Connection timed out") == 0) {
-			/* ETIMEOUT (네트워크에 문제가 있음 */
-		} else if (strcmp(prm, "Protocol not supported")== 0) {
-			/* 등록이 진행 중임 */
-		}
-		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
-		ikey->ste.call_dir = 0;
-		ikey->ste.call_reg = 0;
-		ikey->ste.call_err = 0;
-		break;
-	
-	/* Remote session description protocol */
-	case UA_EVENT_CALL_REMOTE_SDP: 
-		ikey->play = mem_deref(ikey->play);
-		goto exit_lock;
-	
-	/* 
-	 * Device에서 상대방에 전화를 걸때 내 장치의 
-	 * Session 상태를 확인하기 위한 이벤트
-	 * Local session description protocol
-	 */ 
-	case UA_EVENT_CALL_LOCAL_SDP:
-		ikey->ste.call_ste = SIPC_STATE_CALL_LOCAL_SDP;
-		//ikey->ste.call_dir = 0;
-		//ikey->ste.call_reg = 0;
-		//ikey->ste.call_err = 0;
-		break;
-		
-	case UA_EVENT_CALL_TRANSFER:
-	case UA_EVENT_CALL_TRANSFER_FAILED:
-		/* 전화 돌려주기 기능 */
-	case UA_EVENT_CALL_RTCP:
-		/* 통화 연결 후 RTCP 이벤트가 전송됨 */
-	case UA_EVENT_CALL_RTPESTAB:
-		goto exit_lock;
-	
-	default:
-		sysprint("unknown ua_event 0x%x\n", (int)ev);
-		goto exit_lock;
-	}
-	
-	/* poll 쓰레드로 메시지 전달 */
-	event_send(&ikey->sObj, APP_CMD_NOTY, 0, 0);
-
-exit_lock:
-	pthread_mutex_unlock(&ikey->lock);
-	
-	//# for debugging
-	//update_callstatus();
-}
-
-//-----------------------------------------------------------------------------------------------
-//###################### Baresip Helper ########################################################
-static void __call_stop(void)
-{
-	struct ua *ua = uag_current();
+	struct ua *ua = call_get_ua(uag_call_find(ikey->callid));
 	
 	if (ua != NULL) {
 		/* Stop any ongoing ring-tones */
@@ -346,17 +91,16 @@ static void __call_stop(void)
 	}
 }
 
-static void __call_answer(void)
+static void cmenu_call_answer(void)
 {
-	struct ua *ua = uag_current();
+	struct ua *ua = call_get_ua(uag_call_find(ikey->callid));
 	
 	/* Stop any ongoing ring-tones */
 	ikey->play = mem_deref(ikey->play);
-//	ua_hold_answer(ua, NULL); /* 다중 call 사용 시 */
-	ua_answer(ua, NULL);
+	ua_answer(ua, NULL, VIDMODE_OFF);
 }
 
-static int __register_user(int network, int enable, short port, int level, const char *call_num, const char *server_addr, 
+static int cmenu_register_user(int network, int enable, short port, int level, const char *call_num, const char *server_addr, 
 			const char *passwd, const char *stun_domain)
 {
 	struct network *net = baresip_network();
@@ -369,7 +113,7 @@ static int __register_user(int network, int enable, short port, int level, const
 	/* set alsa output level */
 	percent = __aic3x_output_level[level];	
 	alsa_mixer_set_volume(SND_VOLUME_P, percent);
-	dprintf("set voip default sound volume %d,%d(percent)!\n", level, percent);
+	printf("set voip default sound volume %d,%d(percent)!\n", level, percent);
 
 	memset(ui_buf, 0, sizeof(ui_buf));
 	memset(devname, 0, sizeof(devname));
@@ -378,7 +122,7 @@ static int __register_user(int network, int enable, short port, int level, const
 		strcpy(devname, "wlan0");
 	} 
 	else if (network == SIPC_NET_TYPE_RNDIS) {
-		if (__get_rndis_type() == 1) {
+		if (cmenu_get_rndis_type() == 1) {
 			strcpy(devname, "usb0");
 		} else {
 			strcpy(devname, "eth1");
@@ -410,31 +154,30 @@ static int __register_user(int network, int enable, short port, int level, const
 	sysprint("Creating UA for %s ....\n", ui_buf);
 	err = ua_alloc(&ua, ui_buf);
 	if (err) {
-		sysprint("create_ua failed: %x\n", err);
+		aprintf("create_ua failed: %x\n", err);
 		return -1;
 	}
 	
 	/* return ua->acc (account) */
 	acc = ua_account(ua);
 	if (!acc) {
-		sysprint("account: no account for this ua\n");
+		aprintf("account: no account for this ua\n");
 		return ENOENT;
 	}
 		
-	if (account_regint(ua_account(ua))) 
-	{
-		int e;
-		e = ua_register(ua);
-		if (e) {
-			sysprint("account: failed to register ua"
-				" '%s'\n", account_aor(acc));
-		}
+	if (account_regint(acc)) {
+		if (!account_prio(acc))
+			(void)ua_register(ua);
+		else
+			(void)ua_fallback(ua);
+		
+		printf("--- User Agents (%u) ---\n", list_count(uag_list()));
 	}
 	
 	return 0;
 }
 
-static void __unregister_user(void)
+static void cmenu_unregister_user(void)
 {
 	struct le *le;
 	
@@ -453,16 +196,23 @@ static void __unregister_user(void)
 	info("unregister done!!\n");
 }
 
-static int __dialer_user(const char *call_num)
+static int cmenu_dialer_user(const char *call_num)
 {
+	struct ua *ua=NULL;
 	struct player *player = baresip_player();
 	int err = 0;
 	struct config *cfg;
+	struct mbuf *uribuf = NULL;
+	struct call *call;
+	char *uri=NULL;
 	
 	cfg = conf_config();
+	
+	aprintf("cmenu: make a call uri->%s\n", call_num);
+	
 	/* device number와 peer number가 같은 경우 error */
 	if (strcmp(ikey->uri.ua_uri, call_num) == 0) {
-		sysprint("menu: Don't allow same number between call and ua!\n");
+		aprintf("cmenu: Don't allow same number between call and ua!\n");
 		
 		ikey->play = mem_deref(ikey->play);
 		(void)play_file(&ikey->play, player, 
@@ -471,39 +221,327 @@ static int __dialer_user(const char *call_num)
 		ikey->play = mem_deref(ikey->play);
 		err = -1;
 	} else {
-		err = ua_connect(uag_current(), NULL, NULL, call_num, VIDMODE_OFF);
-		if (err) {
-			sysprint("menu: ua_connect failed\n");
+		//# 8617001 형태로 입력
+		ua = uag_find_requri(call_num);
+		if (!ua) {
+			sysprint("could not find UA for %s\n", call_num);
+			return -1;
 		}
+		
+		uribuf = mbuf_alloc(64);
+		if (!uribuf)
+			return -1;
+		
+		//# 완성형으로 작성해야 함. (sip:8617001@52.78.124.88:6060)
+		err = account_uri_complete(ua_account(ua), uribuf, call_num);
+		if (err) {
+			sysprint("ua_connect failed to complete uri\n");
+			return -1;
+		}
+		
+		uribuf->pos = 0;
+		err = mbuf_strdup(uribuf, &uri, uribuf->end);
+		if (err)
+			goto out;
+		
+		aprintf("cmenu: account uri complete ->%s\n", uri);	
+		err = ua_connect(ua, &call, NULL, uri, VIDMODE_OFF);
+		if (err) {
+			sysprint("cmenu: ua_connect failed!\n");
+			goto out;
+		}
+		
+		aprintf("peer call id: %s\n", call_id(call));
 	}
-	
+
+out:
+	mem_deref(uribuf);
+	mem_deref(uri);
 	return err;
 }
 
-static void __set_sound_volume(void)
+static void check_registrations(void)
 {
-	//	static struct re_printf pf_stderr = {print_handler, NULL};
-	struct player *player = baresip_player();
-	int level = ikey->uri.spk_lv;
-	int percent;
-	struct config *cfg;
-	
-	cfg = conf_config();
-	
-	percent = __aic3x_output_level[level];	
-	alsa_mixer_set_volume(SND_VOLUME_P, percent);
-	
-	if (ikey->ste.call_ste == SIPC_STATE_CALL_IDLE) {
-		/* Stop any ongoing ring-tones */
-		ikey->play = mem_deref(ikey->play);
-		(void)play_file(&ikey->play, player, 
-						"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
-		delay_msecs(1000);
-		ikey->play = mem_deref(ikey->play);				
+	static bool ual_ready = false;
+	struct le *le;
+	uint32_t n;
+
+	if (ual_ready)
+		return;
+
+	for (le = list_head(uag_list()); le; le = le->next) {
+		struct ua *ua = le->data;
+
+		if (!ua_isregistered(ua) && !account_prio(ua_account(ua)))
+			return;
+	}
+
+	n = list_count(uag_list());
+	/* We are ready */
+	printf("%u useragents registered successfully!\n", n);
+	ual_ready = true;
+}
+
+static const char *translate_errorcode(uint16_t scode)
+{
+	switch (scode) {
+	case 486: 
+		return "busy.wav";
+	case 487: /* ignore */
+	case 404: /*"notfound.wav";*/
+	default:  
+		return NULL; /*"error.wav";*/
 	}
 }
 
-static int send_msg(int cmd, int state, int dir, int reg, int err)
+static struct call *cmenu_find_call_state(enum call_state st)
+{
+	struct le *le;
+
+	for (le = list_head(uag_list()); le; le = le->next) {
+		struct ua *ua = le->data;
+		struct call *call = ua_find_call_state(ua, st);
+
+		if (call)
+			return call;
+	}
+
+	return NULL;
+}
+
+static void cmenu_selcall(struct call *call)
+{
+	int i;
+	enum call_state state[] = {
+		CALL_STATE_INCOMING,
+		CALL_STATE_OUTGOING,
+		CALL_STATE_RINGING,
+		CALL_STATE_EARLY,
+		CALL_STATE_ESTABLISHED,
+	};
+
+	if (!call) {
+		/* select another call */
+		for (i = ARRAY_SIZE(state)-1; i >= 0; --i) {
+			call = cmenu_find_call_state(state[i]);
+
+			if (!str_cmp(call_id(call), ikey->callid))
+				call = NULL;
+
+			if (call)
+				break;
+		}
+	}
+
+	ikey->callid = mem_deref(ikey->callid);
+
+	if (call) {
+		str_dup(&ikey->callid, call_id(call));
+		call_set_current(ua_calls(call_get_ua(call)), call);
+	}
+}
+
+static bool cmenu_active_call_test(const struct call* call)
+{
+	return call_state(call) == CALL_STATE_ESTABLISHED && 
+				!call_is_onhold(call);
+}
+
+static void cmenu_find_first_call(struct call *call, void *arg)
+{
+	struct call **callp = arg;
+
+	if (!*callp)
+		*callp = call;
+}
+
+static struct call *cmenu_find_call(call_match_h *matchh)
+{
+	struct call *call = NULL;
+
+	uag_filter_calls(cmenu_find_first_call, matchh, &call);
+
+	return call;
+}
+
+static void cmenu_stop_play(void)
+{
+	ikey->play = mem_deref(ikey->play);
+}
+
+static void cmenu_set_ipc_state(int ste, int dir, int reg, int err)
+{
+	ikey->ste.call_ste = ste;
+	ikey->ste.call_dir = dir;
+	ikey->ste.call_reg = reg;
+	ikey->ste.call_err = err;
+}
+
+/*
+ * user agent에 의해서 이벤트가 발생되면 callback 함수로 호출됨.
+ */ 
+static void ua_event_handler(struct ua *ua, enum ua_event ev,
+			     struct call *call, const char *prm, void *arg)
+{
+	struct player *player = baresip_player();
+	struct account *acc = ua_account(ua);
+	uint32_t count;
+	uint16_t err_code = 0;
+	struct config *cfg;
+	
+	(void)prm;
+	(void)arg;
+	
+	/*
+	 * ignore events..
+	 * 최초 프로그램 시작 시 전달되는 메시지 : UA_EVENT_REGISTERING
+	 * 전화 돌려주기 기능                  : UA_EVENT_CALL_TRANSFER, UA_EVENT_CALL_TRANSFER_FAILED 
+	 *                                    : UA_EVENT_CALL_RTCP
+	 * 음성(RTP) 연결됨                    : UA_EVENT_CALL_RTPESTAB
+	 */
+	if ((ev == UA_EVENT_REGISTERING)   || 
+		(ev == UA_EVENT_CALL_TRANSFER) ||
+		(ev == UA_EVENT_CALL_TRANSFER_FAILED) || 
+		(ev == UA_EVENT_CALL_RTCP) ||
+		(ev == UA_EVENT_CALL_RTPESTAB))
+	{
+		return;
+	}
+	
+	pthread_mutex_lock(&ikey->lock);
+	cfg = conf_config();
+	
+	aprintf("[ ua=%s call=%s ] event: %s (%s)\n",
+	      account_aor(acc), call_id(call), uag_event_str(ev), prm);
+	
+	/* 진행 중인 통화 갯수 */
+	count = uag_call_count();
+		
+	switch (ev) {
+	case UA_EVENT_CALL_INCOMING:
+		/* set the current User-Agent to the one with the call */
+		cmenu_selcall(call);
+		
+		/* stop any ringtones (auplay_destructor함수가 mem_deref에 의해서 호출됨) */
+		cmenu_stop_play();
+		cmenu_set_ipc_state(SIPC_STATE_CALL_INCOMING, call_is_outgoing(call), 1, 0);
+		info("%s: Incoming call from: %s %s\n", account_aor(acc), 
+				call_peername(call), call_peeruri(call));
+		
+		/* 수신 중일 경우 */
+		if (cmenu_find_call(cmenu_active_call_test)) {
+			/* TODO */
+			//(void)play_file(&menu.play, player, "callwaiting.wav", 3);
+		} else {
+			/* Alert user struct player; */
+			play_file(&ikey->play, player, "ring.wav", -1,
+					cfg->audio.alert_mod, cfg->audio.alert_dev);
+		}
+		break;
+	
+	case UA_EVENT_CALL_RINGING:
+		cmenu_selcall(call);
+		/* stop any ringtones */
+		cmenu_stop_play();
+		/* play ringback (-1 repeat) */
+		(void)play_file(&ikey->play, player, 
+					"ringback.wav", -1, cfg->audio.play_mod, cfg->audio.play_dev);
+		cmenu_set_ipc_state(SIPC_STATE_CALL_RINGING, call_is_outgoing(call), 1, 0);
+		break;
+	
+	case UA_EVENT_CALL_PROGRESS:
+		cmenu_selcall(call);
+		cmenu_stop_play();
+		break;
+	
+	case UA_EVENT_CALL_ANSWERED:
+		cmenu_stop_play();
+		break;
+		
+	case UA_EVENT_CALL_ESTABLISHED:
+		cmenu_selcall(call);
+		/* stop any ringtones */
+		cmenu_stop_play();
+		cmenu_set_ipc_state(SIPC_STATE_CALL_ESTABLISHED, call_is_outgoing(call), 1, 0);
+		break;
+	
+	case UA_EVENT_CALL_CLOSED:
+		/* stop any ringtones */
+		cmenu_stop_play();
+		cmenu_selcall(NULL);
+		
+		err_code = call_scode(call);
+		cmenu_set_ipc_state(SIPC_STATE_CALL_IDLE, 0, 1, (int)err_code);
+		if (err_code) {
+			const char *tone;
+			tone = translate_errorcode(err_code);
+			if (tone) {
+				play_file(&ikey->play, player, 
+						tone, 1, cfg->audio.play_mod, cfg->audio.play_dev);
+			}
+		} else {
+			(void)play_file(&ikey->play, player, 
+					"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
+		}
+		break;
+	
+	/* Remote session description protocol */
+	case UA_EVENT_CALL_REMOTE_SDP: 
+		cmenu_stop_play();
+		if (!str_cmp(prm, "answer") && call_state(call) == CALL_STATE_ESTABLISHED) {
+			cmenu_selcall(call);
+		}
+		pthread_mutex_unlock(&ikey->lock);
+		return;
+	
+	/* 
+	 * Device에서 상대방에 전화를 걸때 내 장치의 
+	 * Session 상태를 확인하기 위한 이벤트
+	 * Local session description protocol
+	 */ 
+	case UA_EVENT_CALL_LOCAL_SDP:
+		ikey->ste.call_ste = SIPC_STATE_CALL_LOCAL_SDP;
+		break;
+		
+	case UA_EVENT_REGISTER_OK:
+		/* 통화대기 중 이 REGISTER OK 메세지가 전달될 경우에 hang 걸림 */
+		if (cmenu_find_call_state(CALL_STATE_ESTABLISHED) != NULL) {
+			aprintf("invalid REGISTER_OK.....ignore!!\n");
+			pthread_mutex_unlock(&ikey->lock);
+			return;
+		}
+		check_registrations();
+		/* 최초 resister ok event가 전송됨 */
+		cmenu_set_ipc_state(SIPC_STATE_CALL_IDLE, 0, 1, 0);
+		break;
+	
+	case UA_EVENT_UNREGISTERING:
+		ikey->ste.call_ste = SIPC_STATE_CALL_IDLE;
+		cmenu_set_ipc_state(SIPC_STATE_CALL_IDLE, 0, 0, 0);
+		break;
+		
+	case UA_EVENT_REGISTER_FAIL:
+		if (strcmp(prm, "Connection timed out") == 0) {
+			/* ETIMEOUT (네트워크에 문제가 있음 */
+		} else if (strcmp(prm, "Protocol not supported")== 0) {
+			/* 등록이 진행 중임 */
+		}
+		cmenu_set_ipc_state(SIPC_STATE_CALL_IDLE, 0, 0, 0);
+		break;
+	
+	default:
+		aprintf("unknown ua_event 0x%x\n", (int)ev);
+		pthread_mutex_unlock(&ikey->lock);
+		return;
+	}
+	
+	/* poll 쓰레드로 메시지 전달 */
+	event_send(&ikey->sObj, APP_CMD_NOTY, 0, 0);
+	pthread_mutex_unlock(&ikey->lock);
+}
+
+//-------------------------------------------IPC EVENT Handler --------------------------------------------------------------------------
+static int ipc_send_msg(int cmd, int state, int dir, int reg, int err)
 {
 	to_sipc_main_msg_t msg;
 	
@@ -518,7 +556,7 @@ static int send_msg(int cmd, int state, int dir, int reg, int err)
 	return Msg_Send(ikey->qid, (void *)&msg, sizeof(to_sipc_main_msg_t));
 }
 
-static int recv_msg(void)
+static int ipc_recv_msg(void)
 {
 	to_sipc_msg_t msg;
 	
@@ -555,12 +593,35 @@ static int recv_msg(void)
 	return msg.cmd;
 }
 
+static void ipc_set_snd_vol(void)
+{
+	//	static struct re_printf pf_stderr = {print_handler, NULL};
+	struct player *player = baresip_player();
+	struct config *cfg;
+	int level = ikey->uri.spk_lv;
+	int percent;
+	
+	cfg = conf_config();
+	
+	percent = __aic3x_output_level[level];	
+	alsa_mixer_set_volume(SND_VOLUME_P, percent);
+	
+	if (ikey->ste.call_ste == SIPC_STATE_CALL_IDLE) {
+		/* Stop any ongoing ring-tones */
+		ikey->play = mem_deref(ikey->play);
+		(void)play_file(&ikey->play, player, 
+						"audio_end.wav", 1, cfg->audio.play_mod, cfg->audio.play_dev);
+		delay_msecs(1000);
+		ikey->play = mem_deref(ikey->play);				
+	}
+}
+
 static void *THR_sipc_poll(void *prm)
 {
 	app_thr_obj *tObj = &ikey->sObj;
 	int done = 0, cmd;
 	
-	aprintf("enter...\n");
+	printf("enter...\n");
 	tObj->active = 1;
 	
 	while(!done)
@@ -570,11 +631,11 @@ static void *THR_sipc_poll(void *prm)
 			break;
 		} 
 		//# APP_CMD_NOTY
-		send_msg(SIPC_CMD_SIP_GET_STATUS, ikey->ste.call_ste, 
+		ipc_send_msg(SIPC_CMD_SIP_GET_STATUS, ikey->ste.call_ste, 
 					ikey->ste.call_dir, ikey->ste.call_reg, ikey->ste.call_err);
 	}
 	
-	aprintf("exit...\n");
+	printf("exit...\n");
 	tObj->active = 0;
 		
 	return NULL;
@@ -585,20 +646,20 @@ static void *THR_sipc_main(void *prm)
 	app_thr_obj *tObj = &ikey->mObj;
 	int done = 0, cmd;
 	
-	aprintf("enter...\n");
+	printf("enter...\n");
 	tObj->active = 1;
 	(void)prm;
 	
 	/* message queue init */
 	ikey->qid = Msg_Init(SIPC_MSG_KEY);
-	send_msg(SIPC_CMD_SIP_READY, 0, 0, 0, 0);
+	ipc_send_msg(SIPC_CMD_SIP_READY, 0, 0, 0, 0);
 	
 	while(!done)
 	{
 		//# wait cmd
-		cmd = recv_msg();
+		cmd = ipc_recv_msg();
 		if (cmd < 0) {
-			eprintf("failed to receive sipc process msg!\n");
+			printf("failed to receive sipc process msg!\n");
 			continue;
 		}
 		
@@ -606,28 +667,28 @@ static void *THR_sipc_main(void *prm)
 		switch (cmd) {
 		case SIPC_CMD_SIP_REGISTER_UA:
 			/* 계정을 등록 */
-			__register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.spk_lv, ikey->uri.ua_uri, 
+			cmenu_register_user(ikey->uri.net_if, ikey->uri.en_stun, ikey->uri.port, ikey->uri.spk_lv, ikey->uri.ua_uri, 
 					ikey->uri.pbx_uri, ikey->uri.passwd, ikey->uri.stun_uri);
 			break;
 		
 		case SIPC_CMD_SIP_UNREGISTER_UA:
-			__unregister_user();
+			cmenu_unregister_user();
 			break;
 			
 		case SIPC_CMD_SIP_START:
-			__dialer_user(ikey->uri.peer_uri);
+			cmenu_dialer_user(ikey->uri.peer_uri);
 			break;
 		
 		case SIPC_CMD_SIP_ANSWER:
-			__call_answer();
+			cmenu_call_answer();
 			break;
 			
 		case SIPC_CMD_SIP_STOP:
-			__call_stop();
+			cmenu_call_stop();
 			break;	
 		
 		case SIPC_CMD_SIP_SET_SOUND:
-			__set_sound_volume();
+			ipc_set_snd_vol();
 			break;
 			
 		case SIPC_CMD_SIP_EXIT:
@@ -643,7 +704,7 @@ static void *THR_sipc_main(void *prm)
 	tObj->active = 0;
 	Msg_Kill(ikey->qid);
 	
-	aprintf("exit...\n");
+	printf("exit...\n");
 		
 	return NULL;
 }
@@ -654,23 +715,23 @@ static int module_init(void)
 	app_thr_obj *tObj = &ikey->mObj;
 	int err;
 	
-	ikey->bell = 1; /* 전화 수신 시 bell을 출력할 필요가 있을 경우 */
-	ikey->start_ticks = tmr_jiffies();
+	debug("menu_custom: init!\n");
 	
+	ikey->start_ticks = tmr_jiffies();
 	ikey->dialbuf = mbuf_alloc(64);
 	if (!ikey->dialbuf)
 		return ENOMEM;
 		
 	/* message 수신 및 전송을 위한 Thread 생성 */
 	if (thread_create(tObj, THR_sipc_main, APP_THREAD_PRI, NULL) < 0) {
-		eprintf("create thread!\n");
+		printf("create thread!\n");
 		return -1;
 	}
 	
 	/* baresip의 event_handler에 의해서 전달되는 상태메시지를 main으로 전달하기 위한 thread */
 	tObj = &ikey->sObj;
 	if (thread_create(tObj, THR_sipc_poll, APP_THREAD_PRI-1, NULL) < 0) {
-		eprintf("create thread!\n");
+		printf("create thread!\n");
 		return -1;
 	}
 	
@@ -686,6 +747,8 @@ static int module_init(void)
 static int module_close(void)
 {
 	app_thr_obj *tObj = &ikey->mObj;
+	
+	debug("menu_custom: close\n");
 	
    	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while (tObj->active)

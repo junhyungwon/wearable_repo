@@ -1,7 +1,7 @@
 /**
  * @file src/call.c  Call Control
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,17 +22,6 @@
 	for (le = call->streaml.head; le; le = le->next)
 
 
-/** Call States */
-enum state {
-	STATE_IDLE = 0,
-	STATE_INCOMING,
-	STATE_OUTGOING,
-	STATE_RINGING,
-	STATE_EARLY,
-	STATE_ESTABLISHED,
-	STATE_TERMINATED
-};
-
 /** SIP Call Control object */
 struct call {
 	MAGIC_DECL                /**< Magic number for debugging           */
@@ -47,7 +36,8 @@ struct call {
 	struct audio *audio;      /**< Audio stream                         */
 	struct video *video;      /**< Video stream                         */
 	struct media_ctx *ctx;    /**< Shared A/V source media context      */
-	enum state state;         /**< Call state                           */
+	enum call_state state;    /**< Call state                           */
+	int32_t adelay;           /**< Auto answer delay in ms              */
 	char *local_uri;          /**< Local SIP uri                        */
 	char *local_name;         /**< Local display name                   */
 	char *peer_uri;           /**< Peer SIP Address                     */
@@ -55,6 +45,7 @@ struct call {
 	char *id;                 /**< Cached session call-id               */
 	struct tmr tmr_inv;       /**< Timer for incoming calls             */
 	struct tmr tmr_dtmf;      /**< Timer for incoming DTMF events       */
+	struct tmr tmr_answ;      /**< Timer for delayed answer             */
 	time_t time_start;        /**< Time when call started               */
 	time_t time_conn;         /**< Time when call initiated             */
 	time_t time_stop;         /**< Time when call stopped               */
@@ -80,25 +71,27 @@ struct call {
 
 
 static int send_invite(struct call *call);
+static int send_dtmf_info(struct call *call, char key);
 
 
-static const char *state_name(enum state st)
+static const char *state_name(enum call_state st)
 {
 	switch (st) {
 
-	case STATE_IDLE:        return "IDLE";
-	case STATE_INCOMING:    return "INCOMING";
-	case STATE_OUTGOING:    return "OUTGOING";
-	case STATE_RINGING:     return "RINGING";
-	case STATE_EARLY:       return "EARLY";
-	case STATE_ESTABLISHED: return "ESTABLISHED";
-	case STATE_TERMINATED:  return "TERMINATED";
+	case CALL_STATE_IDLE:        return "IDLE";
+	case CALL_STATE_INCOMING:    return "INCOMING";
+	case CALL_STATE_OUTGOING:    return "OUTGOING";
+	case CALL_STATE_RINGING:     return "RINGING";
+	case CALL_STATE_EARLY:       return "EARLY";
+	case CALL_STATE_ESTABLISHED: return "ESTABLISHED";
+	case CALL_STATE_TERMINATED:  return "TERMINATED";
+	case CALL_STATE_UNKNOWN:     return "UNKNOWN";
 	default:                return "???";
 	}
 }
 
 
-static void set_state(struct call *call, enum state st)
+static void set_state(struct call *call, enum call_state st)
 {
 	call->state = st;
 }
@@ -171,39 +164,6 @@ static int start_audio(struct call *call)
 }
 
 
-static int start_video(struct call *call)
-{
-	const struct sdp_format *sc;
-	int err = 0;
-
-	/* Video Stream */
-	sc = sdp_media_rformat(stream_sdpmedia(video_strm(call->video)), NULL);
-	if (sc) {
-		err  = video_encoder_set(call->video, sc->data, sc->pt,
-					 sc->params);
-		err |= video_decoder_set(call->video, sc->data, sc->pt,
-					 sc->rparams);
-		if (err)
-			return err;
-
-		if (!video_is_started(call->video)) {
-			err  = video_start_display(call->video,
-						   call->peer_uri);
-			err |= video_start_source(call->video, &call->ctx);
-		}
-
-		if (err) {
-			warning("call: video stream error: %m\n", err);
-		}
-	}
-	else if (call->video) {
-		info("call: video stream is disabled..\n");
-	}
-
-	return err;
-}
-
-
 static void call_stream_start(struct call *call, bool active)
 {
 	int err;
@@ -218,7 +178,7 @@ static void call_stream_start(struct call *call, bool active)
 	}
 
 	if (stream_is_ready(video_strm(call->video))) {
-		err = start_video(call);
+		err = video_update(call->video, &call->ctx, call->peer_uri);
 		if (err) {
 			warning("call: could not start video: %m\n", err);
 		}
@@ -248,7 +208,7 @@ static void call_stream_stop(struct call *call)
 	audio_stop(call->audio);
 
 	/* Video */
-	video_stop(call->video);
+	video_stop(call->video, &call->ctx);
 
 	tmr_cancel(&call->tmr_inv);
 }
@@ -318,11 +278,11 @@ static void mnat_handler(int err, uint16_t scode, const char *reason,
 
 	switch (call->state) {
 
-	case STATE_OUTGOING:
+	case CALL_STATE_OUTGOING:
 		(void)send_invite(call);
 		break;
 
-	case STATE_INCOMING:
+	case CALL_STATE_INCOMING:
 		call_event_handler(call, CALL_EVENT_INCOMING, call->peer_uri);
 		break;
 
@@ -336,6 +296,8 @@ static int update_audio(struct call *call)
 {
 	const struct sdp_format *sc;
 	int err = 0;
+
+	debug("audio: update\n");
 
 	sc = sdp_media_rcodec(stream_sdpmedia(audio_strm(call->audio)));
 	if (sc) {
@@ -352,39 +314,6 @@ static int update_audio(struct call *call)
 	}
 	else {
 		info("audio stream is disabled..\n");
-	}
-
-	return err;
-}
-
-
-static int update_video(struct call *call)
-{
-	const struct sdp_format *sc;
-	int err = 0;
-
-	sc = sdp_media_rformat(stream_sdpmedia(video_strm(call->video)), NULL);
-	if (sc) {
-		err = video_encoder_set(call->video, sc->data,
-					sc->pt, sc->params);
-		if (err) {
-			warning("call: video stream error: %m\n", err);
-			return err;
-		}
-
-		if (!video_is_started(call->video)) {
-			err  = video_start_display(call->video,
-						   call->peer_uri);
-			err |= video_start_source(call->video, &call->ctx);
-			if (err) {
-				warning("call: update: failed to"
-					" start video (%m)\n", err);
-			}
-		}
-	}
-	else if (call->video) {
-		info("video stream is disabled..\n");
-		video_stop(call->video);
 	}
 
 	return err;
@@ -420,7 +349,7 @@ static int update_media(struct call *call)
 	}
 
 	if (stream_is_ready(video_strm(call->video))) {
-		err |= update_video(call);
+		err |= video_update(call->video, &call->ctx, call->peer_uri);
 	}
 
 	return err;
@@ -442,12 +371,13 @@ static void call_destructor(void *arg)
 {
 	struct call *call = arg;
 
-	if (call->state != STATE_IDLE)
+	if (call->state != CALL_STATE_IDLE)
 		print_summary(call);
 
 	call_stream_stop(call);
 	list_unlink(&call->le);
 	tmr_cancel(&call->tmr_dtmf);
+	tmr_cancel(&call->tmr_answ);
 
 	mem_deref(call->sess);
 	mem_deref(call->id);
@@ -473,7 +403,7 @@ static void audio_event_handler(int key, bool end, void *arg)
 	struct call *call = arg;
 	MAGIC_CHECK(call);
 
-	info("received event: '%c' (end=%d)\n", key, end);
+	info("received in-band DTMF event: '%c' (end=%d)\n", key, end);
 
 	if (call->dtmfh)
 		call->dtmfh(call, end ? KEYCODE_REL : key, call->arg);
@@ -500,6 +430,8 @@ static void audio_error_handler(int err, const char *str, void *arg)
 	}
 
 	ua_event(call->ua, UA_EVENT_AUDIO_ERROR, call, "%d,%s", err, str);
+	call_stream_stop(call);
+	call_event_handler(call, CALL_EVENT_CLOSED, str);
 }
 
 
@@ -540,7 +472,8 @@ static void menc_event_handler(enum menc_event event,
 		else if (strstr(prm, "video")) {
 			stream_set_secure(video_strm(call->video), true);
 			stream_start(video_strm(call->video));
-			err = start_video(call);
+			err = video_update(call->video, &call->ctx,
+				call->peer_uri);
 			if (err) {
 				warning("call: secure: could not"
 					" start video: %m\n", err);
@@ -602,7 +535,8 @@ static void stream_mnatconn_handler(struct stream *strm, void *arg)
 			break;
 
 		case MEDIA_VIDEO:
-			err = start_video(call);
+			err = video_update(call->video, &call->ctx,
+				call->peer_uri);
 			if (err) {
 				warning("call: mnatconn: could not"
 					" start video: %m\n", err);
@@ -657,7 +591,7 @@ static void stream_error_handler(struct stream *strm, int err, void *arg)
 		sdp_media_name(stream_sdpmedia(strm)), err);
 
 	call->scode = 701;
-	set_state(call, STATE_TERMINATED);
+	set_state(call, CALL_STATE_TERMINATED);
 
 	call_stream_stop(call);
 	call_event_handler(call, CALL_EVENT_CLOSED, "rtp stream error");
@@ -677,6 +611,101 @@ static int assign_linenum(uint32_t *linenum, const struct list *lst)
 	}
 
 	return ENOENT;
+}
+
+
+/**
+ * Decode the SIP-Header for RFC 5373 auto answer of incoming call
+ *
+ * @param call Call object
+ * @param msg  SIP message
+ * @param name SIP header name
+ */
+static void call_rfc5373_autoanswer(struct call *call,
+		const struct sip_msg *msg, const char *name)
+{
+	const struct sip_hdr *hdr;
+	struct pl v1;
+
+	hdr = sip_msg_xhdr(msg, name);
+	if (!hdr || pl_strcasecmp(&hdr->val, "Auto"))
+		return;
+
+	if (!msg_param_exists(&hdr->val, "require", &v1) &&
+			!account_sip_autoanswer(call->acc)) {
+
+		warning("call: rejected, since %s is not allowed\n", name);
+		call_hangup(call, 0, NULL);
+		return;
+	}
+
+	call->adelay = 0;
+}
+
+
+/**
+ * Decodes given SIP header for auto answer options of incoming call
+ *
+ * @param call Call object
+ * @param hdr  SIP header (Call-Info or Alert-Info)
+ * @return true if success, otherwise false
+ */
+static bool call_hdr_dec_sip_autoanswer(struct call *call,
+		const struct sip_hdr *hdr)
+{
+	struct pl v1, v2;
+	if (!call || !hdr)
+		return false;
+
+	if (!msg_param_decode(&hdr->val, "answer-after", &v1)) {
+		call->adelay = pl_u32(&v1) * 1000;
+		return true;
+	}
+
+	if (!msg_param_decode(&hdr->val, "info", &v1) &&
+			!msg_param_decode(&hdr->val, "delay", &v2)) {
+		if (!pl_strcmp(&v1, "alert-autoanswer")) {
+			call->adelay = pl_u32(&v2) * 1000;
+			return true;
+		}
+	}
+
+	if (!msg_param_decode(&hdr->val, "info", &v1)) {
+		if (!pl_strcmp(&v1, "alert-autoanswer")) {
+			call->adelay = 0;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+/**
+ * Decode the SIP message for auto answer options of incoming call
+ *
+ * @param call Call object
+ * @param msg  SIP message
+ */
+static void call_decode_sip_autoanswer(struct call *call,
+		const struct sip_msg *msg)
+{
+	const struct sip_hdr *hdr;
+
+	call->adelay = -1;
+
+	/* polycom (HDA50), avaya, grandstream, snom, gigaset, yealink */
+	hdr = sip_msg_hdr(msg, SIP_HDR_CALL_INFO);
+	if (call_hdr_dec_sip_autoanswer(call, hdr))
+		return;
+
+	hdr = sip_msg_hdr(msg, SIP_HDR_ALERT_INFO);
+	if (call_hdr_dec_sip_autoanswer(call, hdr))
+		return;
+
+	/* RFC 5373 */
+	call_rfc5373_autoanswer(call, msg, "Answer-Mode");
+	call_rfc5373_autoanswer(call, msg, "Priv-Answer-Mode");
 }
 
 
@@ -735,13 +764,15 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 	call->config_call = cfg->call;
 
 	tmr_init(&call->tmr_inv);
+	tmr_init(&call->tmr_answ);
 
 	call->acc    = mem_ref(acc);
 	call->ua     = ua;
-	call->state  = STATE_IDLE;
+	call->state  = CALL_STATE_IDLE;
 	call->eh     = eh;
 	call->arg    = arg;
 	call->af     = prm->af;
+	call_decode_sip_autoanswer(call, msg);
 
 	err = str_dup(&call->local_uri, local_uri);
 	if (local_name)
@@ -751,11 +782,6 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 
 	/* Init SDP info */
 	err = sdp_session_alloc(&call->sdp, &prm->laddr);
-	if (err)
-		goto out;
-
-	err = sdp_session_set_lattr(call->sdp, true,
-				    "tool", "baresip " BARESIP_VERSION);
 	if (err)
 		goto out;
 
@@ -826,7 +852,7 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 				  video_error_handler, call);
 		if (err)
 			goto out;
- 	}
+	}
 
 	/* inherit certain properties from original call */
 	if (xcall) {
@@ -948,7 +974,7 @@ int call_connect(struct call *call, const struct pl *paddr)
 	if (err)
 		return err;
 
-	set_state(call, STATE_OUTGOING);
+	set_state(call, CALL_STATE_OUTGOING);
 
 	/* If we are using asyncronous medianat like STUN/TURN, then
 	 * wait until completed before sending the INVITE */
@@ -977,9 +1003,15 @@ int call_modify(struct call *call)
 	debug("call: modify\n");
 
 	err = call_sdp_get(call, &desc, true);
-	if (!err)
+	if (!err) {
 		err = sipsess_modify(call->sess, desc);
+		if (err)
+			goto out;
+	}
 
+	err = update_media(call);
+
+ out:
 	mem_deref(desc);
 
 	return err;
@@ -1003,7 +1035,7 @@ void call_hangup(struct call *call, uint16_t scode, const char *reason)
 
 	switch (call->state) {
 
-	case STATE_INCOMING:
+	case CALL_STATE_INCOMING:
 		if (scode < 400) {
 			scode = 486;
 			reason = "Rejected";
@@ -1018,11 +1050,14 @@ void call_hangup(struct call *call, uint16_t scode, const char *reason)
 		     sip_dialog_callid(sipsess_dialog(call->sess)),
 		     call->peer_uri);
 
+		if (call->not)
+			call_notify_sipfrag(call, 487, "Request Terminated");
+
 		call->sess = mem_deref(call->sess);
 		break;
 	}
 
-	set_state(call, STATE_TERMINATED);
+	set_state(call, CALL_STATE_TERMINATED);
 
 	call_stream_stop(call);
 }
@@ -1067,10 +1102,11 @@ int call_progress(struct call *call)
  *
  * @param call  Call to answer
  * @param scode Status code
+ * @param vmode Wanted video mode
  *
  * @return 0 if success, otherwise errorcode
  */
-int call_answer(struct call *call, uint16_t scode)
+int call_answer(struct call *call, uint16_t scode, enum vidmode vmode)
 {
 	struct mbuf *desc;
 	int err;
@@ -1078,13 +1114,19 @@ int call_answer(struct call *call, uint16_t scode)
 	if (!call || !call->sess)
 		return EINVAL;
 
-	if (STATE_INCOMING != call->state) {
+	tmr_cancel(&call->tmr_answ);
+
+	if (CALL_STATE_INCOMING != call->state) {
 		info("call: answer: call is not in incoming state (%s)\n",
 		     state_name(call->state));
 		return 0;
 	}
 
-	info("call: answering call from %s with %u\n", call->peer_uri, scode);
+	if (vmode == VIDMODE_OFF)
+		call->video = mem_deref(call->video);
+
+	info("call: answering call on line %u from %s with %u\n",
+			call->linenum, call->peer_uri, scode);
 
 	if (call->got_offer) {
 
@@ -1166,6 +1208,24 @@ int call_hold(struct call *call, bool hold)
 	FOREACH_STREAM
 		stream_hold(le->data, hold);
 
+	return call_modify(call);
+}
+
+
+/**
+ * Sets the video direction of the given call
+ *
+ * @param call  Call object
+ * @param dir   SDP media direction
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int call_set_video_dir(struct call *call, enum sdp_dir dir)
+{
+	if (!call)
+		return EINVAL;
+
+	stream_set_ldir(video_strm(call_video(call)), dir);
 	return call_modify(call);
 }
 
@@ -1253,10 +1313,12 @@ int call_debug(struct re_printf *pf, const struct call *call)
 	err |= re_hprintf(pf,
 			  " local_uri: %s <%s>\n"
 			  " peer_uri:  %s <%s>\n"
-			  " af=%s id=%s\n",
+			  " af=%s id=%s\n"
+			  " autoanswer delay: %d\n",
 			  call->local_name, call->local_uri,
 			  call->peer_name, call->peer_uri,
-			  net_af2name(call->af), call->id);
+			  net_af2name(call->af), call->id,
+			  call->adelay);
 	err |= re_hprintf(pf, " direction: %s\n",
 			  call->outgoing ? "Outgoing" : "Incoming");
 
@@ -1296,8 +1358,8 @@ int call_status(struct re_printf *pf, const struct call *call)
 
 	switch (call->state) {
 
-	case STATE_EARLY:
-	case STATE_ESTABLISHED:
+	case CALL_STATE_EARLY:
+	case CALL_STATE_ESTABLISHED:
 		break;
 	default:
 		return 0;
@@ -1340,7 +1402,8 @@ int call_info(struct re_printf *pf, const struct call *call)
 	if (!call)
 		return 0;
 
-	return re_hprintf(pf, "[line %u]  %H  %9s  %s  %s", call->linenum,
+	return re_hprintf(pf, "[line %u, id %s]  %H  %9s  %s  %s",
+			  call->linenum, call->id,
 			  print_duration, call,
 			  state_name(call->state),
 			  call->on_hold ? "(on hold)" : "         ",
@@ -1358,10 +1421,20 @@ int call_info(struct re_printf *pf, const struct call *call)
  */
 int call_send_digit(struct call *call, char key)
 {
+	int err;
+
 	if (!call)
 		return EINVAL;
 
-	return audio_send_digit(call->audio, key);
+	if (call->acc->dtmfmode == DTMFMODE_SIP_INFO &&
+		key != KEYCODE_REL) {
+		err = send_dtmf_info(call, key);
+	}
+	else {
+		err = audio_send_digit(call->audio, key);
+	}
+
+	return err;
 }
 
 
@@ -1397,13 +1470,15 @@ static int sipsess_offer_handler(struct mbuf **descp,
 {
 	const bool got_offer = (0 != mbuf_get_left(msg->mb));
 	struct call *call = arg;
+	struct sdp_media *vmedia = NULL;
+	enum sdp_dir ardir, vrdir;
 	int err;
 
 	MAGIC_CHECK(call);
 
-	info("call: got re-INVITE%s\n", got_offer ? " (SDP Offer)" : "");
-
 	if (got_offer) {
+
+		call->got_offer = true;
 
 		/* Decode SDP Offer */
 		err = sdp_decode(call->sdp, msg->mb, true);
@@ -1414,9 +1489,28 @@ static int sipsess_offer_handler(struct mbuf **descp,
 		}
 
 		err = update_media(call);
-		if (err)
+		if (err) {
+			warning("call: reinvite: could not update media: %m\n",
+				err);
 			return err;
+		}
 	}
+
+	ardir = sdp_media_rdir(
+		stream_sdpmedia(audio_strm(call_audio(call))));
+
+	vmedia = stream_sdpmedia(video_strm(call_video(call)));
+	if (sdp_media_rport(vmedia) == 0 ||
+		list_head(sdp_media_format_lst(vmedia, false)) == 0) {
+		vrdir = SDP_INACTIVE;
+	}
+	else {
+		vrdir = sdp_media_rdir(vmedia);
+	}
+
+	info("call: got re-INVITE%s audio-video: %s-%s\n"
+		, got_offer ? " (SDP Offer)" : "",
+		sdp_dir_name(ardir), sdp_dir_name(vrdir));
 
 	/* Encode SDP Answer */
 	return sdp_encode(descp, call->sdp, !got_offer);
@@ -1431,6 +1525,9 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
 	MAGIC_CHECK(call);
 
 	debug("call: got SDP answer (%zu bytes)\n", mbuf_get_left(msg->mb));
+
+	call->got_offer = false;
+	call_event_handler(call, CALL_EVENT_ANSWERED, call->peer_uri);
 
 	if (msg_ctype_cmp(&msg->ctyp, "multipart", "mixed"))
 		(void)sdp_decode_multipart(&msg->ctyp.params, msg->mb);
@@ -1456,10 +1553,10 @@ static void sipsess_estab_handler(const struct sip_msg *msg, void *arg)
 
 	MAGIC_CHECK(call);
 
-	if (call->state == STATE_ESTABLISHED)
+	if (call->state == CALL_STATE_ESTABLISHED)
 		return;
 
-	set_state(call, STATE_ESTABLISHED);
+	set_state(call, CALL_STATE_ESTABLISHED);
 
 	call_stream_start(call, true);
 
@@ -1483,32 +1580,25 @@ static void sipsess_estab_handler(const struct sip_msg *msg, void *arg)
 }
 
 
-static void call_handle_info_req(struct call *call, const struct sip_msg *req)
-{
-	struct pl body;
-	bool pfu;
-	int err;
-
-	pl_set_mbuf(&body, req->mb);
-
-	err = mctrl_handle_media_control(&body, &pfu);
-	if (err)
-		return;
-
-	debug("call: receive media control: fast_update=%d\n", pfu);
-
-	if (pfu) {
-		video_update_picture(call->video);
-	}
-}
-
-
 static void dtmfend_handler(void *arg)
 {
 	struct call *call = arg;
 
 	if (call->dtmfh)
 		call->dtmfh(call, KEYCODE_REL, call->arg);
+}
+
+
+static void sipsess_send_info_handler(int err, const struct sip_msg *msg,
+				void *arg)
+{
+	(void)arg;
+
+	if (err)
+		warning("call: sending DTMF INFO failed (%m)", err);
+	else if (msg && msg->scode != 200)
+		warning("call: sending DTMF INFO failed (scode: %d)",
+				msg->scode);
 }
 
 
@@ -1534,8 +1624,8 @@ static void sipsess_info_handler(struct sip *sip, const struct sip_msg *msg,
 			char s = toupper(sig.p[0]);
 			uint32_t duration = pl_u32(&dur);
 
-			info("call: received DTMF: '%c' (duration=%r)\n",
-			     s, &dur);
+			info("call: received SIP INFO DTMF: '%c' "
+			     "(duration=%r)\n", s, &dur);
 
 			(void)sip_reply(sip, msg, 200, "OK");
 
@@ -1545,11 +1635,6 @@ static void sipsess_info_handler(struct sip *sip, const struct sip_msg *msg,
 				call->dtmfh(call, s, call->arg);
 			}
 		}
-	}
-	else if (msg_ctype_cmp(&msg->ctyp,
-			       "application", "media_control+xml")) {
-		call_handle_info_req(call, msg);
-		(void)sip_reply(sip, msg, 200, "OK");
 	}
 	else {
 		(void)sip_reply(sip, msg, 488, "Not Acceptable Here");
@@ -1759,7 +1844,7 @@ int call_accept(struct call *call, struct sipsess_sock *sess_sock,
 	if (err)
 		return err;
 
-	set_state(call, STATE_INCOMING);
+	set_state(call, CALL_STATE_INCOMING);
 
 	/* New call */
 	if (call->config_call.local_timeout) {
@@ -1771,6 +1856,14 @@ int call_accept(struct call *call, struct sipsess_sock *sess_sock,
 		call_event_handler(call, CALL_EVENT_INCOMING, call->peer_uri);
 
 	return err;
+}
+
+
+static void delayed_answer_handler(void *arg)
+{
+	struct call *call = arg;
+
+	(void)call_answer(call, 200, VIDMODE_ON);
 }
 
 
@@ -1811,11 +1904,11 @@ static void sipsess_progr_handler(const struct sip_msg *msg, void *arg)
 	switch (msg->scode) {
 
 	case 180:
-		set_state(call, STATE_RINGING);
+		set_state(call, CALL_STATE_RINGING);
 		break;
 
 	case 183:
-		set_state(call, STATE_EARLY);
+		set_state(call, CALL_STATE_EARLY);
 		break;
 	}
 
@@ -1886,6 +1979,35 @@ static int send_invite(struct call *call)
 
  out:
 	mem_deref(desc);
+
+	return err;
+}
+
+
+static int send_dtmf_info(struct call *call, char key)
+{
+	struct mbuf *body;
+	int err;
+
+	if ((key < '0' || key > '9') &&
+	    (key < 'a' || key > 'd') &&
+	    (key != '*') &&
+	    (key != '#'))
+		return EINVAL;
+
+	body = mbuf_alloc(25);
+	mbuf_printf(body, "Signal=%c\r\nDuration=250\r\n", key);
+	mbuf_set_pos(body, 0);
+
+	err = sipsess_info(call->sess, "application/dtmf-relay", body,
+			   sipsess_send_info_handler, call);
+	if (err) {
+		warning("call: sipsess_info for DTMF failed (%m)\n", err);
+		goto out;
+	}
+
+ out:
+	mem_deref(body);
 
 	return err;
 }
@@ -2158,6 +2280,22 @@ uint16_t call_scode(const struct call *call)
 
 
 /**
+ * Get state of the call
+ *
+ * @param call Call object
+ *
+ * @return Call state or CALL_STATE_UNKNOWN if call object is NULL
+ */
+enum call_state call_state(const struct call *call)
+{
+	if (!call)
+		return CALL_STATE_UNKNOWN;
+
+	return call->state;
+}
+
+
+/**
  * Set the callback handlers for a call object
  *
  * @param call  Call object
@@ -2248,6 +2386,19 @@ uint32_t call_linenum(const struct call *call)
 
 
 /**
+ * Get the answer delay of this call
+ *
+ * @param call Call object
+ *
+ * @return answer delay in ms
+ */
+int32_t call_answer_delay(const struct call *call)
+{
+	return call ? call->adelay : -1;
+}
+
+
+/**
  * Find the call with a given line number
  *
  * @param calls   List of calls
@@ -2306,4 +2457,42 @@ void call_set_current(struct list *calls, struct call *call)
 
 	list_unlink(&call->le);
 	list_append(calls, &call->le, call);
+}
+
+
+/**
+ * Set stream sdp media line direction attribute
+ *
+ * @param call Call object
+ * @param a    Audio SDP direction
+ * @param v    Video SDP direction if video available
+ *
+ * @return int	0 if success, errorcode otherwise
+ */
+int call_set_media_direction(struct call *call, enum sdp_dir a, enum sdp_dir v)
+{
+	if (!call)
+		return EINVAL;
+
+	stream_set_ldir(audio_strm(call_audio(call)), a);
+
+	if (video_strm(call_video(call))) {
+		if (vidisp_find(baresip_vidispl(), NULL) == NULL)
+			stream_set_ldir(video_strm(
+				call_video(call)), v & SDP_SENDONLY);
+		else
+			stream_set_ldir(video_strm(call_video(call)), v);
+
+	}
+
+	return 0;
+}
+
+
+void call_start_answtmr(struct call *call, uint32_t ms)
+{
+	if (!call)
+		return;
+
+	tmr_start(&call->tmr_answ, ms, delayed_answer_handler, call);
 }

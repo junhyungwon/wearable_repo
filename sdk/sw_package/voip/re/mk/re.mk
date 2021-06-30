@@ -8,6 +8,9 @@
 #   ARCH           Target architecture
 #   CC             Compiler
 #   CROSS_COMPILE  Cross-compiler prefix (optional)
+#   LIBRE_PATH     Libre path (optional)
+#   LIBRE_INC      Libre include path (optional)
+#   LIBRE_SO       Libre library search path (optional)
 #   EXTRA_CFLAGS   Extra compiler flags appended to CFLAGS
 #   EXTRA_LFLAGS   Extra linker flags appended to LFLAGS
 #   GCOV           If non-empty, enable GNU Coverage testing
@@ -16,6 +19,7 @@
 #   OPT_SPEED      If non-empty, optimize for speed
 #   PROJECT        Project name
 #   RELEASE        Release build
+#   TRACE_ERR      Trace error codes
 #   SYSROOT        System root of library and include files
 #   SYSROOT_ALT    Alternative system root of library and include files
 #   USE_OPENSSL    If non-empty, link to libssl library
@@ -46,6 +50,9 @@ CFLAGS  += -DRELEASE
 OPT_SPEED=1
 endif
 
+ifneq ($(TRACE_ERR),)
+CFLAGS  += -DTRACE_ERR
+endif
 
 # Default system root
 ifeq ($(SYSROOT),)
@@ -79,60 +86,31 @@ ifeq ($(CC),cc)
 	CC := gcc
 endif
 LD := $(CC)
-CC_LONGVER := $(shell if $(CC) -v 2>/dev/null; then \
-						$(CC) -v 2>&1 ;\
-					else \
-						$(CC) -V 2>&1 ; \
-					fi )
+
+CC_LONGVER  := $(shell $(CC) - --version|head -n 1)
+CC_SHORTVER := $(shell $(CC) -dumpversion)
+CC_MAJORVER := $(shell echo $(CC_SHORTVER) |\
+			sed -e 's/\([0-9]*\)\.[0-9]\+\.[0-9]\+/\1/g')
 
 # find-out the compiler's name
 
 ifneq (,$(findstring gcc, $(CC_LONGVER)))
 	CC_NAME := gcc
-	CC_VER := $(word 1,$(CC)) $(shell $(CC) - --version|head -n 1|\
-		cut -d" " -f 3|\
-		sed -e 's/^.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/'\
-		-e 's/^[^0-9].*\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
-	# sun sed is a little brain damaged => this complicated expression
+	CC_VER := $(CC) $(CC_SHORTVER) ($(CC_MAJORVER).x)
 	MKDEP := $(CC) -MM
-	#transform gcc version into 2.9x, 3.x or 4.x
-	CC_SHORTVER := $(shell echo "$(CC_VER)" | cut -d" " -f 2| \
-			 sed -e 's/[^0-9]*-\(.*\)/\1/'| \
-			 sed -e 's/2\.9.*/2.9x/' -e 's/3\.[0-3]\..*/3.0/' -e \
-			 	's/3\.[0-3]/3.0/' -e 's/3\.[4-9]\..*/3.4/' -e\
-				's/3\.[4-9]/3.4/' -e 's/4\.[0-9]\..*/4.x/' -e\
-				's/4\.[0-9]/4.x/' )
+ifneq ($(CC_MAJORVER), 4)
+	CC_C11 := 1
+endif
 endif
 
 ifeq ($(CC_NAME),)
 ifneq (,$(findstring clang, $(CC_LONGVER)))
 	CC_NAME := clang
-	CC_SHORTVER := $(shell echo "$(CC_LONGVER)"|head -n 1| \
-		sed -e 's/.*version \([0-9]\.[0-9]\).*/\1/g' )
-	CC_VER := $(CC) $(CC_SHORTVER)
+	CC_VER := $(CC) $(CC_SHORTVER) ($(CC_MAJORVER).x)
 	MKDEP := $(CC) -MM
+ifneq ($(CC_MAJORVER), 4)
+	CC_C11 := 1
 endif
-endif
-
-ifeq ($(CC_NAME),)
-ifneq (, $(findstring Sun, $(CC_LONGVER)))
-	CC_NAME := suncc
-	CC_SHORTVER := $(shell echo "$(CC_LONGVER)"|head -n 1| \
-					sed -e 's/.*\([0-9]\.[0-9]\).*/\1/g' )
-	CC_VER := $(CC) $(CC_SHORTVER)
-	MKDEP  := $(CC) -xM1
-endif
-endif
-
-ifeq ($(CC_NAME),)
-ifneq (, $(findstring Intel(R) C++ Compiler, $(CC_LONGVER)))
-	# very nice: gcc compatible
-	CC_NAME := icc
-	CC_FULLVER := $(shell echo "$(CC_LONGVER)"|head -n 1| \
-			sed -e 's/.*Version \([0-9]\.[0-9]\.[0-9]*\).*/\1/g')
-	CC_SHORTVER := $(shell echo "$(CC_FULLVER)" | cut -d. -f1,2 )
-	CC_VER := $(CC) $(CC_FULLVER)
-	MKDEP  := $(CC) -MM
 endif
 endif
 
@@ -144,12 +122,13 @@ ifeq (,$(CC_NAME))
 	CC_VER      := unknown
 	MKDEP       := gcc -MM
 $(warning	Unknown compiler $(CC)\; supported compilers: \
-			gcc, clang, sun cc, intel icc )
+			gcc, clang)
 endif
 
 
 # Compiler warning flags
 CFLAGS	+= -Wall
+CFLAGS	+= -Wextra
 CFLAGS	+= -Wmissing-declarations
 CFLAGS	+= -Wmissing-prototypes
 CFLAGS	+= -Wstrict-prototypes
@@ -159,12 +138,10 @@ CFLAGS	+= -Wnested-externs
 CFLAGS	+= -Wshadow
 CFLAGS	+= -Waggregate-return
 CFLAGS	+= -Wcast-align
-
-
-ifeq ($(CC_SHORTVER),4.x)
-CFLAGS	+= -Wextra
 CFLAGS	+= -Wold-style-definition
 CFLAGS	+= -Wdeclaration-after-statement
+ifeq ($(CC_NAME), clang)
+CFLAGS	+= -Wshorten-64-to-32
 endif
 
 CFLAGS  += -g
@@ -179,17 +156,11 @@ endif
 
 ifneq ($(OPTIMIZE),)
 CFLAGS	+= -Wuninitialized
-ifneq ($(CC_SHORTVER), 2.9x)
 CFLAGS	+= -Wno-strict-aliasing
-endif
 endif
 
 # Compiler dependency flags
-ifeq ($(CC_SHORTVER), 2.9x)
-	DFLAGS		= -MD
-else
-	DFLAGS		= -MD -MF $(@:.o=.d) -MT $@
-endif
+DFLAGS		= -MD -MF $(@:.o=.d) -MT $@
 
 
 ##############################################################################
@@ -231,7 +202,7 @@ ifeq ($(OS),solaris)
 endif
 ifeq ($(OS),linux)
 	CFLAGS		+= -fPIC -DLINUX
-	LIBS		+= -ldl
+	LIBS		+= -ldl -lrt
 	LFLAGS		+= -fPIC
 	SH_LFLAGS	+= -shared
 	MOD_LFLAGS	+=
@@ -271,6 +242,7 @@ endif
 	AFLAGS		:= cru
 	LIB_SUFFIX	:= .dylib
 	HAVE_KQUEUE	:= 1
+	SYSROOT		:= $(shell xcrun --show-sdk-path)/usr
 endif
 ifeq ($(OS),netbsd)
 	CFLAGS		+= -fPIC -DNETBSD
@@ -342,15 +314,17 @@ endif
 
 CFLAGS	+= -DOS=\"$(OS)\"
 
-ifeq ($(CC_SHORTVER),2.9x)
-CFLAGS  += -Wno-long-long
-else
+ifeq ($(CC_C11),)
 CFLAGS  += -std=c99
-PEDANTIC := 1
-endif # CC_SHORTVER
+else
+CFLAGS  += -std=c11
+HAVE_ATOMIC := 1
+endif
 
-ifneq ($(PEDANTIC),)
 CFLAGS  += -pedantic
+
+ifneq ($(HAVE_ATOMIC),)
+CFLAGS  += -DHAVE_ATOMIC
 endif
 
 
@@ -542,7 +516,7 @@ CFLAGS  += -DHAVE_STDBOOL_H
 
 HAVE_INET6      := 1
 ifneq ($(HAVE_INET6),)
-CFLAGS  += -DHAVE_INET6
+#CFLAGS  += -DHAVE_INET6
 endif
 
 ifeq ($(OS),win32)
@@ -659,7 +633,7 @@ distclean:
 	@rm -f `find . -name "*.dylib"`
 
 .PHONY: info
-info:
+info::
 	@echo "info - $(PROJECT) version $(VERSION)"
 	@echo "  MODULES:       $(MODULES)"
 #	@echo "  SRCS:          $(SRCS)"
@@ -668,7 +642,7 @@ info:
 	@echo "  OS:            $(OS)"
 	@echo "  BUILD:         $(BUILD)"
 	@echo "  CCACHE:        $(CCACHE)"
-	@echo "  CC:            $(CC_NAME) $(CC_SHORTVER)"
+	@echo "  CC:            $(CC_VER)"
 	@echo "  CFLAGS:        $(CFLAGS)"
 	@echo "  DFLAGS:        $(DFLAGS)"
 	@echo "  LFLAGS:        $(LFLAGS)"
@@ -677,6 +651,7 @@ info:
 	@echo "  APP_LFLAGS:    $(APP_LFLAGS)"
 	@echo "  LIBS:          $(LIBS)"
 	@echo "  LIBRE_MK:      $(LIBRE_MK)"
+	@echo "  LIBRE_PATH:    $(LIBRE_PATH)"
 	@echo "  LIBRE_INC:     $(LIBRE_INC)"
 	@echo "  LIBRE_SO:      $(LIBRE_SO)"
 	@echo "  USE_OPENSSL:   $(USE_OPENSSL)"
@@ -735,14 +710,8 @@ git_snapshot:
 # Debian
 .PHONY: deb
 deb:
-	dpkg-buildpackage -rfakeroot
+	dpkg-buildpackage -rfakeroot --post-clean
 
-.PHONY: debclean
-debclean:
-	@rm -rf build-stamp configure-stamp debian/files debian/$(PROJECT) \
-		debian/lib$(PROJECT) debian/lib$(PROJECT)-dev debian/tmp \
-		debian/.debhelper debian/*.debhelper debian/*.debhelper.log \
-		debian/*.substvars
 
 # RPM
 RPM := $(shell [ -d /usr/src/rpm ] 2>/dev/null && echo "rpm")
@@ -760,15 +729,31 @@ rpm:    tar
 # Library and header files location section - in prioritised order
 #
 # - relative path
+# - custom SYSROOT
 # - local installation
 # - system installation
 #
 
-LIBRE_PATH := ../re
+ifndef LIBRE_PATH
+LIBRE_PATH := $(shell [ -d ../re ] && echo "../re")
+endif
+
+ifeq ($(LIBRE_PATH),)
+ifneq ($(SYSROOT),/usr)
+LIBRE_PATH := $(shell [ -f $(SYSROOT)/include/re/re.h ] && \
+	echo "$(SYSROOT)")
+endif
+endif
 
 # Include path
+ifeq ($(LIBRE_INC),)
 LIBRE_INC := $(shell [ -f $(LIBRE_PATH)/include/re.h ] && \
 	echo "$(LIBRE_PATH)/include")
+endif
+ifeq ($(LIBRE_INC),)
+LIBRE_INC := $(shell [ -f $(LIBRE_PATH)/include/re/re.h ] && \
+	echo "$(LIBRE_PATH)/include/re")
+endif
 ifeq ($(LIBRE_INC),)
 LIBRE_INC := $(shell [ -f /usr/local/include/re/re.h ] && \
 	echo "/usr/local/include/re")
@@ -778,8 +763,18 @@ LIBRE_INC := $(shell [ -f /usr/include/re/re.h ] && echo "/usr/include/re")
 endif
 
 # Library path
+ifeq ($(LIBRE_SO),)
+LIBRE_SO  := $(shell [ -f $(LIBRE_PATH)/libre.a ] \
+	&& echo "$(LIBRE_PATH)")
+endif
+ifeq ($(LIBRE_SO),)
 LIBRE_SO  := $(shell [ -f $(LIBRE_PATH)/libre$(LIB_SUFFIX) ] \
 	&& echo "$(LIBRE_PATH)")
+endif
+ifeq ($(LIBRE_SO),)
+LIBRE_SO  := $(shell [ -f $(LIBRE_PATH)/lib/libre$(LIB_SUFFIX) ] \
+	&& echo "$(LIBRE_PATH)/lib")
+endif
 ifeq ($(LIBRE_SO),)
 LIBRE_SO  := $(shell [ -f /usr/local/lib/libre$(LIB_SUFFIX) ] \
 	&& echo "/usr/local/lib")
@@ -797,12 +792,13 @@ endif
 # Clang section
 #
 
-CLANG_OPTIONS := -Iinclude -I$(LIBRE_INC) $(CFLAGS)
+CLANG_OPTIONS := -Iinclude -I$(LIBRE_INC)
 CLANG_IGNORE  :=
 CLANG_SRCS    += $(filter-out $(CLANG_IGNORE), $(patsubst %,src/%,$(SRCS)))
 
+.PHONY:
 clang:
-	@clang --analyze $(CLANG_OPTIONS) $(CLANG_SRCS)
+	@clang --analyze $(CLANG_OPTIONS) $(CFLAGS) $(CLANG_SRCS)
 	@rm -f *.plist
 
 

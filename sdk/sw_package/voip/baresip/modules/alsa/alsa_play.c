@@ -1,7 +1,7 @@
 /**
  * @file alsa_play.c  ALSA sound driver - player
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _POSIX_SOURCE 1
@@ -18,7 +18,6 @@
 
 
 struct auplay_st {
-	const struct auplay *ap;  /* pointer to base-class (inheritance) */
 	pthread_t thread;
 	volatile bool run;
 	snd_pcm_t *write;
@@ -39,6 +38,7 @@ static void auplay_destructor(void *arg)
 	if (st->run) {
 		debug("alsa: stopping playback thread (%s)\n", st->device);
 		st->run = false;
+		snd_pcm_drop(st->write);
 		(void)pthread_join(st->thread, NULL);
 	}
 
@@ -53,16 +53,19 @@ static void auplay_destructor(void *arg)
 static void *write_thread(void *arg)
 {
 	struct auplay_st *st = arg;
-	int n;
+	struct auframe af;
+	snd_pcm_sframes_t n;
 	int num_frames;
 
 	num_frames = st->prm.srate * st->prm.ptime / 1000;
+
+	auframe_init(&af, st->prm.fmt, st->sampv, st->sampc);
 
 	while (st->run) {
 		const int samples = num_frames;
 		void *sampv;
 
-		st->wh(st->sampv, st->sampc, st->arg);
+		st->wh(&af, st->arg);
 
 		sampv = st->sampv;
 
@@ -72,17 +75,19 @@ static void *write_thread(void *arg)
 			snd_pcm_prepare(st->write);
 
 			n = snd_pcm_writei(st->write, sampv, samples);
-			if (n != samples) {
+			if (n < 0) {
 				warning("alsa: write error: %s\n",
-					snd_strerror(n));
+					snd_strerror((int) n));
 			}
 		}
 		else if (n < 0) {
-			warning("alsa: write error: %s\n", snd_strerror(n));
+			if (st->run)
+				warning("alsa: write error: %s\n",
+					snd_strerror((int) n));
 		}
 		else if (n != samples) {
 			warning("alsa: write: wrote %d of %d samples\n",
-				n, samples);
+				(int) n, samples);
 		}
 	}
 
@@ -116,7 +121,6 @@ int alsa_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 		goto out;
 
 	st->prm = *prm;
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
 
@@ -133,6 +137,7 @@ int alsa_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (err < 0) {
 		warning("alsa: could not open auplay device '%s' (%s)\n",
 			st->device, snd_strerror(err));
+		info("consider using dmix as your default alsa device\n");
 		goto out;
 	}
 

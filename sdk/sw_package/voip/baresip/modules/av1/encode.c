@@ -1,7 +1,7 @@
 /**
  * @file av1/encode.c AV1 Encode
  *
- * Copyright (C) 2010 - 2016 Creytiv.com
+ * Copyright (C) 2010 - 2016 Alfred E. Heggestad
  */
 
 #include <string.h>
@@ -46,6 +46,7 @@ int av1_encode_update(struct videnc_state **vesp, const struct vidcodec *vc,
 		      videnc_packet_h *pkth, void *arg)
 {
 	struct videnc_state *ves;
+	(void)fmtp;
 
 	if (!vesp || !vc || !prm || prm->pktsize < (HDR_SIZE + 1))
 		return EINVAL;
@@ -93,12 +94,14 @@ static int open_encoder(struct videnc_state *ves, const struct vidsz *size)
 	cfg.g_w               = size->w;
 	cfg.g_h               = size->h;
 	cfg.g_timebase.num    = 1;
-	cfg.g_timebase.den    = ves->fps;
+	cfg.g_timebase.den    = VIDEO_TIMEBASE;
+	cfg.g_threads         = 8;
+	cfg.g_usage           = AOM_USAGE_REALTIME;
 	cfg.g_error_resilient = AOM_ERROR_RESILIENT_DEFAULT;
 	cfg.g_pass            = AOM_RC_ONE_PASS;
 	cfg.g_lag_in_frames   = 0;
 	cfg.rc_end_usage      = AOM_VBR;
-	cfg.rc_target_bitrate = ves->bitrate;
+	cfg.rc_target_bitrate = ves->bitrate / 1000;
 	cfg.kf_mode           = AOM_KF_AUTO;
 
 	if (ves->ctxup) {
@@ -203,7 +206,7 @@ int av1_encode_packet(struct videnc_state *ves, bool update,
 		goto out;
 	}
 
-	for (i=0; i<4; i++) {
+	for (i=0; i<3; i++) {
 		img->stride[i] = frame->linesize[i];
 		img->planes[i] = frame->data[i];
 	}

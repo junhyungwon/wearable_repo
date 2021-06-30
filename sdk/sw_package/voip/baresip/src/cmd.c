@@ -1,7 +1,7 @@
 /**
  * @file src/cmd.c  Command Interface
  *
- * Copyright (C) 2010 - 2016 Creytiv.com
+ * Copyright (C) 2010 - 2016 Alfred E. Heggestad
  */
 #include <ctype.h>
 #include <string.h>
@@ -128,10 +128,7 @@ static const struct cmd *cmd_find_by_key(const struct commands *commands,
 		for (i=0; i<cmds->cmdc; i++) {
 
 			const struct cmd *cmd = &cmds->cmdv[i];
-			
-			/* 미리등록된 command와 key값이 동일하고 cmd에 handle이 동록되면 cmd 리턴 
-			 * menu 모듈이 초기화 될 때 command가 등록됨.
-			 */
+
 			if (cmd->key == key && cmd->h)
 				return cmd;
 		}
@@ -538,15 +535,10 @@ int cmd_process(struct commands *commands, struct cmd_ctx **ctxp, char key,
 
 		if (key == KEYCODE_REL)
 			return 0;
-		
+
 		return cmd_process_edit(commands, ctxp, key, pf, data);
 	}
-	
-	/*
-	 * a-> accept incoming call, b->hangup call
-	 * c-> callstat, d->dial, h->help, l->listcall, r->registration info
-	 * 0-> answermode, ESC-> hangup call..
-	 */ 	
+
 	cmd = cmd_find_by_key(commands, key);
 	if (cmd) {
 		struct cmd_arg arg;
@@ -555,6 +547,7 @@ int cmd_process(struct commands *commands, struct cmd_ctx **ctxp, char key,
 		if (cmd->flags & CMD_PRM) {
 
 			int err = 0;
+
 			if (ctxp) {
 				err = ctx_alloc(ctxp, cmd);
 				if (err)
@@ -562,18 +555,20 @@ int cmd_process(struct commands *commands, struct cmd_ctx **ctxp, char key,
 			}
 
 			key = isdigit(key) ? key : KEYCODE_REL;
+
 			return cmd_process_edit(commands, ctxp, key, pf, data);
 		}
 
 		arg.key      = key;
 		arg.prm      = NULL;
 		arg.data     = data;
+
 		return cmd->h(pf, &arg);
 	}
-	/* '/'로 시작되는 명령은 LONG_PREFIX로 정의됨 */
 	else if (key == LONG_PREFIX) {
 
 		int err;
+
 		err = re_hprintf(pf, "%c", LONG_PREFIX);
 		if (err)
 			return err;
@@ -597,8 +592,7 @@ int cmd_process(struct commands *commands, struct cmd_ctx **ctxp, char key,
 
 	if (key == KEYCODE_REL)
 		return 0;
-	
-	/* 등록되지 않은 키를 입력하는 경우 */
+
 	return cmd_print(pf, commands);
 }
 

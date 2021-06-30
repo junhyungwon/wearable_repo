@@ -1,7 +1,7 @@
 /**
  * @file winwave/src.c Windows sound driver -- source
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -17,8 +17,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;      /* inheritance */
-
 	struct dspbuf bufs[READ_BUFFERS];
 	int pos;
 	HWAVEIN wavein;
@@ -87,7 +85,6 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 	struct ausrc_st *st = (struct ausrc_st *)dwInstance;
 	WAVEHDR *wh = (WAVEHDR *)dwParam1;
 	struct auframe af;
-	MMTIME mmtime;
 
 	(void)hwo;
 	(void)dwParam2;
@@ -109,12 +106,10 @@ static void CALLBACK waveInCallback(HWAVEOUT hwo,
 		if (st->inuse < (READ_BUFFERS-1))
 			add_wave_in(st);
 
-		waveInGetPosition(st->wavein, &mmtime, sizeof(mmtime));
-
 		af.fmt   = st->fmt;
 		af.sampv = (void *)wh->lpData;
 		af.sampc = wh->dwBytesRecorded/st->sampsz;
-		af.timestamp = mmtime.u.ms * 1000;
+		af.timestamp = tmr_jiffies_usec();
 
 		st->rh(&af, st->arg);
 
@@ -241,7 +236,6 @@ int winwave_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
 

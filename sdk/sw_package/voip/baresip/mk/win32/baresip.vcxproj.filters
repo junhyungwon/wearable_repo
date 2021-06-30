@@ -215,9 +215,6 @@
     <ClCompile Include="..\..\src\h264.c">
       <Filter>src\video</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\mctrl.c">
-      <Filter>src\video</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\vidcodec.c">
       <Filter>src\video</Filter>
     </ClCompile>
@@ -352,7 +349,6 @@
     <ClCompile Include="..\..\src\aulevel.c" />
     <ClCompile Include="..\..\src\vidutil.c" />
     <ClCompile Include="..\..\src\event.c" />
-    <ClCompile Include="..\..\src\timer.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\custom_hdrs.c">
@@ -362,6 +358,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\rtpstat.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\auframe.c">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

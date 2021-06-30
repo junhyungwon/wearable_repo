@@ -1,7 +1,7 @@
 /**
  * @file plc.c  PLC -- Packet Loss Concealment
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 #define SPANDSP_EXPOSE_INTERNAL_STRUCTURES
@@ -92,6 +92,9 @@ static int decode(struct aufilt_dec_st *st, struct auframe *af)
 
 	if (!st || !af)
 		return EINVAL;
+
+	if (af->fmt != AUFMT_S16LE)
+		return ENOTSUP;
 
 	if (af->sampc) {
 		plc_rx(&plc->plc, af->sampv, (int)af->sampc);

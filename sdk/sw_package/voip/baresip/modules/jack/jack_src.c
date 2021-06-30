@@ -1,7 +1,7 @@
 /**
  * @file jack_src.c  JACK audio driver -- source
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -12,13 +12,12 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;  /* pointer to base-class (inheritance) */
-
 	struct ausrc_prm prm;
 	float *sampv;
 	size_t sampc;             /* includes number of channels */
 	ausrc_read_h *rh;
 	void *arg;
+	const char *device;
 
 	jack_client_t *client;
 	jack_port_t **portv;
@@ -83,19 +82,32 @@ static int start_jack(struct ausrc_st *st)
 	const char **ports;
 	const char *client_name = "baresip";
 	const char *server_name = NULL;
+	char *conf_name;
 	jack_options_t options = JackNullOption;
 	jack_status_t status;
 	unsigned ch;
 	jack_nframes_t engine_srate;
+	size_t len;
 
 	bool jack_connect_ports = true;
 	(void)conf_get_bool(conf, "jack_connect_ports",
-				  &jack_connect_ports);
+				&jack_connect_ports);
 
 	/* open a client connection to the JACK server */
+	len = jack_client_name_size();
+	conf_name = mem_alloc(len+1, NULL);
 
-	st->client = jack_client_open(client_name, options,
-				      &status, server_name);
+	if (!conf_get_str(conf, "jack_client_name",
+			conf_name, len)) {
+		st->client = jack_client_open(conf_name, options,
+						&status, server_name);
+	}
+	else {
+		st->client = jack_client_open(client_name, options,
+							&status, server_name);
+	}
+	mem_deref(conf_name);
+
 	if (st->client == NULL) {
 		warning("jack: jack_client_open() failed, "
 			"status = 0x%2.0x\n", status);
@@ -108,10 +120,8 @@ static int start_jack(struct ausrc_st *st)
 	if (status & JackServerStarted) {
 		info("jack: JACK server started\n");
 	}
-	if (status & JackNameNotUnique) {
-		client_name = jack_get_client_name(st->client);
-		info("jack: unique name `%s' assigned\n", client_name);
-	}
+	client_name = jack_get_client_name(st->client);
+	info("jack: destination unique name `%s' assigned\n", client_name);
 
 	jack_set_process_callback(st->client, process_handler, st);
 
@@ -157,17 +167,30 @@ static int start_jack(struct ausrc_st *st)
 	}
 
 	if (jack_connect_ports) {
-		info("jack: connecting default output ports\n");
-		ports = jack_get_ports (st->client, NULL, NULL,
-					JackPortIsOutput);
+
+		/* If device is specified, get the ports matching the
+		 * regexp specified in the device string. Otherwise, get all
+		 * physical ports. */
+		if (st->device) {
+			info("jack: connect output ports matching regexp %s\n",
+				st->device);
+			ports = jack_get_ports (st->client, st->device, NULL,
+						JackPortIsOutput);
+		}
+		else {
+			info("jack: connect to physical output ports\n");
+			ports = jack_get_ports (st->client, NULL, NULL,
+				JackPortIsOutput | JackPortIsPhysical);
+		}
+
 		if (ports == NULL) {
-			warning("jack: no physical playback ports\n");
+			warning("jack: no output ports found\n");
 			return ENODEV;
 		}
 
 		for (ch=0; ch<st->prm.ch; ch++) {
 			if (jack_connect(st->client, ports[ch],
-					 jack_port_name(st->portv[ch]))) {
+					jack_port_name(st->portv[ch]))) {
 				warning("jack: cannot connect output ports\n");
 			}
 		}
@@ -188,7 +211,6 @@ int jack_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	int err = 0;
 
 	(void)ctx;
-	(void)device;
 	(void)errh;
 
 	if (!stp || !as || !prm || !rh)
@@ -205,9 +227,11 @@ int jack_src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		return ENOMEM;
 
 	st->prm = *prm;
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
+
+	if (str_isset(device))
+		st->device = device;
 
 	st->portv = mem_reallocarray(NULL, prm->ch, sizeof(*st->portv), NULL);
 	if (!st->portv) {

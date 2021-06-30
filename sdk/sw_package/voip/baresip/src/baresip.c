@@ -1,7 +1,7 @@
 /**
  * @file baresip.c Top-level baresip struct
  *
- * Copyright (C) 2010 - 2016 Creytiv.com
+ * Copyright (C) 2010 - 2016 Alfred E. Heggestad
  */
 #include <re.h>
 #include <baresip.h>
@@ -28,7 +28,7 @@ static struct baresip {
 	struct list vidsrcl;
 	struct list vidispl;
 	struct list vidfiltl;
-	struct ui_sub uis; /* baresip.h */
+	struct ui_sub uis;
 } baresip;
 
 
@@ -49,9 +49,13 @@ static int cmd_quit(struct re_printf *pf, void *unused)
 static int insmod_handler(struct re_printf *pf, void *arg)
 {
        const struct cmd_arg *carg = arg;
+       char path[256];
        int err;
 
-       err = module_load(carg->prm);
+       if (conf_get_str(conf_cur(), "module_path", path, sizeof(path)))
+	       str_ncpy(path, ".", sizeof(path));
+
+       err = module_load(path, carg->prm);
        if (err) {
                return re_hprintf(pf, "insmod: ERROR: could not load module"
                                  " '%s': %m\n", carg->prm, err);
@@ -92,29 +96,27 @@ int baresip_init(struct config *cfg)
 
 	if (!cfg)
 		return EINVAL;
-	/* libre, re_mem.c
-	 * 공유 참조가 가능한 메모리를 dereference 만약 참조 숫자가 0이면 NULL
-	 */
-	baresip.net = mem_deref(baresip.net); 
 
-	list_init(&baresip.mnatl); //# mnat.c Media-NAT modules
-	list_init(&baresip.mencl); //# menc.c Media-encryption modules
-	list_init(&baresip.aucodecl); //# list of audio codecs
-	list_init(&baresip.ausrcl); //# audio source list
-	list_init(&baresip.auplayl); //# audio player list
-	list_init(&baresip.vidcodecl); //# video codec list
-	list_init(&baresip.vidsrcl); //# video source list
-	list_init(&baresip.vidispl); //# video display list
-	list_init(&baresip.vidfiltl); //# video filter list
+	baresip.net = mem_deref(baresip.net);
+
+	list_init(&baresip.mnatl);
+	list_init(&baresip.mencl);
+	list_init(&baresip.aucodecl);
+	list_init(&baresip.ausrcl);
+	list_init(&baresip.auplayl);
+	list_init(&baresip.vidcodecl);
+	list_init(&baresip.vidsrcl);
+	list_init(&baresip.vidispl);
+	list_init(&baresip.vidfiltl);
 
 	/* Initialise Network */
-	err = net_alloc(&baresip.net, &cfg->net); //# net.c
+	err = net_alloc(&baresip.net, &cfg->net);
 	if (err) {
 		warning("ua: network init failed: %m\n", err);
 		return err;
 	}
 
-	err = contact_init(&baresip.contacts); //# contact.c
+	err = contact_init(&baresip.contacts);
 	if (err)
 		return err;
 
@@ -131,10 +133,7 @@ int baresip_init(struct config *cfg)
 		warning("baresip: message init failed: %m\n", err);
 		return err;
 	}
-	
-	/*
-	 * quit, insmod, rmmod 명령을 등록
-	 */
+
 	err = cmd_register(baresip.commands, corecmdv, ARRAY_SIZE(corecmdv));
 	if (err)
 		return err;

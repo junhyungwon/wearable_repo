@@ -4,10 +4,18 @@
 # Copyright (C) 2010 Creytiv.com
 #
 
-# Master version number
-VER_MAJOR := 0
-VER_MINOR := 6
+# Main version number
+VER_MAJOR := 2
+VER_MINOR := 0
 VER_PATCH := 1
+
+# Libtool similar ABI versioning
+# https://github.com/baresip/re/wiki/ABI-Versioning
+ABI_CUR   := 1
+ABI_REV   := 1
+ABI_AGE   := 0
+
+ABI_MAJOR := $(shell expr $(ABI_CUR) - $(ABI_AGE))
 
 PROJECT   := re
 VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
@@ -26,7 +34,7 @@ MODULES += dns
 MODULES += md5 crc32 sha hmac base64
 MODULES += udp sa net tcp tls
 MODULES += list mbuf hash
-MODULES += fmt tmr main mem dbg sys lock mqueue
+MODULES += fmt tmr trace main mem dbg sys lock mqueue
 MODULES += mod conf
 MODULES += bfcp
 MODULES += aes srtp
@@ -47,9 +55,15 @@ INCDIR  := $(PREFIX)/include/re
 MKDIR   := $(PREFIX)/share/re
 CFLAGS	+= -Iinclude
 
-MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
-SHARED  := libre$(LIB_SUFFIX)
-STATIC	:= libre.a
+MODMKS         := $(patsubst %,src/%/mod.mk,$(MODULES))
+SHARED         := libre$(LIB_SUFFIX)
+SHARED_SONAME  := $(SHARED).$(ABI_MAJOR)
+SHARED_FILE    := $(SHARED).$(ABI_MAJOR).$(ABI_AGE).$(ABI_REV)
+STATIC         := libre.a
+
+#ifeq ($(OS),linux) //not used libre.so.1
+#SH_LFLAGS      += -Wl,-soname,$(SHARED_SONAME)
+#endif
 
 include $(MODMKS)
 
@@ -109,7 +123,13 @@ install: $(SHARED) $(STATIC) libre.pc
 		$(DESTDIR)$(INCDIR) $(DESTDIR)$(MKDIR)
 	$(INSTALL) -m 0644 $(shell find include -name "*.h") \
 		$(DESTDIR)$(INCDIR)
+ifeq ($(OS),linux)
+	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)/$(SHARED_FILE)
+	cd $(DESTDIR)$(LIBDIR) && ln -sf $(SHARED_FILE) $(SHARED) && \
+		ln -sf $(SHARED_FILE) $(SHARED_SONAME)
+else
 	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)
+endif
 	$(INSTALL) -m 0755 $(STATIC) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 libre.pc $(DESTDIR)$(LIBDIR)/pkgconfig
 	$(INSTALL) -m 0644 $(MK) $(DESTDIR)$(MKDIR)
@@ -118,6 +138,7 @@ uninstall:
 	@rm -rf $(DESTDIR)$(INCDIR)
 	@rm -rf $(DESTDIR)$(MKDIR)
 	@rm -f $(DESTDIR)$(LIBDIR)/$(SHARED)
+	@rm -f $(DESTDIR)$(LIBDIR)/$(SHARED_SONAME)
 	@rm -f $(DESTDIR)$(LIBDIR)/$(STATIC)
 	@rm -f $(DESTDIR)$(LIBDIR)/pkgconfig/libre.pc
 

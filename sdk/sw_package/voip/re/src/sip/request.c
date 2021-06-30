@@ -145,7 +145,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
 
 	req->ct = NULL;
 
-	if (!req->canceled && (err || msg->scode == 503) &&
+	if (!req->canceled && (err || (msg && msg->scode == 503)) &&
 	    (req->addrl.head || req->srvl.head)) {
 
 		err = request_next(req);
@@ -194,7 +194,8 @@ static int request(struct sip_request *req, enum sip_transp tp,
 		err = sip_send(req->sip, NULL, tp, dst, mb);
 	else
 		err = sip_ctrans_request(&req->ct, req->sip, tp, dst, req->met,
-					 branch, mb, response_handler, req);
+					 branch, req->host, mb,
+					 response_handler, req);
 	if (err)
 		goto out;
 
@@ -373,6 +374,10 @@ static bool rr_naptr_handler(struct dnsrr *rr, void *arg)
 		tp = SIP_TRANSP_TCP;
 	else if (!str_casecmp(rr->rdata.naptr.services, "SIPS+D2T"))
 		tp = SIP_TRANSP_TLS;
+	else if (!str_casecmp(rr->rdata.naptr.services, "SIP+D2W"))
+		tp = SIP_TRANSP_WS;
+	else if (!str_casecmp(rr->rdata.naptr.services, "SIPS+D2W"))
+		tp = SIP_TRANSP_WSS;
 	else
 		return false;
 
@@ -640,13 +645,8 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
 
 	if (!msg_param_decode(&route->params, "transport", &pl)) {
 
-		if (!pl_strcasecmp(&pl, "udp"))
-			req->tp = SIP_TRANSP_UDP;
-		else if (!pl_strcasecmp(&pl, "tcp"))
-			req->tp = SIP_TRANSP_TCP;
-		else if (!pl_strcasecmp(&pl, "tls"))
-			req->tp = SIP_TRANSP_TLS;
-		else {
+		req->tp = sip_transp_decode(&pl);
+		if (req->tp  == SIP_TRANSP_NONE) {
 			err = EPROTONOSUPPORT;
 			goto out;
 		}

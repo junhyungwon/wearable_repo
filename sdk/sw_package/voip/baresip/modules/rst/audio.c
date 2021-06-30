@@ -1,7 +1,7 @@
 /**
  * @file rst/audio.c MP3/ICY HTTP Audio Source
  *
- * Copyright (C) 2011 Creytiv.com
+ * Copyright (C) 2011 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -16,8 +16,10 @@
 #include "rst.h"
 
 
+#define MIN_PTIME 20
+
+
 struct ausrc_st {
-	const struct ausrc *as;  /* pointer to base-class (inheritance) */
 	pthread_t thread;
 	struct rst *rst;
 	mpg123_handle *mp3;
@@ -190,7 +192,6 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as   = as;
 	st->rh   = rh;
 	st->errh = errh;
 	st->arg  = arg;
@@ -221,11 +222,12 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 
 	mpg123_volume(st->mp3, 0.3);
 
-	st->sampc = prm->srate * prm->ch * prm->ptime / 1000;
+	st->ptime = max(prm->ptime, MIN_PTIME);
+
+	st->sampc = prm->srate * prm->ch * st->ptime / 1000;
 	st->sampsz = aufmt_sample_size(prm->fmt);
 	st->fmt = prm->fmt;
 
-	st->ptime = prm->ptime;
 
 	info("rst: audio ptime=%u sampc=%zu aubuf=[%u:%u]\n",
 	     st->ptime, st->sampc,

@@ -1,7 +1,7 @@
 #
 # srcs.mk All application source files.
 #
-# Copyright (C) 2010 Creytiv.com
+# Copyright (C) 2010 Alfred E. Heggestad
 #
 
 SRCS	+= account.c
@@ -9,7 +9,6 @@ SRCS	+= aucodec.c
 SRCS	+= audio.c
 SRCS	+= aufilt.c
 SRCS	+= auframe.c
-SRCS	+= aulevel.c
 SRCS	+= auplay.c
 SRCS	+= ausrc.c
 SRCS	+= baresip.c
@@ -22,7 +21,6 @@ SRCS	+= custom_hdrs.c
 SRCS	+= event.c
 SRCS	+= h264.c
 SRCS	+= log.c
-SRCS	+= mctrl.c
 SRCS	+= mediadev.c
 SRCS	+= menc.c
 SRCS	+= message.c
@@ -38,7 +36,6 @@ SRCS	+= sdp.c
 SRCS	+= sipreq.c
 SRCS	+= stream.c
 SRCS	+= stunuri.c
-SRCS	+= timer.c
 SRCS	+= timestamp.c
 SRCS	+= ua.c
 SRCS	+= ui.c

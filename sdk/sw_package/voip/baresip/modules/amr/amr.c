@@ -1,7 +1,7 @@
 /**
  * @file amr.c Adaptive Multi-Rate (AMR) audio codec
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <stdlib.h>
 #ifdef AMR_NB
@@ -215,7 +215,7 @@ static int encode_wb(struct auenc_state *st,
 	if (sampc != L_FRAME16k)
 		return EINVAL;
 
-	if (*len < NB_SERIAL_MAX)
+	if (*len < (1+NB_SERIAL_MAX))
 		return ENOMEM;
 
 	if (fmt != AUFMT_S16LE)

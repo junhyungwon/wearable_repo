@@ -1,7 +1,7 @@
 /**
  * @file conf.c  Configuration utils
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -165,16 +165,15 @@ int conf_path_get(char *path, size_t sz)
 		return 0;
 	}
 
-#ifdef CONFIG_PATH /* not defined */
+#ifdef CONFIG_PATH
 	str_ncpy(buf, CONFIG_PATH, sizeof(buf));
 	(void)err;
 #else
-	/* CONFIG_PATH가 정의 안됨 */
-	err = fs_gethome(buf, sizeof(buf)); //# fs.c 
+	err = fs_gethome(buf, sizeof(buf));
 	if (err)
 		return err;
 #endif
-	/* /root/.baresip/config 파일이 생성됨 */
+
 	if (re_snprintf(path, sz, "%s" DIR_SEP ".baresip", buf) < 0)
 		return ENOMEM;
 
@@ -373,6 +372,31 @@ int conf_configure(void)
 
 
 /**
+ * Configure the system from a buffer
+ *
+ * @param buf Buffer with config
+ * @param sz  Size of buffer
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int conf_configure_buf(const uint8_t *buf, size_t sz)
+{
+	int err;
+
+	if (!buf || !sz)
+		return EINVAL;
+
+	conf_obj = mem_deref(conf_obj);
+
+	err = conf_alloc_buf(&conf_obj, buf, sz);
+	if (err)
+		return err;
+
+	return 0;
+}
+
+
+/**
  * Load all modules from config file
  *
  * @return 0 if success, otherwise errorcode
@@ -382,8 +406,7 @@ int conf_configure(void)
 int conf_modules(void)
 {
 	int err;
-	
-	/* conf_configre 함수에 의해서 할당됨 (struct conf *) */
+
 	err = module_init(conf_obj);
 	if (err) {
 		warning("conf: configure module parse error (%m)\n", err);

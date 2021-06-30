@@ -25,12 +25,6 @@
 #include "tls.h"
 
 
-/* also defined by wincrypt.h */
-#ifdef WIN32
-#undef X509_NAME
-#endif
-
-
 #define DEBUG_MODULE "tls"
 #define DEBUG_LEVEL 5
 #include <re_dbg.h>
@@ -39,6 +33,7 @@
 /* NOTE: shadow struct defined in tls_*.c */
 struct tls_conn {
 	SSL *ssl;
+	struct tls *tls;
 };
 
 
@@ -87,6 +82,44 @@ static int keytype2int(enum tls_keytype type)
 }
 
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && \
+	!defined(LIBRESSL_VERSION_NUMBER)
+static int verify_handler(int ok, X509_STORE_CTX *ctx)
+{
+	int err, depth;
+
+	err = X509_STORE_CTX_get_error(ctx);
+
+#if (DEBUG_LEVEL >= 6)
+	char    buf[128];
+	X509   *err_cert;
+
+	err_cert = X509_STORE_CTX_get_current_cert(ctx);
+
+	X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 128);
+	DEBUG_INFO("%s: subject_name = %s\n", __func__, buf);
+
+	X509_NAME_oneline(X509_get_issuer_name(err_cert), buf, 128);
+	DEBUG_INFO("%s: issuer_name  = %s\n", __func__, buf);
+#endif
+
+	if (err) {
+		depth = X509_STORE_CTX_get_error_depth(ctx);
+		DEBUG_WARNING("%s: err          = %d\n", __func__, err);
+		DEBUG_WARNING("%s: error_string = %s\n", __func__,
+				X509_verify_cert_error_string(err));
+		DEBUG_WARNING("%s: depth        = %d\n", __func__, depth);
+	}
+
+#if (DEBUG_LEVEL >= 6)
+	DEBUG_INFO("tls verify ok = %d\n", ok);
+#endif
+
+	return ok;
+}
+#endif
+
+
 /**
  * Allocate a new TLS context
  *
@@ -110,6 +143,7 @@ int tls_alloc(struct tls **tlsp, enum tls_method method, const char *keyfile,
 	if (!tls)
 		return ENOMEM;
 
+	tls->verify_server = true;
 	switch (method) {
 
 	case TLS_METHOD_SSLV23:
@@ -215,17 +249,124 @@ int tls_alloc(struct tls **tlsp, enum tls_method method, const char *keyfile,
  */
 int tls_add_ca(struct tls *tls, const char *cafile)
 {
-	if (!tls || !cafile)
+	return tls_add_cafile_path(tls, cafile, NULL);
+}
+
+
+/**
+ * Set default file and path for trusted CA certificates
+ *
+ * @param tls    TLS Context
+ * @param cafile PEM file with CA certificate(s)
+ * @param capath Path containing CA certificates files
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int tls_add_cafile_path(struct tls *tls, const char *cafile,
+	const char *capath)
+{
+	if (!tls || (!cafile && !capath) || !tls->ctx)
 		return EINVAL;
 
+	if (capath && !fs_isdir(capath)) {
+		DEBUG_WARNING("capath is not a directory\n");
+		return ENOTDIR;
+	}
+
 	/* Load the CAs we trust */
-	if (!(SSL_CTX_load_verify_locations(tls->ctx, cafile, NULL))) {
-		DEBUG_WARNING("Can't read CA file: %s\n", cafile);
+	if (!(SSL_CTX_load_verify_locations(tls->ctx, cafile, capath))) {
+		if (str_isset(cafile))
+			DEBUG_WARNING("Can't read CA file: %s\n", cafile);
+
 		ERR_clear_error();
-		return EINVAL;
+		return ENOENT;
 	}
 
 	return 0;
+}
+
+
+/**
+ * Add trusted CA certificates given as string.
+ *
+ * @param tls    TLS Context
+ * @param capem  The trusted CA as null-terminated string given in PEM format.
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int tls_add_capem(struct tls *tls, const char *capem)
+{
+	X509_STORE *store;
+	X509 *x509;
+	BIO *bio;
+	int ok;
+	int err = 0;
+
+	if (!tls || !capem || !tls->ctx)
+		return EINVAL;
+
+	store = SSL_CTX_get_cert_store(tls->ctx);
+	if (!store)
+		return EINVAL;
+
+	bio  = BIO_new_mem_buf((char *)capem, (int)strlen(capem));
+	if (!bio)
+		return EINVAL;
+
+	x509 = PEM_read_bio_X509(bio, NULL, 0, NULL);
+	if (!x509) {
+		err = EINVAL;
+		DEBUG_WARNING("Could not read certificate capem\n");
+		goto out;
+	}
+
+	ok = X509_STORE_add_cert(store, x509);
+	if (!ok) {
+		err = EINVAL;
+		DEBUG_WARNING("Could not add certificate capem\n");
+	}
+
+out:
+	X509_free(x509);
+	BIO_free(bio);
+
+	return err;
+}
+
+
+/**
+ * Set SSL verification of the certificate purpose
+ *
+ * @param tls     TLS Context
+ * @param purpose Certificate purpose as string
+ *
+ * @return int    0 if success, errorcode otherwise
+ */
+int tls_set_verify_purpose(struct tls *tls, const char *purpose)
+{
+	int err;
+	int i;
+	X509_PURPOSE *xptmp;
+
+	if (!tls || !purpose)
+		return EINVAL;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	i = X509_PURPOSE_get_by_sname(purpose);
+#else
+	i = X509_PURPOSE_get_by_sname((char *) purpose);
+#endif
+
+	if (i < 0)
+		return EINVAL;
+
+	/* purpose index -> purpose object */
+	/* purpose object -> purpose value */
+	xptmp = X509_PURPOSE_get0(i);
+	i = X509_PURPOSE_get_id(xptmp);
+	err = SSL_CTX_set_purpose(tls->ctx, i);
+
+	return err == 1 ? 0 : EINVAL;
 }
 
 
@@ -239,7 +380,153 @@ int tls_add_ca(struct tls *tls, const char *cafile)
  */
 int tls_set_selfsigned(struct tls *tls, const char *cn)
 {
+	return tls_set_selfsigned_rsa(tls, cn, 2048);
+}
+
+
+static int tls_generate_cert(X509 **pcert, const char *cn)
+{
+	X509 *cert = NULL;
 	X509_NAME *subj = NULL;
+	int e = 0;
+
+	if (!pcert || !cn)
+		goto err;
+
+	cert = X509_new();
+	if (!cert)
+		goto err;
+
+	if (!X509_set_version(cert, 2))
+		goto err;
+
+	if (!ASN1_INTEGER_set(X509_get_serialNumber(cert), rand_u32()))
+		goto err;
+
+	subj = X509_NAME_new();
+	if (!subj)
+		goto err;
+
+	if (!X509_NAME_add_entry_by_txt(subj, "CN", MBSTRING_ASC,
+					(unsigned char *)cn,
+					(int)strlen(cn), -1, 0))
+		goto err;
+
+	if (!X509_set_issuer_name(cert, subj) ||
+	    !X509_set_subject_name(cert, subj))
+		goto err;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	if (!X509_gmtime_adj(X509_getm_notBefore(cert), -3600*24*365) ||
+	    !X509_gmtime_adj(X509_getm_notAfter(cert),   3600*24*365*10))
+		goto err;
+#else
+	if (!X509_gmtime_adj(X509_get_notBefore(cert), -3600*24*365) ||
+	    !X509_gmtime_adj(X509_get_notAfter(cert),   3600*24*365*10))
+		goto err;
+#endif
+
+	goto out;
+
+ err:
+	e = 1;
+
+ out:
+	if (e)
+		X509_free(cert);
+	else
+		*pcert = cert;
+
+	X509_NAME_free(subj);
+	return e;
+}
+
+
+/**
+ * Create a selfsigned X509 certificate using EC
+ *
+ * @param tls      TLS Contect
+ * @param cn       Common Name
+ * @param curve_n  Known EC curve name
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int tls_set_selfsigned_ec(struct tls *tls, const char *cn, const char *curve_n)
+{
+	EC_KEY *eckey = NULL;
+	EVP_PKEY *key = NULL;
+	X509 *cert = NULL;
+	int r, eccgrp, err = ENOMEM;
+
+	if (!tls || !cn)
+		return EINVAL;
+
+	eccgrp = OBJ_txt2nid(curve_n);
+	if (eccgrp == NID_undef)
+		return ENOTSUP;
+
+	eckey = EC_KEY_new_by_curve_name(eccgrp);
+	if (!eckey)
+		goto out;
+
+	if (!EC_KEY_generate_key(eckey))
+		goto out;
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	EC_KEY_set_asn1_flag(eckey, OPENSSL_EC_NAMED_CURVE);
+#else
+	EC_KEY_set_asn1_flag(eckey, 0);
+#endif
+
+	key = EVP_PKEY_new();
+	if (!key)
+		goto out;
+
+	if (!EVP_PKEY_set1_EC_KEY(key, eckey))
+		goto out;
+
+	if (tls_generate_cert(&cert, cn))
+		goto out;
+
+	if (!X509_set_pubkey(cert, key))
+		goto out;
+
+	if (!X509_sign(cert, key, EVP_sha256()))
+		goto out;
+
+	r = SSL_CTX_use_certificate(tls->ctx, cert);
+	if (r != 1)
+		goto out;
+
+	r = SSL_CTX_use_PrivateKey(tls->ctx, key);
+	if (r != 1)
+		goto out;
+
+	if (tls->cert)
+		X509_free(tls->cert);
+
+	tls->cert = cert;
+	cert = NULL;
+
+	err = 0;
+
+ out:
+	if (eckey)
+		EC_KEY_free(eckey);
+
+	if (key)
+		EVP_PKEY_free(key);
+
+	if (cert)
+		X509_free(cert);
+
+
+	return err;
+}
+
+
+int tls_set_selfsigned_rsa(struct tls *tls, const char *cn, size_t bits)
+{
 	EVP_PKEY *key = NULL;
 	X509 *cert = NULL;
 	BIGNUM *bn = NULL;
@@ -258,7 +545,7 @@ int tls_set_selfsigned(struct tls *tls, const char *cn)
 		goto out;
 
 	BN_set_word(bn, RSA_F4);
-	if (!RSA_generate_key_ex(rsa, 1024, bn, NULL))
+	if (!RSA_generate_key_ex(rsa, (int)bits, bn, NULL))
 		goto out;
 
 	key = EVP_PKEY_new();
@@ -268,31 +555,7 @@ int tls_set_selfsigned(struct tls *tls, const char *cn)
 	if (!EVP_PKEY_set1_RSA(key, rsa))
 		goto out;
 
-	cert = X509_new();
-	if (!cert)
-		goto out;
-
-	if (!X509_set_version(cert, 2))
-		goto out;
-
-	if (!ASN1_INTEGER_set(X509_get_serialNumber(cert), rand_u32()))
-		goto out;
-
-	subj = X509_NAME_new();
-	if (!subj)
-		goto out;
-
-	if (!X509_NAME_add_entry_by_txt(subj, "CN", MBSTRING_ASC,
-					(unsigned char *)cn,
-					(int)strlen(cn), -1, 0))
-		goto out;
-
-	if (!X509_set_issuer_name(cert, subj) ||
-	    !X509_set_subject_name(cert, subj))
-		goto out;
-
-	if (!X509_gmtime_adj(X509_get_notBefore(cert), -3600*24*365) ||
-	    !X509_gmtime_adj(X509_get_notAfter(cert),   3600*24*365*10))
+	if (tls_generate_cert(&cert, cn))
 		goto out;
 
 	if (!X509_set_pubkey(cert, key))
@@ -318,9 +581,6 @@ int tls_set_selfsigned(struct tls *tls, const char *cn)
 	err = 0;
 
  out:
-	if (subj)
-		X509_NAME_free(subj);
-
 	if (cert)
 		X509_free(cert);
 
@@ -499,7 +759,7 @@ int tls_set_certificate(struct tls *tls, const char *pem, size_t len)
 }
 
 
-static int verify_handler(int ok, X509_STORE_CTX *ctx)
+static int verify_trust_all(int ok, X509_STORE_CTX *ctx)
 {
 	(void)ok;
 	(void)ctx;
@@ -520,7 +780,7 @@ void tls_set_verify_client(struct tls *tls)
 
 	SSL_CTX_set_verify_depth(tls->ctx, 0);
 	SSL_CTX_set_verify(tls->ctx, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE,
-			   verify_handler);
+			   verify_trust_all);
 }
 
 
@@ -855,30 +1115,7 @@ int tls_set_ciphers(struct tls *tls, const char *cipherv[], size_t count)
 
 
 /**
- * Set the server name on a TLS Connection, using TLS SNI extension.
- *
- * @param tc         TLS Connection
- * @param servername Server name
- *
- * @return 0 if success, otherwise errorcode
- */
-int tls_set_servername(struct tls_conn *tc, const char *servername)
-{
-	if (!tc || !servername)
-		return EINVAL;
-
-	if (1 != SSL_set_tlsext_host_name(tc->ssl, servername)) {
-		DEBUG_WARNING("tls: SSL_set_tlsext_host_name error\n");
-		ERR_clear_error();
-		return EPROTO;
-	}
-
-	return 0;
-}
-
-
-/**
- * Enable verification of server certificate and hostname
+ * Enable verification of server certificate and hostname (SNI)
  *
  * @param tc   TLS Connection
  * @param host Server hostname
@@ -889,17 +1126,32 @@ int tls_set_verify_server(struct tls_conn *tc, const char *host)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L && \
 	!defined(LIBRESSL_VERSION_NUMBER)
+	struct sa sa;
 
 	if (!tc || !host)
 		return EINVAL;
 
-	SSL_set_hostflags(tc->ssl, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
-	if (!SSL_set1_host(tc->ssl, host)) {
-		ERR_clear_error();
-		return EPROTO;
+	if (!tc->tls->verify_server)
+		return 0;
+
+	if (sa_set_str(&sa, host, 0)) {
+		SSL_set_hostflags(tc->ssl,
+				X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+
+		if (!SSL_set1_host(tc->ssl, host)) {
+			DEBUG_WARNING("SSL_set1_host error\n");
+			ERR_clear_error();
+			return EPROTO;
+		}
+
+		if (!SSL_set_tlsext_host_name(tc->ssl, host)) {
+			DEBUG_WARNING("SSL_set_tlsext_host_name error\n");
+			ERR_clear_error();
+			return EPROTO;
+		}
 	}
 
-	SSL_set_verify(tc->ssl, SSL_VERIFY_PEER, NULL);
+	SSL_set_verify(tc->ssl, SSL_VERIFY_PEER, verify_handler);
 
 	return 0;
 #else
@@ -936,4 +1188,127 @@ void tls_flush_error(void)
 struct ssl_ctx_st *tls_openssl_context(const struct tls *tls)
 {
 	return tls ? tls->ctx : NULL;
+}
+
+
+/**
+ * Convert a X509_NAME object into a human-readable form placed in an mbuf
+ *
+ * @param field  X509_NAME of Cert field
+ * @param mb     Memorybuffer to store the readable format
+ * @param flags  X509_NAME_print_ex flags
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+static int convert_X509_NAME_to_mbuf(X509_NAME *field, struct mbuf *mb,
+	unsigned long flags)
+{
+	BIO *outbio;
+	char *p;
+	long size;
+	int err = ENOMEM;
+
+	if (!field || !mb)
+		return EINVAL;
+
+	outbio = BIO_new(BIO_s_mem());
+	if (!outbio)
+		return ENOMEM;
+
+	if (X509_NAME_print_ex(outbio, field, 1, flags) <= 0)
+		goto out;
+
+	if (BIO_eof(outbio))
+		goto out;
+
+	size = BIO_get_mem_data(outbio, &p);
+	err = mbuf_write_mem(mb, (uint8_t *)p, size);
+	if (err)
+		goto out;
+
+	err = 0;
+
+ out:
+	if (outbio)
+		BIO_free(outbio);
+
+	return err;
+}
+
+
+/**
+ * Extract a X509 certficate issuer/subject and write the result into an mbuf
+ *
+ * @param tls           TLS Object
+ * @param mb            Memory buffer
+ * @param field_getter  Functionpointer to the X509 getter function
+ * @param flags         X509_NAME_print_ex flags
+ *
+ * @return 0 if success, othewise errorcode
+ */
+static int tls_get_ca_chain_field(struct tls *tls, struct mbuf *mb,
+	tls_get_certfield_h *field_getter, unsigned long flags)
+{
+	X509 *crt = NULL;
+	X509_NAME *field;
+
+	//crt = SSL_CTX_get0_certificate(tls->ctx);
+	//if (!crt)
+	//	return ENOENT;
+
+	field = field_getter(crt);
+	if (!field)
+		return ENOTSUP;
+
+	return convert_X509_NAME_to_mbuf(field, mb, flags);
+}
+
+
+/**
+ * Get the issuers fields of a certificate chain
+ *
+ * @param tls  TLS Object
+ * @param mb   Memory Buffer
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int tls_get_issuer(struct tls *tls, struct mbuf *mb)
+{
+	if (!tls || !tls->ctx || !mb)
+		return EINVAL;
+
+	return tls_get_ca_chain_field(tls, mb, &X509_get_issuer_name,
+		XN_FLAG_RFC2253);
+}
+
+
+/**
+ * Get the subject fields of a certificate chain
+ *
+ * @param tls  TLS Object
+ * @param mb   Memory Buffer
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int tls_get_subject(struct tls *tls, struct mbuf *mb)
+{
+	if (!tls || !tls->ctx || !mb)
+		return EINVAL;
+
+	return tls_get_ca_chain_field(tls, mb, &X509_get_subject_name,
+		XN_FLAG_RFC2253);
+}
+
+
+/**
+ * Disables SIP TLS server verifications for following requests
+ *
+ * @param tls     TLS Object
+ */
+void tls_disable_verify_server(struct tls *tls)
+{
+	if (!tls)
+		return;
+
+	tls->verify_server = false;
 }
