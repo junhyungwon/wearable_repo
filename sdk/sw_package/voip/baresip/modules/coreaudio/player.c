@@ -1,7 +1,7 @@
 /**
  * @file coreaudio/player.c  Apple Coreaudio sound driver - player
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <AudioToolbox/AudioQueue.h>
 #include <pthread.h>
@@ -16,11 +16,11 @@
 
 
 struct auplay_st {
-	const struct auplay *ap;      /* inheritance */
 	AudioQueueRef queue;
 	AudioQueueBufferRef buf[BUFC];
 	pthread_mutex_t mutex;
 	uint32_t sampsz;
+	int fmt;
 	auplay_write_h *wh;
 	void *arg;
 };
@@ -54,6 +54,7 @@ static void play_handler(void *userData, AudioQueueRef outQ,
 			 AudioQueueBufferRef outQB)
 {
 	struct auplay_st *st = userData;
+	struct auframe af;
 	auplay_write_h *wh;
 	void *arg;
 
@@ -65,7 +66,10 @@ static void play_handler(void *userData, AudioQueueRef outQ,
 	if (!wh)
 		return;
 
-	wh(outQB->mAudioData, outQB->mAudioDataByteSize/st->sampsz, arg);
+	auframe_init(&af, st->fmt, outQB->mAudioData,
+		     outQB->mAudioDataByteSize/st->sampsz);
+
+	wh(&af, arg);
 
 	AudioQueueEnqueueBuffer(outQ, outQB, 0, NULL);
 }
@@ -88,7 +92,6 @@ int coreaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!st)
 		return ENOMEM;
 
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
 
@@ -97,6 +100,8 @@ int coreaudio_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 		err = ENOTSUP;
 		goto out;
 	}
+
+	st->fmt = prm->fmt;
 
 	err = pthread_mutex_init(&st->mutex, NULL);
 	if (err)

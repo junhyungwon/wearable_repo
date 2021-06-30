@@ -1,7 +1,7 @@
 /**
  * @file vidbridge/disp.c Video bridge -- display
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -37,8 +37,6 @@ int vidbridge_disp_alloc(struct vidisp_st **stp, const struct vidisp *vd,
 	st = mem_zalloc(sizeof(*st), destructor);
 	if (!st)
 		return ENOMEM;
-
-	st->vd = vd;
 
 	err = str_dup(&st->device, dev);
 	if (err)

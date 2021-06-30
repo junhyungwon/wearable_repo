@@ -1,7 +1,7 @@
 /**
  * @file pulse/recorder.c  Pulseaudio sound driver - recorder
  *
- * Copyright (C) 2010 - 2016 Creytiv.com
+ * Copyright (C) 2010 - 2016 Alfred E. Heggestad
  */
 #include <pulse/pulseaudio.h>
 #include <pulse/simple.h>
@@ -14,8 +14,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;      /* inheritance */
-
 	struct ausrc_prm prm;
 	pa_simple *s;
 	pthread_t thread;
@@ -148,7 +146,6 @@ int pulse_recorder_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
 

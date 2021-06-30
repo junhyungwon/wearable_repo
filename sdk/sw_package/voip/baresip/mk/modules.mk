@@ -1,7 +1,7 @@
 #
 # modules.mk
 #
-# Copyright (C) 2010 - 2017 Creytiv.com
+# Copyright (C) 2010 - 2017 Alfred E. Heggestad
 #
 # External libraries:
 #
@@ -17,6 +17,7 @@
 #   USE_CODEC2        CODEC2 low-bitrate speech audio codec
 #   USE_CONS          Console input driver
 #   USE_COREAUDIO     MacOSX Coreaudio audio driver
+#   USE_DBUS          DBus control interface
 #   USE_ECHO          Echo module
 #   USE_EVDEV         Event Device module
 #   USE_G711          G.711 audio codec
@@ -27,8 +28,8 @@
 #   USE_GST           Gstreamer audio module
 #   USE_GST_VIDEO     Gstreamer video module
 #   USE_GTK           GTK+ user interface
+#   USE_HTTPREQ       HTTP request module
 #   USE_ILBC          iLBC audio codec
-#   USE_ISAC          iSAC audio codec
 #   USE_JACK          JACK Audio Connection Kit audio driver
 #   USE_L16           L16 audio codec
 #   USE_MPA           MPA audio codec
@@ -43,6 +44,7 @@
 #   USE_PULSE         Pulseaudio audio driver
 #   USE_RTCPSUMMARY   RTCP summary output after calls
 #   USE_SDL           libSDL2 video output
+#   USE_SNAPSHOT      Snapshot video module
 #   USE_SNDFILE       sndfile wav dumper
 #   USE_SNDIO         sndio audo driver
 #   USE_SPEEX_PP      Speex preprocessor
@@ -54,6 +56,7 @@
 #   USE_X11           X11 video output
 #
 
+
 # Default is enabled
 MOD_AUTODETECT := 1
 
@@ -62,6 +65,8 @@ ifneq ($(MOD_AUTODETECT),)
 USE_CONS  := 1
 USE_G711  := 1
 USE_L16   := 1
+USE_DBUS  := 1
+USE_HTTPREQ  := 1
 
 ifneq ($(OS),win32)
 
@@ -88,7 +93,7 @@ USE_AVFORMAT := $(shell ([ -f $(SYSROOT)/include/libavformat/avformat.h ] || \
 	[ -f $(SYSROOT)/local/include/libavformat/avformat.h ] || \
 	[ -f $(SYSROOT)/include/$(MACHINE)/libavformat/avformat.h ] || \
 	[ -f $(SYSROOT_ALT)/include/libavformat/avformat.h ]) && \
-	([ -f $(SYSROOT)/include/libavformat/avdevice.h ] || \
+	([ -f $(SYSROOT)/include/libavdevice/avdevice.h ] || \
 	[ -f $(SYSROOT_LOCAL)/include/libavdevice/avdevice.h ] || \
 	[ -f $(SYSROOT)/local/include/libavdevice/avdevice.h ] || \
 	[ -f $(SYSROOT)/include/$(MACHINE)/libavdevice/avdevice.h ] || \
@@ -123,13 +128,11 @@ USE_GSM := $(shell [ -f $(SYSROOT)/include/gsm.h ] || \
 USE_GST := $(shell pkg-config --exists gstreamer-1.0 && echo "yes")
 USE_GST_VIDEO := $(shell pkg-config --exists gstreamer-1.0 gstreamer-app-1.0 \
 		&& echo "yes")
-USE_GTK := $(shell pkg-config 'gtk+-2.0 >= 2.22' && \
+USE_GTK := $(shell pkg-config 'gtk+-3.0 >= 3.0' && \
 		   pkg-config 'glib-2.0 >= 2.32' && echo "yes")
 USE_ILBC := $(shell [ -f $(SYSROOT)/include/iLBC_define.h ] || \
 	[ -f $(SYSROOT_LOCAL)/include/iLBC_define.h ] || \
 	[ -f $(SYSROOT)/local/include/iLBC_define.h ] && echo "yes")
-USE_ISAC := $(shell [ -f $(SYSROOT)/include/isac.h ] || \
-	[ -f $(SYSROOT)/local/include/isac.h ] && echo "yes")
 USE_JACK := $(shell [ -f $(SYSROOT)/include/jack/jack.h ] || \
 	[ -f $(SYSROOT_LOCAL)/include/jack/jack.h ] && echo "yes")
 USE_MPG123  := $(shell [ -f $(SYSROOT)/include/mpg123.h ] || \
@@ -154,6 +157,10 @@ USE_PULSE := $(shell pkg-config --exists libpulse && echo "yes")
 USE_SDL  := $(shell [ -f $(SYSROOT)/include/SDL2/SDL.h ] || \
 	[ -f $(SYSROOT)/local/include/SDL2/SDL.h ] || \
 	[ -f $(SYSROOT_ALT)/include/SDL2/SDl.h ] && echo "yes")
+USE_SNAPSHOT := $(shell [ -f $(SYSROOT)/include/png.h ] || \
+	[ -f $(SYSROOT)/local/include/png.h ] || \
+	[ -f $(SYSROOT_ALT)/include/png.h ] || \
+	[ -f $(SYSROOT_ALT)/usr/local/include/png.h ] && echo "yes")
 USE_SNDFILE := $(shell [ -f $(SYSROOT)/include/sndfile.h ] || \
 	[ -f $(SYSROOT)/local/include/sndfile.h ] || \
 	[ -f $(SYSROOT_ALT)/include/sndfile.h ] || \
@@ -161,8 +168,10 @@ USE_SNDFILE := $(shell [ -f $(SYSROOT)/include/sndfile.h ] || \
 USE_SNDIO := $(shell [ -f $(SYSROOT)/include/sndio.h ] || \
 	[ -f $(SYSROOT)/local/include/sndio.h ] && echo "yes")
 USE_STDIO := $(shell [ -f $(SYSROOT)/include/termios.h ] && echo "yes")
+HAVE_GLIB := $(shell pkg-config --exists glib-2.0 && echo "yes")
 HAVE_SPEEXDSP := $(shell \
 	[ -f $(SYSROOT)/local/lib/libspeexdsp$(LIB_SUFFIX) ] || \
+	[ -f $(SYSROOT)/lib64/libspeexdsp$(LIB_SUFFIX) ] || \
 	[ -f $(SYSROOT)/lib/libspeexdsp$(LIB_SUFFIX) ] || \
 	[ -f $(SYSROOT_ALT)/lib/libspeexdsp$(LIB_SUFFIX) ] && echo "yes")
 ifeq ($(HAVE_SPEEXDSP),)
@@ -188,6 +197,7 @@ USE_SYSLOG := $(shell [ -f $(SYSROOT)/include/syslog.h ] || \
 	[ -f $(SYSROOT_ALT)/include/syslog.h ] || \
 	[ -f $(SYSROOT)/local/include/syslog.h ] && echo "yes")
 USE_MQTT := $(shell [ -f $(SYSROOT)/include/mosquitto.h ] || \
+	[ -f $(SYSROOT_ALT)/include/mosquitto.h ] || \
 	[ -f $(SYSROOT_LOCAL)/include/mosquitto.h ] \
 	&& echo "yes")
 HAVE_LIBV4L2 := $(shell [ -f $(SYSROOT)/include/libv4l2.h ] || \
@@ -239,8 +249,6 @@ USE_COREAUDIO := \
 
 ifneq ($(USE_AVFOUNDATION),)
 USE_AVCAPTURE := yes
-else
-USE_QTCAPTURE := yes
 endif
 
 
@@ -260,9 +268,9 @@ endif
 endif
 
 # ------------------------------------------------------------------------- #
-MODULES   += $(EXTRA_MODULES)
+# all modules comment out. LF_Rupy..
 ifneq ($(BASIC_MODULES),no)
-#MODULES   += account
+MODULES   += account
 #MODULES   += auloop
 #MODULES   += b2bua
 #MODULES   += contact
@@ -277,7 +285,9 @@ MODULES   += ice
 #MODULES   += mwi
 #MODULES   += natpmp
 #MODULES   += presence
+#MODULES   += rtcpsummary
 #MODULES   += selfview
+#MODULES   += serreg
 #MODULES   += srtp
 MODULES   += stun
 MODULES   += turn
@@ -286,14 +296,15 @@ MODULES   += turn
 #MODULES   += vidinfo
 #MODULES   += vidloop
 #MODULES   += vumeter
+#MODULES   += mixausrc
+#MODULES   += multicast
 
 #ifneq ($(HAVE_PTHREAD),)
-#MODULES   += aubridge aufile
+#MODULES   += aubridge aufile ausine
 #endif
 
-endif 
+endif
 
-################################################################################
 #ifneq ($(USE_AAC),)
 #MODULES   += aac
 #endif
@@ -318,6 +329,9 @@ MODULES   += alsa
 #MODULES   += avformat
 #endif
 #endif
+#ifneq ($(USE_AVFILTER),)
+#MODULES   += avfilter
+#endif
 #ifneq ($(USE_CAIRO),)
 #MODULES   += cairo
 #ifneq ($(USE_MPG123),)
@@ -335,10 +349,6 @@ MODULES   += alsa
 #endif
 #ifneq ($(USE_DTLS_SRTP),)
 #MODULES   += dtls_srtp
-#endif
-#ifneq ($(USE_QTCAPTURE),)
-#MODULES   += qtcapture
-#CFLAGS    += -DQTCAPTURE_RUNLOOP
 #endif
 #ifneq ($(USE_ECHO),)
 #MODULES   += echo
@@ -361,6 +371,11 @@ MODULES   += g711
 #ifneq ($(USE_GSM),)
 #MODULES   += gsm
 #endif
+#ifneq ($(HAVE_GLIB),)
+#ifneq ($(USE_DBUS),)
+#MODULES   += ctrl_dbus
+#endif
+#endif
 #ifneq ($(USE_GST),)
 #MODULES   += gst
 #endif
@@ -370,11 +385,11 @@ MODULES   += g711
 #ifneq ($(USE_GTK),)
 #MODULES   += gtk
 #endif
+#ifneq ($(USE_HTTPREQ),)
+#MODULES   += httpreq
+#endif
 #ifneq ($(USE_ILBC),)
 #MODULES   += ilbc
-#endif
-#ifneq ($(USE_ISAC),)
-#MODULES   += isac
 #endif
 #ifneq ($(USE_JACK),)
 #MODULES   += jack
@@ -390,12 +405,6 @@ MODULES   += g711
 #endif
 #ifneq ($(USE_MQTT),)
 #MODULES   += mqtt
-#endif
-#ifneq ($(USE_OPENGL),)
-#MODULES   += opengl
-#endif
-#ifneq ($(USE_OPENGLES),)
-#MODULES   += opengles
 #endif
 #ifneq ($(USE_OPUS),)
 #MODULES   += opus
@@ -414,6 +423,9 @@ MODULES   += g711
 #endif
 #ifneq ($(USE_SDL),)
 #MODULES   += sdl
+#endif
+#ifneq ($(USE_SNAPSHOT),)
+#MODULES   += snapshot
 #endif
 #ifneq ($(USE_SNDFILE),)
 #MODULES   += sndfile
@@ -462,5 +474,7 @@ MODULES   += g711
 #ifneq ($(USE_RTCPSUMMARY),)
 #MODULES   += rtcpsummary
 #endif
-#added by rupy
+
+#MODULES   += $(EXTRA_MODULES)
+#added by LF_Rupy
 MODULES   += menu_custom

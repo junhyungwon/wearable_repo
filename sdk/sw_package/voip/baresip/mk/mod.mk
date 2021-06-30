@@ -1,7 +1,7 @@
 #
 # mod.mk
 #
-# Copyright (C) 2010 Creytiv.com
+# Copyright (C) 2010 Alfred E. Heggestad
 #
 
 $(MOD)_OBJS     := $(patsubst %.c,$(BUILD)/modules/$(MOD)/%.o,\
@@ -18,6 +18,11 @@ $(MOD)_OBJS     += $(patsubst %.S,$(BUILD)/modules/$(MOD)/%.o,\
 
 $(MOD)_NAME := $(MOD)
 
+$(MOD)_CCHECK_OPT     := $(patsubst %.c,modules/$(MOD)/%.c,\
+	$($(MOD)_CCHECK_OPT))
+$(MOD)_CCHECK_OPT     := $(patsubst %.h,modules/$(MOD)/%.h,\
+	$($(MOD)_CCHECK_OPT))
+MOD_CCHECK_OPT        := $(MOD_CCHECK_OPT) $($(MOD)_CCHECK_OPT)
 
 #
 # function to extract the name of the module from the file/dir path

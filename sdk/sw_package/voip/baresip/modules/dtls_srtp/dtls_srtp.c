@@ -1,7 +1,7 @@
 /**
  * @file dtls_srtp.c DTLS-SRTP media encryption
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 #include <re.h>
@@ -483,7 +483,7 @@ static int module_init(void)
 		return err;
 	}
 
-	err = tls_set_selfsigned(tls, "dtls@baresip");
+	err = tls_set_selfsigned_rsa(tls, "dtls@baresip", 2048);
 	if (err) {
 		warning("dtls_srtp: failed to self-sign certificate (%m)\n",
 			err);

@@ -1,7 +1,7 @@
 /**
  * @file winwave/play.c Windows sound driver -- playback
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -17,14 +17,13 @@
 
 
 struct auplay_st {
-	const struct auplay *ap;      /* inheritance */
-
 	struct dspbuf bufs[WRITE_BUFFERS];
 	int pos;
 	HWAVEOUT waveout;
 	volatile bool rdy;
 	size_t inuse;
 	size_t sampsz;
+	enum aufmt fmt;
 	auplay_write_h *wh;
 	void *arg;
 };
@@ -58,6 +57,7 @@ static void auplay_destructor(void *arg)
 
 static int dsp_write(struct auplay_st *st)
 {
+	struct auframe af;
 	MMRESULT res;
 	WAVEHDR *wh;
 	struct mbuf *mb;
@@ -73,8 +73,10 @@ static int dsp_write(struct auplay_st *st)
 	mb = st->bufs[st->pos].mb;
 	wh->lpData = (LPSTR)mb->buf;
 
+	auframe_init(&af, st->fmt, mb->buf, mb->size/st->sampsz);
+
 	if (st->wh) {
-		st->wh((void *)mb->buf, mb->size/st->sampsz, st->arg);
+		st->wh(&af, st->arg);
 	}
 
 	wh->dwBufferLength = mb->size;
@@ -234,9 +236,9 @@ int winwave_play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!st)
 		return ENOMEM;
 
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
+	st->fmt = prm->fmt;
 
 	err = write_stream_open(st, prm, dev);
 	if (err)

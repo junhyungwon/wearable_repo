@@ -1,7 +1,7 @@
 #
 # Makefile
 #
-# Copyright (C) 2010 Creytiv.com
+# Copyright (C) 2010 Alfred E. Heggestad
 #
 #
 # Internal features:
@@ -9,10 +9,11 @@
 #   USE_TLS           Enable SIP over TLS transport
 #
 
-VERSION   := 0.6.6
+PROJECT	  := baresip
+VERSION   := 1.1.0
 DESCR     := "Baresip is a modular SIP User-Agent with audio and video support"
-BIN	:= baresip.out
-
+# added by LF_Rupy
+BIN		  := baresip.out
 # Verbose and silent build modes
 ifeq ($(V),)
 HIDE=@
@@ -35,42 +36,83 @@ LIBRE_MK  := $(shell [ -f /usr/local/share/re/re.mk ] && \
 endif
 endif
 
-ifeq ($(SYSROOT_LOCAL),)
-SYSROOT_LOCAL := $(shell [ -d /usr/local/include ] && echo "/usr/local")
-endif
-
 include $(LIBRE_MK)
 include mk/modules.mk
+
+ifeq ($(SYSROOT_LOCAL),)
+ifeq  ($(SYSROOT),/usr)
+SYSROOT_LOCAL := $(shell [ -d /usr/local/include ] && echo "/usr/local")
+endif
+endif
 
 ifndef LIBREM_PATH
 LIBREM_PATH	:= $(shell [ -d ../rem ] && echo "../rem")
 endif
 
-CFLAGS    += -I. -Iinclude -I$(LIBRE_INC)
-ifneq ($(LIBREM_PATH),)
-CFLAGS    += -I$(LIBREM_PATH)/include
-endif
-CFLAGS    += -I$(SYSROOT)/local/include/rem -I$(SYSROOT)/include/rem
+ifeq ($(LIBREM_PATH),)
 ifneq ($(SYSROOT_LOCAL),)
-CFLAGS    += -I$(SYSROOT_LOCAL)/include/rem
+LIBREM_PATH	:= $(shell [ -f $(SYSROOT_LOCAL)/include/rem/rem.h ] && \
+	echo "$(SYSROOT_LOCAL)")
+endif
 endif
 
+ifeq ($(LIBREM_PATH),)
+LIBREM_PATH	:= $(shell [ -f $(SYSROOT)/include/rem/rem.h ] && \
+	echo "$(SYSROOT)")
+endif
+
+# Include path
+LIBREM_INC := $(shell [ -f $(LIBREM_PATH)/include/rem.h ] && \
+	echo "$(LIBREM_PATH)/include")
+ifeq ($(LIBREM_INC),)
+LIBREM_INC := $(shell [ -f $(LIBREM_PATH)/include/rem/rem.h ] && \
+	echo "$(LIBREM_PATH)/include/rem")
+endif
+ifeq ($(LIBREM_INC),)
+LIBREM_INC := $(shell [ -f /usr/local/include/rem/rem.h ] && \
+	echo "/usr/local/include/rem")
+endif
+ifeq ($(LIBREM_INC),)
+LIBREM_INC := $(shell [ -f /usr/include/rem/rem.h ] && echo "/usr/include/rem")
+endif
+
+# Library path
+ifeq ($(LIBREM_SO),)
+LIBREM_SO  := $(shell [ -f $(LIBREM_PATH)/librem.a ] && \
+	echo "$(LIBREM_PATH)")
+endif
+ifeq ($(LIBREM_SO),)
+LIBREM_SO :=$(shell [ -f $(LIBREM_PATH)/librem$(LIB_SUFFIX) ] && \
+	echo "$(LIBREM_PATH)")
+endif
+ifeq ($(LIBREM_SO),)
+LIBREM_SO := $(shell [ -f $(LIBREM_PATH)/lib/librem$(LIB_SUFFIX) ] && \
+	echo "$(LIBREM_PATH)/lib")
+endif
+ifeq ($(LIBREM_SO),)
+LIBREM_SO  := $(shell [ -f /usr/local/lib/librem$(LIB_SUFFIX) ] \
+	&& echo "/usr/local/lib")
+endif
+ifeq ($(LIBREM_SO),)
+LIBREM_SO  := $(shell [ -f /usr/lib/librem$(LIB_SUFFIX) ] && \
+	echo "/usr/lib")
+endif
+ifeq ($(LIBREM_SO),)
+LIBREM_SO  := $(shell [ -f /usr/lib64/librem$(LIB_SUFFIX) ] && \
+	echo "/usr/lib64")
+endif
+
+CFLAGS    += -I. -Iinclude -I$(LIBRE_INC)
+CFLAGS    += -I$(LIBREM_INC)
+
 CXXFLAGS  += -I. -Iinclude -I$(LIBRE_INC)
-ifneq ($(LIBREM_PATH),)
-CXXFLAGS  += -I$(LIBREM_PATH)/include
-endif
-CXXFLAGS  += -I$(SYSROOT)/local/include/rem -I$(SYSROOT)/include/rem
-ifneq ($(SYSROOT_LOCAL),)
-CXXFLAGS  += -I$(SYSROOT_LOCAL)/include/rem
-endif
+CXXFLAGS  += -I$(LIBREM_INC)
 CXXFLAGS  += $(EXTRA_CXXFLAGS)
 
 # XXX: common for C/C++
 CPPFLAGS += -DHAVE_INTTYPES_H
 
-ifneq ($(LIBREM_PATH),)
-CLANG_OPTIONS  += -I$(LIBREM_PATH)/include
-endif
+CLANG_OPTIONS  += -I$(LIBREM_INC)
 
 ifeq ($(OS),win32)
 STATIC    := yes
@@ -91,7 +133,6 @@ CFLAGS    += -DSTATIC=1
 CXXFLAGS  += -DSTATIC=1
 endif
 
-#PREFIX  := /usr
 BINDIR	:= $(PREFIX)/bin
 INCDIR  := $(PREFIX)/include
 SHARED  := lib$(PROJECT)$(LIB_SUFFIX)
@@ -104,8 +145,8 @@ MOD_MK	:= $(patsubst %,modules/%/module.mk,$(MODULES))
 MOD_BLD	:= $(patsubst %,$(BUILD)/modules/%,$(MODULES))
 LIBDIR     := $(PREFIX)/lib
 MOD_PATH   := $(LIBDIR)/$(PROJECT)/modules
+# comment out by LF_Rupy...(cfg 파일 위치등과 연관됨.)
 #SHARE_PATH := $(PREFIX)/share/$(PROJECT)
-# /usr/baresip? ??
 SHARE_PATH := /usr/baresip
 CFLAGS     += -DPREFIX=\"$(PREFIX)\"
 CFLAGS    += -DMOD_PATH=\"$(MOD_PATH)\"
@@ -130,9 +171,7 @@ LIB_OBJS  := $(OBJS) $(MOD_OBJS)
 TEST_OBJS := $(patsubst %.c,$(BUILD)/test/%.o,$(filter %.c,$(TEST_SRCS)))
 TEST_OBJS += $(patsubst %.cpp,$(BUILD)/test/%.o,$(filter %.cpp,$(TEST_SRCS)))
 
-ifneq ($(LIBREM_PATH),)
-LIBS	+= -L$(LIBREM_PATH)
-endif
+LIBS	+= -L$(LIBREM_SO)
 
 # Static build: include module linker-flags in binary
 ifneq ($(STATIC),)
@@ -174,6 +213,15 @@ $(BIN):	$(APP_OBJS)
 	$(HIDE)$(LD) $(LFLAGS) $(APP_LFLAGS) $^ \
 		-L$(LIBRE_SO) -lre $(LIBS) -o $@
 
+#
+# List of modules used by selftest
+#
+ifneq ($(STATIC),)
+TEST_MODULES :=
+else
+TEST_MODULES := g711.so
+endif
+
 $(BUILD)/%.o: %.c $(BUILD) Makefile $(APP_MK)
 	@echo "  CC      $@"
 	$(HIDE)$(CC) $(CFLAGS) -c $< -o $@ $(DFLAGS)
@@ -194,12 +242,26 @@ $(BUILD): Makefile
 	@mkdir -p $(BUILD)/src $(MOD_BLD) $(BUILD)/test/mock $(BUILD)/test/sip
 	@touch $@
 
+install: $(BIN) $(MOD_BINS)
+	@mkdir -p $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 $(BIN) $(DESTDIR)$(BINDIR)
+ifeq ($(STATIC),)
+	@mkdir -p $(DESTDIR)$(MOD_PATH)
+	$(INSTALL) -m 0644 $(MOD_BINS) $(DESTDIR)$(MOD_PATH)
+endif
+	@mkdir -p $(DESTDIR)$(SHARE_PATH)
+	$(INSTALL) -m 0644 share/* $(DESTDIR)$(SHARE_PATH)
+
 .PHONY: clean
 clean:
 	@rm -rf $(BIN) $(MOD_BINS) $(SHARED) $(BUILD) \
-		$(STATICLIB) libbaresip.pc
+		$(STATICLIB)
 	@rm -f *stamp \
 	`find . -name "*.[od]"` \
 	`find . -name "*~"` \
 	`find . -name "\.\#*"`
 
+bareinfo: info
+	@echo "  LIBREM_PATH:   $(LIBREM_PATH)"
+	@echo "  LIBREM_INC:    $(LIBREM_INC)"
+	@echo "  LIBREM_SO:     $(LIBREM_SO)"

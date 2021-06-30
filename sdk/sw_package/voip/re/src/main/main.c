@@ -68,13 +68,10 @@
   - Look at howto optimise main loop
  */
 
-#if !defined (RELEASE) && !defined (MAIN_DEBUG)
-#define MAIN_DEBUG 1  /**< Enable main loop debugging */
-#endif
 
 /** Main loop values */
 enum {
-	MAX_BLOCKING = 100,    /**< Maximum time spent in handler in [ms] */
+	MAX_BLOCKING = 500,    /**< Maximum time spent in handler in [ms] */
 #if defined (FD_SETSIZE)
 	DEFAULT_MAXFDS = FD_SETSIZE
 #else
@@ -82,15 +79,17 @@ enum {
 #endif
 };
 
+/** File descriptor handler struct */
+struct fhs {
+	int fd;              /**< File Descriptor                   */
+	int flags;           /**< Polling flags (Read, Write, etc.) */
+	fd_h* fh;            /**< Event handler                     */
+	void* arg;           /**< Handler argument                  */
+};
 
 /** Polling loop data */
 struct re {
-	/** File descriptor handler set */
-	struct {
-		int flags;           /**< Polling flags (Read, Write, etc.) */
-		fd_h *fh;            /**< Event handler                     */
-		void *arg;           /**< Handler argument                  */
-	} *fhs;
+	struct fhs *fhs;             /** File descriptor handler set        */
 	int maxfds;                  /**< Maximum number of polling fds     */
 	int nfds;                    /**< Number of active file descriptors */
 	enum poll_method method;     /**< The current polling method        */
@@ -220,30 +219,62 @@ static struct re *re_get(void)
 
 #endif
 
+#ifdef WIN32
+/**
+ * This code emulates POSIX numbering. There is no locking,
+ * so zero thread-safety.
+ *
+ * @param re     Poll state
+ * @param fd     File descriptor
+ *
+ * @return fhs index if success, otherwise -1
+ */
+static int lookup_fd_index(struct re* re, int fd) {
+	int i;
+
+	for (i = 0; i < re->nfds; i++) {
+		if (!re->fhs[i].fh)
+			continue;
+
+		if (re->fhs[i].fd == fd)
+			return i;
+	}
+
+	/* if nothing is found a linear search for the first
+	 * zeroed handler */
+	for (i = 0; i < re->maxfds; i++) {
+		if (!re->fhs[i].fh)
+			return i;
+	}
+
+	return -1;
+}
+#endif
 
 #if MAIN_DEBUG
 /**
  * Call the application event handler
  *
  * @param re     Poll state
- * @param fd     File descriptor
+ * @param i	 File descriptor handler index
  * @param flags  Event flags
  */
-static void fd_handler(struct re *re, int fd, int flags)
+static void fd_handler(struct re *re, int i, int flags)
 {
 	const uint64_t tick = tmr_jiffies();
 	uint32_t diff;
 
-	DEBUG_INFO("event on fd=%d (flags=0x%02x)...\n", fd, flags);
+	DEBUG_INFO("event on fd=%d index=%d (flags=0x%02x)...\n",
+		   re->fhs[i].fd, i, flags);
 
-	re->fhs[fd].fh(flags, re->fhs[fd].arg);
+	re->fhs[i].fh(flags, re->fhs[i].arg);
 
 	diff = (uint32_t)(tmr_jiffies() - tick);
 
 	if (diff > MAX_BLOCKING) {
 	//	DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
 	//		      diff, MAX_BLOCKING,
-	//		      re->fhs[fd].fh, re->fhs[fd].arg);
+	//		      re->fhs[i].fh, re->fhs[i].arg);
 	}
 }
 #endif
@@ -564,6 +595,7 @@ int fd_listen(int fd, int flags, fd_h *fh, void *arg)
 {
 	struct re *re = re_get();
 	int err = 0;
+	int i = fd;
 
 	DEBUG_INFO("fd_listen: fd=%d flags=0x%02x\n", fd, flags);
 
@@ -578,7 +610,16 @@ int fd_listen(int fd, int flags, fd_h *fh, void *arg)
 			return err;
 	}
 
-	if (fd >= re->maxfds) {
+#ifdef WIN32
+	/* Windows file descriptors do not follow POSIX standard ranges. */
+	i = lookup_fd_index(re, fd);
+	if (i < 0) {
+		DEBUG_WARNING("fd_listen: fd=%d - no free fd_index\n", fd);
+		return EMFILE;
+	}
+#endif
+
+	if (i >= re->maxfds) {
 		if (flags) {
 			DEBUG_WARNING("fd_listen: fd=%d flags=0x%02x"
 				      " - Max %d fds\n",
@@ -589,12 +630,13 @@ int fd_listen(int fd, int flags, fd_h *fh, void *arg)
 
 	/* Update fh set */
 	if (re->fhs) {
-		re->fhs[fd].flags = flags;
-		re->fhs[fd].fh    = fh;
-		re->fhs[fd].arg   = arg;
+		re->fhs[i].fd    = fd;
+		re->fhs[i].flags = flags;
+		re->fhs[i].fh    = fh;
+		re->fhs[i].arg   = arg;
 	}
 
-	re->nfds = max(re->nfds, fd+1);
+	re->nfds = max(re->nfds, i+1);
 
 	switch (re->method) {
 
@@ -655,7 +697,7 @@ void fd_close(int fd)
 static int fd_poll(struct re *re)
 {
 	const uint64_t to = tmr_next_timeout(&re->tmrl);
-	int i, n;
+	int i, n, index;
 #ifdef HAVE_SELECT
 	fd_set rfds, wfds, efds;
 #endif
@@ -682,15 +724,16 @@ static int fd_poll(struct re *re)
 		FD_ZERO(&efds);
 
 		for (i=0; i<re->nfds; i++) {
+			int fd = re->fhs[i].fd;
 			if (!re->fhs[i].fh)
 				continue;
 
 			if (re->fhs[i].flags & FD_READ)
-				FD_SET(i, &rfds);
+				FD_SET(fd, &rfds);
 			if (re->fhs[i].flags & FD_WRITE)
-				FD_SET(i, &wfds);
+				FD_SET(fd, &wfds);
 			if (re->fhs[i].flags & FD_EXCEPT)
-				FD_SET(i, &efds);
+				FD_SET(fd, &efds);
 		}
 
 #ifdef WIN32
@@ -766,7 +809,7 @@ static int fd_poll(struct re *re)
 #endif
 #ifdef HAVE_SELECT
 		case METHOD_SELECT:
-			fd = i;
+			fd = re->fhs[i].fd;
 			if (FD_ISSET(fd, &rfds))
 				flags |= FD_READ;
 			if (FD_ISSET(fd, &wfds))
@@ -836,12 +879,17 @@ static int fd_poll(struct re *re)
 
 		if (!flags)
 			continue;
-
-		if (re->fhs[fd].fh) {
-#if MAIN_DEBUG
-			fd_handler(re, fd, flags);
+#ifdef WIN32
+		index = i;
 #else
-			re->fhs[fd].fh(flags, re->fhs[fd].arg);
+		index = fd;
+#endif
+
+		if (re->fhs[index].fh) {
+#if MAIN_DEBUG
+			fd_handler(re, index, flags);
+#else
+			re->fhs[index].fh(flags, re->fhs[index].arg);
 #endif
 		}
 
@@ -954,8 +1002,7 @@ int re_main(re_signal_h *signalh)
 	err = poll_setup(re);
 	if (err)
 		goto out;
-	
-	/* config 파일에 의해서 epoll을 사용함 */
+
 	DEBUG_INFO("Using async I/O polling method: `%s'\n",
 		   poll_method_name(re->method));
 

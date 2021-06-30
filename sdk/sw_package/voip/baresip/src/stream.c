@@ -1,7 +1,7 @@
 /**
  * @file stream.c  Generic Media Stream
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <string.h>
 #include <time.h>
@@ -91,6 +91,8 @@ static void stream_close(struct stream *strm, int err)
 
 	strm->terminated = true;
 	strm->errorh = NULL;
+	strm->jbuf_started = false;
+	jbuf_flush(strm->jbuf);
 
 	if (errorh)
 		errorh(strm, err, strm->sess_arg);
@@ -295,15 +297,21 @@ static void rtp_handler(const struct sa *src, const struct rtp_header *hdr,
 		flush = true;
 	}
 
+	/* payload-type changed? */
+	if (s->pt_dec != hdr->pt) {
+		s->pt_dec = hdr->pt;
+		err = s->pth(hdr->pt, mb, s->arg);
+		if (err)
+			return;
+	}
+
 	if (s->jbuf) {
 
-		struct rtp_header hdr2;
-		void *mb2 = NULL;
-		int lostc;
-
 		/* Put frame in Jitter Buffer */
-		if (flush && s->jbuf_started)
+		if (flush) {
 			jbuf_flush(s->jbuf);
+			s->jbuf_started = false;
+		}
 
 		err = jbuf_put(s->jbuf, hdr, mb);
 		if (err) {
@@ -314,25 +322,56 @@ static void rtp_handler(const struct sa *src, const struct rtp_header *hdr,
 			s->metric_rx.n_err++;
 		}
 
-		if (jbuf_get(s->jbuf, &hdr2, &mb2)) {
+		if (s->type == MEDIA_VIDEO ||
+			s->cfg.jbtype == JBUF_FIXED) {
 
-			if (!s->jbuf_started)
-				return;
-
-			memset(&hdr2, 0, sizeof(hdr2));
+			if (stream_decode(s) == EAGAIN)
+				(void) stream_decode(s);
 		}
-
-		s->jbuf_started = true;
-
-		lostc = lostcalc(s, hdr2.seq);
-
-		handle_rtp(s, &hdr2, mb2, lostc > 0 ? lostc : 0);
-
-		mem_deref(mb2);
 	}
 	else {
 		handle_rtp(s, hdr, mb, 0);
 	}
+}
+
+
+/**
+ * Decodes one RTP packet. For audio streams this function is called by the
+ * auplay write handler and runs in the auplay thread. For video streams there
+ * is only the RTP thread which also does the decoding.
+ *
+ * @param s The stream
+ *
+ * @return 0 if success, EAGAIN if it should be called again in order to avoid
+ * a jitter buffer overflow, otherwise errorcode
+ */
+int stream_decode(struct stream *s)
+{
+	struct rtp_header hdr;
+	void *mb;
+	int lostc;
+	int err;
+
+	if (!s->jbuf)
+		return ENOENT;
+
+	err = jbuf_get(s->jbuf, &hdr, &mb);
+	if (err && err != EAGAIN)
+		return ENOENT;
+
+	lostc = lostcalc(s, hdr.seq);
+	s->jbuf_started = true;
+
+	handle_rtp(s, &hdr, mb, lostc > 0 ? lostc : 0);
+	mem_deref(mb);
+
+	return err;
+}
+
+
+void stream_silence_on(struct stream *s, bool on)
+{
+	jbuf_silence(s->jbuf, on);
 }
 
 
@@ -466,12 +505,13 @@ int stream_alloc(struct stream **sp, struct list *streaml,
 		 const struct mnat *mnat, struct mnat_sess *mnat_sess,
 		 const struct menc *menc, struct menc_sess *menc_sess,
 		 bool offerer,
-		 stream_rtp_h *rtph, stream_rtcp_h *rtcph, void *arg)
+		 stream_rtp_h *rtph, stream_rtcp_h *rtcph, stream_pt_h *pth,
+		 void *arg)
 {
 	struct stream *s;
 	int err;
 
-	if (!sp || !prm || !cfg || !rtph)
+	if (!sp || !prm || !cfg || !rtph || !pth)
 		return EINVAL;
 
 	s = mem_zalloc(sizeof(*s), stream_destructor);
@@ -480,12 +520,15 @@ int stream_alloc(struct stream **sp, struct list *streaml,
 
 	MAGIC_INIT(s);
 
-	s->cfg   = *cfg;
-	s->type  = type;
-	s->rtph  = rtph;
-	s->rtcph = rtcph;
-	s->arg   = arg;
-	s->pseq  = -1;
+	s->cfg    = *cfg;
+	s->type   = type;
+	s->rtph   = rtph;
+	s->pth    = pth;
+	s->rtcph  = rtcph;
+	s->arg    = arg;
+	s->pseq   = -1;
+	s->ldir   = SDP_SENDRECV;
+	s->pt_dec = -1;
 
 	if (prm->use_rtp) {
 		err = stream_sock_alloc(s, prm->af);
@@ -502,10 +545,13 @@ int stream_alloc(struct stream **sp, struct list *streaml,
 		goto out;
 
 	/* Jitter buffer */
-	if (cfg->jbuf_del.min && cfg->jbuf_del.max) {
+	if (cfg->jbtype != JBUF_OFF &&
+			cfg->jbuf_del.min && cfg->jbuf_del.max) {
 
-		err = jbuf_alloc(&s->jbuf, cfg->jbuf_del.min,
-				 cfg->jbuf_del.max);
+		err  = jbuf_alloc(&s->jbuf, cfg->jbuf_del.min,
+				cfg->jbuf_del.max);
+		err |= jbuf_set_type(s->jbuf, cfg->jbtype);
+		err |= jbuf_set_wish(s->jbuf, cfg->jbuf_wish);
 		if (err)
 			goto out;
 	}
@@ -592,6 +638,18 @@ struct sdp_media *stream_sdpmedia(const struct stream *strm)
 }
 
 
+/**
+ * Write stream data to the network
+ *
+ * @param s		Stream object
+ * @param ext		Extension bit
+ * @param marker	Marker bit
+ * @param pt		Payload type
+ * @param ts		Timestamp
+ * @param mb		Payload buffer
+ *
+ * @return int	0 if success, errorcode otherwise
+ */
 int stream_send(struct stream *s, bool ext, bool marker, int pt, uint32_t ts,
 		struct mbuf *mb)
 {
@@ -602,8 +660,16 @@ int stream_send(struct stream *s, bool ext, bool marker, int pt, uint32_t ts,
 
 	if (!sa_isset(&s->raddr_rtp, SA_ALL))
 		return 0;
+
 	if (!(sdp_media_rdir(s->sdp) & SDP_SENDONLY))
 		return 0;
+
+	if (sdp_media_ldir(s->sdp) == SDP_RECVONLY)
+		return 0;
+
+	if (sdp_media_ldir(s->sdp) == SDP_INACTIVE)
+		return 0;
+
 	if (s->hold)
 		return 0;
 
@@ -732,7 +798,25 @@ void stream_hold(struct stream *s, bool hold)
 		return;
 
 	s->hold = hold;
-	sdp_media_set_ldir(s->sdp, hold ? SDP_SENDONLY : SDP_SENDRECV);
+	sdp_media_set_ldir(s->sdp, hold ? SDP_SENDONLY : s->ldir);
+	stream_reset(s);
+}
+
+
+void stream_set_ldir(struct stream *s, enum sdp_dir dir)
+{
+	if (!s)
+		return;
+
+	s->ldir = dir;
+
+	if (dir == SDP_INACTIVE)
+		sdp_media_set_disabled(s->sdp, true);
+	else
+		sdp_media_set_disabled(s->sdp, false);
+
+	sdp_media_set_ldir(s->sdp, dir);
+
 	stream_reset(s);
 }
 
@@ -976,21 +1060,6 @@ uint32_t stream_metric_get_rx_n_err(const struct stream *strm)
 }
 
 
-int stream_jbuf_reset(struct stream *strm,
-		      uint32_t frames_min, uint32_t frames_max)
-{
-	if (!strm)
-		return EINVAL;
-
-	strm->jbuf = mem_deref(strm->jbuf);
-
-	if (frames_min && frames_max)
-		return jbuf_alloc(&strm->jbuf, frames_min, frames_max);
-
-	return 0;
-}
-
-
 bool stream_is_ready(const struct stream *strm)
 {
 	if (!strm)
@@ -1073,6 +1142,51 @@ int stream_start(const struct stream *strm)
 	}
 
 	return 0;
+}
+
+
+/**
+ * Open NAT-pinhole via RTP empty package
+ *
+ * @param strm	Stream object
+ *
+ * @return int 0 if success, otherwise errorcode
+ */
+int stream_open_natpinhole(const struct stream *strm)
+{
+	int err = 0;
+	struct mbuf *mb = NULL;
+	const struct sdp_format *sc = NULL;
+
+	if (!strm)
+		return EINVAL;
+
+	if (!strm->mnat) {
+
+		sc = sdp_media_rformat(strm->sdp, NULL);
+		if (!sc)
+			return EINVAL;
+
+		mb = mbuf_alloc(RTP_HEADER_SIZE);
+		if (!mb)
+			return ENOMEM;
+
+		mbuf_set_end(mb, RTP_HEADER_SIZE);
+		mbuf_advance(mb, RTP_HEADER_SIZE);
+
+		/* Send a dummy RTP packet to open NAT pinhole */
+		err = rtp_send(strm->rtp, &strm->raddr_rtp, false, false,
+			sc->pt, 0, mb);
+		if (err) {
+			warning("stream: rtp_send to open natpinhole"
+				"failed (%m)\n", err);
+			goto out;
+		}
+	}
+
+ out:
+	mem_deref(mb);
+	return err;
 }
 
 

@@ -1,12 +1,13 @@
 /**
  * @file mod_avformat.h  libavformat media-source -- internal interface
  *
- * Copyright (C) 2010 - 2020 Creytiv.com
+ * Copyright (C) 2010 - 2020 Alfred E. Heggestad
  */
 
 
 struct shared {
 	const char *id;
+
 	struct ausrc_st *ausrc_st;    /* pointer */
 	struct vidsrc_st *vidsrc_st;  /* pointer */
 	struct lock *lock;
@@ -24,7 +25,7 @@ struct shared {
 
 
 int avformat_shared_alloc(struct shared **shp, const char *dev,
-			  const double fps, const struct vidsz *size,
+			  double fps, const struct vidsz *size,
 			  bool video);
 void avformat_shared_set_audio(struct shared *sh, struct ausrc_st *st);
 void avformat_shared_set_video(struct shared *sh, struct vidsrc_st *st);

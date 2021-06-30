@@ -437,7 +437,7 @@ static int send_connect(struct rtmp_conn *conn)
 				1,
 			RTMP_AMF_TYPE_OBJECT, 8,
 		          RTMP_AMF_TYPE_STRING, "app", conn->app,
-		          RTMP_AMF_TYPE_STRING, "flashVer", "LNX 9,0,124,2",
+		          RTMP_AMF_TYPE_STRING, "flashVer", "FMLE/3.0",
 		          RTMP_AMF_TYPE_STRING, "tcUrl", conn->uri,
 		          RTMP_AMF_TYPE_BOOLEAN, "fpad", false,
 		          RTMP_AMF_TYPE_NUMBER, "capabilities", 15.0,
@@ -575,7 +575,7 @@ static int server_handle_packet(struct rtmp_conn *conn, struct mbuf *mb)
 static void tcp_recv_handler(struct mbuf *mb_pkt, void *arg)
 {
 	struct rtmp_conn *conn = arg;
-	int err;
+	int err = 0;
 
 	conn->total_bytes += mbuf_get_left(mb_pkt);
 
@@ -803,17 +803,29 @@ int rtmp_connect(struct rtmp_conn **connp, struct dnsc *dnsc, const char *uri,
 	struct pl pl_hostport;
 	struct pl pl_host;
 	struct pl pl_port;
+	struct pl pl_path;
 	struct pl pl_app;
 	struct pl pl_stream;
+	const char *tok;
 	uint16_t defport;
 	int err;
 
 	if (!connp || !uri)
 		return EINVAL;
 
-	if (re_regex(uri, strlen(uri), "[a-z]+://[^/]+/[^/]+/[^]+",
-		     &pl_scheme, &pl_hostport, &pl_app, &pl_stream))
+	if (re_regex(uri, strlen(uri), "[a-z]+://[^/]+/[^]+",
+		     &pl_scheme, &pl_hostport, &pl_path))
 		return EINVAL;
+
+	tok = pl_strrchr(&pl_path, '/');
+	if (!tok)
+		return EINVAL;
+
+	pl_app.p = pl_path.p;
+	pl_app.l = tok - pl_path.p;
+
+	pl_stream.p = tok + 1;
+	pl_stream.l = pl_path.p + pl_path.l - pl_stream.p;
 
 	if (!pl_strcasecmp(&pl_scheme, "rtmp")) {
 		tls     = NULL;
@@ -926,13 +938,13 @@ int rtmp_accept(struct rtmp_conn **connp, struct tcp_sock *ts,
 	if (err)
 		goto out;
 
-#ifdef USE_TLS
 	if (tls) {
+#ifdef USE_TLS
 		err = tls_start_tcp(&conn->sc, tls, conn->tc, 0);
 		if (err)
 			goto out;
-	}
 #endif
+	}
 
  out:
 	if (err)

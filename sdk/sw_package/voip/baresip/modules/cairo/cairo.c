@@ -1,7 +1,7 @@
 /**
  * @file cairo.c  Cairo module
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -36,8 +36,6 @@ enum {
 };
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* inheritance */
-
 	struct vidsrc_prm prm;
 	struct vidsz size;
 	cairo_surface_t *surface;
@@ -263,6 +261,7 @@ static int alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	(void)fmt;
 	(void)dev;
 	(void)errorh;
+	(void)vs;
 
 	if (!stp || !prm || !size || !frameh)
 		return EINVAL;
@@ -275,7 +274,6 @@ static int alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	if (!st)
 		return ENOMEM;
 
-	st->vs     = vs;
 	st->frameh = frameh;
 	st->arg    = arg;
 	st->prm    = *prm;
@@ -298,20 +296,17 @@ static int alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 				CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_BOLD);
 
-	info("cairo: surface with format %d (%d x %d) stride=%d\n",
-	     cairo_image_surface_get_format(st->surface),
+	info("cairo: surface with resolution %d x %d\n",
 	     cairo_image_surface_get_width(st->surface),
-	     cairo_image_surface_get_height(st->surface),
-	     cairo_image_surface_get_stride(st->surface));
+	     cairo_image_surface_get_height(st->surface));
 
 	st->step = rand_u16() / 1000.0;
 
 	re_snprintf(logo, sizeof(logo), "%s/logo.png", cfg->audio.audio_path);
 
 	err = load_logo(st, logo);
-	if (err) {
+	if (err)
 		goto out;
-	}
 
 	st->run = true;
 	err = pthread_create(&st->thread, NULL, read_thread, st);

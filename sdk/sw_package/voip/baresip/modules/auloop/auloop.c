@@ -1,7 +1,7 @@
 /**
  * @file auloop.c  Audio loop
  *
- * Copyright (C) 2010 - 2015 Creytiv.com
+ * Copyright (C) 2010 - 2015 Alfred E. Heggestad
  */
 #include <string.h>
 #include <re.h>
@@ -33,7 +33,9 @@
 /** Audio Loop */
 struct audio_loop {
 	struct aubuf *aubuf;
+	const struct ausrc *as;
 	struct ausrc_st *ausrc;
+	const struct auplay *ap;
 	struct auplay_st *auplay;
 	struct lock *lock;
 	struct tmr tmr;
@@ -74,7 +76,7 @@ static int print_summary(struct re_printf *pf, struct audio_loop *al)
 
 	/* Source */
 	if (al->ausrc) {
-		struct ausrc *as = ausrc_get(al->ausrc);
+		const struct ausrc *as = al->as;
 		const char *name = as->name;
 		const struct stats *stats = &al->stats_src;
 		double dur;
@@ -113,7 +115,7 @@ static int print_summary(struct re_printf *pf, struct audio_loop *al)
 
 	/* Player */
 	if (al->auplay) {
-		struct auplay *ap = auplay_get(al->auplay);
+		const struct auplay *ap = al->ap;
 		const char *name = ap->name;
 		const struct stats *stats = &al->stats_play;
 		double dur;
@@ -226,15 +228,20 @@ static void src_read_handler(struct auframe *af, void *arg)
 }
 
 
-static void write_handler(void *sampv, size_t sampc, void *arg)
+static void write_handler(struct auframe *af, void *arg)
 {
 	struct audio_loop *al = arg;
-	size_t num_bytes = sampc * aufmt_sample_size(al->fmt);
+	size_t num_bytes = auframe_size(af);
 	struct stats *stats = &al->stats_play;
+
+	if (af->fmt != (int)al->fmt) {
+		warning("auloop: write format mismatch: exp=%s, actual=%s\n",
+			aufmt_name(al->fmt), aufmt_name(af->fmt));
+	}
 
 	lock_write_get(al->lock);
 
-	stats->n_samp   += sampc;
+	stats->n_samp   += af->sampc;
 	stats->n_frames += 1;
 
 	if (stats->n_samp && aubuf_cur_size(al->aubuf) < num_bytes) {
@@ -244,7 +251,7 @@ static void write_handler(void *sampv, size_t sampc, void *arg)
 	lock_rel(al->lock);
 
 	/* read from beginning */
-	aubuf_read(al->aubuf, sampv, num_bytes);
+	aubuf_read(al->aubuf, af->sampv, num_bytes);
 }
 
 
@@ -310,6 +317,8 @@ static int auloop_reset(struct audio_loop *al, uint32_t srate, uint8_t ch)
 		return err;
 	}
 
+	al->ap = auplay_find(baresip_auplayl(), cfg->audio.play_mod);
+
 	ausrc_prm.srate      = al->srate;
 	ausrc_prm.ch         = al->ch;
 	ausrc_prm.ptime      = PTIME;
@@ -324,6 +333,8 @@ static int auloop_reset(struct audio_loop *al, uint32_t srate, uint8_t ch)
 			cfg->audio.src_dev, err);
 		return err;
 	}
+
+	al->as = ausrc_find(baresip_ausrcl(), cfg->audio.src_mod);
 
 	return err;
 }

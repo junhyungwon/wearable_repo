@@ -1,7 +1,7 @@
 /**
  * @file avformat/video.c  libavformat media-source -- video
  *
- * Copyright (C) 2010 - 2020 Creytiv.com
+ * Copyright (C) 2010 - 2020 Alfred E. Heggestad
  */
 
 #include <re.h>
@@ -15,8 +15,6 @@
 
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* base class */
-
 	struct shared *shared;
 	vidsrc_frame_h *frameh;
 	void *arg;
@@ -69,7 +67,6 @@ int avformat_video_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	if (!st)
 		return ENOMEM;
 
-	st->vs     = vs;
 	st->frameh = frameh;
 	st->arg    = arg;
 
@@ -108,7 +105,7 @@ void avformat_video_decode(struct shared *st, AVPacket *pkt)
 {
 	AVRational tb;
 	struct vidframe vf;
-	AVFrame *frame;
+	AVFrame *frame = 0;
 	uint64_t timestamp;
 	unsigned i;
 	int ret;
@@ -139,6 +136,33 @@ void avformat_video_decode(struct shared *st, AVPacket *pkt)
 	ret = avcodec_decode_video2(st->vid.ctx, frame, &got_pict, pkt);
 	if (ret < 0 || !got_pict)
 		goto out;
+#endif
+
+#if LIBAVUTIL_VERSION_MAJOR >= 56
+	if (st->vid.ctx->hw_device_ctx) {
+		AVFrame *frame2;
+		frame2 = av_frame_alloc();
+		if (!frame2)
+			goto out;
+
+		/* Many hw decoders are happy about YUV420P */
+		frame2->format = AV_PIX_FMT_YUV420P;
+		ret = av_hwframe_transfer_data(frame2, frame, 0);
+		if (ret < 0) {
+			av_frame_free(&frame2);
+			goto out;
+		}
+
+		ret = av_frame_copy_props(frame2, frame);
+		if (ret < 0) {
+			av_frame_free(&frame2);
+			goto out;
+		}
+
+		av_frame_unref(frame);
+		av_frame_move_ref(frame, frame2);
+		av_frame_free(&frame2);
+	}
 #endif
 
 	vf.fmt = avpixfmt_to_vidfmt(frame->format);

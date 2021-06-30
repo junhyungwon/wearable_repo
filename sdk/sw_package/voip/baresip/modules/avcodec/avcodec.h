@@ -1,7 +1,7 @@
 /**
  * @file avcodec.h  Video codecs using libavcodec -- internal API
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 
@@ -72,8 +72,6 @@ int avcodec_decode_h264(struct viddec_state *st, struct vidframe *frame,
 		bool *intra, bool eof, uint16_t seq, struct mbuf *src);
 int avcodec_decode_h265(struct viddec_state *st, struct vidframe *frame,
 			bool *intra, bool eof, uint16_t seq, struct mbuf *src);
-int avcodec_decode_mpeg4(struct viddec_state *st, struct vidframe *frame,
-		 bool *intra, bool eof, uint16_t seq, struct mbuf *src);
 
 
 int avcodec_resolve_codecid(const char *s);

@@ -1,12 +1,13 @@
 /**
  * @file src/account.c  User-Agent account
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <string.h>
 #include <re.h>
 #include <baresip.h>
 #include "core.h"
+#include <ctype.h>
 
 
 enum {
@@ -99,13 +100,9 @@ static int stunsrv_decode(struct account *acc, const struct sip_addr *aor)
 
 	if (0 == msg_param_exists(&aor->params, "stunuser", &tmp))
 		err |= param_dstr(&acc->stun_user, &aor->params, "stunuser");
-	else
-		err |= pl_strdup(&acc->stun_user, &aor->uri.user);
 
 	if (0 == msg_param_exists(&aor->params, "stunpass", &tmp))
 		err |= param_dstr(&acc->stun_pass, &aor->params, "stunpass");
-	else if (acc->auth_pass)
-		err |= str_dup(&acc->stun_pass, acc->auth_pass);
 
 	return err;
 }
@@ -167,7 +164,7 @@ static int decode_pair(char **val1, char **val2,
 /* Decode answermode parameter */
 static void answermode_decode(struct account *prm, const struct pl *pl)
 {
-	struct pl amode;
+	struct pl amode, adelay;
 
 	prm->answermode = ANSWERMODE_MANUAL;
 
@@ -184,6 +181,38 @@ static void answermode_decode(struct account *prm, const struct pl *pl)
 		}
 		else {
 			warning("account: answermode unknown (%r)\n", &amode);
+		}
+	}
+
+	if (0 == msg_param_decode(pl, "answerdelay", &adelay))
+		prm->adelay = pl_u32(&adelay);
+}
+
+
+static void autoanswer_allow_decode(struct account *prm, const struct pl *pl)
+{
+	struct pl v;
+
+	if (0 == msg_param_decode(pl, "sip_autoanswer", &v)) {
+		if (0 == pl_strcasecmp(&v, "yes")) {
+			prm->sipans = true;
+		}
+	}
+}
+
+
+/* Decode dtmfmode parameter */
+static void dtmfmode_decode(struct account *prm, const struct pl *pl)
+{
+	struct pl dtmfmode;
+
+	if (0 == msg_param_decode(pl, "dtmfmode", &dtmfmode)) {
+
+		if (0 == pl_strcasecmp(&dtmfmode, "info")) {
+			prm->dtmfmode = DTMFMODE_SIP_INFO;
+		}
+		else {
+			prm->dtmfmode = DTMFMODE_RTP_EVENT;
 		}
 	}
 }
@@ -283,21 +312,21 @@ static int video_codecs_decode(struct account *acc, const struct pl *prm)
 			return 0;
 
 		while (0 == csl_parse(&vcs, cname, sizeof(cname))) {
-			struct vidcodec *vc;
+			struct le *le;
 
-			vc = (struct vidcodec *)vidcodec_find(vidcodecl,
-							      cname, NULL);
-			if (!vc) {
-				warning("account: video codec not found: %s\n",
-					cname);
-				continue;
+			for (le=list_head(vidcodecl); le; le=le->next) {
+				struct vidcodec *vc = le->data;
+
+				if (0 != str_casecmp(cname, vc->name))
+					continue;
+
+				/* static list with references to vidcodec */
+				list_append(&acc->vidcodecl, &acc->vcv[i++],
+						vc);
+
+				if (i >= ARRAY_SIZE(acc->vcv))
+					return 0;
 			}
-
-			/* NOTE: static list with references to vidcodec */
-			list_append(&acc->vidcodecl, &acc->vcv[i++], vc);
-
-			if (i >= ARRAY_SIZE(acc->vcv))
-				break;
 		}
 	}
 
@@ -316,7 +345,15 @@ static int sip_params_decode(struct account *acc, const struct sip_addr *aor)
 
 	acc->regint = REG_INTERVAL + (rand_u32()&0xff);
 	err |= param_u32(&acc->regint, &aor->params, "regint");
+	err |= param_u32(&acc->prio, &aor->params, "prio");
+	err |= param_u32(&acc->rwait, &aor->params, "rwait");
+	if (acc->rwait > 95)
+		acc->rwait = 95;
 
+	if (acc->rwait && acc->rwait < 5)
+		acc->rwait = 5;
+
+	err |= param_u32(&acc->fbregint, &aor->params, "fbregint");
 	acc->pubint = 0;
 	err |= param_u32(&acc->pubint, &aor->params, "pubint");
 
@@ -409,10 +446,13 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (err)
 		goto out;
 
-	/* Decode parameters changed by rupy */
-	acc->ptime = 40; //20;
+	/* Decode parameters */
+	/* 음성 통화에 잡음이 발생하면, 40으로 변경 LF_Rupy */
+	acc->ptime = 20; //# 40
 	err |= sip_params_decode(acc, &acc->laddr);
 	       answermode_decode(acc, &acc->laddr.params);
+	       autoanswer_allow_decode(acc, &acc->laddr.params);
+	       dtmfmode_decode(acc,&acc->laddr.params);
 	err |= audio_codecs_decode(acc, &acc->laddr.params);
 	err |= video_codecs_decode(acc, &acc->laddr.params);
 	err |= media_decode(acc, &acc->laddr.params);
@@ -442,7 +482,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (acc->mnatid) {
 		acc->mnat = mnat_find(baresip_mnatl(), acc->mnatid);
 		if (!acc->mnat) {
-			warning("account: medianat not found: `%s'\n",
+			warning("account: medianat not found: '%s'\n",
 				acc->mnatid);
 		}
 	}
@@ -450,7 +490,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (acc->mencid) {
 		acc->menc = menc_find(baresip_mencl(), acc->mencid);
 		if (!acc->menc) {
-			warning("account: mediaenc not found: `%s'\n",
+			warning("account: mediaenc not found: '%s'\n",
 				acc->mencid);
 		}
 	}
@@ -576,6 +616,37 @@ int account_set_regint(struct account *acc, uint32_t regint)
 
 
 /**
+ * Set the STUN server URI for a SIP account
+ *
+ * @param acc   User-Agent account
+ * @param uri   STUN server URI (NULL to reset)
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_set_stun_uri(struct account *acc, const char *uri)
+{
+	struct pl pl;
+	int err;
+
+	if (!acc)
+		return EINVAL;
+
+	acc->stun_host = mem_deref(acc->stun_host);
+
+	if (!uri)
+		return 0;
+
+	pl_set_str(&pl, uri);
+	err = stunuri_decode(&acc->stun_host, &pl);
+	if (err)
+		warning("account: decode '%r' failed: %m\n",
+			&pl, err);
+
+	return err;
+}
+
+
+/**
  * Set the stun host for a SIP account
  *
  * @param acc   User-Agent account
@@ -610,6 +681,50 @@ int account_set_stun_port(struct account *acc, uint16_t port)
 
 	if (acc->stun_host)
 		return stunuri_set_port(acc->stun_host, port);
+
+	return 0;
+}
+
+
+/**
+ * Set the STUN user for a SIP account
+ *
+ * @param acc   User-Agent account
+ * @param user  STUN username (NULL to reset)
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_set_stun_user(struct account *acc, const char *user)
+{
+	if (!acc)
+		return EINVAL;
+
+	acc->stun_user = mem_deref(acc->stun_user);
+
+	if (user)
+		return str_dup(&acc->stun_user, user);
+
+	return 0;
+}
+
+
+/**
+ * Set the STUN password for a SIP account
+ *
+ * @param acc   User-Agent account
+ * @param pass  STUN password (NULL to reset)
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_set_stun_pass(struct account *acc, const char *pass)
+{
+	if (!acc)
+		return EINVAL;
+
+	acc->stun_pass = mem_deref(acc->stun_pass);
+
+	if (pass)
+		return str_dup(&acc->stun_pass, pass);
 
 	return 0;
 }
@@ -708,6 +823,34 @@ int account_set_audio_codecs(struct account *acc, const char *codecs)
 		re_snprintf(buf, sizeof(buf), ";audio_codecs=%s", codecs);
 		pl_set_str(&pl, buf);
 		return audio_codecs_decode(acc, &pl);
+	}
+
+	return 0;
+}
+
+
+/**
+ * Sets video codecs
+ *
+ * @param acc      User-Agent account
+ * @param codecs   Comma separated list of video codecs (NULL to disable)
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_set_video_codecs(struct account *acc, const char *codecs)
+{
+	char buf[256];
+	struct pl pl;
+
+	if (!acc)
+		return EINVAL;
+
+	list_clear(&acc->vidcodecl);
+
+	if (codecs) {
+		re_snprintf(buf, sizeof(buf), ";video_codecs=%s", codecs);
+		pl_set_str(&pl, buf);
+		return video_codecs_decode(acc, &pl);
 	}
 
 	return 0;
@@ -878,7 +1021,7 @@ struct uri *account_luri(const struct account *acc)
 
 
 /**
- * Get the Registration interval of an account
+ * Get the registration interval of an account
  *
  * @param acc User-Agent account
  *
@@ -887,6 +1030,32 @@ struct uri *account_luri(const struct account *acc)
 uint32_t account_regint(const struct account *acc)
 {
 	return acc ? acc->regint : 0;
+}
+
+
+/**
+ * Get the fallback registration interval of an account
+ *
+ * @param acc User-Agent account
+ *
+ * @return Registration interval in [seconds]
+ */
+uint32_t account_fbregint(const struct account *acc)
+{
+	return acc ? acc->fbregint : 0;
+}
+
+
+/**
+ * Get the priority of an account. Priority 0 is default.
+ *
+ * @param acc User-Agent account
+ *
+ * @return Priority
+ */
+uint32_t account_prio(const struct account *acc)
+{
+	return acc ? acc->prio : 0;
 }
 
 
@@ -936,6 +1105,43 @@ int account_set_answermode(struct account *acc, enum answermode mode)
 	}
 
 	acc->answermode = mode;
+
+	return 0;
+}
+
+
+/**
+ * Get the dtmfmode of an account
+ *
+ * @param acc User-Agent account
+ *
+ * @return Dtmfmode
+ */
+enum dtmfmode account_dtmfmode(const struct account *acc)
+{
+	return acc ? acc->dtmfmode : DTMFMODE_RTP_EVENT;
+}
+
+
+/**
+ * Set the dtmfmode of an account
+ *
+ * @param acc  User-Agent account
+ * @param mode Dtmfmode
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_set_dtmfmode(struct account *acc, enum dtmfmode mode)
+{
+	if (!acc)
+		return EINVAL;
+
+	if ((mode != DTMFMODE_RTP_EVENT) && (mode != DTMFMODE_SIP_INFO)) {
+		warning("account: invalid dtmfmode : `%d'\n", mode);
+		return EINVAL;
+	}
+
+	acc->dtmfmode = mode;
 
 	return 0;
 }
@@ -1063,6 +1269,22 @@ const char *account_stun_pass(const struct account *acc)
 
 
 /**
+ * Get the STUN server URI of an account
+ *
+ * @param acc User-Agent account
+ *
+ * @return STUN server URI
+ */
+const struct stun_uri *account_stun_uri(const struct account *acc)
+{
+	if (!acc)
+		return NULL;
+
+	return acc->stun_host ? acc->stun_host : NULL;
+}
+
+
+/**
  * Get the STUN hostname of an account
  *
  * @param acc User-Agent account
@@ -1094,6 +1316,18 @@ uint16_t account_stun_port(const struct account *acc)
 }
 
 
+/**
+ * Returns if SIP auto answer is allowed for the account
+ *
+ * @param acc User-Agent account
+ * @return true if allowed, otherwise false
+ */
+bool account_sip_autoanswer(const struct account *acc)
+{
+	return acc ? acc->sipans : false;
+}
+
+
 static const char *answermode_str(enum answermode mode)
 {
 	switch (mode) {
@@ -1101,6 +1335,17 @@ static const char *answermode_str(enum answermode mode)
 	case ANSWERMODE_MANUAL: return "manual";
 	case ANSWERMODE_EARLY:  return "early";
 	case ANSWERMODE_AUTO:   return "auto";
+	default: return "???";
+	}
+}
+
+
+static const char *dtmfmode_str(enum dtmfmode mode)
+{
+	switch (mode) {
+
+	case DTMFMODE_RTP_EVENT: return "rtpevent";
+	case DTMFMODE_SIP_INFO:  return "info";
 	default: return "???";
 	}
 }
@@ -1178,6 +1423,93 @@ const char *account_extra(const struct account *acc)
 
 
 /**
+ * Auto complete a SIP uri, add scheme and domain if missing
+ *
+ * @param acc User-Agent account
+ * @param buf Target buffer to print SIP uri
+ * @param uri Input SIP uri
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_uri_complete(const struct account *acc, struct mbuf *buf,
+			 const char *uri)
+{
+	struct sa sa_addr;
+	size_t len;
+	bool uri_is_ip;
+	char *uridup;
+	char *host;
+	char *param;
+	int err = 0;
+
+	if (!buf || !uri)
+		return EINVAL;
+
+	/* Skip initial whitespace */
+	while (isspace(*uri))
+		++uri;
+
+	len = str_len(uri);
+
+	/* Append sip: scheme if missing */
+	if (0 != re_regex(uri, len, "sip:"))
+		err |= mbuf_printf(buf, "sip:");
+
+	err |= mbuf_write_str(buf, uri);
+
+	if (!acc || err)
+		return err;
+
+	/* Append domain if missing and uri is not IP address */
+
+	/* check if uri is valid IP address */
+	err = str_dup(&uridup, uri);
+	if (err)
+		return err;
+
+	if (!strncmp(uridup, "sip:", 4))
+		host = uridup + 4;
+	else
+		host = uridup;
+
+	param = strchr(host, ';');
+	if (param)
+		*param = 0;
+
+	uri_is_ip =
+		!sa_decode(&sa_addr, host, strlen(host)) ||
+		!sa_set_str(&sa_addr, host, 0);
+	mem_deref(uridup);
+
+	if (0 != re_regex(uri, len, "[^@]+@[^]+", NULL, NULL) &&
+		1 != uri_is_ip) {
+#if HAVE_INET6
+		if (AF_INET6 == acc->luri.af)
+			err |= mbuf_printf(buf, "@[%r]",
+					   &acc->luri.host);
+		else
+#endif
+			err |= mbuf_printf(buf, "@%r",
+					   &acc->luri.host);
+
+		/* Also append port if specified and not 5060 */
+		switch (acc->luri.port) {
+
+		case 0:
+		case SIP_PORT:
+			break;
+
+		default:
+			err |= mbuf_printf(buf, ":%u", acc->luri.port);
+			break;
+		}
+	}
+
+	return err;
+}
+
+
+/**
  * Print the account debug information
  *
  * @param pf  Print function
@@ -1203,6 +1535,10 @@ int account_debug(struct re_printf *pf, const struct account *acc)
 	err |= re_hprintf(pf, " dispname:     %s\n", acc->dispname);
 	err |= re_hprintf(pf, " answermode:   %s\n",
 			  answermode_str(acc->answermode));
+	err |= re_hprintf(pf, " sipans:       %s\n",
+			  acc->sipans ? "yes" : "no");
+	err |= re_hprintf(pf, " dtmfmode:     %s\n",
+			  dtmfmode_str(acc->dtmfmode));
 	if (!list_isempty(&acc->aucodecl)) {
 		err |= re_hprintf(pf, " audio_codecs:");
 		for (le = list_head(&acc->aucodecl); le; le = le->next) {
@@ -1226,6 +1562,7 @@ int account_debug(struct re_printf *pf, const struct account *acc)
 	err |= re_hprintf(pf, " mwi:          %s\n", account_mwi(acc));
 	err |= re_hprintf(pf, " ptime:        %u\n", acc->ptime);
 	err |= re_hprintf(pf, " regint:       %u\n", acc->regint);
+	err |= re_hprintf(pf, " prio:         %u\n", acc->prio);
 	err |= re_hprintf(pf, " pubint:       %u\n", acc->pubint);
 	err |= re_hprintf(pf, " regq:         %s\n", acc->regq);
 	err |= re_hprintf(pf, " sipnat:       %s\n", acc->sipnat);
@@ -1241,10 +1578,73 @@ int account_debug(struct re_printf *pf, const struct account *acc)
 		}
 		err |= re_hprintf(pf, "\n");
 	}
-	err |= re_hprintf(pf, " call_transfer:         %s\n",
+	err |= re_hprintf(pf, " call_transfer:%s\n",
 			  account_call_transfer(acc));
-	err |= re_hprintf(pf, " extra:         %s\n",
+	err |= re_hprintf(pf, " extra:        %s\n",
 			  acc->extra ? acc->extra : "none");
 
+	return err;
+}
+
+
+/**
+ * Print the account information in JSON
+ *
+ * @param od  Account dict
+ * @param odcfg  Configuration dict
+ * @param acc User-Agent account
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int account_json_api(struct odict *od, struct odict *odcfg,
+		const struct account *acc)
+{
+	int err = 0;
+	struct odict *obn = NULL;
+	const char *stunhost = "";
+	size_t i;
+
+	if (!acc)
+		return 0;
+
+	/* account */
+	err |= odict_entry_add(od, "aor", ODICT_STRING, acc->aor);
+	if (acc->dispname) {
+		err |= odict_entry_add(od, "display_name", ODICT_STRING,
+				acc->dispname);
+	}
+
+	/* config */
+	if (acc->sipnat) {
+		err |= odict_entry_add(odcfg, "sip_nat", ODICT_STRING,
+				acc->sipnat);
+	}
+
+	err |= odict_alloc(&obn, 8);
+	for (i=0; i<ARRAY_SIZE(acc->outboundv); i++) {
+		if (acc->outboundv[i]) {
+			err |= odict_entry_add(obn, "outbound", ODICT_STRING,
+					acc->outboundv[i]);
+		}
+	}
+	err |= odict_entry_add(odcfg, "sip_nat_outbound", ODICT_ARRAY, obn);
+
+	stunhost = account_stun_host(acc) ? account_stun_host(acc) : "";
+	err |= odict_entry_add(odcfg, "stun_host", ODICT_STRING, stunhost);
+	err |= odict_entry_add(odcfg, "stun_port", ODICT_INT,
+			account_stun_port(acc));
+	if (acc->stun_user) {
+		err |= odict_entry_add(odcfg, "stun_user", ODICT_STRING,
+				acc->stun_user);
+	}
+
+	err |= odict_entry_add(odcfg, "answer_mode", ODICT_STRING,
+			answermode_str(acc->answermode));
+	err |= odict_entry_add(odcfg, "call_transfer", ODICT_BOOL, acc->refer);
+
+	err |= odict_entry_add(odcfg, "packet_time", ODICT_INT,
+			account_ptime(acc));
+
+	mem_deref(obn);
 	return err;
 }

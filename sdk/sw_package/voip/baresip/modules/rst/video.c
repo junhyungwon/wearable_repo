@@ -1,7 +1,7 @@
 /**
  * @file rst/video.c MP3/ICY HTTP Video Source
  *
- * Copyright (C) 2011 Creytiv.com
+ * Copyright (C) 2011 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -15,7 +15,6 @@
 
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* pointer to base-class (inheritance) */
 	pthread_mutex_t mutex;
 	pthread_t thread;
 	struct vidsrc_prm prm;
@@ -214,7 +213,6 @@ static int alloc_handler(struct vidsrc_st **stp, const struct vidsrc *vs,
 	if (err)
 		goto out;
 
-	st->vs     = vs;
 	st->prm    = *prm;
 	st->size   = *size;
 	st->frameh = frameh;

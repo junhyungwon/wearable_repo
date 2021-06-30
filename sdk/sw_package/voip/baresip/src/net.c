@@ -1,8 +1,9 @@
 /**
  * @file src/net.c Networking code
  *
- * Copyright (C) 2010 - 2016 Creytiv.com
+ * Copyright (C) 2010 - 2016 Alfred E. Heggestad
  */
+//# added by LF_Rupy
 #include <string.h>
 #include <re.h>
 #include <baresip.h>
@@ -17,10 +18,12 @@ struct network {
 #endif
 	struct tmr tmr;
 	struct dnsc *dnsc;
-	struct sa nsv[NET_MAX_NS];/**< Configured name servers      */
-	uint32_t nsn;        /**< Number of configured name servers */
+	struct sa nsv[NET_MAX_NS];/**< Configured name servers           */
+	uint32_t nsn;        /**< Number of configured name servers      */
+	struct sa nsvf[NET_MAX_NS];/**< Configured fallback name servers */
+	uint32_t nsnf;       /**< Number of configured fallback name servers */
 	uint32_t interval;
-	char domain[64];     /**< DNS domain from network           */
+	char domain[64];     /**< DNS domain from network                */
 	net_change_h *ch;
 	void *arg;
 };
@@ -102,15 +105,22 @@ static int print_addr(struct re_printf *pf, const struct sa *ip)
 }
 
 
-static int net_dnssrv_add(struct network *net, const struct sa *sa)
+static int net_dns_srv_add(struct network *net, const struct sa *sa,
+		bool fallback)
 {
 	if (!net)
 		return EINVAL;
 
-	if (net->nsn >= ARRAY_SIZE(net->nsv))
+	if (!fallback && net->nsn >= ARRAY_SIZE(net->nsv))
 		return E2BIG;
 
-	sa_cpy(&net->nsv[net->nsn++], sa);
+	if (fallback && net->nsnf >= ARRAY_SIZE(net->nsvf))
+		return E2BIG;
+
+	if (fallback)
+		sa_cpy(&net->nsvf[net->nsnf++], sa);
+	else
+		sa_cpy(&net->nsv[net->nsn++], sa);
 
 	return 0;
 }
@@ -121,6 +131,8 @@ static int net_dns_srv_get(const struct network *net,
 {
 	struct sa nsv[NET_MAX_NS];
 	uint32_t i, nsn = ARRAY_SIZE(nsv);
+	uint32_t offset;
+	uint32_t limit = *n;
 	int err;
 
 	err = dns_srv_get(NULL, 0, nsv, &nsn);
@@ -130,7 +142,7 @@ static int net_dns_srv_get(const struct network *net,
 
 	if (net->nsn) {
 
-		if (net->nsn > *n)
+		if (net->nsn > limit)
 			return E2BIG;
 
 		/* Use any configured nameservers */
@@ -144,7 +156,7 @@ static int net_dns_srv_get(const struct network *net,
 			*from_sys = false;
 	}
 	else {
-		if (nsn > *n)
+		if (nsn > limit)
 			return E2BIG;
 
 		for (i=0; i<nsn; i++)
@@ -156,6 +168,22 @@ static int net_dns_srv_get(const struct network *net,
 			*from_sys = true;
 	}
 
+	/* Add Fallback nameservers */
+	if (net->nsnf) {
+		offset = *n;
+		if ((offset + net->nsnf) > limit) {
+			debug("net: too many DNS nameservers, "
+					"fallback DNS ignored\n");
+			return 0;
+		}
+
+		for (i=0; i<net->nsnf; i++) {
+			srvv[offset+i] = net->nsvf[i];
+		}
+
+		*n = offset + net->nsnf;
+	}
+
 	return 0;
 }
 
@@ -163,7 +191,7 @@ static int net_dns_srv_get(const struct network *net,
 /*
  * Check for DNS Server updates
  */
-static void dns_refresh(struct network *net)
+void net_dns_refresh(struct network *net)
 {
 	struct sa nsv[NET_MAX_NS];
 	uint32_t nsn;
@@ -189,7 +217,7 @@ static void ipchange_handler(void *arg)
 
 	tmr_start(&net->tmr, net->interval * 1000, ipchange_handler, net);
 
-	dns_refresh(net);
+	net_dns_refresh(net);
 
 	change = net_check(net);
 	if (change && net->ch) {
@@ -257,7 +285,6 @@ bool net_check(struct network *net)
 		     &laddr6, &net->laddr6);
 	}
 #endif
-	debug("net: check for IP changes: change=%d\n", change);
 
 	return change;
 }
@@ -374,7 +401,7 @@ int net_alloc(struct network **netp, const struct config_net *cfg)
 				goto out;
 			}
 
-			err = net_dnssrv_add(net, &sa);
+			err = net_dns_srv_add(net, &sa, cfg->nsv[i].fallback);
 			if (err) {
 				warning("net: failed to add nameserver: %m\n",
 					err);
@@ -521,7 +548,7 @@ int net_use_nameserver(struct network *net, const struct sa *srvv, size_t srvc)
 		}
 	}
 
-	dns_refresh(net);
+	net_dns_refresh(net);
 
 	return 0;
 }
@@ -704,22 +731,6 @@ struct dnsc *net_dnsc(const struct network *net)
 
 
 /**
- * Get the network domain name
- *
- * @param net Network instance
- *
- * @return Network domain
- */
-const char *net_domain(const struct network *net)
-{
-	if (!net)
-		return NULL;
-
-	return net->domain[0] ? net->domain : NULL;
-}
-
-
-/**
  * Print networking debug information
  *
  * @param pf     Print handler for debug output
@@ -744,7 +755,6 @@ int net_debug(struct re_printf *pf, const struct network *net)
 			  net_af_enabled(net, AF_INET6) ? "E" : ".",
 			  print_addr, &net->laddr6);
 #endif
-	err |= re_hprintf(pf, " Domain: %s\n", net->domain);
 
 	err |= re_hprintf(pf, "net interfaces:\n");
 	err |= net_if_apply(if_debug_handler, argv);
@@ -754,7 +764,7 @@ int net_debug(struct re_printf *pf, const struct network *net)
 	return err;
 }
 
-//# added by rupy
+//# added by LF_Rupy
 void net_set_ifname(const struct network *net, const char *ifname)
 {
 	strcpy((char *)net->cfg.ifname, (char *)ifname);

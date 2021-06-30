@@ -1,7 +1,7 @@
 /**
  * @file mqtt.c Message Queue Telemetry Transport (MQTT) client
  *
- * Copyright (C) 2017 Creytiv.com
+ * Copyright (C) 2017 Alfred E. Heggestad
  */
 
 #include <mosquitto.h>
@@ -11,6 +11,8 @@
 
 
 static char broker_host[256] = "127.0.0.1";
+/* Broker CA file for TLS usage, default none */
+static char broker_cafile[256] = "";
 /* Authentication user name, default none */
 static char mqttusername[256] = "";
 /* Authentication password, default none */
@@ -19,8 +21,8 @@ static char mqttpassword[256] = "";
 static char mqttclientid[256] = "baresip";
 /* Base topic for MQTT - default "baresip" - i.e. /baresip/event */
 static char mqttbasetopic[128] = "baresip";
-static char mqttpublishtopic[256];
-static char mqttsubscribetopic[256];
+static char mqttpublishtopic[256] = "";
+static char mqttsubscribetopic[256] = "";
 
 static uint32_t broker_port = 1883;
 
@@ -91,6 +93,8 @@ static int module_init(void)
 	/* Get configuration data */
 	conf_get_str(conf_cur(), "mqtt_broker_host",
 		     broker_host, sizeof(broker_host));
+	conf_get_str(conf_cur(), "mqtt_broker_cafile",
+		     broker_cafile, sizeof(broker_cafile));
 	conf_get_str(conf_cur(), "mqtt_broker_user",
 		     mqttusername, sizeof(mqttusername));
 	conf_get_str(conf_cur(), "mqtt_broker_password",
@@ -99,14 +103,23 @@ static int module_init(void)
 		     mqttclientid, sizeof(mqttclientid));
 	conf_get_str(conf_cur(), "mqtt_basetopic",
 		     mqttbasetopic, sizeof(mqttbasetopic));
+	conf_get_str(conf_cur(), "mqtt_publishtopic",
+		     mqttpublishtopic, sizeof(mqttpublishtopic));
+	conf_get_str(conf_cur(), "mqtt_subscribetopic",
+		     mqttsubscribetopic, sizeof(mqttsubscribetopic));
+	conf_get_u32(conf_cur(), "mqtt_broker_port", &broker_port);
 
 	info("mqtt: connecting to broker at %s:%d as %s topic %s\n",
 		broker_host, broker_port, mqttclientid, mqttbasetopic);
 
-	re_snprintf(mqttsubscribetopic, sizeof(mqttsubscribetopic),
-		    "/%s/command/+", mqttbasetopic);
-	re_snprintf(mqttpublishtopic, sizeof(mqttpublishtopic), "/%s/event",
-		    mqttbasetopic);
+	if (*mqttsubscribetopic == '\0') {
+		re_snprintf(mqttsubscribetopic, sizeof(mqttsubscribetopic),
+				"/%s/command/+", mqttbasetopic);
+	}
+	if (*mqttpublishtopic == '\0') {
+		re_snprintf(mqttpublishtopic, sizeof(mqttpublishtopic),
+				"/%s/event", mqttbasetopic);
+	}
 
 	info("mqtt: Publishing on %s, subscribing to %s\n",
 		mqttpublishtopic, mqttsubscribetopic);
@@ -115,7 +128,6 @@ static int module_init(void)
 	s_mqtt.subtopic = mqttsubscribetopic;
 	s_mqtt.pubtopic = mqttpublishtopic;
 
-	conf_get_u32(conf_cur(), "mqtt_broker_port", &broker_port);
 
 	s_mqtt.mosq = mosquitto_new(mqttclientid, true, &s_mqtt);
 	if (!s_mqtt.mosq) {
@@ -132,6 +144,13 @@ static int module_init(void)
 	if (*mqttusername != '\0') {
 		ret = mosquitto_username_pw_set(s_mqtt.mosq, mqttusername,
 			mqttpassword);
+		if (ret != MOSQ_ERR_SUCCESS)
+			return ret == MOSQ_ERR_ERRNO ? errno : EIO;
+	}
+
+	if (*broker_cafile != '\0') {
+		ret = mosquitto_tls_set(s_mqtt.mosq, broker_cafile,
+				NULL, NULL, NULL, NULL);
 		if (ret != MOSQ_ERR_SUCCESS)
 			return ret == MOSQ_ERR_ERRNO ? errno : EIO;
 	}

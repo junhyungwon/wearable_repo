@@ -1,7 +1,7 @@
 /**
  * @file oss.c  Open Sound System (OSS) driver
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -36,7 +36,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;      /* inheritance */
 	pthread_t thread;
 	bool run;
 	int fd;
@@ -49,7 +48,6 @@ struct ausrc_st {
 };
 
 struct auplay_st {
-	const struct auplay *ap;      /* inheritance */
 	pthread_t thread;
 	bool run;
 	int fd;
@@ -187,7 +185,7 @@ static void *record_thread(void *arg)
 
 	while (st->run) {
 
-		n = read(st->fd, st->sampv, st->sampc*2);
+		n = (int)read(st->fd, st->sampv, st->sampc*2);
 		if (n <= 0)
 			continue;
 
@@ -208,13 +206,16 @@ static void *record_thread(void *arg)
 static void *play_thread(void *arg)
 {
 	struct auplay_st *st = arg;
+	struct auframe af;
 	int n;
+
+	auframe_init(&af, AUFMT_S16LE, st->sampv, st->sampc);
 
 	while (st->run) {
 
-		st->wh(st->sampv, st->sampc, st->arg);
+		st->wh(&af, st->arg);
 
-		n = write(st->fd, st->sampv, st->sampc*2);
+		n = (int)write(st->fd, st->sampv, st->sampc*2);
 		if (n < 0) {
 			warning("oss: write: %m\n", errno);
 			break;
@@ -266,11 +267,9 @@ static int src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 		goto out;
 	}
 
-	err = oss_reset(st->fd, prm->srate, prm->ch, st->sampc, 0);
+	err = oss_reset(st->fd, prm->srate, prm->ch, (int)st->sampc, 0);
 	if (err)
 		goto out;
-
-	st->as = as;
 
 	st->run = true;
 	err = pthread_create(&st->thread, NULL, record_thread, st);
@@ -324,11 +323,9 @@ static int play_alloc(struct auplay_st **stp, const struct auplay *ap,
 		goto out;
 	}
 
-	err = oss_reset(st->fd, prm->srate, prm->ch, st->sampc, 0);
+	err = oss_reset(st->fd, prm->srate, prm->ch, (int)st->sampc, 0);
 	if (err)
 		goto out;
-
-	st->ap = ap;
 
 	st->run = true;
 	err = pthread_create(&st->thread, NULL, play_thread, st);

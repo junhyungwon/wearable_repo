@@ -1,7 +1,7 @@
 /**
  * @file ebuacip.c  EBU ACIP (Audio Contribution over IP) Profile
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 #include <re.h>
@@ -140,7 +140,8 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 
 #if 1
 	debug(".... ebuacip: [ ua=%s call=%s ] event: %s (%s)\n",
-	      ua_aor(ua), call_id(call), uag_event_str(ev), prm);
+	      account_aor(ua_account(ua)), call_id(call),
+	      uag_event_str(ev), prm);
 #endif
 
 	switch (ev) {

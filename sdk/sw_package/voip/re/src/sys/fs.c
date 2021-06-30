@@ -3,6 +3,8 @@
  *
  * Copyright (C) 2010 Creytiv.com
  */
+#define _DEFAULT_SOURCE 1
+#define _BSD_SOURCE 1
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -82,7 +84,6 @@ int fs_gethome(char *path, size_t sz)
 	return 0;
 
 #elif defined(HAVE_PWD_H)
-	/* PWD_H 정의 됨 */
 	const char *loginname;
 	struct passwd *pw;
 
@@ -92,11 +93,11 @@ int fs_gethome(char *path, size_t sz)
 	loginname = sys_username();
 	if (!loginname)
 		return ENOENT;
-	
+
 	pw = getpwnam(loginname);
 	if (!pw)
 		return errno;
-	
+
 	str_ncpy(path, pw->pw_dir, sz);
 
 	return 0;
@@ -105,4 +106,28 @@ int fs_gethome(char *path, size_t sz)
 	(void)sz;
 	return ENOSYS;
 #endif
+}
+
+
+/**
+ * Check if given path is directory
+ *
+ * @param path Directory
+ *
+ * @return True if directory, False if not
+ */
+bool fs_isdir(const char *path)
+{
+	struct stat st;
+
+	if (!path)
+		return false;
+
+	if (stat(path, &st) < 0)
+		return false;
+
+	if ((st.st_mode & S_IFMT) != S_IFDIR)
+		return false;
+
+	return true;
 }

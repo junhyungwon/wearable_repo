@@ -1,7 +1,7 @@
 /**
  * @file device.c Audio bridge -- virtual device table
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -97,7 +97,14 @@ static void *device_thread(void *arg)
 			continue;
 
 		if (dev->auplay->wh) {
-			dev->auplay->wh(sampv_in, sampc_in, dev->auplay->arg);
+			struct auframe af;
+
+			auframe_init(&af, dev->auplay->prm.fmt,
+				     sampv_in, sampc_in);
+
+			af.timestamp = ts * 1000;
+
+			dev->auplay->wh(&af, dev->auplay->arg);
 		}
 
 		if (dev->ausrc->rh) {

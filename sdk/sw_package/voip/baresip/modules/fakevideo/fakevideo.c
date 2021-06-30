@@ -1,7 +1,7 @@
 /**
  * @file fakevideo.c Fake video source and video display
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -29,7 +29,6 @@
 
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* inheritance */
 	struct vidframe *frame;
 #ifdef HAVE_PTHREAD
 	pthread_t thread;
@@ -44,7 +43,7 @@ struct vidsrc_st {
 };
 
 struct vidisp_st {
-	const struct vidisp *vd;  /* inheritance */
+	int dummy;
 };
 
 
@@ -135,6 +134,7 @@ static int src_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	(void)fmt;
 	(void)dev;
 	(void)errorh;
+	(void)vs;
 
 	if (!stp || !prm || !size || !frameh)
 		return EINVAL;
@@ -143,7 +143,6 @@ static int src_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	if (!st)
 		return ENOMEM;
 
-	st->vs     = vs;
 	st->fps    = prm->fps;
 	st->frameh = frameh;
 	st->arg    = arg;
@@ -204,8 +203,6 @@ static int disp_alloc(struct vidisp_st **stp, const struct vidisp *vd,
 	st = mem_zalloc(sizeof(*st), disp_destructor);
 	if (!st)
 		return ENOMEM;
-
-	st->vd = vd;
 
 	*stp = st;
 

@@ -1,7 +1,7 @@
 /**
  * @file src/audio.c  Audio stream
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  * \ref GenericAudioStream
  */
 #define _DEFAULT_SOURCE 1
@@ -58,6 +58,8 @@ enum {
 	MAX_PTIME       =    60,  /* Maximum packet time in [ms] */
 
 	AUDIO_SAMPSZ    = MAX_SRATE * MAX_CHANNELS * MAX_PTIME / 1000,
+
+	SILENCE_Q = 1024 * 1024,  /* Quadratic sample value for silence */
 };
 
 
@@ -79,6 +81,7 @@ enum {
  *
  */
 struct autx {
+	const struct ausrc *as;
 	struct ausrc_st *ausrc;       /**< Audio Source                    */
 	struct ausrc_prm ausrc_prm;   /**< Audio Source parameters         */
 	const struct aucodec *ac;     /**< Current audio encoder           */
@@ -112,12 +115,10 @@ struct autx {
 	} stats;
 
 #ifdef HAVE_PTHREAD
-	union {
-		struct {
-			pthread_t tid;/**< Audio transmit thread           */
-			bool run;     /**< Audio transmit thread running   */
-		} thr;
-	} u;
+	struct {
+		pthread_t tid;/**< Audio transmit thread           */
+		bool run;     /**< Audio transmit thread running   */
+	} thr;
 #endif
 };
 
@@ -138,12 +139,15 @@ struct autx {
  \endverbatim
  */
 struct aurx {
+	const struct auplay *ap;
 	struct auplay_st *auplay;     /**< Audio Player                    */
 	struct auplay_prm auplay_prm; /**< Audio Player parameters         */
 	const struct aucodec *ac;     /**< Current audio decoder           */
 	struct audec_state *dec;      /**< Audio decoder state (optional)  */
 	struct aubuf *aubuf;          /**< Incoming audio buffer           */
+	size_t aubuf_minsz;           /**< Minimum aubuf size in [bytes]   */
 	size_t aubuf_maxsz;           /**< Maximum aubuf size in [bytes]   */
+	size_t num_bytes;             /**< Size of one frame in [bytes]    */
 	volatile bool aubuf_started;  /**< Aubuf was started flag          */
 	struct auresamp resamp;       /**< Optional resampler for DSP      */
 	struct list filtl;            /**< Audio filters in decoding order */
@@ -158,6 +162,7 @@ struct aurx {
 	enum aufmt play_fmt;          /**< Sample format for audio playback*/
 	enum aufmt dec_fmt;           /**< Sample format for decoder       */
 	bool need_conv;               /**< Sample format conversion needed */
+	uint32_t again;               /**< Stream decode EAGAIN counter    */
 	struct timestamp_recv ts_recv;/**< Receive timestamp state         */
 	size_t last_sampc;
 
@@ -166,6 +171,21 @@ struct aurx {
 		uint64_t aubuf_underrun;
 		uint64_t n_discard;
 	} stats;
+
+	enum jbuf_type jbtype;       /**< Jitter buffer type               */
+	volatile int32_t wcnt;       /**< Write handler call count         */
+
+#ifdef HAVE_PTHREAD
+	struct {
+		pthread_t tid;
+		bool start;
+		bool run;
+		pthread_cond_t cond;
+		pthread_mutex_t mutex;
+	} thr;                /**< Audio decode thread             */
+#else
+	struct tmr tmr;       /**< Timer for audio decoding        */
+#endif
 };
 
 
@@ -262,9 +282,9 @@ static void stop_tx(struct autx *tx, struct audio *a)
 
 #ifdef HAVE_PTHREAD
 	case AUDIO_MODE_THREAD:
-		if (tx->u.thr.run) {
-			tx->u.thr.run = false;
-			pthread_join(tx->u.thr.tid, NULL);
+		if (tx->thr.run) {
+			tx->thr.run = false;
+			pthread_join(tx->thr.tid, NULL);
 		}
 		break;
 #endif
@@ -286,9 +306,20 @@ static void stop_rx(struct aurx *rx)
 		return;
 
 	/* audio player must be stopped first */
+#ifdef HAVE_PTHREAD
+	rx->thr.start = false;
+	if (rx->thr.run) {
+		rx->thr.run = false;
+		pthread_cond_signal(&rx->thr.cond);
+		pthread_join(rx->thr.tid, NULL);
+	}
+
+#else
+	tmr_cancel(&rx->tmr);
+#endif
+
 	rx->auplay = mem_deref(rx->auplay);
 	rx->aubuf  = mem_deref(rx->aubuf);
-
 	list_flush(&rx->filtl);
 }
 
@@ -315,6 +346,11 @@ static void audio_destructor(void *arg)
 	mem_deref(a->tx.device);
 	mem_deref(a->rx.module);
 	mem_deref(a->rx.device);
+
+#ifdef HAVE_PTHREAD
+	pthread_mutex_destroy(&a->rx.thr.mutex);
+	pthread_cond_destroy(&a->rx.thr.cond);
+#endif
 
 	list_flush(&a->tx.filtl);
 	list_flush(&a->rx.filtl);
@@ -630,7 +666,8 @@ static void check_telev(struct audio *a, struct autx *tx)
 
 
 /*
- * Write samples to Audio Player.
+ * Write samples to Audio Player. This version of the write handler is used
+ * for the configuration jitter_buffer_type JBUF_FIXED.
  *
  * @note This function has REAL-TIME properties
  *
@@ -641,10 +678,16 @@ static void check_telev(struct audio *a, struct autx *tx)
  *
  * @note The sample format is set in rx->play_fmt
  */
-static void auplay_write_handler(void *sampv, size_t sampc, void *arg)
+static void auplay_write_handler(struct auframe *af, void *arg)
 {
-	struct aurx *rx = arg;
-	size_t num_bytes = sampc * aufmt_sample_size(rx->play_fmt);
+	struct audio *a = arg;
+	struct aurx *rx = &a->rx;
+	size_t num_bytes = auframe_size(af);
+
+	if (af->fmt != (int)rx->play_fmt) {
+		warning("audio: write format mismatch: exp=%s, actual=%s\n",
+			aufmt_name(rx->play_fmt), aufmt_name(af->fmt));
+	}
 
 	if (rx->aubuf_started && aubuf_cur_size(rx->aubuf) < num_bytes) {
 
@@ -656,7 +699,152 @@ static void auplay_write_handler(void *sampv, size_t sampc, void *arg)
 #endif
 	}
 
-	aubuf_read(rx->aubuf, sampv, num_bytes);
+	aubuf_read(rx->aubuf, af->sampv, num_bytes);
+}
+
+
+static bool silence(const void *sampv, size_t sampc, int fmt)
+{
+	const int16_t *v;
+	int32_t sum = 0;
+	size_t i;
+
+	if (fmt != AUFMT_S16LE)
+		return true;
+
+	v = sampv;
+
+	for (i = 0; i < sampc; i++) {
+		sum += v[i]*v[i];
+
+		if (sum > (int32_t) (i + 1) * SILENCE_Q)
+			return false;
+	}
+
+	return true;
+}
+
+
+static void audio_decode(void *arg)
+{
+	struct audio *a = arg;
+	struct aurx *rx = &a->rx;
+	int err = 0;
+
+	while (rx->wcnt > 0 || err == EAGAIN ||
+			(!err && aubuf_cur_size(rx->aubuf) < rx->num_bytes)) {
+
+		rx->wcnt--;
+		if (err == EAGAIN)
+			++rx->again;
+
+		err = stream_decode(a->strm);
+
+		if (err && err != EAGAIN)
+			break;
+
+#ifdef HAVE_PTHREAD
+		if (!rx->thr.run)
+			break;
+#endif
+	}
+}
+
+
+#ifdef HAVE_PTHREAD
+static void *rx_thread(void *arg)
+{
+	struct audio *a = arg;
+	struct timespec ts;
+	uint64_t ms;
+	int err = 0;
+
+	while (a->rx.thr.run) {
+
+		ms = tmr_jiffies() + 500;
+		ts.tv_sec = (time_t)(ms / 1000);
+		ts.tv_nsec = (ms % 1000) * 1000000UL;
+
+		err = pthread_mutex_lock(&a->rx.thr.mutex);
+		if (err)
+			return NULL;
+
+		pthread_cond_timedwait(&a->rx.thr.cond, &a->rx.thr.mutex, &ts);
+
+		err = pthread_mutex_unlock(&a->rx.thr.mutex);
+		if (!a->rx.thr.run || err)
+			break;
+
+		audio_decode(a);
+	}
+
+	return NULL;
+}
+#endif
+
+
+/*
+ * Write samples to Audio Player. This version of the write handler is used
+ * for the configuration jitter_buffer_type JBUF_ADAPTIVE.
+ *
+ * @note See auplay_write_handler()!
+ *
+ */
+static void auplay_write_handler2(struct auframe *af, void *arg)
+{
+	int err = 0;
+	struct audio *a = arg;
+	struct aurx *rx = &a->rx;
+
+	rx->num_bytes = auframe_size(af);
+
+	if (rx->aubuf_started && aubuf_cur_size(rx->aubuf) < rx->num_bytes) {
+
+		++rx->stats.aubuf_underrun;
+		err = ENOENT;
+
+#if 0
+		debug("audio: rx aubuf underrun (total %llu)\n",
+			rx->stats.aubuf_underrun);
+#endif
+	}
+
+	aubuf_read(rx->aubuf, af->sampv, rx->num_bytes);
+
+	/* Reduce latency after EAGAIN? */
+	if (rx->again &&
+	    (err || silence(af->sampv, af->sampc, rx->play_fmt))) {
+
+		rx->again--;
+		if (aubuf_cur_size(rx->aubuf) >= rx->aubuf_minsz) {
+			aubuf_read(rx->aubuf, af->sampv, rx->num_bytes);
+			debug("Dropped a frame to reduce latency\n");
+		}
+	}
+
+#ifdef USE_SILENCE_DETECTION
+	/* decide if we have silence */
+	stream_silence_on(a->strm, err ? true :
+			silence(af->sampv, sampc, rx->play_fmt));
+#endif
+
+	rx->wcnt++;
+#ifdef HAVE_PTHREAD
+	pthread_mutex_lock(&a->rx.thr.mutex);
+	if (!rx->thr.run && rx->thr.start) {
+		rx->thr.run = true;
+		err = pthread_create(&rx->thr.tid, NULL, rx_thread, a);
+		if (err)
+			rx->thr.run = false;
+	}
+
+	/* decode aubuf_minsz bytes in decoding thread */
+	pthread_cond_signal(&a->rx.thr.cond);
+	pthread_mutex_unlock(&a->rx.thr.mutex);
+#else
+	/* decode aubuf_minsz bytes in polling thread */
+	tmr_start(&rx->tmr, 0, audio_decode, a);
+#endif
 }
 
 
@@ -723,25 +911,6 @@ static void ausrc_error_handler(int err, const char *str, void *arg)
 }
 
 
-static int update_payload_type(struct audio *a, uint8_t pt_old, uint8_t pt_new)
-{
-	const struct sdp_format *lc;
-
-	lc = sdp_media_lformat(stream_sdpmedia(a->strm), pt_new);
-	if (!lc)
-		return ENOENT;
-
-	if (pt_old != (uint8_t)-1) {
-		info("Audio decoder changed payload %u -> %u\n",
-		     pt_old, pt_new);
-	}
-
-	a->rx.pt = pt_new;
-
-	return audio_decoder_set(a, lc->data, lc->pt, lc->params);
-}
-
-
 static void handle_telev(struct audio *a, struct mbuf *mb)
 {
 	int event, digit;
@@ -753,6 +922,34 @@ static void handle_telev(struct audio *a, struct mbuf *mb)
 	digit = telev_code2digit(event);
 	if (digit >= 0 && a->eventh)
 		a->eventh(digit, end, a->arg);
+}
+
+
+static int stream_pt_handler(uint8_t pt, struct mbuf *mb, void *arg)
+{
+	struct audio *a = arg;
+	const struct sdp_format *lc;
+	struct aurx *rx = &a->rx;
+
+	if (!rx || rx->pt == pt)
+		return 0;
+
+	lc = sdp_media_lformat(stream_sdpmedia(a->strm), pt);
+
+	/* Telephone event? */
+	if (lc && !str_casecmp(lc->name, "telephone-event")) {
+		handle_telev(a, mb);
+		return ENOENT;
+	}
+
+	if (!lc)
+		return ENOENT;
+
+	if (rx->pt != -1)
+		info("Audio decoder changed payload %d -> %u\n", rx->pt, pt);
+
+	a->rx.pt = pt;
+	return audio_decoder_set(a, lc->data, lc->pt, lc->params);
 }
 
 
@@ -903,36 +1100,11 @@ static void stream_recv_handler(const struct rtp_header *hdr,
 	bool discard = false;
 	size_t i;
 	int wrap;
-	int err;
 
 	MAGIC_CHECK(a);
 
 	if (!mb)
 		goto out;
-
-	/* Telephone event? */
-	if (hdr->pt != rx->pt) {
-		const struct sdp_format *fmt;
-
-		fmt = sdp_media_lformat(stream_sdpmedia(a->strm), hdr->pt);
-
-		if (fmt && !str_casecmp(fmt->name, "telephone-event")) {
-			handle_telev(a, mb);
-			return;
-		}
-	}
-
-	/* Comfort Noise (CN) as of RFC 3389 */
-	if (PT_CN == hdr->pt)
-		return;
-
-	/* Audio payload-type changed? */
-	if (hdr->pt != rx->pt) {
-
-		err = update_payload_type(a, rx->pt, hdr->pt);
-		if (err)
-			return;
-	}
 
 	/* RFC 5285 -- A General Mechanism for RTP Header Extensions */
 	for (i=0; i<extc; i++) {
@@ -1102,12 +1274,13 @@ int audio_alloc(struct audio **ap, struct list *streaml,
 
 	tx->enc_fmt = cfg->audio.enc_fmt;
 	rx->dec_fmt = cfg->audio.dec_fmt;
+	rx->jbtype  = cfg->avt.jbtype;
 
 	err = stream_alloc(&a->strm, streaml,
 			   stream_prm, &cfg->avt, sdp_sess,
 			   MEDIA_AUDIO, label,
 			   mnat, mnat_sess, menc, menc_sess, offerer,
-			   stream_recv_handler, NULL, a);
+			   stream_recv_handler, NULL, stream_pt_handler, a);
 	if (err)
 		goto out;
 
@@ -1179,6 +1352,8 @@ int audio_alloc(struct audio **ap, struct list *streaml,
 	else {
 		err  = str_dup(&tx->module, a->cfg.src_mod);
 		err |= str_dup(&tx->device, a->cfg.src_dev);
+		if (err)
+			goto out;
 	}
 
 	tx->ptime  = ptime;
@@ -1198,10 +1373,18 @@ int audio_alloc(struct audio **ap, struct list *streaml,
 	else {
 		err  = str_dup(&rx->module, a->cfg.play_mod);
 		err |= str_dup(&rx->device, a->cfg.play_dev);
+		if (err)
+			goto out;
 	}
 
 	rx->pt     = -1;
 	rx->ptime  = ptime;
+#ifdef HAVE_PTHREAD
+	err  = pthread_mutex_init(&rx->thr.mutex, NULL);
+	err |= pthread_cond_init(&rx->thr.cond, NULL);
+	if (err)
+		goto out;
+#endif
 
 	a->eventh  = eventh;
 	a->levelh  = levelh;
@@ -1225,7 +1408,7 @@ static void *tx_thread(void *arg)
 	struct autx *tx = &a->tx;
 	uint64_t ts = 0;
 
-	while (a->tx.u.thr.run) {
+	while (tx->thr.run) {
 
 		uint64_t now;
 
@@ -1234,7 +1417,7 @@ static void *tx_thread(void *arg)
 		if (!tx->aubuf_started)
 			continue;
 
-		if (!a->tx.u.thr.run)
+		if (!tx->thr.run)
 			break;
 
 		now = tmr_jiffies();
@@ -1283,7 +1466,7 @@ static int autx_print_pipeline(struct re_printf *pf, const struct autx *autx)
 		return 0;
 
 	err = re_hprintf(pf, "audio tx pipeline:  %10s",
-			 autx->ausrc ? autx->ausrc->as->name : "(src)");
+			 autx->as ? autx->as->name : "(src)");
 
 	for (le = list_head(&autx->filtl); le; le = le->next) {
 		struct aufilt_enc_st *st = le->data;
@@ -1308,7 +1491,7 @@ static int aurx_print_pipeline(struct re_printf *pf, const struct aurx *aurx)
 		return 0;
 
 	err = re_hprintf(pf, "audio rx pipeline:  %10s",
-			 aurx->auplay ? aurx->auplay->ap->name : "(play)");
+			 aurx->ap ? aurx->ap->name : "(play)");
 
 	for (le = list_head(&aurx->filtl); le; le = le->next) {
 		struct aufilt_dec_st *st = le->data;
@@ -1474,23 +1657,32 @@ static int start_player(struct aurx *rx, struct audio *a,
 				return err;
 			}
 
+			rx->aubuf_minsz = min_sz;
 			rx->aubuf_maxsz = max_sz;
 		}
 
 		err = auplay_alloc(&rx->auplay, auplayl,
 				   rx->module,
 				   &prm, rx->device,
-				   auplay_write_handler, rx);
+				   rx->jbtype == JBUF_ADAPTIVE ?
+				   auplay_write_handler2 :
+				   auplay_write_handler, a);
 		if (err) {
 			warning("audio: start_player failed (%s.%s): %m\n",
 				rx->module, rx->device, err);
 			return err;
 		}
 
+		rx->ap = auplay_find(auplayl, rx->module);
+
 		rx->auplay_prm = prm;
 
 		info("audio: player started with sample format %s\n",
 		     aufmt_name(rx->play_fmt));
+
+#ifdef HAVE_PTHREAD
+		rx->thr.start = rx->jbtype == JBUF_ADAPTIVE;
+#endif
 	}
 
 	return 0;
@@ -1576,6 +1768,8 @@ static int start_source(struct autx *tx, struct audio *a, struct list *ausrcl)
 			return err;
 		}
 
+		tx->as = ausrc_find(ausrcl, tx->module);
+
 		switch (a->cfg.txmode) {
 
 		case AUDIO_MODE_POLL:
@@ -1583,12 +1777,12 @@ static int start_source(struct autx *tx, struct audio *a, struct list *ausrcl)
 
 #ifdef HAVE_PTHREAD
 		case AUDIO_MODE_THREAD:
-			if (!tx->u.thr.run) {
-				tx->u.thr.run = true;
-				err = pthread_create(&tx->u.thr.tid, NULL,
+			if (!tx->thr.run) {
+				tx->thr.run = true;
+				err = pthread_create(&tx->thr.tid, NULL,
 						     tx_thread, a);
 				if (err) {
-					tx->u.thr.run = false;
+					tx->thr.run = false;
 					return err;
 				}
 			}
@@ -1709,6 +1903,7 @@ void audio_stop(struct audio *a)
 
 	stop_tx(&a->tx, a);
 	stop_rx(&a->rx);
+	a->started = false;
 }
 
 
@@ -1827,6 +2022,15 @@ int audio_decoder_set(struct audio *a, const struct aucodec *ac,
 	m = stream_sdpmedia(audio_strm(a));
 	reset |= sdp_media_dir(m)!=SDP_SENDRECV;
 
+	if (reset || ac != rx->ac) {
+		rx->auplay = mem_deref(rx->auplay);
+		aubuf_flush(rx->aubuf);
+		stream_reset(a->strm);
+
+		/* Reset audio filter chain */
+		list_flush(&rx->filtl);
+	}
+
 	if (ac != rx->ac) {
 
 		info("audio: Set audio decoder: %s %uHz %dch\n",
@@ -1847,17 +2051,8 @@ int audio_decoder_set(struct audio *a, const struct aucodec *ac,
 
 	stream_set_srate(a->strm, 0, ac->crate);
 
-	if (reset) {
-		stream_reset(audio_strm(a));
-
-		rx->auplay = mem_deref(rx->auplay);
-		aubuf_flush(rx->aubuf);
-
-		/* Reset audio filter chain */
-		list_flush(&rx->filtl);
-
+	if (!rx->auplay)
 		err |= audio_start(a);
-	}
 
 	return err;
 }
@@ -1999,10 +2194,12 @@ void audio_sdp_attr_decode(struct audio *a)
 			info("audio: peer changed ptime_tx %ums -> %ums\n",
 			     a->tx.ptime, ptime_tx);
 			
-			//# rupy (increase buffer size 20-->60ms)
+			//# increase buffer size 20ms --> 60ms. LF_Rupy
+			#if 0 
 			if (ptime_tx < 60) {
 				ptime_tx = 60;
 			}
+			#endif
 			
 			tx->ptime = ptime_tx;
 
@@ -2125,7 +2322,7 @@ int audio_debug(struct re_printf *pf, const struct audio *a)
 			  tx->stats.aubuf_overrun,
 			  tx->stats.aubuf_underrun);
 	err |= re_hprintf(pf, "       source: %s,%s %s\n",
-			  tx->ausrc ? tx->ausrc->as->name : "none",
+			  tx->as ? tx->as->name : "none",
 			  tx->device,
 			  aufmt_name(tx->src_fmt));
 	err |= re_hprintf(pf, "       time = %.3f sec\n",
@@ -2147,7 +2344,7 @@ int audio_debug(struct re_printf *pf, const struct audio *a)
 			  rx->stats.aubuf_underrun
 			  );
 	err |= re_hprintf(pf, "       player: %s,%s %s\n",
-			  rx->auplay ? rx->auplay->ap->name : "none",
+			  rx->ap ? rx->ap->name : "none",
 			  rx->device,
 			  aufmt_name(rx->play_fmt));
 	err |= re_hprintf(pf, "       n_discard:%llu\n",
@@ -2236,6 +2433,8 @@ int audio_set_source(struct audio *au, const char *mod, const char *device)
 				mod, device, err);
 			return err;
 		}
+
+		tx->as = ausrc_find(baresip_ausrcl(), mod);
 	}
 
 	return 0;
@@ -2246,21 +2445,21 @@ int audio_set_source(struct audio *au, const char *mod, const char *device)
  * Set the audio player state to a new audio player module and device.
  * The current audio player will be stopped.
  *
- * @param au     Audio object
+ * @param a      Audio object
  * @param mod    Audio player module (NULL to stop)
  * @param device Audio player device name
  *
  * @return 0 if success, otherwise errorcode
  */
-int audio_set_player(struct audio *au, const char *mod, const char *device)
+int audio_set_player(struct audio *a, const char *mod, const char *device)
 {
 	struct aurx *rx;
 	int err;
 
-	if (!au)
+	if (!a)
 		return EINVAL;
 
-	rx = &au->rx;
+	rx = &a->rx;
 
 	/* stop the audio device first */
 	rx->auplay = mem_deref(rx->auplay);
@@ -2269,12 +2468,17 @@ int audio_set_player(struct audio *au, const char *mod, const char *device)
 
 		err = auplay_alloc(&rx->auplay, baresip_auplayl(),
 				   mod, &rx->auplay_prm, device,
-				   auplay_write_handler, rx);
+				   rx->jbtype == JBUF_ADAPTIVE ?
+				   auplay_write_handler2 :
+				   auplay_write_handler, a);
 		if (err) {
 			warning("audio: set_player failed (%s.%s): %m\n",
 				mod, device, err);
 			return err;
 		}
+#ifdef HAVE_PTHREAD
+		rx->thr.start = rx->jbtype == JBUF_ADAPTIVE;
+#endif
 	}
 
 	return 0;

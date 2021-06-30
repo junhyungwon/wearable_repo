@@ -1,7 +1,7 @@
 /**
  * @file v4l2.c  Video4Linux2 video-source
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -50,8 +50,6 @@ struct buffer {
 };
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* inheritance */
-
 	int fd;
 	pthread_t thread;
 	bool run;
@@ -515,7 +513,6 @@ static int alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	if (!st)
 		return ENOMEM;
 
-	st->vs = vs;
 	st->fd = -1;
 	st->sz = *size;
 	st->frameh = frameh;
