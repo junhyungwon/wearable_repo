@@ -269,10 +269,10 @@ static void __call_register_handler(void)
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
-		sysprint("STUN URL %s@%s:%d (pw: %s) ", ivoip->dev_num, ivoip->stun_svr, 
+		sysprint("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
 				ivoip->svr_port, ivoip->passwd);
 	} else {
-		sysprint("URL %s@%s:%d (pw: %s)", ivoip->dev_num, ivoip->server, 
+		sysprint("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
 				ivoip->svr_port, ivoip->passwd);
 	}
 }
