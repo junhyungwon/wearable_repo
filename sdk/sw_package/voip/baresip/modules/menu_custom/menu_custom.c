@@ -287,10 +287,10 @@ static const char *translate_errorcode(uint16_t scode)
 	switch (scode) {
 	case 486: 
 		return "busy.wav";
+	case 404: /* notfound.wav */
 	case 487: /* ignore */
-	case 404: /*"notfound.wav";*/
 	default:  
-		return NULL; /*"error.wav";*/
+		return "error.wav";
 	}
 }
 
