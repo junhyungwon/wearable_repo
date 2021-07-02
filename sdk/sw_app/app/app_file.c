@@ -256,7 +256,7 @@ static int _get_rec_file_head(struct list_head *head, char *path)
 		sprintf(path, "%s", ptr->fullname);
 		sz = ptr->filesz; /* return file size */
 		
-		dprintf("Get List Head FILE : %s\n", ptr->fullname);
+//		dprintf("Get List Head FILE : %s\n", ptr->fullname);
 		list_del(&ptr->queue);
 		ifile->file_count--;
 		free(ptr);

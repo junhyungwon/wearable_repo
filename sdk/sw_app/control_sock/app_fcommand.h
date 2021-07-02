@@ -22,6 +22,8 @@
 -----------------------------------------------------------------------------*/
 #define CMD_GPSDATA_REQ		(0x1001)
 #define CMD_GPSDATA_RES		(0x1002)
+#define CMD_EVENTDATA_REQ	(0x1003)
+#define CMD_EVENTDATA_RES	(0x1004)
 
 
 

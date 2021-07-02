@@ -206,6 +206,7 @@ static void char_memset(void)
     memset(app_set->ftp_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
 
     app_set->ftp_info.ON_OFF = OFF ;
+    app_set->ftp_info.file_type = OFF ; // OFF NORMAL, ON Event file
 
     memset(app_set->ftp_info.reserved, CFG_INVALID, 126);
 
@@ -379,6 +380,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->ftp_info.id     = %s\n", pset->ftp_info.id);
     printf("pset->ftp_info.pwd    = %s\n", pset->ftp_info.pwd);
     printf("pset->ftp_info.ON_OFF = %d\n", pset->ftp_info.ON_OFF);
+    printf("pset->ftp_info.file_type = %d\n", pset->ftp_info.file_type);
 	printf("\n");
 
     printf("pset->wifiap.en_key = %d\n", pset->wifiap.en_key);
@@ -654,6 +656,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if((int)pset->ftp_info.pwd[0]  == CHAR_INVALID || (int)pset->ftp_info.pwd[0] == 0)
 		strcpy(pset->ftp_info.pwd, "FTP_PASSWORD");
+
+    if(pset->ftp_info.file_type <= CFG_INVALID)
+        pset->ftp_info.file_type = OFF ;
 
 	//# Wifi AP information
 

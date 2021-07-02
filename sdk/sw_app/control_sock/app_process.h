@@ -41,6 +41,16 @@ typedef struct TAG_GPSPACKET {
 } GPSPACKET ;
 #pragma pack()
 
+#pragma pack(1)
+typedef struct TAG_EVENTPACKET {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+	char uid[32] ;
+	char deviceId[32] ;
+} EVENTPACKET ;
+#pragma pack()
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -49,6 +59,8 @@ typedef struct TAG_GPSPACKET {
  Declares a     function prototype
 -----------------------------------------------------------------------------*/
 void gpsdatareq(int, char*, int) ;
+void eventdatareq(int, char*, int) ;
 void gpsdata_send(void *data);
+void eventdata_send(void);
 
 #endif // _APP_PROCESS_H

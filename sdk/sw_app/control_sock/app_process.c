@@ -80,6 +80,7 @@ char m_SendBuffer[MAXBUFF] ;
 #define PACKETSIZE	20480
 
 const int GPSPACKET_SIZE = sizeof(GPSPACKET) ;
+const int EVENTPACKET_SIZE = sizeof(EVENTPACKET) ;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
@@ -89,22 +90,15 @@ void gpsdatareq(int channel, char *data, int len)
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdatareq packet receive...\n") ;
 #endif
-/*
-	GPSDATA Gpsdatares ;
+}
 
-    Gpsdatares.identifier = htons(IDENTIFIER) ;
-    Gpsdatares.cmd        = htons(CMD_GPSDATA_RES);
-    Gpsdatares.length     = htons(GPSDATA_SIZE) ;
-
-    memcpy(m_SendBuffer[channel], &Timesetcfgres, TIMESETCFGRES_SIZE) ;
-
-    sendlen = send(SystemInfo.Channel[channel], m_SendBuffer[channel], TIMESETCFGRES_SIZE, 0) ;
-*/
-
+void eventdatareq(int channel, char *data, int len)
+{
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("timesetcfgres packet sendlen = %d\n",sendlen) ;
+    DEBUG_PRI("eventdatareq packet receive...\n") ;
 #endif
 }
+
 
 void gpsdata_send(void *data)
 {
@@ -145,6 +139,32 @@ void gpsdata_send(void *data)
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+    }
+}
+
+void eventdata_send(void)
+{
+    int sendlen = 0, i;
+    EVENTPACKET Eventpacket ;
+
+	Eventpacket.identifier = htons(IDENTIFIER) ;
+	Eventpacket.cmd = htons(CMD_EVENTDATA_RES) ;
+	Eventpacket.length = htons(EVENTPACKET_SIZE) ;
+ 
+	sprintf(Eventpacket.uid, "%s", app_set->sys_info.uid) ;
+	sprintf(Eventpacket.deviceId, "%s", app_set->sys_info.deviceId) ;
+
+	memcpy(m_SendBuffer, &Eventpacket, EVENTPACKET_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Eventdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
 		}
     }

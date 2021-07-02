@@ -131,7 +131,8 @@ typedef struct{
     char id[MAX_CHAR_16];
     char pwd[MAX_CHAR_16];
     short ON_OFF ;
-	char reserved[126];
+	short file_type ;
+	char reserved[124];
 
 } app_network_ftp_t;
 

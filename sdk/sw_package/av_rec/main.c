@@ -46,7 +46,9 @@ typedef struct {
 	unsigned int rec_min;
 	
 	int rec_first;
-    int old_min;
+    int old_min ;
+	int rec_evt_cnt ;
+	int pre_type ;          // normal file 1
 	
 	int en_snd; 			//# sound enable
 	int snd_ch;				//# sound channel
@@ -126,7 +128,7 @@ static int recv_msg(void)
 	irec->fr        = msg.fr;  		  //# frame rate..
 	irec->rec_min   = msg.stime;	  //# save time
 	
-	if (msg.cmd == AV_CMD_REC_START) {
+	if (msg.cmd != AV_CMD_REC_STOP) {
 		irec->snd_ch   = msg.snd_ch;
 		irec->snd_rate = msg.snd_rate;		//# sampling rate
 		irec->snd_btime = msg.snd_btime;	//# buffer size
@@ -223,14 +225,15 @@ static int search_frame(int sec)
 * @brief    event record function
 * @section  [desc]
 *****************************************************************************/
-static int evt_file_open(stream_info_t *ifr)
+static int evt_file_open(stream_info_t *ifr, int cmd)
 {
 	struct stat sb;
 	struct tm ts, *gmtm;
 	char buf_time[64];
 	char filename[128];
     int minute_change=0;
-	
+	char *s = NULL; 
+
 	gmtm = gmtime((const time_t *)&ifr->t_sec);
 
 //    localtime_r((const time_t *)&ifr->t_sec, &ts);
@@ -247,7 +250,9 @@ static int evt_file_open(stream_info_t *ifr)
         minute_change = 1;
         irec->rec_first = 0;
     }
-	
+
+    if(cmd == APP_CMD_START)  // normal
+	{
 	if ((irec->old_min != ts.tm_min && minute_change))
 	{
 		irec->old_min = ts.tm_min;
@@ -256,6 +261,7 @@ static int evt_file_open(stream_info_t *ifr)
 		if (irec->fevt != NULL) 
 		{
 			unsigned long sz;
+		    // TODO File Type check and then select close or not 
 			
         	avi_file_close(irec->fevt, irec->fname);	//# close current file
 			/* calculate file size */
@@ -264,22 +270,97 @@ static int evt_file_open(stream_info_t *ifr)
 			send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
 		}	
 		//# get current date & time
-//        localtime_r((const time_t *)&ifr->t_sec, &ts);
-		strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, 
-				irec->deviceId, MODEL_CH_NUM);
+//          localtime_r((const time_t *)&ifr->t_sec, &ts);
+		    strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
+		    sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, MODEL_CH_NUM);
 		
-        memset(irec->fname, 0, sizeof(irec->fname));
-		sprintf(irec->fname, "%s", filename);
+            memset(irec->fname, 0, sizeof(irec->fname));
+		    sprintf(irec->fname, "%s", filename);
 		
-		irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
+		    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
 						irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
-		if (irec->fevt == NULL)
-			return EFAIL;
+		    if (irec->fevt == NULL)
+			    return EFAIL;
 		
-		dprintf("AVI name %s opened!\n", irec->fname);
-		return SOK;
+		    dprintf("AVI name %s opened!\n", irec->fname);
+			irec->rec_evt_cnt = 0;
+		    return SOK;
+	    }
 	}
+	if(cmd == APP_CMD_EVT) // event 
+	{
+		// TODO File Type check and then select close or not 
+//        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
+
+	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
+	    {
+            if(abs(irec->old_min - ts.tm_min) > 1)  
+                irec->old_min = 0 ; 
+
+		    if (irec->fevt != NULL) 
+		    {
+			    unsigned long sz;
+		
+				s =strstr(irec->fname, "/mmc/DCIM/E_") ;
+                if(s == NULL)
+				{
+					printf("normal irec->fname= %s\n",irec->fname) ;
+        	        avi_file_close(irec->fevt, irec->fname);	//# close current file
+			    /* calculate file size */
+					lstat(irec->fname, &sb);
+			        sz = (sb.st_size / KB); /* Byte->KB */
+					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+				    irec->fevt = NULL ;
+					irec->pre_type = 1 ;   // event file 직전 파일이 normal file 일때 처리를 위한 부분 
+                }
+
+				if(s != NULL && irec->old_min != ts.tm_min && minute_change && irec->old_min != 0)
+				{
+					printf("event irec->fname= %s\n",irec->fname) ;
+        	        avi_file_close(irec->fevt, irec->fname);	//# close current event file
+			    /* calculate file size */
+					lstat(irec->fname, &sb);
+					sz = (sb.st_size / KB); /* Byte->KB */
+					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+				    irec->fevt = NULL ;
+
+					if(irec->rec_evt_cnt == 0)
+					{
+						if(irec->pre_type == 1) 	
+					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
+						else
+					        send_msg(AV_CMD_REC_EVT_END, 0, NULL);
+                    }
+                }  
+
+	            irec->old_min = ts.tm_min;
+                minute_change = 0;
+		    }	
+		}
+
+		if (irec->fevt == NULL) 
+		{
+            if(irec->rec_evt_cnt > 0)
+			{
+  		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
+		        sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, MODEL_CH_NUM);
+		
+		        memset(irec->fname, 0, sizeof(irec->fname));
+		        sprintf(irec->fname, "%s", filename);
+		
+		   	    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
+			    irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
+			    if (irec->fevt == NULL)
+				    return EFAIL;
+		
+			    irec->rec_evt_cnt -= 1;
+
+			    dprintf("AVI name %s opened!\n", irec->fname);
+
+			    return SOK;
+			}
+	    }
+    }
 
 	return 0;
 }
@@ -291,6 +372,7 @@ static void evt_file_close(void)
 	
 	if (irec->fevt) {
 		avi_file_close(irec->fevt, irec->fname);
+		irec->pre_type = -1 ;
 		/* calculate file size */
 		lstat(irec->fname, &sb);
 		sz = (sb.st_size / KB); /* Byte->KB */
@@ -323,6 +405,8 @@ static void init_rec_cfg(void)
 	irec->old_min   = -1;
     irec->rec_first = 1;
     irec->fevt      = NULL;
+	irec->rec_evt_cnt = 0 ;
+	irec->pre_type = -1 ;
 }
 
 /*****************************************************************************
@@ -336,6 +420,7 @@ static void *THR_rec_evt(void *prm)
 	int i, frame_num, read_idx=0;
 	stream_info_t *ifr;
 	char msg[256]={0,};
+	char *s = NULL; 
 	
 	aprintf("enter...\n");
 	
@@ -375,7 +460,7 @@ static void *THR_rec_evt(void *prm)
 
 		ifr = &imem->ifr[read_idx];
         if (ifr->ch == 0  && ifr->d_type == DATA_TYPE_VIDEO && ifr->is_key) {
-		    ret = evt_file_open(&imem->ifr[read_idx]);
+		    ret = evt_file_open(&imem->ifr[read_idx], cmd);
 			if (ret < 0) {
 				send_msg(AV_CMD_REC_ERR, 0, NULL);
 				memset(msg, 0, sizeof(msg));
@@ -391,18 +476,45 @@ static void *THR_rec_evt(void *prm)
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
 				break;
 			}
-			
+
 			frame_num = get_valid_frame(read_idx);
 			if (frame_num < 10) {
 				app_msleep(10);
 				continue;
 			}
-			
+
+			if(tObj->cmd == APP_CMD_EVT)
+			{
+
+				if(irec->fevt == NULL)   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
+			        irec->rec_evt_cnt = 2;
+                else
+				{
+                    s =strstr(irec->fname, "/mmc/DCIM/R_") ;
+                    if(s != NULL)
+			            irec->rec_evt_cnt = 2;  // normal record 중에 event 발생시 1분 이상 녹화를 위한 부분 
+					else
+			            irec->rec_evt_cnt += 1;  // event recording 중 추가 이벤트 발생 
+                }
+				cmd = APP_CMD_EVT ;
+			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
+            }
+			if(tObj->cmd == APP_CMD_START)
+			{
+
+				cmd = APP_CMD_START ;
+			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
+			}
+
+//			printf("irec->rec_evt_cnt = %d cmd = %d\n", irec->rec_evt_cnt, cmd) ;
+
 			for (i = 0; i < frame_num; i++)
 			{
 				ifr = &imem->ifr[read_idx];
 				if ((ifr->d_type==DATA_TYPE_VIDEO) && (ifr->ch==0) && ifr->is_key) {
-					ret = evt_file_open(ifr);
+
+				    ret = evt_file_open(ifr, cmd);
+
 					if (ret < 0) {
 						send_msg(AV_CMD_REC_ERR, 0, NULL);
 						memset(msg, 0, sizeof(msg));
@@ -410,8 +522,9 @@ static void *THR_rec_evt(void *prm)
 						avrec_log(msg);
 						eprintf("%s\n", msg);
 						/* loop exit */
+						cmd = 0x00 ;
 						break; 
-					} 
+					}
 				}
 				
 				if (irec->fevt != NULL) 
@@ -529,6 +642,9 @@ static void app_main(void)
 		case AV_CMD_REC_START:
 			init_rec_cfg();
 			event_send(tObj, APP_CMD_START, 0, 0);
+			break;
+		case AV_CMD_REC_EVT:
+			event_send(tObj, APP_CMD_EVT, 0, 0);
 			break;
 		case AV_CMD_REC_STOP:
 			event_send(tObj, APP_CMD_STOP, 0, 0);

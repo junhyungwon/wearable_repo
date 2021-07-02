@@ -101,7 +101,7 @@ void video_status(void)
 #if defined(NEXXONE) || defined(NEXX360H)
 		if (app_cfg->vid_count > 0) {
 			app_cfg->ste.b.cap = 1;
-			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec) {
+			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec && !app_cfg->ste.b.ftp_run) {
 				app_rec_start();  
 			}
 			app_cfg->ste.b.rec = 0 ;
@@ -110,7 +110,7 @@ void video_status(void)
 		/* required for avi open */
 		if ((app_cfg->vid_count > 0) && (vstatus[0] > 0)) {
 			app_cfg->ste.b.cap = 1;
-			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec) {
+			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec && !app_cfg->ste.b.ftp_run) {
 				app_rec_start();  
 			}
 			app_cfg->ste.b.rec = 0 ;

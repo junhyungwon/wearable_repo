@@ -474,7 +474,7 @@ static int time_sync(void)
         }
     }
 
-	if(app_cfg->ste.b.prerec_state)
+	if(app_cfg->ste.b.prerec_state && !app_rec_state() && !app_cfg->ste.b.ftp_run)
 	{
 		app_rec_start() ;
 	}
@@ -505,7 +505,8 @@ static void *THR_tsync(void *prm)
         if (cmd == APP_CMD_STOP)  {
             break;
         }
-		if(app_cfg->ste.b.cradle_eth_ready || app_cfg->ste.b.usbnet_run) {
+		if(app_cfg->ste.b.cradle_eth_ready || app_cfg->ste.b.usbnet_run) 
+		{
             if (itsync->tsync_status == TIMESYNC_READY)
 			{ 
                 retval = time_sync() ;

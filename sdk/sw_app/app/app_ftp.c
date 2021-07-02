@@ -596,6 +596,7 @@ static void ftp_send(void)
 	int ret = 0, retry_cnt = 0;
     char FileName[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
+    char *s = NULL ;
 
 	iftp->ftp_state = FTP_STATE_CONNECTING;
 
@@ -677,8 +678,15 @@ static void ftp_send(void)
             if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
                 break;
 
-            strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /deviceID/20190823/
+			if(app_set->ftp_info.file_type) // ftp send event file
+			{
+			    if(strstr(FileName, "/mmc/DCIM/R_"))
+                {
+					continue ;
+				}
+			}
 
+            strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /20190823/DeviceID
 		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
 		    {
                 if(ftp_change_dir(iftp->sdFtp, temp, 0) != 0)
@@ -814,8 +822,11 @@ static void *THR_ftp(void *prm)
 			/* ftp connection 실패시 auto record 설정 On, 및 현재 record 상태 였으면 이전 상태로 돌리기 위한 작업 */
             if (app_cfg->ste.b.prerec_state && iftp->ftp_state == FTP_STATE_SEND_DONE)
 			{      
-                app_rec_start() ;  // rec start after ftp send
-			    app_cfg->ste.b.prerec_state = 0 ;
+				if(!app_rec_state())
+				{
+                    app_rec_start() ;  // rec start after ftp send
+			        app_cfg->ste.b.prerec_state = 0 ;
+				}
             } 
 			
         }
@@ -830,8 +841,11 @@ static void *THR_ftp(void *prm)
 
             if (app_cfg->ste.b.prerec_state && app_cfg->en_rec)
 			{
-                app_rec_start() ;  // rec start after ftp send
-				app_cfg->ste.b.prerec_state = 0 ;
+				if(!app_rec_state())
+				{
+                    app_rec_start() ;  // rec start after ftp send
+				    app_cfg->ste.b.prerec_state = 0 ;
+				}
 			}
         }
    

@@ -54,6 +54,7 @@ typedef enum {
 
 	//# for rec proc
 	APP_REC_START = 0x20,
+	APP_REC_EVT,
 	APP_REC_STOP,
 
 	//# ctrl

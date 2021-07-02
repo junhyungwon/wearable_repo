@@ -23,6 +23,7 @@
 #include "app_util.h"
 #include "app_snd.h"
 #include "app_buzz.h"
+#include "app_process.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -38,7 +39,7 @@ typedef struct {
 	
 	int init;
 	int qid;
-	int evt_rec;			//# 1:recording, 0:idle
+	int rec_state;			//# 1:recording, 0:idle
 	
 	int snd_ch;				//# sound channel
 	int snd_rate;			//# sampling rate
@@ -72,7 +73,7 @@ static int send_msg(int cmd)
 	msg.en_pre = app_set->rec_info.pre_rec; 				//# todo
 	msg.fr = 0;        										//# frame rate..
 	
-	if (cmd == AV_CMD_REC_START) {
+	if (cmd != AV_CMD_REC_STOP) {
 		msg.snd_ch    = irec->snd_ch; 
 		msg.snd_rate  = irec->snd_rate; 
 		msg.snd_btime = irec->snd_btime; 
@@ -130,9 +131,29 @@ static void *THR_rec_recv_msg(void *prm)
 			dprintf("received rec exit!\n");
 			break;
 		
+		case AV_CMD_REC_EVT_END:
+			dprintf("received Event record done!\n");
+			
+            send_msg(AV_CMD_REC_STOP);
+		    irec->rec_state = 0;
+			app_buzz_ctrl(100, 2);
+		    app_leds_rec_ctrl(LED_REC_OFF);
+			
+			break;
+
+		case AV_CMD_REC_RESTART:
+			dprintf("received Event record done!\n");
+            send_msg(AV_CMD_REC_STOP);
+			app_buzz_ctrl(100, 2);
+            send_msg(AV_CMD_REC_START);
+			irec->rec_state = 1;
+			app_buzz_ctrl(100, 1);
+			app_leds_rec_ctrl(LED_REC_ON);
+			
+			break ;
 		case AV_CMD_REC_ERR:
 			dprintf("received rec error!\n");
-			irec->evt_rec = 0; /* record stop...*/
+			irec->rec_state = 0; /* record stop...*/
 			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);
 			break;
@@ -161,7 +182,7 @@ static void *THR_rec_send_msg(void *prm)
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
-	irec->evt_rec = 0;
+	irec->rec_state = 0;
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
 	while (!exit)
@@ -174,19 +195,26 @@ static void *THR_rec_send_msg(void *prm)
 		} else if (cmd == APP_REC_START) {
 			send_msg(AV_CMD_REC_START);
 			
-			irec->evt_rec = 1;
+			irec->rec_state = 1;
+			app_leds_rec_ctrl(LED_REC_ON);
+			/* TODO */
+		} else if (cmd == APP_REC_EVT) {
+			send_msg(AV_CMD_REC_EVT);
+			
+
+            irec->rec_state  = 1;  
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_CMD_STOP) {
 			send_msg(AV_CMD_REC_STOP);
 			
-			irec->evt_rec = 0;
+			irec->rec_state = 0 ;
 			app_leds_rec_ctrl(LED_REC_OFF);
 		}
 	}
 	
 	tObj->active = 0;
-	irec->evt_rec = 0;
+	irec->rec_state = 0;
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
 	aprintf("exit\n");
@@ -194,10 +222,10 @@ static void *THR_rec_send_msg(void *prm)
 	return NULL;
 }
 
-static int _is_enable_rec_start(void)
+static int _is_enable_rec_start(int rec_type)
 {	
 	//# currently record
-	if (irec->evt_rec) {
+	if (irec->rec_state && !rec_type) {
 		eprintf("currently recording...\n");
 		return EFAIL;
 	}
@@ -221,13 +249,15 @@ static int _is_enable_rec_start(void)
 }
 
 /*****************************************************************************
-* @brief    record start/stop function
+* @brief    record start/evt_rec/stop function
 * @section
 *****************************************************************************/
 int app_rec_start(void)
 {
+	int start = 1, type = 0; // normal  0, event 1
+	unsigned long sz;
 	//# Check the status of recording.
-	if (_is_enable_rec_start() == EFAIL)
+	if (_is_enable_rec_start(type) == EFAIL)
 		return EFAIL;
 	
 	if (!irec->init) {
@@ -243,9 +273,32 @@ int app_rec_start(void)
 	return SOK;
 }
 
+int app_rec_evt(void)
+{
+	int start = 1, type = 1; // normal  0, event 1
+	unsigned long sz;
+
+	//# Check the status of recording.
+	if (_is_enable_rec_start(type) == EFAIL)
+		return EFAIL;
+	
+	if (!irec->init) {
+		OSA_waitMsecs(50);
+	}
+	
+	eventdata_send() ;
+	aprintf("Event Record Process Start!!\n");
+	
+	//# Record start if captuer is not zero.
+    app_buzz_ctrl(500, 1);			//# buzz: rec start
+	event_send(&irec->sObj, APP_REC_EVT, 0, 0);
+	
+	return SOK;
+}
+
 int app_rec_stop(int buzz)
 {
-	if (irec->evt_rec) {
+	if (irec->rec_state) {
 		if (buzz) app_buzz_ctrl(100, 2);	//# buzz: rec stop
 		event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
 	}
@@ -261,7 +314,7 @@ int app_rec_stop(int buzz)
 int app_rec_state(void)
 {
 	/* 0-> idle, 1 -> recording */
-	return irec->evt_rec;
+	return irec->rec_state;
 }
 
 /*****************************************************************************
@@ -314,7 +367,7 @@ int app_rec_exit(void)
 	app_thr_obj *tObj;
 
 	//#--- stop message send thread
-	if (irec->evt_rec)
+	if (irec->rec_state)
 	{
 		tObj = &irec->sObj;
 		event_send(tObj, APP_CMD_EXIT, 0, 0);
