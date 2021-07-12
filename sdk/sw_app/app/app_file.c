@@ -476,7 +476,7 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	
 	if ((lcnt == 0) || (bcnt != lcnt)) {
 		memset(msg, 0, sizeof(msg));
-		snprintf(msg, sizeof(msg), "invalid video list (%d, %d)!!\n", bcnt, lcnt);
+		snprintf(msg, sizeof(msg), "file list mismatched (dir-%d, list-%d)!!\n", bcnt, lcnt);
 		eprintf("%s\n", msg);
 		return -1;
 	}

@@ -56,6 +56,7 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 static const char *fw_app_name  = "/mmc/app_fitt.out";
+static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
 	
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -852,12 +853,16 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-static int _sw_update(const char *disk, int version)
+static int _sw_update(const char *disk)
 {
+	FILE *f = NULL;
 	char cmd[256]={0,};
 	char *pFile = NULL;
+	
+	unsigned int byte1, byte2;
 	int ret = 0;
 	int release = 1;
+	int mcu_ver;
 	
 	aprintf("start...\n");
 	
@@ -884,19 +889,39 @@ static int _sw_update(const char *disk, int version)
 		goto fw_exit;
 	}
 	
-	//# micom version check..
-	if (version == MIC_VERSION) {
-		/* delete mcu_fitt.txt */
-		if (access("/mmc/mcu_fitt.txt", F_OK)==0) {
-			remove("/mmc/mcu_fitt.txt");
+	/* check mcu firmware and delete */
+	f = fopen(fw_mcu_name, "r");
+	if (f != NULL) 
+	{
+		/*
+		 * 1st: @f000
+		 * 2nd: 20 00 .....(ascii 코드로 구성)
+		 *    : 0x32 0x30 0x20(space) 0x30 0x30
+		 */
+		memset(cmd, 0, sizeof(cmd));
+		fgets(cmd, sizeof(cmd), f);
+		/* 2번째 라인에 버전 정보가 있다. */
+		fgets(cmd, sizeof(cmd), f);
+		sscanf(cmd, "%02x %02x\n", &byte1, &byte2);
+		ret = ((byte2 << 8) | byte1);
+		//printf("ver = 0x%04x\n", ret);
+		fclose(f);
+		
+		mcu_ver = ctrl_get_mcu_version(NULL);
+		if ((ret > 0) && (ret == mcu_ver)) {
+			if (access(fw_mcu_name, F_OK)==0) {
+				remove(fw_mcu_name);
+				//printf("remove %s\n", fw_mcu_name);
+			}
 		}
+	} else {
+		eprintf("Failed to open %s\n", fw_mcu_name);
 	}
 	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
 	sysprint("Full version Firmware update done....\n");
-
 	dprintf("done! will restart\n");
 	ret = SOK;
 	
@@ -1084,13 +1109,9 @@ void ctrl_auto_update(void)
 	char path[64] = {0, };
 	char cmd[255] = {0, };
 	
-	int mcu_ver=0;
-		
-	mcu_ver = ctrl_get_mcu_version(NULL);
-	
 	/* First, full firmware check.. */
 	//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-	if (_sw_update(SD_MOUNT_PATH, mcu_ver) == 0) {
+	if (_sw_update(SD_MOUNT_PATH) == 0) {
 		app_mcu_pwr_off(OFF_RESET);
 	}
 		
