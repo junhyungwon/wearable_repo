@@ -204,8 +204,7 @@ static void *THR_dev(void *prm)
 		mmc = dev_ste_mmc();
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
-			//dprintf("SD Card %s\n", mmc?"insert":"remove");
-			aprintf("done! will restart!\n");
+			aprintf("SD Card removed.. system will restart!\n");
 			app_rec_stop(0);
 			app_mcu_pwr_off(OFF_RESET);
 		}

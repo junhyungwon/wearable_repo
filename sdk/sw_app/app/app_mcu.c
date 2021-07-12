@@ -135,7 +135,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 				if (bg_lv >= 0) {
 					app_leds_int_batt_ctrl(bg_lv);
 				}
-				//aprintf("ibatt %d(V) ebatt %d(V) bg_lv %d\n", ibatt,  ebatt, bg_lv);
+//				aprintf("mbatt %d(V) ibatt %d(V) ebatt %d(V) bg_lv %d\n", mbatt, ibatt,  ebatt, bg_lv);
 			}
 		} else {
 			c_volt_lv = CNT_CHK_VLEVEL;
