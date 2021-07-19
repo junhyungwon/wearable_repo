@@ -451,11 +451,11 @@ static void *THR_wlan_poll(void *prm)
 					ret = netlink_subsystem_parse(msg, len, &sub, &detached);
 					if (!ret)
 					{
-						dprintf("subsystem: usb, removed: %s\n", detached ? "yes" : "no");
 						if (sub) {
 							if (detached) {
 								if (netlink_usb_detach_parse(msg, len, &v, &p) == 0)
 								{
+									dprintf("usb %x, %x removed!\n", v, p);
 									if (((v == RTL_8821A_VID) && (p == RTL_8821A_PID)) ||
 										((v == RTL_8812A_VID) && (p == RTL_8812A_PID))
 									   )
@@ -469,6 +469,7 @@ static void *THR_wlan_poll(void *prm)
 							} else {
 								if (netlink_usb_attach_parse(msg, len, &v, &p) == 0)
 								{
+									dprintf("usb %x, %x attach!\n", v, p);
 									if (((v == RTL_8821A_VID) && (p == RTL_8821A_PID)) ||
 										((v == RTL_8812A_VID) && (p == RTL_8812A_PID))
 									   )

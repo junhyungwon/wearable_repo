@@ -541,7 +541,8 @@ int netmgr_set_ip_dhcp(const char *ifname)
 	 * -n; error exit. if lease cannot be immediately negotiated.
 	 */
 	memset(command, 0, sizeof(command));
-	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 1 -t 5 -n -b -p %s", ifname, path);
+//	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 1 -t 5 -n -b -p %s", ifname, path);
+	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -n -b -p %s", ifname, path);
 	f = popen(command, "w");
 	if (f != NULL) {
 		pclose(f);
@@ -564,6 +565,7 @@ int netmgr_udhcpc_is_run(const char *ifname)
 	f = fopen(path, "r");
 	if (f == NULL) {
 		/*  terminated or process done!! */
+		eprintf("couldn't open file %s\n", path);
 		return 0;
 	}
 
@@ -575,6 +577,7 @@ int netmgr_udhcpc_is_run(const char *ifname)
 	if (r == -1 && errno == ENOENT) {
 		/* process not exist */
 		r = 0;
+		eprintf("%s process isn't exist!\n", buf);
 	} else
 		/* process exist */
 		r = 1;
