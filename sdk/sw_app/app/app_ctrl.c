@@ -56,7 +56,12 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 static const char *fw_app_name  = "/mmc/app_fitt.out";
+
+#ifdef NEXX360V
+static const char *fw_mcu_name  = "/mmc/mcu_nexb.txt";
+#else
 static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
+#endif
 	
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -709,10 +714,17 @@ void ctrl_swosd_userstr(char *str, int draw)
 #define FW_DIR      		"/mmc/fw_version.txt"
 #define FW_UBIFS			"/mmc/rfs_fit.ubifs"
 
+#ifdef NEXX360V
+static char *full_upfiles[FW_FILE_NUM] = {
+	"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
+	"uImage_fit", "rfs_fit.ubifs", "mcu_nexb.txt"
+};
+#else
 static char *full_upfiles[FW_FILE_NUM] = {
 	"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
 	"uImage_fit", "rfs_fit.ubifs", "mcu_fitt.txt"
 };
+#endif
 	
 typedef struct {
     char item[8];
