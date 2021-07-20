@@ -960,8 +960,10 @@ curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192
 */
 int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 {
+	FILE *f = NULL;
 	char cmd[256];
-	int ret;
+	int ret, mcu_ver;
+	unsigned int byte1, byte2;
 	
 	/* recording stop */
 	ret = app_rec_state();
@@ -1049,12 +1051,33 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	}
 	
 	//# micom version check..
-	ret = ctrl_get_mcu_version(NULL);
-	if (ret == MIC_VERSION) {
-		/* delete mcu_fitt.txt */
-		if (access("/mmc/mcu_fitt.txt", F_OK)==0) {
-			remove("/mmc/mcu_fitt.txt");
+	/* check mcu firmware and delete */
+	f = fopen(fw_mcu_name, "r");
+	if (f != NULL) 
+	{
+		/*
+		 * 1st: @f000
+		 * 2nd: 20 00 .....(ascii 코드로 구성)
+		 *    : 0x32 0x30 0x20(space) 0x30 0x30
+		 */
+		memset(cmd, 0, sizeof(cmd));
+		fgets(cmd, sizeof(cmd), f);
+		/* 2번째 라인에 버전 정보가 있다. */
+		fgets(cmd, sizeof(cmd), f);
+		sscanf(cmd, "%02x %02x\n", &byte1, &byte2);
+		ret = ((byte2 << 8) | byte1);
+		//printf("ver = 0x%04x\n", ret);
+		fclose(f);
+		
+		mcu_ver = ctrl_get_mcu_version(NULL);
+		if ((ret > 0) && (ret == mcu_ver)) {
+			if (access(fw_mcu_name, F_OK)==0) {
+				remove(fw_mcu_name);
+				//printf("remove %s\n", fw_mcu_name);
+			}
 		}
+	} else {
+		eprintf("Failed to open %s\n", fw_mcu_name);
 	}
 	
 	// check md5sum
