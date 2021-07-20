@@ -44,8 +44,13 @@
 #define CNT_CHK_VLEVEL		(TIME_CHK_VLEVEL/TIME_DATA_CYCLE)
 
 #define IBATT_MIN		    620 	//590		//#  5.90 V->6.4V, minimum battery voltage
-#define EBATT_MIN		    970					//#  9.7 V (3s->1s per 1V)minimum battery voltage
 #define MAX_TIME_GAP		3000	//3sec
+
+#ifdef NEXX360V
+#define EBATT_MIN		    890					//#  8.90 V (외장 트레블 어탭터 사용 시)
+#else
+#define EBATT_MIN		    970					//#  9.7 V (3s->1s per 1V)minimum battery voltage
+#endif
 
 #define PSW_EVT_LONG		2
 
@@ -100,17 +105,74 @@ void app_mcu_pwr_off(int type)
 /*----------------------------------------------------------------------------
  check voltage
 -----------------------------------------------------------------------------*/
-//# max (8.43V)
+static int c_volt_chk = 0;
+static int c_volt_lv = 0;
+static int power_on_lv = 1;
+
+/*
+ * 내장 배터리 제거. 외장 배터리가 트레블 어댑터를 지원해야 하므로 최소 전압을 8.75V까지 낮춘다.
+ * LED Display는 추후 변경.
+ */
+#ifdef NEXX360V
+static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
+{
+	int bg_lv = -1;
+
+	if (power_on_lv) {
+		power_on_lv = 0;
+		if (ebatt < 900) 		{bg_lv = 0;}
+		else if(ebatt < 945) 	{bg_lv = 1;}
+		else if(ebatt < 975)	{bg_lv = 2;}
+		else					{bg_lv = 3;}
+
+		app_leds_int_batt_ctrl(bg_lv);
+	} else {
+		if (ebatt >= 976) 					   {bg_lv = 3;}
+		else if (ebatt >= 945 && ebatt < 974)  {bg_lv = 2;}
+		else if (ebatt >= 931 && ebatt < 943)  {bg_lv = 1;}
+		else if (ebatt >= 900 && ebatt < 929)  {bg_lv = 0;}
+
+		if (c_volt_lv) {
+			c_volt_lv--;
+			if (c_volt_lv == 0) {
+				if (bg_lv >= 0) {
+					app_leds_int_batt_ctrl(bg_lv);
+				}
+//				aprintf("mbatt %d(V) ebatt %d(V) bg_lv %d\n", mbatt, ebatt, bg_lv);
+			}
+		} else {
+			c_volt_lv = CNT_CHK_VLEVEL;
+		}
+	} //# if (first_bg_lv)
+
+	//# low power check (first internal battery)
+	if(ebatt < EBATT_MIN) {
+		if(c_volt_chk) {
+			c_volt_chk--;
+			if(c_volt_chk == 0) 
+			{
+				sysprint("Peek Low Voltage Detected(%d)", ebatt);
+				ctrl_sys_shutdown();
+				
+				return 1;
+			}
+		} else {
+			c_volt_chk = CNT_CHK_VLOW;
+		}
+	}
+	else {
+		c_volt_chk = 0;
+	}
+
+	return 0;
+}
+#else
+//# 내장 max (8.43V), 외장 배터리 최소 8.75V 이상. 
 //# //# check battery gauge level
 //	if(mval.ibatt < 600) 		{bg_lv = 0;}
 //	else if(mval.ibatt < 710) 	{bg_lv = 1;}
 //	else if(mval.ibatt < 760)	{bg_lv = 2;}
 //	else						{bg_lv = 3;}
-
-static int c_volt_chk = 0;
-static int c_volt_lv = 0;
-static int power_on_lv = 1;
-
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
 	int bg_lv = -1;
@@ -163,6 +225,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 
 	return 0;
 }
+#endif
 
 /*****************************************************************************
 * @brief	micom message main function
@@ -334,14 +397,19 @@ void app_mcu_stop(void)
 *****************************************************************************/
 int app_mcu_init(void)
 {
-	int ret;
-
+	int ret,ver;
+	
 	ret = mic_msg_init();
 	if(ret < 0) {
 		return -1;
 	}
+	
 	mic_send_ready();
-
+	ver = (int)mic_get_version();
+	if(ver < SYS_MCU_VER) {
+		printf(" [warning] micom version is old!!!\n");
+	}
+	
 //	mic_exit_state(OFF_NONE, 0);	//# for test - no power off
 	aprintf("... done!\n");
 	

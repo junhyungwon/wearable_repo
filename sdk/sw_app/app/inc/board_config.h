@@ -30,6 +30,7 @@
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
 #	define MODEL_NAME					"NEXX360B"
@@ -41,6 +42,7 @@
 #	define SYS_CONFIG_WLAN				0
 #	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360H)
 #	define NEXX360H
 #	define MODEL_NAME					"NEXX360H"
@@ -52,6 +54,7 @@
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
 #	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360V)
 #	define NEXX360V
 #	define MODEL_NAME					"NEXX360V"
@@ -63,6 +66,7 @@
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0010
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
 #	define MODEL_NAME					"NEXXONE"
@@ -74,6 +78,7 @@
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0020
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif

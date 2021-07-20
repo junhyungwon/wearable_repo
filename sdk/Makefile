@@ -272,7 +272,11 @@ uboot:
 	@echo -e "\n--- make uboot done! (`date +'%H:%M:%S'`)---\n"
 
 ubootscr:
-	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_$(SYSTEM_CFG).sh $(UBOOTDIR)/boot.scr
+ifeq ($(SYSTEM_PLATFORM), NEXX360V)
+	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_nexb.sh $(UBOOTDIR)/boot.scr
+else
+	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_fit.sh $(UBOOTDIR)/boot.scr
+endif
 	mv $(UBOOTDIR)/boot.scr $(TFTP_HOME)/boot.scr
 
 uboot_all: uboot_clean uboot ubootscr
