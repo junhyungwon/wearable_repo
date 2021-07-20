@@ -328,7 +328,8 @@ int put_json_all_config()
 			goto _FREE_SERVERS_OBJ;
 		}
 
-		json_object_object_add(bs_obj, "enable",     json_object_new_int(   p.bs.enable));
+		json_object_object_add(bs_obj, "enable",       json_object_new_int(   p.bs.enable));
+		json_object_object_add(bs_obj, "upload_files", json_object_new_int(p.bs.upload_files));
 		json_object_object_add(bs_obj, "serveraddr", json_object_new_string(p.bs.serveraddr));
 		json_object_object_add(bs_obj, "port",       json_object_new_int(   p.bs.port));
 		json_object_object_add(bs_obj, "id",         json_object_new_string(p.bs.id));
@@ -574,7 +575,8 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
-	json_object_object_add(bsobj, "enable",     json_object_new_int(   p->bs.enable));
+	json_object_object_add(bsobj, "enable",       json_object_new_int( p->bs.enable));
+	json_object_object_add(bsobj, "upload_files", json_object_new_int( p->bs.upload_files));
 	json_object_object_add(bsobj, "serveraddr", json_object_new_string(p->bs.serveraddr));
 	json_object_object_add(bsobj, "port",       json_object_new_int(   p->bs.port));
 	json_object_object_add(bsobj, "id",         json_object_new_string(p->bs.id));
