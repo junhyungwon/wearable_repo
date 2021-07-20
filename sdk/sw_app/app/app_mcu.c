@@ -121,16 +121,16 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	if (power_on_lv) {
 		power_on_lv = 0;
 		if (ebatt < 900) 		{bg_lv = 0;}
-		else if(ebatt < 945) 	{bg_lv = 1;}
-		else if(ebatt < 975)	{bg_lv = 2;}
+		else if(ebatt < 905) 	{bg_lv = 1;}
+		else if(ebatt < 915)	{bg_lv = 2;}
 		else					{bg_lv = 3;}
 
 		app_leds_int_batt_ctrl(bg_lv);
 	} else {
-		if (ebatt >= 976) 					   {bg_lv = 3;}
-		else if (ebatt >= 945 && ebatt < 974)  {bg_lv = 2;}
-		else if (ebatt >= 931 && ebatt < 943)  {bg_lv = 1;}
-		else if (ebatt >= 900 && ebatt < 929)  {bg_lv = 0;}
+		if (ebatt >= 915) 					   {bg_lv = 3;}
+		else if (ebatt >= 914 && ebatt < 910)  {bg_lv = 2;}
+		else if (ebatt >= 910 && ebatt < 900)  {bg_lv = 1;}
+		else if (ebatt >= 900 && ebatt < 910)  {bg_lv = 0;}
 
 		if (c_volt_lv) {
 			c_volt_lv--;
