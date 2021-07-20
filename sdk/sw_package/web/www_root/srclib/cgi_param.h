@@ -17,6 +17,7 @@ typedef struct _tagCgiParam {
 /* start of servers settings */
 typedef struct _tagBackupServer {
 	int  enable;
+    int  upload_files;      // Type of record files to upload to backup server. 0:all, 1:event
 	char serveraddr[32];
 	char id[32];
 	char pw[32];
