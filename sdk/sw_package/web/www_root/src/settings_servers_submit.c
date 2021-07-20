@@ -29,6 +29,7 @@ static int submit_settings_qcgi()
         t.voip.port = 6060;
 
 		int  bs_enable=-1;
+		int  bs_upload_files=-1;
 		int  ms_enable=-1;
 		int  ddns_enable=-1;
 		int  ntp_enable=-1;
@@ -40,6 +41,10 @@ static int submit_settings_qcgi()
         char *str= req->getstr(req, "bs_enable", false);
         if (str != NULL) {
             bs_enable = atoi(str);
+        }
+        str= req->getstr(req, "bs_upload_files", false);
+        if (str != NULL) {
+            bs_upload_files = atoi(str);
         }
         str= req->getstr(req, "txt_bs_ip", false);
         if (str != NULL) {
@@ -196,6 +201,7 @@ static int submit_settings_qcgi()
 		CGI_DBG("dns_server2:%s\n", t.dns.server2);
 
 		t.bs.enable = bs_enable;
+        t.bs.upload_files = bs_upload_files;
 		t.ms.enable = ms_enable;
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;

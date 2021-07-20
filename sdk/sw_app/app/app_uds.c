@@ -830,6 +830,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 {
 	// backup server(ftp)
 	t->bs.enable = app_set->ftp_info.ON_OFF;
+	t->bs.upload_files = app_set->ftp_info.file_type; // 1: event, 0:all
 	t->bs.port   = app_set->ftp_info.port;
 	strcpy(t->bs.serveraddr, app_set->ftp_info.ipaddr);
 	strcpy(t->bs.id, app_set->ftp_info.id);
@@ -885,6 +886,11 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	// backup server(ftp)
 	if(app_set->ftp_info.ON_OFF != t->bs.enable){
 		app_set->ftp_info.ON_OFF = t->bs.enable;
+		isChanged++;
+	}
+	if(app_set->ftp_info.file_type != t->bs.upload_files){
+		// 0:all, 1:event
+		app_set->ftp_info.file_type = t->bs.upload_files;
 		isChanged++;
 	}
 	if(app_set->ftp_info.ON_OFF){
