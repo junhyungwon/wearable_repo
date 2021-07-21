@@ -47,7 +47,7 @@
 #define MAX_TIME_GAP		3000	//3sec
 
 #ifdef NEXX360V
-#define EBATT_MIN		    890					//#  8.90 V (외장 트레블 어탭터 사용 시)
+#define EBATT_MIN		    880					//#  8.80 V (외장 트레블 어탭터 사용 시)
 #else
 #define EBATT_MIN		    970					//#  9.7 V (3s->1s per 1V)minimum battery voltage
 #endif
@@ -112,6 +112,8 @@ static int power_on_lv = 1;
 /*
  * 내장 배터리 제거. 외장 배터리가 트레블 어댑터를 지원해야 하므로 최소 전압을 8.75V까지 낮춘다.
  * LED Display는 추후 변경.
+ * LF외장 배터리는 완충 11.7V
+ * mbatt는 전원에 따라서 다르게 측정됨. 어탭터는 16V, 외장은 9V 또는 11V 내장은 8V
  */
 #ifdef NEXX360V
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
@@ -128,9 +130,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		app_leds_int_batt_ctrl(bg_lv);
 	} else {
 		if (ebatt >= 915) 					   {bg_lv = 3;}
-		else if (ebatt >= 914 && ebatt < 910)  {bg_lv = 2;}
-		else if (ebatt >= 910 && ebatt < 900)  {bg_lv = 1;}
-		else if (ebatt >= 900 && ebatt < 910)  {bg_lv = 0;}
+		else if (ebatt >= 910 && ebatt < 915)  {bg_lv = 2;}
+		else if (ebatt >= 900 && ebatt < 910)  {bg_lv = 1;}
+		else if (ebatt >= 880 && ebatt < 900)  {bg_lv = 0;}
 
 		if (c_volt_lv) {
 			c_volt_lv--;
@@ -146,12 +148,12 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	} //# if (first_bg_lv)
 
 	//# low power check (first internal battery)
-	if(ebatt < EBATT_MIN) {
+	if(ebatt < EBATT_MIN && mbatt < 670) {
 		if(c_volt_chk) {
 			c_volt_chk--;
 			if(c_volt_chk == 0) 
 			{
-				sysprint("Peek Low Voltage Detected(%d)", ebatt);
+				sysprint("Peek Low Voltage Detected(e=%d, m=%d)", ebatt, mbatt);
 				ctrl_sys_shutdown();
 				
 				return 1;
