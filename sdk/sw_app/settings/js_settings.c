@@ -288,6 +288,8 @@ static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)
 	memcpy(set->ftp_info.id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_16, &dec_size), dec_size);
 	tmp = json_object_object_get(jobj, "pwd");
 	memcpy(set->ftp_info.pwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_16, &dec_size), dec_size);
+	tmp = json_object_object_get(jobj, "file_type"); // 0:all, 1:event only
+	set->ftp_info.file_type = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "ON_OFF");
 	set->ftp_info.ON_OFF = json_object_get_int(tmp);
 
@@ -571,7 +573,8 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(network_ftp, "ipaddr", json_object_new_string(set->ftp_info.ipaddr));
 	json_object_object_add(network_ftp, "id",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->ftp_info.id, MAX_CHAR_16, &enc_size)));
 	json_object_object_add(network_ftp, "pwd",    json_object_new_string((const char*)base64_encode((const unsigned char*)set->ftp_info.pwd, MAX_CHAR_16, &enc_size)));
-	json_object_object_add(network_ftp, "ON_OFF", json_object_new_int(set->ftp_info.ON_OFF));
+	json_object_object_add(network_ftp, "ON_OFF",    json_object_new_int(set->ftp_info.ON_OFF));
+	json_object_object_add(network_ftp, "file_type", json_object_new_int(set->ftp_info.file_type)); // 0:all, 1:event
 	json_object_object_add(rootObject,  "ftp_info", network_ftp);
 
 	// 6. wifi ap information
