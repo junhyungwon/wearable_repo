@@ -262,7 +262,7 @@ static void *THR_evt_buzzer(void *prm)
 				{
 #if defined(NEXXONE) || defined(NEXX360H)
 					if(status)
-						status = OFF
+						status = OFF ;
 					else
 						status = ON ;
 
