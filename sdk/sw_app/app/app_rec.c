@@ -36,6 +36,7 @@
 typedef struct {
 	app_thr_obj sObj;		//# rec message send thread
 	app_thr_obj rObj;		//# rec message receive thread
+	app_thr_obj bObj;		//# event buzzer thread
 	
 	int init;
 	int qid;
@@ -143,6 +144,9 @@ static void *THR_rec_recv_msg(void *prm)
 
 		case AV_CMD_REC_RESTART:
 			dprintf("received Event record done!\n");
+
+		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
+
             send_msg(AV_CMD_REC_STOP);
 			app_buzz_ctrl(100, 2);
             send_msg(AV_CMD_REC_START);
@@ -222,6 +226,85 @@ static void *THR_rec_send_msg(void *prm)
 	return NULL;
 }
 
+/*****************************************************************************
+* @brief    event buzzer thread function
+* @section  [prm] active channel
+*****************************************************************************/
+static void *THR_evt_buzzer(void *prm)
+{
+	app_thr_obj *tObj = &irec->bObj;
+	int cmd = 0, buzzer_cnt = 0;
+	int exit = 0;
+	int status = 0, i = 0 ;
+	
+	aprintf("enter...\n");
+	tObj->active = 1;
+	
+	while (!exit)
+	{
+		cmd = event_wait(tObj);
+		if (cmd == APP_CMD_EXIT) {
+			/* send exit command to event buzzer process */
+			exit = 1;
+			break;
+		}  
+		else if (cmd == APP_CMD_STOP) {
+            continue ;
+		} 
+		while(1) 
+		{
+            if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+			    break;
+			} 
+			if (cmd == APP_REC_EVT) {
+
+				if(!(buzzer_cnt % 10))
+				{
+#if defined(NEXXONE) || defined(NEXX360H)
+					if(status)
+						status = OFF
+					else
+						status = ON ;
+
+					app_leds_cam_ctrl(ON, status) ;
+#else
+					if(status)
+						status = OFF ;
+					else
+						status = ON ;
+
+					for(i = 0 ; i < MODEL_CH_NUM; i++)
+					{
+						app_leds_cam_ctrl(i, status);
+					}
+#endif
+				}
+				if(!(buzzer_cnt % 20))
+                {
+					app_buzz_ctrl(100, 3) ;
+                    buzzer_cnt = 0 ;
+				}
+			}
+			status = ON ;
+			for(i = 0 ; i < MODEL_CH_NUM; i++)
+			{
+				app_leds_cam_ctrl(i, status);
+			}
+
+			OSA_waitMsecs(50);
+			buzzer_cnt += 1 ;
+		}
+
+	}
+	
+	tObj->active = 0;
+		
+	aprintf("exit\n");
+	
+	return NULL;
+}
+
+
 static int _is_enable_rec_start(int rec_type)
 {	
 	//# currently record
@@ -254,8 +337,8 @@ static int _is_enable_rec_start(int rec_type)
 *****************************************************************************/
 int app_rec_start(void)
 {
-	int start = 1, type = 0; // normal  0, event 1
-	unsigned long sz;
+	int type = 0; // normal  0, event 1
+
 	//# Check the status of recording.
 	if (_is_enable_rec_start(type) == EFAIL)
 		return EFAIL;
@@ -292,6 +375,7 @@ int app_rec_evt(void)
 	//# Record start if captuer is not zero.
     app_buzz_ctrl(500, 1);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_EVT, 0, 0);
+	event_send(&irec->bObj, APP_REC_EVT, 0, 0);
 	
 	return SOK;
 }
@@ -301,6 +385,7 @@ int app_rec_stop(int buzz)
 	if (irec->rec_state) {
 		if (buzz) app_buzz_ctrl(100, 2);	//# buzz: rec stop
 		event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
+		event_send(&irec->bObj, APP_CMD_STOP, 0, 0);
 	}
 
 	return SOK;
@@ -353,6 +438,13 @@ int app_rec_init(void)
 	//#--- create msg send thread
 	tObj = &irec->sObj;
 	if(thread_create(tObj, THR_rec_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
+		eprintf("create thread\n");
+		return EFAIL;
+	}
+
+	//#--- create event buzzer thread
+	tObj = &irec->bObj;
+	if(thread_create(tObj, THR_evt_buzzer, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

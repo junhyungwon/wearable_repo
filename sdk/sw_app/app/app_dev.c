@@ -221,7 +221,7 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 		#if SYS_CONFIG_VOIP
-//			app_rec_evt() ;
+			app_rec_evt() ;
 		#endif
 		}
 #elif defined(NEXX360W) || defined(NEXX360V)
@@ -248,7 +248,7 @@ static void *THR_dev(void *prm)
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-//			    app_rec_evt() ;
+			    app_rec_evt() ;
 			}
 		}
 		#endif /* #if SYS_CONFIG_VOIP */
@@ -264,7 +264,7 @@ static void *THR_dev(void *prm)
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-//			    app_rec_evt() ;
+			    app_rec_evt() ;
 			}
 		}
 #elif defined(NEXX360H)
@@ -279,7 +279,7 @@ static void *THR_dev(void *prm)
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-//			    app_rec_evt() ;
+			    app_rec_evt() ;
 			}
 		}
 #endif
