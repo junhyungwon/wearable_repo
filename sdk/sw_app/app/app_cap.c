@@ -86,8 +86,16 @@ void video_status(void)
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
 #elif defined(NEXX360V)
-	/* cam1, cam2, cam3, cam4->voip led */
-	/* TODO */
+	/*
+	 * 0, 2, 3번에 카메라 연결됨
+	 */
+	for (i = 0; i < count; i++)
+    {
+		/* cam led on/off */
+		app_leds_cam_ctrl(i, vstatus[i]);
+		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
+        vcount += vstatus[i] ;
+	}
 #else
 	for (i = 0; i < count; i++)
     {
