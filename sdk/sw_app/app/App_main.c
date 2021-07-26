@@ -460,7 +460,7 @@ int main(int argc, char **argv)
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360V)
 //	#if SYS_CONFIG_VOIP
 			/* copy app_fitt.out or full update */
-			ctrl_auto_update();
+			ctrl_firmware_update();
 			/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
 			if (app_cfg->ste.b.pwr_off)
 				return 0;

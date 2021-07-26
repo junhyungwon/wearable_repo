@@ -44,6 +44,7 @@
 #define OFF                      0
 
 #define SD_MOUNT_PATH   		"/mmc"
+#define EMERGENCY_UPDATE_DIR  	"/mmc/firmware"
 #define NAND_PATH               "/opt"
 #define NAND_ROOT               "/media/nand"
 #define AVI_EXT					"*.avi"
