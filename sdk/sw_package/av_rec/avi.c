@@ -96,7 +96,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	memset(&aviInfo, 0, sizeof(AVI_SYSTEM_PARAM));
 	
-	aviInfo.nVidCh	= MODEL_CH_NUM;
+	aviInfo.nVidCh	= REC_CH_NUM;
 	aviInfo.bEnMeta	= TRUE; //# FALSE
 	aviInfo.uVideoType	= ENCODING_H264;
 	
@@ -149,7 +149,7 @@ int avi_file_write(FILE *favi, stream_info_t *ifr)
 			frame.size			= ifr->b_size;
 			frame.data_type		= ifr->d_type;
 			frame.iskey_frame 	= ifr->is_key;			
-#if defined(NEXX360V) && (MODEL_CH_NUM == 3)
+#if defined(NEXX360V) && (REC_CH_NUM == 3)
 			if (ifr->ch == 1) {
 				/* invalid channel */
 				return;
