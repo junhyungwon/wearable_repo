@@ -149,7 +149,7 @@ int avi_file_write(FILE *favi, stream_info_t *ifr)
 			frame.size			= ifr->b_size;
 			frame.data_type		= ifr->d_type;
 			frame.iskey_frame 	= ifr->is_key;			
-#if defined(NEXX360V) && (REC_CH_NUM == 3)
+#if defined(NEXXB) && (REC_CH_NUM == 3)
 			if (ifr->ch == 1) {
 				/* invalid channel */
 				return;
