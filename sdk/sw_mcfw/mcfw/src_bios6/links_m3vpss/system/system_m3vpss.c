@@ -337,7 +337,7 @@ Int32 System_getBlankFrame(FVID2_Frame *pFrame)
     memset(pFrame, 0, sizeof(*pFrame));
 
     pFrame->addr[0][0] = gSystem_objVpss.nonTiledBlankFrameAddr;
-	#if defined(LF_SYS_NEXX360V)	//# background black
+	#if defined(LF_SYS_NEXXB)	//# background black
     /*
 	 * Y와 UV 데이터를 다르게 초기화(기존은 회색만 출력 가능)
 	 */

@@ -90,6 +90,7 @@ void gpsdatareq(int channel, char *data, int len)
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdatareq packet receive...\n") ;
 #endif
+	SystemInfo.gps_req = ON ;
 }
 
 void eventdatareq(int channel, char *data, int len)
@@ -97,6 +98,7 @@ void eventdatareq(int channel, char *data, int len)
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("eventdatareq packet receive...\n") ;
 #endif
+	SystemInfo.event_req = ON ;
 }
 
 
@@ -134,12 +136,13 @@ void gpsdata_send(void *data)
 
 	for(i = 0 ; i < MAXUSER; i++)
 	{
-		if(SystemInfo.Channel[i] != 0)
+		if(SystemInfo.Channel[i] != 0 && SystemInfo.gps_req)
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+	        SystemInfo.gps_req = OFF ;
 		}
     }
 }
@@ -160,12 +163,13 @@ void eventdata_send(void)
 
 	for(i = 0 ; i < MAXUSER; i++)
 	{
-		if(SystemInfo.Channel[i] != 0)
+		if(SystemInfo.Channel[i] != 0 && SystemInfo.event_req)
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("Eventdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+	        SystemInfo.event_req = OFF ;
 		}
     }
 

@@ -48,6 +48,7 @@
 #define NAND_PATH               "/opt"
 #define NAND_ROOT               "/media/nand"
 #define AVI_EXT					"*.avi"
+#define NORMAL_FILE             "/mmc/DCIM/R_"
 
 #define JPEG_QUALITY            80      //# 1~100       100 is max.
 #define JPEG_FPS                1      //# default fps of jpeg.

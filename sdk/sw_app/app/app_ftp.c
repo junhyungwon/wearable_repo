@@ -682,6 +682,7 @@ static void ftp_send(void)
 			{
 			    if(strstr(FileName, "/mmc/DCIM/R_"))
                 {
+//                    restore_ftp_file(FileName) ;
 					continue ;
 				}
 			}
@@ -740,11 +741,27 @@ static void ftp_send(void)
         {
             app_leds_eth_status_ctrl(LED_FTP_ERROR);
             app_leds_backup_state_ctrl(LED_FTP_ERROR);
-          
             iftp->ftp_state = FTP_STATE_NONE ;
+			
         }   
+		if(app_set->ftp_info.file_type) // ftp send event file
+		{
+	        if(get_recorded_efile_count() == 0)
+			{
+                app_leds_backup_state_ctrl(LED_FTP_OFF);
+                app_leds_eth_status_ctrl(LED_FTP_OFF);
+		        iftp->ftp_state = FTP_STATE_SEND_DONE;
+                ftp_close(iftp->sdFtp);
+			}
+			else
+			{
+                app_leds_eth_status_ctrl(LED_FTP_ERROR);
+                app_leds_backup_state_ctrl(LED_FTP_ERROR);
+                iftp->ftp_state = FTP_STATE_NONE ;
+			}
+			reset_filelist() ;
+		}
 	}
-
 }
 
 int app_get_ftp_state(void)
@@ -851,6 +868,9 @@ static void *THR_ftp(void *prm)
    
         OSA_waitMsecs(1000) ;
 	}
+
+	if(app_set->ftp_info.file_type) // ftp send event file
+		reset_filelist() ;
 
     tObj->active = 0;
     aprintf("...exit\n");

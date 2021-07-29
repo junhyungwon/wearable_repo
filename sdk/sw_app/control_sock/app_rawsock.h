@@ -39,6 +39,8 @@ typedef struct TAG_SYSTEM_INFO
         unsigned long Privatekey[MAXUSER] ;
         unsigned long Publickey[MAXUSER] ;
         unsigned long Modnumber[MAXUSER] ;
+		int gps_req ;
+		int event_req ;
         int mutex ;
 } SYSTEM_INFO;
 #pragma pack()

@@ -251,9 +251,9 @@ int app_leds_cam_ctrl(int no, int ste)
 	}
 
 	/*
-	 * NEXX360V CAM4 LED is voip led
+	 * NEXXB CAM4 LED is voip led
 	 */
-#ifdef NEXX360V
+#ifdef NEXXB
 	switch (no) {
 	case 0:
 		index = LED_IDX_CAM1; 
@@ -307,7 +307,7 @@ int app_leds_voip_ctrl(int ste)
 		return 0;
 	}
 
-#ifdef NEXX360V	
+#ifdef NEXXB	
 	index = LED_IDX_CAM2;
 #else
 	index = LED_IDX_CAM4;

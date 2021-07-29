@@ -66,6 +66,7 @@ typedef struct {
 	app_thr_obj fObj;
 	
 	size_t file_count;  /* total files for ftp send */
+	size_t efile_count;  /* event files for ftp send */
 	int	file_state;
 	
 	char rec_root[MAX_CHAR_32];
@@ -234,6 +235,8 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 		dprintf("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
 		list_del(&ptr->queue);
 		ifile->file_count--;
+	    if(!strstr(ptr->fullname, NORMAL_FILE))
+		    ifile->efile_count-- ;
 		free(ptr);
 	}
 	
@@ -259,6 +262,8 @@ static int _get_rec_file_head(struct list_head *head, char *path)
 //		dprintf("Get List Head FILE : %s\n", ptr->fullname);
 		list_del(&ptr->queue);
 		ifile->file_count--;
+	    if(!strstr(ptr->fullname, NORMAL_FILE))
+		    ifile->efile_count-- ;
 		free(ptr);
 	}
 
@@ -315,11 +320,13 @@ static int add_node_tail(const char *path, struct list_head *head, unsigned int 
 	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
 
-	//dprintf(" Add List name: %s, size %u\n", path, iSize);
+//	dprintf(" Add List name: %s, size %u\n", path, iSize);
 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add(&ptr->queue, head);
 	ifile->file_count++;
+	if(!strstr(ptr->fullname, NORMAL_FILE))
+		ifile->efile_count++ ;
 
 	return OSA_SOK;
 }
@@ -347,6 +354,8 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add_tail(&ptr->queue, head);
 	ifile->file_count++;
+	if(!strstr(ptr->fullname, NORMAL_FILE))
+	    ifile->efile_count++ ;
 	
 	return OSA_SOK;
 }
@@ -851,6 +860,34 @@ int get_ftp_send_file(char *path)
 	return (1);
 }
 
+
+int reset_filelist()
+{
+	 char flist_path[256]={0,};
+     int res, status;
+     size_t num_of_files;
+
+     memset(ifile, 0, sizeof(app_file_t));
+     ifile->file_state = FILE_STATE_NORMAL;
+     sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
+
+     //#-- create directories such as DCIM, ufs
+     _check_rec_dir((const char *)ifile->rec_root);
+     /* Get the number of files in DCIM */
+     num_of_files = get_file_count((const char *)ifile->rec_root);
+     /* set file list path */
+     sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
+     res = __load_file_list((const char *)flist_path, &ilist, num_of_files);
+     if (res < 0) {
+         status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, num_of_files);
+         if (status == EFAIL)    {
+             sysprint("Failed to make file list!!\n");
+             return status;
+         }
+     }
+}
+
+
 /*****************************************************************************
 * @brief    resotre file that was failed send on ftp.
 * @section  
@@ -888,6 +925,18 @@ int get_recorded_file_count(void)
 {
 	return (int)(ifile->file_count); 
 }
+
+
+/*****************************************************************************
+* @brief    check Recorded event file exist  .
+* @section 
+  - desc :  - if success return file count, the other 0.
+*****************************************************************************/
+int get_recorded_efile_count(void)
+{
+	return (int)(ifile->efile_count); 
+}
+
 
 /*****************************************************************************
 * @brief    check SD write status  .

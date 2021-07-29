@@ -56,7 +56,7 @@
 #define MBATT_MIN					600
 #define IBATT_MIN		    		620 //590 //#  5.90 V->6.4V, minimum battery voltage
 
-#ifdef NEXX360V
+#ifdef NEXXB
 #define EBATT_MIN		    		880	//#  8.80 V (외장 트레블 어탭터 사용 시)
 
 #define BOOTUP_BATT_THRES_0			900
@@ -156,7 +156,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	int bg_lv = -1;
 	int threshold=0;
 	
-#ifdef NEXX360V
+#ifdef NEXXB
 	threshold = ebatt;
 #else
 	threshold = ibatt;
@@ -193,7 +193,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 					app_leds_int_batt_ctrl(bg_lv);
 				}
 #if 0
-#ifdef NEXX360V				
+#ifdef NEXXB				
 				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d(via Ext)\n", ibatt, ebatt, mbatt, bg_lv);
 #else
 				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d(via Int)\n", ibatt, ebatt, mbatt, bg_lv);
@@ -287,7 +287,7 @@ static void *THR_micom(void *prm)
 						dprintf("skip power switch event!!!\n");
 					}
 				} else {
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360V)
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB)
 					#if SYS_CONFIG_VOIP 
 					if (!app_cfg->ste.b.ftp_run) 
 					{     
