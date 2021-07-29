@@ -253,26 +253,26 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
     if(cmd == APP_CMD_START)  // normal
 	{
-	if ((irec->old_min != ts.tm_min && minute_change))
-	{
-		irec->old_min = ts.tm_min;
-        minute_change = 0;
-		
-		if (irec->fevt != NULL) 
+		if ((irec->old_min != ts.tm_min && minute_change))
 		{
-			unsigned long sz;
-		    // TODO File Type check and then select close or not 
+			irec->old_min = ts.tm_min;
+			minute_change = 0;
 			
-        	avi_file_close(irec->fevt, irec->fname);	//# close current file
-			/* calculate file size */
-			lstat(irec->fname, &sb);
-			sz = (sb.st_size / KB); /* Byte->KB */
-			send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
-		}	
-		//# get current date & time
+			if (irec->fevt != NULL) 
+			{
+				unsigned long sz;
+				// TODO File Type check and then select close or not 
+				
+				avi_file_close(irec->fevt, irec->fname);	//# close current file
+				/* calculate file size */
+				lstat(irec->fname, &sb);
+				sz = (sb.st_size / KB); /* Byte->KB */
+				send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+			}	
+			//# get current date & time
 //          localtime_r((const time_t *)&ifr->t_sec, &ts);
 		    strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		    sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, MODEL_CH_NUM);
+		    sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
 		
             memset(irec->fname, 0, sizeof(irec->fname));
 		    sprintf(irec->fname, "%s", filename);
@@ -287,11 +287,11 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    return SOK;
 	    }
 	}
+	
 	if(cmd == APP_CMD_EVT) // event 
 	{
 		// TODO File Type check and then select close or not 
 //        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
-
 	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
 	    {
             if(abs(irec->old_min - ts.tm_min) > 1)  
@@ -343,7 +343,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
             if(irec->rec_evt_cnt > 0)
 			{
   		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		        sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, MODEL_CH_NUM);
+		        sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
 		
 		        memset(irec->fname, 0, sizeof(irec->fname));
 		        sprintf(irec->fname, "%s", filename);
@@ -485,7 +485,6 @@ static void *THR_rec_evt(void *prm)
 
 			if(tObj->cmd == APP_CMD_EVT)
 			{
-
 				if(irec->fevt == NULL)   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
 			        irec->rec_evt_cnt = 2;
                 else
@@ -499,22 +498,19 @@ static void *THR_rec_evt(void *prm)
 				cmd = APP_CMD_EVT ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
             }
+			
 			if(tObj->cmd == APP_CMD_START)
 			{
-
 				cmd = APP_CMD_START ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
 			}
 
 //			printf("irec->rec_evt_cnt = %d cmd = %d\n", irec->rec_evt_cnt, cmd) ;
-
 			for (i = 0; i < frame_num; i++)
 			{
 				ifr = &imem->ifr[read_idx];
 				if ((ifr->d_type==DATA_TYPE_VIDEO) && (ifr->ch==0) && ifr->is_key) {
-
 				    ret = evt_file_open(ifr, cmd);
-
 					if (ret < 0) {
 						send_msg(AV_CMD_REC_ERR, 0, NULL);
 						memset(msg, 0, sizeof(msg));
@@ -544,10 +540,13 @@ static void *THR_rec_evt(void *prm)
 						}
 					}
 					#else
+					/* 실제 카메라- 0, 2, 3 (3ch) */
+					#ifndef NEXX360V
 					if (ifr->ch == 1) {
 					    if (ifr->is_key)
 					        irec->ch2_keyframe = 1 ;
                     }
+					#endif /* #ifndef NEXX360V */
                     if (ifr->ch == 2) {
 					    if (ifr->is_key)
 					        irec->ch3_keyframe = 1 ;
@@ -557,12 +556,14 @@ static void *THR_rec_evt(void *prm)
 					        irec->ch4_keyframe = 1 ;
 					}
 					if (ifr->ch < 4) {
+						#ifndef NEXX360V
 				        if (ifr->ch == 1 && !irec->ch2_keyframe)
 					    {
 				            app_msleep(10);
 				            read_idx = idx_increase(read_idx);
 						    continue;
                         }
+						#endif /* #ifndef NEXX360V */
 				        if (ifr->ch == 2 && !irec->ch3_keyframe)
 					    {
 				            app_msleep(10);

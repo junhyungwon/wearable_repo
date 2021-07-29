@@ -36,23 +36,55 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define TIME_DATA_CYCLE		  100	//# msec, data receive period from micom
-#define TIME_CHK_VLOW		10000	//# msec, low power check time
-#define TIME_CHK_VLEVEL		 5000	//# msec, battery level check time
+#define MAX_TIME_GAP		 	3000	//# 3sec
+#define TIME_DATA_CYCLE		  	100	//# msec, data receive period from micom
+#define TIME_CHK_VLOW			10000	//# msec, low power check time
+#define TIME_CHK_VLEVEL		 	5000	//# msec, battery level check time
 
-#define CNT_CHK_VLOW		(TIME_CHK_VLOW/TIME_DATA_CYCLE)
-#define CNT_CHK_VLEVEL		(TIME_CHK_VLEVEL/TIME_DATA_CYCLE)
+#define CNT_CHK_VLOW			(TIME_CHK_VLOW/TIME_DATA_CYCLE)
+#define CNT_CHK_VLEVEL			(TIME_CHK_VLEVEL/TIME_DATA_CYCLE)
 
-#define IBATT_MIN		    620 	//590		//#  5.90 V->6.4V, minimum battery voltage
-#define MAX_TIME_GAP		3000	//3sec
+#define PSW_EVT_LONG			2
+
+/* 
+ * NEXXB and NEXX Common Voltage 
+ */
+/* 어탭터 사용 시 -> 16V 이상
+ * 내장 배터리 사용 시 -> 내장 배터리 전압이 측정됨.
+ * 외장 배터리 사용 -> 외장 배터리 전압 측정됨.
+ */
+#define MBATT_MIN					600
+#define IBATT_MIN		    		620 //590 //#  5.90 V->6.4V, minimum battery voltage
 
 #ifdef NEXX360V
-#define EBATT_MIN		    880					//#  8.80 V (외장 트레블 어탭터 사용 시)
-#else
-#define EBATT_MIN		    970					//#  9.7 V (3s->1s per 1V)minimum battery voltage
-#endif
+#define EBATT_MIN		    		880	//#  8.80 V (외장 트레블 어탭터 사용 시)
 
-#define PSW_EVT_LONG		2
+#define BOOTUP_BATT_THRES_0			900
+#define BOOTUP_BATT_THRES_1			905
+#define BOOTUP_BATT_THRES_2			915
+
+#define RUNTIME_BATT_THRES_3_MAX	915
+#define RUNTIME_BATT_THRES_2_MAX	914
+#define RUNTIME_BATT_THRES_2_MIN	910
+#define RUNTIME_BATT_THRES_1_MAX	908
+#define RUNTIME_BATT_THRES_1_MIN	900
+#define RUNTIME_BATT_THRES_0_MAX	890
+#define RUNTIME_BATT_THRES_0_MIN	880
+#else
+#define EBATT_MIN		    		970	//#  9.7 V (3s->1s per 1V) minimum battery voltage
+
+#define BOOTUP_BATT_THRES_0			731
+#define BOOTUP_BATT_THRES_1			745
+#define BOOTUP_BATT_THRES_2			775
+
+#define RUNTIME_BATT_THRES_3_MAX	776
+#define RUNTIME_BATT_THRES_2_MAX	774
+#define RUNTIME_BATT_THRES_2_MIN	745
+#define RUNTIME_BATT_THRES_1_MAX	743
+#define RUNTIME_BATT_THRES_1_MIN	731
+#define RUNTIME_BATT_THRES_0_MAX	729
+#define RUNTIME_BATT_THRES_0_MIN	600
+#endif
 
 typedef struct {
 	app_thr_obj cObj;	//# micom thread
@@ -77,6 +109,7 @@ static void delay_3sec_exit(void)
 		gettimeofday(&t2, NULL);
 		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
 		if (tgap <= 0) {
+			/* timesync 에 의해서 gettimeofday 값이 변경되면 무한 루프에 빠진다 */
 			gettimeofday(&t1, NULL);
 		}
 		OSA_waitMsecs(1);
@@ -110,88 +143,48 @@ static int c_volt_lv = 0;
 static int power_on_lv = 1;
 
 /*
- * 내장 배터리 제거. 외장 배터리가 트레블 어댑터를 지원해야 하므로 최소 전압을 8.75V까지 낮춘다.
- * LED Display는 추후 변경.
- * LF외장 배터리는 완충 11.7V
+ * Case NEXX_B
+ * remove internal batt. external batt support trable adapter. so min 8.75V.
+ *
+ * Others
+ * LF External Batt full charge level is 11.7V
  * mbatt는 전원에 따라서 다르게 측정됨. 어탭터는 16V, 외장은 9V 또는 11V 내장은 8V
+ * 내장 max (8.43V), 외장 배터리 최소 8.75V 이상. 
  */
+static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
+{
+	int bg_lv = -1;
+	int threshold=0;
+	
 #ifdef NEXX360V
-static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
-{
-	int bg_lv = -1;
-
-	if (power_on_lv) {
-		power_on_lv = 0;
-		if (ebatt < 900) 		{bg_lv = 0;}
-		else if(ebatt < 905) 	{bg_lv = 1;}
-		else if(ebatt < 915)	{bg_lv = 2;}
-		else					{bg_lv = 3;}
-
-		app_leds_int_batt_ctrl(bg_lv);
-	} else {
-		if (ebatt >= 915) 					   {bg_lv = 3;}
-		else if (ebatt >= 910 && ebatt < 915)  {bg_lv = 2;}
-		else if (ebatt >= 900 && ebatt < 910)  {bg_lv = 1;}
-		else if (ebatt >= 880 && ebatt < 900)  {bg_lv = 0;}
-
-		if (c_volt_lv) {
-			c_volt_lv--;
-			if (c_volt_lv == 0) {
-				if (bg_lv >= 0) {
-					app_leds_int_batt_ctrl(bg_lv);
-				}
-//				aprintf("mbatt %d(V) ebatt %d(V) bg_lv %d\n", mbatt, ebatt, bg_lv);
-			}
-		} else {
-			c_volt_lv = CNT_CHK_VLEVEL;
-		}
-	} //# if (first_bg_lv)
-
-	//# low power check (first internal battery)
-	if(ebatt < EBATT_MIN && mbatt < 670) {
-		if(c_volt_chk) {
-			c_volt_chk--;
-			if(c_volt_chk == 0) 
-			{
-				sysprint("Peek Low Voltage Detected(e=%d, m=%d)", ebatt, mbatt);
-				ctrl_sys_shutdown();
-				
-				return 1;
-			}
-		} else {
-			c_volt_chk = CNT_CHK_VLOW;
-		}
-	}
-	else {
-		c_volt_chk = 0;
-	}
-
-	return 0;
-}
+	threshold = ebatt;
 #else
-//# 내장 max (8.43V), 외장 배터리 최소 8.75V 이상. 
-//# //# check battery gauge level
-//	if(mval.ibatt < 600) 		{bg_lv = 0;}
-//	else if(mval.ibatt < 710) 	{bg_lv = 1;}
-//	else if(mval.ibatt < 760)	{bg_lv = 2;}
-//	else						{bg_lv = 3;}
-static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
-{
-	int bg_lv = -1;
-
+	threshold = ibatt;
+#endif	
+	
 	if (power_on_lv) {
 		power_on_lv = 0;
-		if (ibatt < 731) 		{bg_lv = 0;}
-		else if(ibatt < 745) 	{bg_lv = 1;}
-		else if(ibatt < 775)	{bg_lv = 2;}
-		else					{bg_lv = 3;}
-
+		if (threshold < BOOTUP_BATT_THRES_0) {
+			bg_lv = 0;
+		} else if (threshold < BOOTUP_BATT_THRES_1) 	{
+			bg_lv = 1;
+		} else if (threshold < BOOTUP_BATT_THRES_2)	{
+			bg_lv = 2;
+		} else	{
+			bg_lv = 3;
+		}
+		
 		app_leds_int_batt_ctrl(bg_lv);
 	} else {
-		if (ibatt >= 776) 					   {bg_lv = 3;}
-		else if (ibatt >= 745 && ibatt < 774)  {bg_lv = 2;}
-		else if (ibatt >= 731 && ibatt < 743)  {bg_lv = 1;}
-		else if (ibatt >= 600 && ibatt < 729)  {bg_lv = 0;}
+		if (threshold >= RUNTIME_BATT_THRES_3_MAX) { 
+			bg_lv = 3;
+		} else if (threshold >= RUNTIME_BATT_THRES_2_MIN && threshold < RUNTIME_BATT_THRES_2_MAX) {
+			bg_lv = 2;
+		} else if (threshold >= RUNTIME_BATT_THRES_1_MIN && threshold < RUNTIME_BATT_THRES_1_MAX) {
+			bg_lv = 1;
+		} else if (threshold >= RUNTIME_BATT_THRES_0_MIN && threshold < RUNTIME_BATT_THRES_0_MAX) {
+			bg_lv = 0;
+		}
 
 		if (c_volt_lv) {
 			c_volt_lv--;
@@ -199,35 +192,37 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 				if (bg_lv >= 0) {
 					app_leds_int_batt_ctrl(bg_lv);
 				}
-//				aprintf("mbatt %d(V) ibatt %d(V) ebatt %d(V) bg_lv %d\n", mbatt, ibatt,  ebatt, bg_lv);
+#if 0
+#ifdef NEXX360V				
+				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d(via Ext)\n", ibatt, ebatt, mbatt, bg_lv);
+#else
+				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d(via Int)\n", ibatt, ebatt, mbatt, bg_lv);
+#endif
+#endif				
 			}
 		} else {
 			c_volt_lv = CNT_CHK_VLEVEL;
 		}
 	} //# if (first_bg_lv)
 
-	//# low power check (first internal battery)
-	if(ibatt < IBATT_MIN && ebatt < EBATT_MIN) {
-		if(c_volt_chk) {
+	//# low power check
+	if ((ibatt < IBATT_MIN) && (ebatt < EBATT_MIN) && (mbatt < MBATT_MIN)) {
+		if (c_volt_chk) {
 			c_volt_chk--;
-			if(c_volt_chk == 0) 
-			{
-				sysprint("Peek Low Voltage Detected(%d, %d)", ibatt, ebatt);
+			if (c_volt_chk == 0) {
+				sysprint("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
 				ctrl_sys_shutdown();
-				
-				return 1;
+				return -1;
 			}
 		} else {
 			c_volt_chk = CNT_CHK_VLOW;
 		}
-	}
-	else {
+	} else {
 		c_volt_chk = 0;
 	}
 
 	return 0;
 }
-#endif
 
 /*****************************************************************************
 * @brief	micom message main function
@@ -271,7 +266,7 @@ static void *THR_micom(void *prm)
 				#endif
 
 				ret = mcu_chk_pwr(val->mvolt, val->ibatt, val->ebatt);
-				if(ret) {
+				if(ret < 0) {
 					exit = 1;
 				}
 

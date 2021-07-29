@@ -21,23 +21,23 @@
  */ 
 #if defined(LF_SYS_NEXX360W)
 #	define NEXX360W						
-#	define MODEL_CH_NUM					4
+#	define REC_CH_NUM					4
 #	define MAX_FPS						15
 #elif defined(LF_SYS_NEXX360V)
 #	define NEXX360V
-#	define MODEL_CH_NUM					4
+#	define REC_CH_NUM					3
 #	define MAX_FPS						15
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
-#	define MODEL_CH_NUM					4
+#	define REC_CH_NUM					4
 #	define MAX_FPS						15	
 #elif defined(LF_SYS_NEXX360H)
 #	define NEXX360H
-#	define MODEL_CH_NUM					1
+#	define REC_CH_NUM					1
 #	define MAX_FPS						30
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
-#	define MODEL_CH_NUM					1
+#	define REC_CH_NUM					1
 #	define MAX_FPS						30	
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."

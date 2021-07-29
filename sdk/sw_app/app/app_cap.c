@@ -85,20 +85,9 @@ void video_status(void)
 	app_leds_cam_ctrl(0, vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
-#elif defined(NEXX360V)
-	/*
-	 * 0, 2, 3번에 카메라 연결됨
-	 */
-	for (i = 0; i < count; i++)
-    {
-		/* cam led on/off */
-		app_leds_cam_ctrl(i, vstatus[i]);
-		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
-        vcount += vstatus[i] ;
-	}
 #else
-	for (i = 0; i < count; i++)
-    {
+	/* nexx_b 3ch -> 0, 2, 3번에 카메라 연결됨 */
+	for (i = 0; i < count; i++) {
 		/* cam led on/off */
 		app_leds_cam_ctrl(i, vstatus[i]);
 		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
@@ -127,7 +116,6 @@ void video_status(void)
 			app_cfg->ste.b.rec = 0 ;
 		}
 #endif
-
 	} /* if (app_cfg->ste.b.cap == 0) */
 	
     if (app_cfg->vid_count == 0)
