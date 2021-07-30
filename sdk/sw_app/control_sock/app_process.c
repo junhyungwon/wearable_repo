@@ -80,25 +80,39 @@ char m_SendBuffer[MAXBUFF] ;
 #define PACKETSIZE	20480
 
 const int GPSPACKET_SIZE = sizeof(GPSPACKET) ;
+const int GPSREQRCV_SIZE = sizeof(GPSREQRCV) ;
 const int EVENTPACKET_SIZE = sizeof(EVENTPACKET) ;
+const int EVENTREQRCV_SIZE = sizeof(EVENTREQRCV) ;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
 
 void gpsdatareq(int channel, char *data, int len)
 {
+	int sendlen = 0, i ; 
+
+	GPSREQRCV Gpsreqrcv ;
+
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdatareq packet receive...\n") ;
 #endif
-	SystemInfo.gps_req = ON ;
-}
+	SystemInfo.gps_req[channel] = ON ;
 
-void eventdatareq(int channel, char *data, int len)
-{
+	Gpsreqrcv.identifier = htons(IDENTIFIER) ;
+	Gpsreqrcv.cmd = htons(CMD_GPSREQ_RCV) ;
+	Gpsreqrcv.length = htons(GPSREQRCV_SIZE) ;
+
+	memcpy(m_SendBuffer, &Gpsreqrcv, GPSREQRCV_SIZE) ;
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0 )
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSREQRCV_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("eventdatareq packet receive...\n") ;
+    DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
-	SystemInfo.event_req = ON ;
+        }
+	}
 }
 
 
@@ -136,20 +150,50 @@ void gpsdata_send(void *data)
 
 	for(i = 0 ; i < MAXUSER; i++)
 	{
-		if(SystemInfo.Channel[i] != 0 && SystemInfo.gps_req)
+		if(SystemInfo.Channel[i] != 0 && SystemInfo.gps_req[i])
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+    DEBUG_PRI("gpsdata packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
-	        SystemInfo.gps_req = OFF ;
 		}
     }
 }
 
+void eventdatareq(int channel, char *data, int len)
+{
+	int sendlen = 0, i ;
+
+	EVENTREQRCV Eventreqrcv ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("eventdatareq packet receive...\n") ;
+#endif
+	SystemInfo.event_req[channel] = ON ;
+
+	Eventreqrcv.identifier = htons(IDENTIFIER) ;
+	Eventreqrcv.cmd = htons(CMD_EVENTREQ_RCV) ;
+	Eventreqrcv.length = htons(EVENTREQRCV_SIZE) ;
+
+	memcpy(m_SendBuffer, &Eventreqrcv, EVENTREQRCV_SIZE) ;
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0 )
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTREQRCV_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+        }
+	}
+}
+
+
 void eventdata_send(void)
 {
     int sendlen = 0, i;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Eventdata reached...\n") ;
+#endif
     EVENTPACKET Eventpacket ;
 
 	Eventpacket.identifier = htons(IDENTIFIER) ;
@@ -163,13 +207,12 @@ void eventdata_send(void)
 
 	for(i = 0 ; i < MAXUSER; i++)
 	{
-		if(SystemInfo.Channel[i] != 0 && SystemInfo.event_req)
+		if(SystemInfo.Channel[i] != 0 && SystemInfo.event_req[i])
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("Eventdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+    DEBUG_PRI("Eventdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
-	        SystemInfo.event_req = OFF ;
 		}
     }
 

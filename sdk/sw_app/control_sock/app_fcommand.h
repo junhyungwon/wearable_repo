@@ -21,8 +21,10 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define CMD_GPSDATA_REQ		(0x1001)
+#define CMD_GPSREQ_RCV		(0x1011)
 #define CMD_GPSDATA_RES		(0x1002)
 #define CMD_EVENTDATA_REQ	(0x1003)
+#define CMD_EVENTREQ_RCV	(0x1013)
 #define CMD_EVENTDATA_RES	(0x1004)
 
 
