@@ -221,6 +221,7 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 		#if SYS_CONFIG_VOIP
+			eventdata_send() ;
 			app_rec_evt() ;
 		#endif
 		}
@@ -234,6 +235,7 @@ static void *THR_dev(void *prm)
 			app_voip_event_noty();
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
+			eventdata_send() ;
 			app_rec_evt() ;
 //			app_voip_set_play_volume();
 		}
@@ -248,6 +250,7 @@ static void *THR_dev(void *prm)
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
+				eventdata_send() ;
 			    app_rec_evt() ;
 			}
 		}
@@ -261,6 +264,7 @@ static void *THR_dev(void *prm)
 				if (app_rec_state()) {
 					app_rec_stop(1);
 				} else {
+				    eventdata_send() ;
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
@@ -279,6 +283,7 @@ static void *THR_dev(void *prm)
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
+				eventdata_send() ;
 			    app_rec_evt() ;
 			}
 		}

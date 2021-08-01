@@ -490,7 +490,6 @@ static void *THR_rec_evt(void *prm)
 				if(irec->fevt == NULL)   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
 				{
 			        irec->rec_evt_cnt = 2;
-					send_msg(AV_CMD_EVT_PACKET, 0, NULL);  // viewer쪽으로 event 중복 되지 않도록 
 				}
                 else
 				{
@@ -498,7 +497,6 @@ static void *THR_rec_evt(void *prm)
                     if(s != NULL)
 					{
 			            irec->rec_evt_cnt = 2;  // normal record 중에 event 발생시 1분 이상 녹화를 위한 부분 
-					    send_msg(AV_CMD_EVT_PACKET, 0, NULL);
 					}
 					else
 			            irec->rec_evt_cnt += 1;  // event recording 중 추가 이벤트 발생 

@@ -162,11 +162,6 @@ static void *THR_rec_recv_msg(void *prm)
 			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);
 			break;
-		case AV_CMD_EVT_PACKET:
-			dprintf("received Event packet send to client\n") ;
-			eventdata_send() ;
-			
-            break ;
 
 		default:
 			break;	

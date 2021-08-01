@@ -52,7 +52,7 @@ typedef struct TAG_SYSTEM_INFO
 /*----------------------------------------------------------------------------
  Declares a     function prototype
 -----------------------------------------------------------------------------*/
-
+void Sock_Init() ;
 int MainSocketListen(void) ;
 void ProcessSocket(int) ;
 void ChangeNonblock(int) ;
