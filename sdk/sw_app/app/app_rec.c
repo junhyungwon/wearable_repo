@@ -261,19 +261,14 @@ static void *THR_evt_buzzer(void *prm)
 
 				if(!(buzzer_cnt % 10))
 				{
-#if defined(NEXXONE) || defined(NEXX360H)
 					if(status)
 						status = OFF ;
 					else
 						status = ON ;
 
+#if defined(NEXXONE) || defined(NEXX360H)
 					app_leds_cam_ctrl(ON, status) ;
 #else
-					if(status)
-						status = OFF ;
-					else
-						status = ON ;
-
 					for(i = 0 ; i < MODEL_CH_NUM; i++)
 					{
 						app_leds_cam_ctrl(i, status);
@@ -282,6 +277,7 @@ static void *THR_evt_buzzer(void *prm)
 				}
 				if(!(buzzer_cnt % 20))
                 {
+					eventdata_send() ;
 					app_buzz_ctrl(100, 3) ;
                     buzzer_cnt = 0 ;
 				}

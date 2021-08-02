@@ -150,7 +150,7 @@ void gpsdata_send(void *data)
 
 	for(i = 0 ; i < MAXUSER; i++)
 	{
-		if(SystemInfo.Channel[i] != 0 && SystemInfo.gps_req[i])
+		if(SystemInfo.Channel[i] != 0)
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
@@ -207,7 +207,7 @@ void eventdata_send(void)
 
 	for(i = 0 ; i < MAXUSER; i++)
 	{
-		if(SystemInfo.Channel[i] != 0 && SystemInfo.event_req[i])
+		if(SystemInfo.Channel[i] != 0)
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
