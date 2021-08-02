@@ -234,7 +234,7 @@ static void *THR_rec_send_msg(void *prm)
 static void *THR_evt_buzzer(void *prm)
 {
 	app_thr_obj *tObj = &irec->bObj;
-	int cmd = 0, buzzer_cnt = 0;
+	int cmd = 0, buzzer_cnt = 0, evt_sndcnt = 0;
 	int exit = 0;
 	int status = 0, i = 0 ;
 	
@@ -277,7 +277,12 @@ static void *THR_evt_buzzer(void *prm)
 				}
 				if(!(buzzer_cnt % 20))
                 {
-					eventdata_send() ;
+					if(evt_sndcnt < 10)   // event 시 10회만 전달 
+					{
+					    eventdata_send() ;
+					    evt_sndcnt += 1 ;
+					}
+
 					app_buzz_ctrl(100, 3) ;
                     buzzer_cnt = 0 ;
 				}
@@ -291,7 +296,7 @@ static void *THR_evt_buzzer(void *prm)
 			OSA_waitMsecs(50);
 			buzzer_cnt += 1 ;
 		}
-
+		evt_sndcnt = 0 ;
 	}
 	
 	tObj->active = 0;
