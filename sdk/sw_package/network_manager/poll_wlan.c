@@ -366,7 +366,7 @@ static void *THR_wlan_poll(void *prm)
 	int v = 0, p = 0;
 	
 	tObj->active = 1;
-	aprintf("enter...!\n");
+	dprintf("enter...!\n");
 	
 	sub = 0; detached = 0;
 	// Initialize kernel uevent
@@ -502,7 +502,7 @@ static void *THR_wlan_poll(void *prm)
 	} 
 	
 	tObj->active = 0;
-	aprintf("...exit!\n");
+	dprintf("...exit!\n");
 	
 	return NULL;
 }

@@ -33,8 +33,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-/* ANSI Color RED */
-#define aprintf(x, ...)	printf(" [AVREC ] \033[31m%s: \033[0m" x, __func__, ##__VA_ARGS__);
 #define eprintf(x...) do { printf(" [AVREC ERR!] %s: ", __func__); printf(x); } while(0)
 #define dprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
 

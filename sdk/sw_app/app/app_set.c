@@ -1261,7 +1261,7 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
     {
         app_set_default(type);  // onvif factory default
         set_uid() ;  // read uid from nand and then set uid to app_set
-	    ctrl_sys_reboot();
+	    ctrl_sys_halt(0); /* reboot */
     } 
 }
 

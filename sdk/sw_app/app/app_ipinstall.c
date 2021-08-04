@@ -294,7 +294,7 @@ void change_info(char *data)
 		}
 
 	    if(ret)
-		    ctrl_sys_reboot();
+		    ctrl_sys_halt(0); /* reboot */
 	}
 }
 

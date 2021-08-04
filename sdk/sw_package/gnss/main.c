@@ -113,8 +113,6 @@ static void app_main(void)
 {
 	int exit = 0, cmd;
 
-	aprintf("enter...\n");
-	
 	app_cfg->qid = Msg_Init(GNSS_MSG_KEY);
 	send_msg(GNSS_CMD_GPS_READY);
 	
@@ -150,8 +148,6 @@ static void app_main(void)
 	}
 	
 	Msg_Kill(app_cfg->qid);
-
-	aprintf("exit...\n");
 }
 
 /*****************************************************************************
