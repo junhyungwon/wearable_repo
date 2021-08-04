@@ -144,7 +144,7 @@ static void *THR_rec_recv_msg(void *prm)
 			break;
 
 		case AV_CMD_REC_RESTART:
-			dprintf("received Event record done!\n");
+			dprintf("received Event record Restart!\n");
 
 		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
 

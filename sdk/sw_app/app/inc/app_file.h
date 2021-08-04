@@ -48,7 +48,6 @@ int get_recorded_file_count(void);
 int get_recorded_efile_count(void);
 int get_write_status(void);
 int app_file_check_disk_free_space(void);
-int app_file_save_flist(void);
 int reset_filelist(void) ;
 
 #endif	/* _APP_FILE_H_ */

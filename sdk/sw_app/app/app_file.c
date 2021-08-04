@@ -481,12 +481,12 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	
 	fread((void *)&lcnt, sizeof(int), 1, f);  //# total file count
 	snprintf(msg, sizeof(msg), "saved file number is %d in video lst", lcnt);
-	dprintf("%s\n", msg);
+	notice("%s\n", msg);
 	
 	if ((lcnt == 0) || (bcnt != lcnt)) {
 		memset(msg, 0, sizeof(msg));
 		snprintf(msg, sizeof(msg), "file list mismatched (dir-%d, list-%d)!!\n", bcnt, lcnt);
-		eprintf("%s\n", msg);
+		notice("%s\n", msg);
 		return -1;
 	}
 	
@@ -518,17 +518,20 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 }
 
 /* avi list save to /usr/share/video.lst */
-static int __save_file_list(const char *path)
+static int __save_file_list(void)
 {
 	struct list_head *head = &ilist;
 	struct list_head *iter;
 	struct disk_list *ptr;
 	list_info_t info;
+	char path[256]={0,};
 	
 	FILE *f = NULL;
 	int res;
 	size_t scnt = ifile->file_count;
 	
+	/* set file list path */
+	sprintf(path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
 	res = access(path, R_OK|W_OK);
     if ((res == 0) || (errno == EACCES)) {
 		/* delete file */
@@ -541,7 +544,7 @@ static int __save_file_list(const char *path)
 		return -1;
 	}
 	
-	sysprint("[APP_FILE] %d files saved in video list\n", scnt);
+	notice("[APP_FILE] %d files saved in video list\n", scnt);
 	fwrite(&scnt, sizeof(size_t), 1, f);    //# total file count
 	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
@@ -686,7 +689,7 @@ static void *THR_file_mng(void *prm)
 				_check_overwite_full_led(ifile->file_state);
 				b_cycle = 0;
 			}
-		}
+		} /* if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap)  */
 		
 		OSA_waitMsecs(FILE_LIST_CYCLE);
 		f_cycle += FILE_LIST_CYCLE;
@@ -694,7 +697,7 @@ static void *THR_file_mng(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit\n");
+	aprintf("...exit\n");
 	sync();
 
 	return NULL;
@@ -781,13 +784,16 @@ void app_file_exit(void)
 		OSA_waitMsecs(20);
 
 	thread_delete(tObj);
-
+	/* overwrite 모드일 때 file thread가 종료되지 않으면 리스트 갱신 후 delete 되는 파일로 
+	 * 인해서 실제 파일 저장 갯수와 리스트의 갯수가 일치되지 않음.
+	 * 여기로 변경.
+	 */
+	__save_file_list();
 	status = OSA_mutexDelete(&(ifile->mutex_file));
 	OSA_assert(status == OSA_SOK);
-
 	ifile = NULL;
 
-    aprintf("done...\n");
+    aprintf("... done!\n");
 }
 
 /*****************************************************************************
@@ -860,7 +866,6 @@ int get_ftp_send_file(char *path)
 	return (1);
 }
 
-
 int reset_filelist()
 {
 	 char flist_path[256]={0,};
@@ -886,7 +891,6 @@ int reset_filelist()
          }
      }
 }
-
 
 /*****************************************************************************
 * @brief    resotre file that was failed send on ftp.
@@ -926,7 +930,6 @@ int get_recorded_file_count(void)
 	return (int)(ifile->file_count); 
 }
 
-
 /*****************************************************************************
 * @brief    check Recorded event file exist  .
 * @section 
@@ -937,7 +940,6 @@ int get_recorded_efile_count(void)
 	return (int)(ifile->efile_count); 
 }
 
-
 /*****************************************************************************
 * @brief    check SD write status  .
 * @section 
@@ -946,20 +948,4 @@ int get_recorded_efile_count(void)
 int get_write_status(void)
 {
 	return ifile->file_state; 
-}
-
-/*****************************************************************************
-* @brief    save to file list
-* @section 
-  - desc :  - overwrite mode or not
-*****************************************************************************/
-int app_file_save_flist(void)
-{
-	char flist_path[256]={0,};
-	int res;
-	
-	/* set file list path */
-	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
-	res = __save_file_list(flist_path);
-	return res;
 }

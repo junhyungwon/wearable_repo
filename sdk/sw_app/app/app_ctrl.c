@@ -144,7 +144,7 @@ static char *_findFirmware(const char *root)
 			return extPath;
 		}
 	} else {
-		eprintf("Not found firmware file in %s\n", root);
+		notice("Not found firmware file in %s\n", root);
 	}
 	globfree(&globbuf);
 
@@ -368,7 +368,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		app_rec_stop(1);
 		sleep(1); /* wait for file close */
 	}
-	app_file_save_flist(); /* save file list */
+	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
 
 	// check tar content list	
 #if 1
@@ -892,7 +892,7 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 	}	
 	
 	app_set->net_info.type = net_type;
-	ctrl_sys_reboot();
+	ctrl_sys_halt(0); /* reboot */
 	
     return SOK ;
 }
@@ -907,7 +907,7 @@ int ctrl_set_gateway(const char *gw)
         strcpy(app_set->net_info.eth_gateway, gw);
 	
 	sysprint("[APP] --- Ethernet gateway changed System Restart ---\n");
-	ctrl_sys_reboot();	
+	ctrl_sys_halt(0); /* reboot */	
 
     return SOK;
 }
@@ -1264,46 +1264,36 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 /*
  * record stop and reboot.
  */
-void ctrl_sys_reboot(void)
+void ctrl_sys_halt(int shutdown)
 {
-    int recording = 0;
-
-    recording = app_rec_state();
-    if (recording) {
-        app_rec_stop(1); /* buzzer on */
-		app_msleep(500);
-    }
-	app_file_save_flist(); /* save file list */
-#if SYS_CONFIG_VOIP
-	app_voip_save_config(); /* save voip volume */
-#endif
-//    app_file_exit(); ??
-    app_set_write();
-	app_buzz_ctrl(80, 2); //# Power Off Buzzer
-	app_mcu_pwr_off(OFF_RESET);
-}
-
-/*
- * record stop and halt.
- */
-void ctrl_sys_shutdown(void)
-{
-    int recording = 0;
-
-    recording = app_rec_state();
-    if (recording) {
-		app_rec_stop(0);
-    }
-	app_buzz_ctrl(80, 2); //# Power Off Buzzer
-	if (recording) {
-		/* 먼저 buzzer를 울리기 위해서 */
-		app_msleep(500);	
+    int ste = 0;
+	
+	ste = app_rec_state();
+	if (shutdown) {
+		dprintf("system shutdown....\n");
+		ste = app_rec_state();
+		if (ste) {
+			app_rec_stop(0);
+		}
+		app_buzz_ctrl(80, 2); //# Power Off Buzzer
+		if (ste)
+			app_msleep(500); /* 먼저 buzzer를 울리기 위해서 */	
+	} else {
+		/* reboot */
+		dprintf("system reboot....\n");
+		if (ste) {
+       		app_rec_stop(1); /* buzzer on */
+			app_msleep(500);
+    	}
 	}
-	app_file_save_flist(); /* save file list */
-#if SYS_CONFIG_VOIP
-	app_voip_save_config(); /* save voip volume */	
-#endif
-//    app_file_exit(); ??
+    
+	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
     app_set_write();
-	app_mcu_pwr_off(OFF_NORMAL);
+	
+	if (shutdown) {
+		app_mcu_pwr_off(OFF_NORMAL);
+	} else {
+		app_buzz_ctrl(80, 2); //# Power Off Buzzer
+		app_mcu_pwr_off(OFF_RESET);
+	}
 }

@@ -30,8 +30,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-/* ANSI Color YELLOW */
-#define aprintf(x, ...)	printf(" [NETMGR ] \033[33m%s: \033[0m" x, __func__, ##__VA_ARGS__);
 #define dprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x);} while(0)
 #define eprintf(x...) do { printf(" [NETMGR ERR!] %s: ", __func__); printf(x);} while(0)
 

@@ -423,7 +423,7 @@ static void *THR_rec_evt(void *prm)
 	char msg[256]={0,};
 	char *s = NULL; 
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	tObj->active = 1;
 	
@@ -622,7 +622,7 @@ static void *THR_rec_evt(void *prm)
 
 	evt_file_close();	//# when APP_CMD_EXIT
 	tObj->active = 0;
-	aprintf("exit\n");
+	dprintf("exit\n");
 
 	return NULL;
 }
@@ -636,7 +636,7 @@ static void app_main(void)
 	app_thr_obj *tObj = &irec->eObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	if (thread_create(tObj, THR_rec_evt, APP_THREAD_PRI, NULL) < 0) {
 		eprintf("create thread!\n");
@@ -685,7 +685,7 @@ static void app_main(void)
 	
 	Msg_Kill(irec->qid);
 	
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 }
 
 /*****************************************************************************

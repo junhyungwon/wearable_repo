@@ -69,8 +69,6 @@ int ctrl_get_resolution(void) ;
 int ctrl_update_firmware_by_cgi(char *path);
 int ctrl_is_live_process(const char *process_name);
 void ctrl_firmware_update(void);
-
-void ctrl_sys_reboot(void);
-void ctrl_sys_shutdown(void);
+void ctrl_sys_halt(int shutdown);
 
 #endif	/* _APP_CTRL_H_ */

@@ -235,7 +235,6 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 			app_rec_evt() ;
-//			app_voip_set_play_volume();
 		}
 		#else
 		if (!app_cfg->ste.b.ftp_run)
