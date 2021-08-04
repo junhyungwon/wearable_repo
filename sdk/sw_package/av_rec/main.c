@@ -338,7 +338,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    }	
 		}
 
-		if (irec->fevt == NULL) 
+		if (irec->fevt == NULL)  // 이전상태 record 아님 
 		{
             if(irec->rec_evt_cnt > 0)
 			{
@@ -379,6 +379,7 @@ static void evt_file_close(void)
 		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
 		irec->fevt = NULL;
 	}
+
 	sync();
 	/* will free the page cache */
 	//system("echo 1 > /proc/sys/vm/drop_caches");
@@ -605,9 +606,18 @@ static void *THR_rec_evt(void *prm)
 			}
 		} /* while (1) */
 		
-		//# record done
-		evt_file_close();
-		dprintf("record done!\n");
+		s =strstr(irec->fname, "/mmc/DCIM/E_") ;
+		if(s != NULL && irec->pre_type == 1)
+        {
+			irec->pre_type = -1 ;
+		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
+		}
+		else
+		{
+		    //# record done
+		    evt_file_close();
+		    dprintf("record done!\n");
+		}
 	} /* while (!exit) */
 
 	evt_file_close();	//# when APP_CMD_EXIT

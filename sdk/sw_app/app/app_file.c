@@ -210,7 +210,7 @@ static int _cmpold(const void *a, const void *b)
 	list_info_t *a_name = (list_info_t *)a;
 	list_info_t *b_name = (list_info_t *)b;
 
-	return (strcmp(a_name->name, b_name->name));
+	return (strcmp(&a_name->name[13], &b_name->name[13]));  // /mmc/DCIM/R_ sorting for event file 
 }
 
 /*****************************************************************************
