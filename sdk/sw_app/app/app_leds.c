@@ -259,7 +259,7 @@ int app_leds_cam_ctrl(int no, int ste)
 		index = LED_IDX_CAM1; 
 		break;
 	case 1:
-		break;
+		return 0 ;
 	case 2:
 		index = LED_IDX_CAM3; 
 		break;

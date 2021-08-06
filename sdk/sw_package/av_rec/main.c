@@ -218,9 +218,29 @@ static int search_frame(int sec)
 
 	return 0;
 }
+
+static void evt_file_close(void)
+{
+	struct stat sb;
+	unsigned long sz;
+	
+	if (irec->fevt) {
+		avi_file_close(irec->fevt, irec->fname);
+		irec->pre_type = -1 ;
+		/* calculate file size */
+		lstat(irec->fname, &sb);
+		sz = (sb.st_size / KB); /* Byte->KB */
+		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+		irec->fevt = NULL;
+	}
+
+	sync();
+	/* will free the page cache */
+	//system("echo 1 > /proc/sys/vm/drop_caches");
+}
+
 //----------------------------------------------------------------------------------------------------
 //####################################################################################################
-
 /*****************************************************************************
 * @brief    event record function
 * @section  [desc]
@@ -326,8 +346,11 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 					if(irec->rec_evt_cnt == 0)
 					{
-						if(irec->pre_type == 1) 	
+						if(irec->pre_type == 1)
+						{
+							evt_file_close();
 					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
+						}
 						else
 					        send_msg(AV_CMD_REC_EVT_END, 0, NULL);
                     }
@@ -363,26 +386,6 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
     }
 
 	return 0;
-}
-
-static void evt_file_close(void)
-{
-	struct stat sb;
-	unsigned long sz;
-	
-	if (irec->fevt) {
-		avi_file_close(irec->fevt, irec->fname);
-		irec->pre_type = -1 ;
-		/* calculate file size */
-		lstat(irec->fname, &sb);
-		sz = (sb.st_size / KB); /* Byte->KB */
-		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
-		irec->fevt = NULL;
-	}
-
-	sync();
-	/* will free the page cache */
-	//system("echo 1 > /proc/sys/vm/drop_caches");
 }
 
 static int evt_file_write(stream_info_t *ifr, int snd_on)
@@ -610,6 +613,7 @@ static void *THR_rec_evt(void *prm)
 		if(s != NULL && irec->pre_type == 1)
         {
 			irec->pre_type = -1 ;
+		    evt_file_close();
 		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
 		}
 		else
