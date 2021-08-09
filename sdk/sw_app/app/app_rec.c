@@ -390,17 +390,14 @@ int app_rec_evt(void)
 int app_rec_stop(int buzz)
 {
 	if (irec->rec_state) {
-		if (buzz >= 1) 
+		if (buzz) 
 		{
 			app_buzz_ctrl(100, 2);	//# buzz: rec stop
-        }
-		if(buzz == 2)  // previous recording type reset
-		{
-			event_send(&irec->sObj, APP_CMD_GSTOP, 0, 0);
+			event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
 		}
 		else
 		{
-			event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
+			event_send(&irec->sObj, APP_CMD_GSTOP, 0, 0);
 		}
 
 		event_send(&irec->bObj, APP_CMD_STOP, 0, 0);

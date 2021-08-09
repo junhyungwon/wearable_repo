@@ -1269,25 +1269,16 @@ void ctrl_sys_halt(int shutdown)
     int ste = 0;
 	
 	ste = app_rec_state();
-	if (shutdown == 1) {
+	if (shutdown) {
 		dprintf("system shutdown....\n");
 		if (ste) {
 			app_rec_stop(0);
 		}
 		app_buzz_ctrl(80, 2); //# Power Off Buzzer
 		if (ste)
-			app_msleep(500); /* 먼저 buzzer를 울리기 위해서 */	
-	} 
-	if (shutdown == 2) {
-		dprintf("system shutdown....\n");
-		if (ste) {
-			app_rec_stop(2);
-		}
-		app_buzz_ctrl(80, 2); //# Power Off Buzzer
-		if (ste)
 			app_msleep(1500); /* 먼저 buzzer를 울리기 위해서 */	
 	} 
-	if(shutdown == 0){
+	else {
 		/* reboot */
 		dprintf("system reboot....\n");
 		if (ste) {
