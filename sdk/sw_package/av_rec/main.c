@@ -314,7 +314,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
 	    {
-            if(abs(irec->old_min - ts.tm_min) > 1)  
+            if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
                 irec->old_min = 0 ; 
 
 		    if (irec->fevt != NULL) 
