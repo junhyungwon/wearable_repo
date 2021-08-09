@@ -348,7 +348,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 					{
 						if(irec->pre_type == 1)
 						{
-							evt_file_close();
+//							evt_file_close();
 					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
 						}
 						else
@@ -613,7 +613,7 @@ static void *THR_rec_evt(void *prm)
 		if(s != NULL && irec->pre_type == 1)
         {
 			irec->pre_type = -1 ;
-		    evt_file_close();
+//		    evt_file_close();
 		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
 		}
 		else
@@ -670,6 +670,10 @@ static void app_main(void)
 			event_send(tObj, APP_CMD_EVT, 0, 0);
 			break;
 		case AV_CMD_REC_STOP:
+			event_send(tObj, APP_CMD_STOP, 0, 0);
+			break;
+		case AV_CMD_REC_GSTOP:
+			irec->pre_type = -1 ;
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			break;
 		case AV_CMD_REC_EXIT:

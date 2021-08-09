@@ -211,7 +211,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
 				sysprint("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
-				ctrl_sys_halt(1); /* for shutdown */
+				ctrl_sys_halt(2); /* for shutdown */
 				return -1;
 			}
 		} else {
@@ -281,7 +281,7 @@ static void *THR_micom(void *prm)
 					if (!app_cfg->ste.b.busy) {
 						sysprint("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
 						//# add rupy
-						ctrl_sys_halt(1); /* for shutdown */
+						ctrl_sys_halt(2); /* for shutdown */
 						exit = 1;
 					} else {
 						dprintf("skip power switch event!!!\n");

@@ -146,6 +146,11 @@ static void *THR_rec_recv_msg(void *prm)
 		case AV_CMD_REC_RESTART:
 			dprintf("received Event record Restart!\n");
 
+            event_send(&irec->bObj, APP_CMD_STOP, 0, 0) ; // for stop buzzer
+            send_msg(AV_CMD_REC_STOP);
+			app_buzz_ctrl(100, 2);
+            sleep(1) ;
+
             send_msg(AV_CMD_REC_START);
 			irec->rec_state = 1;
 			app_buzz_ctrl(100, 1);
@@ -201,13 +206,18 @@ static void *THR_rec_send_msg(void *prm)
 			/* TODO */
 		} else if (cmd == APP_REC_EVT) {
 			send_msg(AV_CMD_REC_EVT);
-			
 
             irec->rec_state  = 1;  
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_CMD_STOP) {
 			send_msg(AV_CMD_REC_STOP);
+			
+			irec->rec_state = 0 ;
+			app_leds_rec_ctrl(LED_REC_OFF);
+
+		} else if (cmd == APP_CMD_GSTOP) {
+			send_msg(AV_CMD_REC_GSTOP);
 			
 			irec->rec_state = 0 ;
 			app_leds_rec_ctrl(LED_REC_OFF);
@@ -380,8 +390,19 @@ int app_rec_evt(void)
 int app_rec_stop(int buzz)
 {
 	if (irec->rec_state) {
-		if (buzz) app_buzz_ctrl(100, 2);	//# buzz: rec stop
-		event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
+		if (buzz >= 1) 
+		{
+			app_buzz_ctrl(100, 2);	//# buzz: rec stop
+        }
+		if(buzz == 2)  // previous recording type reset
+		{
+			event_send(&irec->sObj, APP_CMD_GSTOP, 0, 0);
+		}
+		else
+		{
+			event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
+		}
+
 		event_send(&irec->bObj, APP_CMD_STOP, 0, 0);
 	}
 
