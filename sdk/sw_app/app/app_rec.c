@@ -146,11 +146,6 @@ static void *THR_rec_recv_msg(void *prm)
 		case AV_CMD_REC_RESTART:
 			dprintf("received Event record Restart!\n");
 
-            event_send(&irec->bObj, APP_CMD_STOP, 0, 0) ; // for stop buzzer
-            send_msg(AV_CMD_REC_STOP);
-			app_buzz_ctrl(100, 2);
-            sleep(1) ;
-
             send_msg(AV_CMD_REC_START);
 			irec->rec_state = 1;
 			app_buzz_ctrl(100, 1);
@@ -390,9 +385,9 @@ int app_rec_evt(void)
 int app_rec_stop(int buzz)
 {
 	if (irec->rec_state) {
+		app_buzz_ctrl(100, 2);	//# buzz: rec stop
 		if (buzz) 
 		{
-			app_buzz_ctrl(100, 2);	//# buzz: rec stop
 			event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
 		}
 		else

@@ -349,9 +349,8 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 					if(irec->rec_evt_cnt == 0)
 					{
-						if(irec->pre_type == 1)
+						if(irec->pre_type == 1)  // event 발생전에 recording 중인 경우 
 						{
-//							evt_file_close();
 					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
 						}
 						else
@@ -624,8 +623,7 @@ static void *THR_rec_evt(void *prm)
 		s =strstr(irec->fname, "/mmc/DCIM/E_") ;
 		if(s != NULL && irec->pre_type == 1)
         {
-			irec->pre_type = -1 ;
-//		    evt_file_close();
+		    evt_file_close();
 		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
 		}
 		else
