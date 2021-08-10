@@ -81,6 +81,9 @@ static g_mem_info_t	*imem=NULL;
 //# enc_buf
 char *enc_buf=NULL;
 
+//# pre-record 실행된 적이 있는 지 확인.  
+static int pre_first=1;
+
 extern int cmem_fd;	//# cmem lib
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -442,11 +445,16 @@ static void *THR_rec_evt(void *prm)
 		do {
 			int print_limit = 1;
 			
-			if (irec->en_pre)
+			/*
+			 * Time Sync에 의해서 Record stop/start 시 Pre Record가 활성화되면 부팅 후 15초 이상 
+			 * 녹화데이터가 없어서 항상 같은 시간의 파일이 생성됨. 이를 방지하기 위해서 
+			 * 최초 파일에만 Pre Record을 수행함.
+			 */
+			if ((irec->en_pre) && (pre_first == 1)) {
 				read_idx = search_frame(PRE_REC_SEC);
-			else
+			} else {
 				read_idx = search_frame(0);
-			
+			}
 			if (read_idx >= 0) {
 				break;
 			} else {
@@ -461,7 +469,11 @@ static void *THR_rec_evt(void *prm)
 				app_msleep(30);	
 			}
 		} while (1);
-
+		
+		/* disable pre-record */
+		if (irec->en_pre)
+			pre_first = 0;
+			
 		ifr = &imem->ifr[read_idx];
         if (ifr->ch == 0  && ifr->d_type == DATA_TYPE_VIDEO && ifr->is_key) {
 		    ret = evt_file_open(&imem->ifr[read_idx], cmd);
