@@ -56,7 +56,7 @@
 #define eprintf(x...) do { printf(" [app !err] %s: ", __func__); printf(x); } while(0)
 #define dprintf(x...) do { printf(" [app ] %s: ", __func__); printf(x); } while(0)
 /* ANSI Color RED */
-#define notice(x,...)	printf(" [app ] \033[31m%s: \033[0m" x, __func__, ##__VA_ARGS__);
+#define notice(x,...) do {printf(" [app ] \033[31m%s:" x, __func__, ##__VA_ARGS__); printf("\033[0m");} while(0)
 
 #define sysprint(x...) do { printf(" [app LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
 #endif	/* _APP_COMM_H_ */
