@@ -94,7 +94,7 @@ static int recv_msg(void)
 		return -1;
 
 	if (msg.cmd == AV_CMD_REC_FLIST) {
-		dprintf("REC File %s done!!(size %u)\n", msg.fname, msg.du);
+		notice("REC File %s done!!(size %u)\n", msg.fname, msg.du);
 		app_file_add_list(msg.fname, msg.du);
 	}
 

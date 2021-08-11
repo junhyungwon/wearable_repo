@@ -1270,7 +1270,6 @@ void ctrl_sys_halt(int shutdown)
 	
 	ste = app_rec_state();
 	if (shutdown) {
-		dprintf("system shutdown....\n");
 		if (ste) {
 			app_rec_stop(0);
 		}
@@ -1280,15 +1279,14 @@ void ctrl_sys_halt(int shutdown)
 	} 
 	else {
 		/* reboot */
-		dprintf("system reboot....\n");
 		if (ste) {
        		app_rec_stop(1); /* buzzer on */
 			app_msleep(500);
     	}
 	}
-    
 	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
-    app_set_write();
+    dprintf("file manager exit success.(while system %s!)\n", shutdown ? "shutdown" : "reboot");
+	app_set_write();
 	
 	if (shutdown) {
 		app_mcu_pwr_off(OFF_NORMAL);
