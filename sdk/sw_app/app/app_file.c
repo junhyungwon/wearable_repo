@@ -638,6 +638,9 @@ static void *THR_file_mng(void *prm)
 				
 		cmd = tObj->cmd;
 		if (cmd == APP_CMD_EXIT) {
+			/* watchdog disable */
+			app_cfg->wd_flags &= ~WD_FILE;
+			app_cfg->wd_tot &= ~WD_FILE; 
 			exit = 1;
 			break;
 		}

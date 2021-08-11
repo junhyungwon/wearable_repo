@@ -14,7 +14,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 /* ANSI Color MAGENTA */
-#define aprintf(...) do { printf(" [VOIP ] \033[35m%s: \033[0m", __func__); printf(__VA_ARGS__);} while(0)
+#define aprintf(...) do { printf(" [VOIP ] %s:", __func__); printf(__VA_ARGS__);} while(0)
 
 #define sysprint(...) do { printf(" [VOIP LOG] %s: ", __func__); printf(__VA_ARGS__); syslog(LOG_INFO, __VA_ARGS__);} while(0)
 
