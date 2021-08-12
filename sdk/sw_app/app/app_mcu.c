@@ -292,7 +292,7 @@ static void *THR_micom(void *prm)
 					if (!app_cfg->ste.b.ftp_run) 
 					{     
 						if (app_rec_state()) {
-							app_rec_stop(1);
+							app_rec_stop(ON);
 						} else {
 							app_rec_start();
 						}

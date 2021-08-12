@@ -366,7 +366,7 @@ int app_main(void)
         app_p2p_exit() ;
         app_p2p_stop() ;
     }
-    app_rec_stop(0);
+    app_rec_stop(OFF);
     app_snd_stop(); 
     app_cap_stop();
 

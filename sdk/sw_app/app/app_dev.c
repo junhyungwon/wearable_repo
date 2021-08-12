@@ -205,7 +205,7 @@ static void *THR_dev(void *prm)
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
 			aprintf("SD Card removed.. system will restart!\n");
-			app_rec_stop(0);
+			app_rec_stop(OFF);
 			app_mcu_pwr_off(OFF_RESET);
 		}
 		
@@ -242,7 +242,7 @@ static void *THR_dev(void *prm)
 			rkey = chk_rec_key();
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
@@ -258,7 +258,7 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
@@ -273,7 +273,7 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}

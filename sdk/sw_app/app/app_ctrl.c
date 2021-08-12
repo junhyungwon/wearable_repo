@@ -365,7 +365,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	/* recording stop */
 	ret = app_rec_state();
 	if (ret) {
-		app_rec_stop(1);
+		app_rec_stop(ON);
 		sleep(1); /* wait for file close */
 	}
 	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
@@ -633,7 +633,7 @@ int ctrl_vid_framerate(int ch, int framerate)
 	{
         ret = app_rec_state() ;
 	    if (ret) { 
-	        app_rec_stop(1);
+	        app_rec_stop(ON);
 	        sleep(1); /* wait for file close */
         }
 	}
@@ -703,7 +703,7 @@ int ctrl_vid_resolution(int resol_idx)
 // to do rec stop
     ret = app_rec_state() ;
     if (ret) {
-        app_rec_stop(1);
+        app_rec_stop(ON);
 	    sleep(1); 
 	}
 	app_cfg->ste.b.rec = 1; // previous flag for capture start
@@ -773,7 +773,7 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 
 		if (ret)
 		{
-			app_rec_stop(1);
+			app_rec_stop(ON);
 			sleep(1);
 		}
 
@@ -1272,7 +1272,7 @@ void ctrl_sys_halt(int shutdown)
 	if (shutdown) {
 		dprintf("system shutdown....\n");
 		if (ste) {
-			app_rec_stop(0);
+			app_rec_stop(OFF);
 		}
 		app_buzz_ctrl(80, 2); //# Power Off Buzzer
 		if (ste)
@@ -1282,7 +1282,7 @@ void ctrl_sys_halt(int shutdown)
 		/* reboot */
 		dprintf("system reboot....\n");
 		if (ste) {
-       		app_rec_stop(1); /* buzzer on */
+       		app_rec_stop(OFF);
 			app_msleep(500);
     	}
 	}

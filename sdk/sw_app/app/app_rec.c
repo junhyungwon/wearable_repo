@@ -382,15 +382,15 @@ int app_rec_evt(void)
 	return SOK;
 }
 
-int app_rec_stop(int buzz)
+int app_rec_stop(int prerec_flag)
 {
 	if (irec->rec_state) {
 		app_buzz_ctrl(100, 2);	//# buzz: rec stop
-		if (buzz) 
+		if (prerec_flag) // record 종료시 이전 record 상태를 유지 종료 후 이전 record 상태로 돌아감 
 		{
 			event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
 		}
-		else
+		else // record 종료시 이전 record 상태를 초기화 해서 바로 record 종료 되도록 
 		{
 			event_send(&irec->sObj, APP_CMD_GSTOP, 0, 0);
 		}

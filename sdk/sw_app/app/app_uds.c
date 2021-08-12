@@ -722,7 +722,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 		if(app_rec_state())
 		{
 			sleep(1) ;
-			app_rec_stop(1);
+			app_rec_stop(ON);
 		}
 
 		app_set_write();

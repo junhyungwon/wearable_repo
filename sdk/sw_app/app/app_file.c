@@ -664,7 +664,7 @@ static void *THR_file_mng(void *prm)
 						if (r == EFAIL) {
 							eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
 							if (app_rec_state() > 0) {
-								app_rec_stop(ON); /* Buzzer On */
+								app_rec_stop(ON); 
 								app_msleep(500); /* wait for record done!! */
 							}
 							app_buzz_ctrl(80, 2); //# Power Off Buzzer

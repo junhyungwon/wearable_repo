@@ -809,7 +809,7 @@ static void *THR_ftp(void *prm)
 
 				if (app_rec_state())  // rec status
                 {
-                    app_rec_stop(1);
+                    app_rec_stop(ON);
 			     	app_cfg->ste.b.prerec_state = 1 ;
                 }
 

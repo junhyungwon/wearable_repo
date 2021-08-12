@@ -122,7 +122,7 @@ void video_status(void)
     {
 		ret = app_rec_state();
 		if (ret) {
-        	app_rec_stop(1);
+        	app_rec_stop(ON);
 			sleep(1); /* wait for file close */
 		}
     } 
@@ -346,7 +346,7 @@ static void vid_cap_stop(void)
 
     //#--- recording stop
     if (app_rec_state()) {
-        app_rec_stop(1);
+        app_rec_stop(ON);
 		sleep(1); /* wait for file close */
 	}
 
