@@ -351,6 +351,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 					{
 						if(irec->pre_type == 1)  // event 발생전에 recording 중인 경우 
 						{
+							evt_file_close();
 					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
 						}
 						else

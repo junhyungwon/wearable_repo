@@ -135,8 +135,8 @@ static void *THR_rec_recv_msg(void *prm)
 		case AV_CMD_REC_EVT_END:
 			dprintf("received Event record done!\n");
 		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
-			
             send_msg(AV_CMD_REC_STOP);
+
 		    irec->rec_state = 0;
 			app_buzz_ctrl(100, 2);
 		    app_leds_rec_ctrl(LED_REC_OFF);
@@ -145,7 +145,8 @@ static void *THR_rec_recv_msg(void *prm)
 
 		case AV_CMD_REC_RESTART:
 			dprintf("received Event record Restart!\n");
-
+		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
+ 
             send_msg(AV_CMD_REC_START);
 			irec->rec_state = 1;
 			app_buzz_ctrl(100, 1);

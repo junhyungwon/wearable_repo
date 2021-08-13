@@ -365,7 +365,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	/* recording stop */
 	ret = app_rec_state();
 	if (ret) {
-		app_rec_stop(ON);
+		app_rec_stop(OFF);
 		sleep(1); /* wait for file close */
 	}
 	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
