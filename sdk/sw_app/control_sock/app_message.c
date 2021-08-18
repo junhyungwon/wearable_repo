@@ -97,7 +97,7 @@ void set_message (MessageManager* manager, int channel, char* buff, int len)
         msg->len = len ;
         manager->cnt += 1 ;
 
-	printf("set_message .... reached len = %d......\n",len) ;
+//	printf("set_message .... reached len = %d......\n",len) ;
 }
 
 // end of app_message.c
