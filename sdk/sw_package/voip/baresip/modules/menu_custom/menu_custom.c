@@ -621,7 +621,7 @@ static void *THR_sipc_poll(void *prm)
 	app_thr_obj *tObj = &ikey->sObj;
 	int done = 0, cmd;
 	
-	printf("enter...\n");
+	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while(!done)
@@ -635,7 +635,7 @@ static void *THR_sipc_poll(void *prm)
 					ikey->ste.call_dir, ikey->ste.call_reg, ikey->ste.call_err);
 	}
 	
-	printf("exit...\n");
+	aprintf("exit...\n");
 	tObj->active = 0;
 		
 	return NULL;
@@ -646,7 +646,7 @@ static void *THR_sipc_main(void *prm)
 	app_thr_obj *tObj = &ikey->mObj;
 	int done = 0, cmd;
 	
-	printf("enter...\n");
+	aprintf("enter...\n");
 	tObj->active = 1;
 	(void)prm;
 	
@@ -704,7 +704,7 @@ static void *THR_sipc_main(void *prm)
 	tObj->active = 0;
 	Msg_Kill(ikey->qid);
 	
-	printf("exit...\n");
+	aprintf("exit...\n");
 		
 	return NULL;
 }
@@ -715,7 +715,7 @@ static int module_init(void)
 	app_thr_obj *tObj = &ikey->mObj;
 	int err;
 	
-	debug("menu_custom: init!\n");
+	aprintf("menu_custom: init!\n");
 	
 	ikey->start_ticks = tmr_jiffies();
 	ikey->dialbuf = mbuf_alloc(64);
@@ -748,7 +748,7 @@ static int module_close(void)
 {
 	app_thr_obj *tObj = &ikey->mObj;
 	
-	debug("menu_custom: close\n");
+	aprintf("menu_custom: close\n");
 	
    	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while (tObj->active)

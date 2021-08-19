@@ -716,7 +716,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif	
-#elif defined(NEXX360W) || defined(NEXX360V)
+#elif defined(NEXX360W) || defined(NEXXB)
 	#if SYS_CONFIG_VOIP
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = ON ;
@@ -1082,7 +1082,7 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#elif defined(NEXX360W)	|| defined(NEXX360V)
+#elif defined(NEXX360W)	|| defined(NEXXB)
     #if SYS_CONFIG_VOIP
 	app_set->rec_info.auto_rec      = ON ;
 	#else
@@ -1261,7 +1261,7 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
     {
         app_set_default(type);  // onvif factory default
         set_uid() ;  // read uid from nand and then set uid to app_set
-	    ctrl_sys_reboot();
+	    ctrl_sys_halt(0); /* reboot */
     } 
 }
 

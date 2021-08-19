@@ -66,7 +66,7 @@ Int32 SwMsLink_fillDataPattern(Utils_DmaChObj *swMsDmaChObj,
     }
 	else
 	{
-		#if defined(LF_SYS_NEXX360V)	//# background black
+		#if defined(LF_SYS_NEXXB)	//# background black
 	    memset(pFrame->addr[0][0], 16, ((pFormat->width)*(pFormat->height)));
 		memset(pFrame->addr[0][1], 0x80, ((pFormat->width)*(pFormat->height)));
 		#else
@@ -1020,7 +1020,7 @@ Int32 SwMsLink_drvCreateWinObj(SwMsLink_Obj * pObj, UInt32 winId)
 			/* alloc buffer of max possible size as input blank buffer */
 			status = System_getBlankFrame(&pWinObj->blankFrame);
 			UTILS_assert(status == FVID2_SOK);
-			#if !defined(LF_SYS_NEXX360V)	//# background black
+			#if !defined(LF_SYS_NEXXB)	//# background black
 			pWinObj->blankFrame.addr[0][1] = pWinObj->blankFrame.addr[0][0];
 			#endif
 			SwMsLink_fillDataPattern(&pObj->dmaObj,

@@ -205,7 +205,7 @@ static void *THR_dev(void *prm)
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
 			aprintf("SD Card removed.. system will restart!\n");
-			app_rec_stop(0);
+			app_rec_stop(OFF);
 			app_mcu_pwr_off(OFF_RESET);
 		}
 		
@@ -221,10 +221,10 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 		#if SYS_CONFIG_VOIP
-//			app_rec_evt() ;
+			app_rec_evt() ;
 		#endif
 		}
-#elif defined(NEXX360W) || defined(NEXX360V)
+#elif defined(NEXX360W) || defined(NEXXB)
 		#if SYS_CONFIG_VOIP
 		/* record key --> call function */
 		rkey = chk_rec_key();
@@ -235,7 +235,6 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 			app_rec_evt() ;
-//			app_voip_set_play_volume();
 		}
 		#else
 		if (!app_cfg->ste.b.ftp_run)
@@ -243,12 +242,12 @@ static void *THR_dev(void *prm)
 			rkey = chk_rec_key();
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-//			    app_rec_evt() ;
+			    app_rec_evt() ;
 			}
 		}
 		#endif /* #if SYS_CONFIG_VOIP */
@@ -259,12 +258,12 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-//			    app_rec_evt() ;
+			    app_rec_evt() ;
 			}
 		}
 #elif defined(NEXX360H)
@@ -274,12 +273,12 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-//			    app_rec_evt() ;
+			    app_rec_evt() ;
 			}
 		}
 #endif

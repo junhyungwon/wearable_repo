@@ -58,7 +58,7 @@ typedef struct {
 	char deviceId[32];
 	char fname[256];
 	
-	#if defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360V) 
+	#if defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) 
 	int ch2_keyframe;
 	int ch3_keyframe;
 	int ch4_keyframe;
@@ -80,6 +80,9 @@ static g_mem_info_t	*imem=NULL;
 
 //# enc_buf
 char *enc_buf=NULL;
+
+//# pre-record 실행된 적이 있는 지 확인.  
+static int pre_first=1;
 
 extern int cmem_fd;	//# cmem lib
 /*----------------------------------------------------------------------------
@@ -218,9 +221,29 @@ static int search_frame(int sec)
 
 	return 0;
 }
+
+static void evt_file_close(void)
+{
+	struct stat sb;
+	unsigned long sz;
+	
+	if (irec->fevt) {
+		avi_file_close(irec->fevt, irec->fname);
+		irec->pre_type = -1 ;
+		/* calculate file size */
+		lstat(irec->fname, &sb);
+		sz = (sb.st_size / KB); /* Byte->KB */
+		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+		irec->fevt = NULL;
+	}
+
+	sync();
+	/* will free the page cache */
+	//system("echo 1 > /proc/sys/vm/drop_caches");
+}
+
 //----------------------------------------------------------------------------------------------------
 //####################################################################################################
-
 /*****************************************************************************
 * @brief    event record function
 * @section  [desc]
@@ -253,26 +276,26 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
     if(cmd == APP_CMD_START)  // normal
 	{
-	if ((irec->old_min != ts.tm_min && minute_change))
-	{
-		irec->old_min = ts.tm_min;
-        minute_change = 0;
+	    if ((irec->old_min != ts.tm_min && minute_change))
+	    {
+		    irec->old_min = ts.tm_min;
+            minute_change = 0;
 		
-		if (irec->fevt != NULL) 
-		{
-			unsigned long sz;
-		    // TODO File Type check and then select close or not 
+		    if (irec->fevt != NULL) 
+		    {
+			    unsigned long sz;
+		        // TODO File Type check and then select close or not 
 			
-        	avi_file_close(irec->fevt, irec->fname);	//# close current file
-			/* calculate file size */
-			lstat(irec->fname, &sb);
-			sz = (sb.st_size / KB); /* Byte->KB */
-			send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
-		}	
+        	    avi_file_close(irec->fevt, irec->fname);	//# close current file
+			    /* calculate file size */
+			    lstat(irec->fname, &sb);
+			    sz = (sb.st_size / KB); /* Byte->KB */
+			    send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+		    }	
 		//# get current date & time
 //          localtime_r((const time_t *)&ifr->t_sec, &ts);
 		    strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		    sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, MODEL_CH_NUM);
+		    sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
 		
             memset(irec->fname, 0, sizeof(irec->fname));
 		    sprintf(irec->fname, "%s", filename);
@@ -294,7 +317,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
 	    {
-            if(abs(irec->old_min - ts.tm_min) > 1)  
+            if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
                 irec->old_min = 0 ; 
 
 		    if (irec->fevt != NULL) 
@@ -326,8 +349,11 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 					if(irec->rec_evt_cnt == 0)
 					{
-						if(irec->pre_type == 1) 	
+						if(irec->pre_type == 1)  // event 발생전에 recording 중인 경우 
+						{
+							evt_file_close();
 					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
+						}
 						else
 					        send_msg(AV_CMD_REC_EVT_END, 0, NULL);
                     }
@@ -338,12 +364,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    }	
 		}
 
-		if (irec->fevt == NULL) 
+		if (irec->fevt == NULL)  // 이전상태 record 아님 
 		{
             if(irec->rec_evt_cnt > 0)
 			{
   		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		        sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, MODEL_CH_NUM);
+		        sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
 		
 		        memset(irec->fname, 0, sizeof(irec->fname));
 		        sprintf(irec->fname, "%s", filename);
@@ -363,25 +389,6 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
     }
 
 	return 0;
-}
-
-static void evt_file_close(void)
-{
-	struct stat sb;
-	unsigned long sz;
-	
-	if (irec->fevt) {
-		avi_file_close(irec->fevt, irec->fname);
-		irec->pre_type = -1 ;
-		/* calculate file size */
-		lstat(irec->fname, &sb);
-		sz = (sb.st_size / KB); /* Byte->KB */
-		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
-		irec->fevt = NULL;
-	}
-	sync();
-	/* will free the page cache */
-	//system("echo 1 > /proc/sys/vm/drop_caches");
 }
 
 static int evt_file_write(stream_info_t *ifr, int snd_on)
@@ -422,7 +429,7 @@ static void *THR_rec_evt(void *prm)
 	char msg[256]={0,};
 	char *s = NULL; 
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	tObj->active = 1;
 	
@@ -438,11 +445,16 @@ static void *THR_rec_evt(void *prm)
 		do {
 			int print_limit = 1;
 			
-			if (irec->en_pre)
+			/*
+			 * Time Sync에 의해서 Record stop/start 시 Pre Record가 활성화되면 부팅 후 15초 이상 
+			 * 녹화데이터가 없어서 항상 같은 시간의 파일이 생성됨. 이를 방지하기 위해서 
+			 * 최초 파일에만 Pre Record을 수행함.
+			 */
+			if ((irec->en_pre) && (pre_first == 1)) {
 				read_idx = search_frame(PRE_REC_SEC);
-			else
+			} else {
 				read_idx = search_frame(0);
-			
+			}
 			if (read_idx >= 0) {
 				break;
 			} else {
@@ -457,7 +469,11 @@ static void *THR_rec_evt(void *prm)
 				app_msleep(30);	
 			}
 		} while (1);
-
+		
+		/* disable pre-record */
+		if (irec->en_pre)
+			pre_first = 0;
+			
 		ifr = &imem->ifr[read_idx];
         if (ifr->ch == 0  && ifr->d_type == DATA_TYPE_VIDEO && ifr->is_key) {
 		    ret = evt_file_open(&imem->ifr[read_idx], cmd);
@@ -474,6 +490,7 @@ static void *THR_rec_evt(void *prm)
 		while (1)
 		{
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+                
 				break;
 			}
 
@@ -487,12 +504,16 @@ static void *THR_rec_evt(void *prm)
 			{
 
 				if(irec->fevt == NULL)   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
+				{
 			        irec->rec_evt_cnt = 2;
+				}
                 else
 				{
                     s =strstr(irec->fname, "/mmc/DCIM/R_") ;
                     if(s != NULL)
+					{
 			            irec->rec_evt_cnt = 2;  // normal record 중에 event 발생시 1분 이상 녹화를 위한 부분 
+					}
 					else
 			            irec->rec_evt_cnt += 1;  // event recording 중 추가 이벤트 발생 
                 }
@@ -501,7 +522,6 @@ static void *THR_rec_evt(void *prm)
             }
 			if(tObj->cmd == APP_CMD_START)
 			{
-
 				cmd = APP_CMD_START ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
 			}
@@ -544,10 +564,13 @@ static void *THR_rec_evt(void *prm)
 						}
 					}
 					#else
+					/* 실제 카메라- 0, 2, 3 (3ch) */
+					#ifndef NEXXB
 					if (ifr->ch == 1) {
 					    if (ifr->is_key)
 					        irec->ch2_keyframe = 1 ;
                     }
+					#endif /* #ifndef NEXXB */
                     if (ifr->ch == 2) {
 					    if (ifr->is_key)
 					        irec->ch3_keyframe = 1 ;
@@ -557,12 +580,14 @@ static void *THR_rec_evt(void *prm)
 					        irec->ch4_keyframe = 1 ;
 					}
 					if (ifr->ch < 4) {
+						#ifndef NEXXB
 				        if (ifr->ch == 1 && !irec->ch2_keyframe)
 					    {
 				            app_msleep(10);
 				            read_idx = idx_increase(read_idx);
 						    continue;
                         }
+						#endif /* #ifndef NEXXB */
 				        if (ifr->ch == 2 && !irec->ch3_keyframe)
 					    {
 				            app_msleep(10);
@@ -596,14 +621,23 @@ static void *THR_rec_evt(void *prm)
 			}
 		} /* while (1) */
 		
-		//# record done
-		evt_file_close();
-		dprintf("record done!\n");
+		s =strstr(irec->fname, "/mmc/DCIM/E_") ;
+		if(s != NULL && irec->pre_type == 1)
+        {
+		    evt_file_close();
+		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
+		}
+		else
+		{
+		    //# record done
+		    evt_file_close();
+		    dprintf("record done!\n");
+		}
 	} /* while (!exit) */
 
 	evt_file_close();	//# when APP_CMD_EXIT
 	tObj->active = 0;
-	aprintf("exit\n");
+	dprintf("exit\n");
 
 	return NULL;
 }
@@ -617,7 +651,7 @@ static void app_main(void)
 	app_thr_obj *tObj = &irec->eObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	if (thread_create(tObj, THR_rec_evt, APP_THREAD_PRI, NULL) < 0) {
 		eprintf("create thread!\n");
@@ -649,6 +683,10 @@ static void app_main(void)
 		case AV_CMD_REC_STOP:
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			break;
+		case AV_CMD_REC_GSTOP:
+			irec->pre_type = -1 ;
+			event_send(tObj, APP_CMD_STOP, 0, 0);
+			break;
 		case AV_CMD_REC_EXIT:
 			/* recording process 종료 */
 			event_send(tObj, APP_CMD_STOP, 0, 0);
@@ -666,7 +704,7 @@ static void app_main(void)
 	
 	Msg_Kill(irec->qid);
 	
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 }
 
 /*****************************************************************************

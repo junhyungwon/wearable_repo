@@ -36,6 +36,7 @@
 typedef struct {
 	app_thr_obj sObj;		//# rec message send thread
 	app_thr_obj rObj;		//# rec message receive thread
+	app_thr_obj bObj;		//# event buzzer thread
 	
 	int init;
 	int qid;
@@ -93,7 +94,7 @@ static int recv_msg(void)
 		return -1;
 
 	if (msg.cmd == AV_CMD_REC_FLIST) {
-		dprintf("REC File %s done!!(size %u)\n", msg.fname, msg.du);
+		notice("REC File %s done!!(size %u)\n", msg.fname, msg.du);
 		app_file_add_list(msg.fname, msg.du);
 	}
 
@@ -133,8 +134,9 @@ static void *THR_rec_recv_msg(void *prm)
 		
 		case AV_CMD_REC_EVT_END:
 			dprintf("received Event record done!\n");
-			
+		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
             send_msg(AV_CMD_REC_STOP);
+
 		    irec->rec_state = 0;
 			app_buzz_ctrl(100, 2);
 		    app_leds_rec_ctrl(LED_REC_OFF);
@@ -142,9 +144,9 @@ static void *THR_rec_recv_msg(void *prm)
 			break;
 
 		case AV_CMD_REC_RESTART:
-			dprintf("received Event record done!\n");
-            send_msg(AV_CMD_REC_STOP);
-			app_buzz_ctrl(100, 2);
+			dprintf("received Event record Restart!\n");
+		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
+ 
             send_msg(AV_CMD_REC_START);
 			irec->rec_state = 1;
 			app_buzz_ctrl(100, 1);
@@ -157,7 +159,7 @@ static void *THR_rec_recv_msg(void *prm)
 			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);
 			break;
-		
+
 		default:
 			break;	
 		}
@@ -200,13 +202,18 @@ static void *THR_rec_send_msg(void *prm)
 			/* TODO */
 		} else if (cmd == APP_REC_EVT) {
 			send_msg(AV_CMD_REC_EVT);
-			
 
             irec->rec_state  = 1;  
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_CMD_STOP) {
 			send_msg(AV_CMD_REC_STOP);
+			
+			irec->rec_state = 0 ;
+			app_leds_rec_ctrl(LED_REC_OFF);
+
+		} else if (cmd == APP_CMD_GSTOP) {
+			send_msg(AV_CMD_REC_GSTOP);
 			
 			irec->rec_state = 0 ;
 			app_leds_rec_ctrl(LED_REC_OFF);
@@ -221,6 +228,86 @@ static void *THR_rec_send_msg(void *prm)
 	
 	return NULL;
 }
+
+/*****************************************************************************
+* @brief    event buzzer thread function
+* @section  [prm] active channel
+*****************************************************************************/
+static void *THR_evt_buzzer(void *prm)
+{
+	app_thr_obj *tObj = &irec->bObj;
+	int cmd = 0, buzzer_cnt = 0, evt_sndcnt = 0;
+	int exit = 0;
+	int status = 0, i = 0 ;
+	
+	aprintf("enter...\n");
+	tObj->active = 1;
+	
+	while (!exit)
+	{
+		cmd = event_wait(tObj);
+		if (cmd == APP_CMD_EXIT) {
+			/* send exit command to event buzzer process */
+			exit = 1;
+			break;
+		}  
+		else if (cmd == APP_CMD_STOP) {
+            continue ;
+		} 
+		while(1) 
+		{
+            if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+			    break;
+			} 
+			if (cmd == APP_REC_EVT) {
+
+				if(!(buzzer_cnt % 10))
+				{
+					if(status)
+						status = OFF ;
+					else
+						status = ON ;
+
+#if defined(NEXXONE) || defined(NEXX360H)
+					app_leds_cam_ctrl(0, status) ;
+#else
+					for(i = 0 ; i < MODEL_CH_NUM; i++)
+					{
+						app_leds_cam_ctrl(i, status);
+					}
+#endif
+				}
+				if(!(buzzer_cnt % 20))
+                {
+					if(evt_sndcnt < 10)   // event 시 10회만 전달 
+					{
+					    eventdata_send() ;
+					    evt_sndcnt += 1 ;
+					}
+
+					app_buzz_ctrl(100, 3) ;
+                    buzzer_cnt = 0 ;
+				}
+			}
+			status = ON ;
+			for(i = 0 ; i < MODEL_CH_NUM; i++)
+			{
+				app_leds_cam_ctrl(i, status);
+			}
+
+			OSA_waitMsecs(50);
+			buzzer_cnt += 1 ;
+		}
+		evt_sndcnt = 0 ;
+	}
+	
+	tObj->active = 0;
+		
+	aprintf("exit\n");
+	
+	return NULL;
+}
+
 
 static int _is_enable_rec_start(int rec_type)
 {	
@@ -254,8 +341,8 @@ static int _is_enable_rec_start(int rec_type)
 *****************************************************************************/
 int app_rec_start(void)
 {
-	int start = 1, type = 0; // normal  0, event 1
-	unsigned long sz;
+	int type = 0; // normal  0, event 1
+
 	//# Check the status of recording.
 	if (_is_enable_rec_start(type) == EFAIL)
 		return EFAIL;
@@ -286,21 +373,30 @@ int app_rec_evt(void)
 		OSA_waitMsecs(50);
 	}
 	
-	eventdata_send() ;
 	aprintf("Event Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
     app_buzz_ctrl(500, 1);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_EVT, 0, 0);
+	event_send(&irec->bObj, APP_REC_EVT, 0, 0);
 	
 	return SOK;
 }
 
-int app_rec_stop(int buzz)
+int app_rec_stop(int prerec_flag)
 {
 	if (irec->rec_state) {
-		if (buzz) app_buzz_ctrl(100, 2);	//# buzz: rec stop
-		event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
+		app_buzz_ctrl(100, 2);	//# buzz: rec stop
+		if (prerec_flag) // record 종료시 이전 record 상태를 유지 종료 후 이전 record 상태로 돌아감 
+		{
+			event_send(&irec->sObj, APP_CMD_STOP, 0, 0);
+		}
+		else // record 종료시 이전 record 상태를 초기화 해서 바로 record 종료 되도록 
+		{
+			event_send(&irec->sObj, APP_CMD_GSTOP, 0, 0);
+		}
+
+		event_send(&irec->bObj, APP_CMD_STOP, 0, 0);
 	}
 
 	return SOK;
@@ -353,6 +449,13 @@ int app_rec_init(void)
 	//#--- create msg send thread
 	tObj = &irec->sObj;
 	if(thread_create(tObj, THR_rec_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
+		eprintf("create thread\n");
+		return EFAIL;
+	}
+
+	//#--- create event buzzer thread
+	tObj = &irec->bObj;
+	if(thread_create(tObj, THR_evt_buzzer, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

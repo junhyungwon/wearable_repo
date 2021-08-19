@@ -113,7 +113,7 @@ static void ___thread_start(void)
 	netmgr_poll_cradle_init();
 	netmgr_poll_usbnet_init();
 	
-	aprintf("enter...!\n");
+	dprintf("enter...!\n");
 }
 
 /*****************************************************************************
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 	
 	main_thread_exit();
 	
-	aprintf("...exit!\n");
+	dprintf("...exit!\n");
 	
 	return 0;
 }

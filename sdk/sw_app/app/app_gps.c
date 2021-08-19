@@ -284,7 +284,7 @@ static int app_sys_time(struct tm *ts)
 	{
         if (app_rec_state()) 
 		{
-	        app_rec_stop(1);
+	        app_rec_stop(ON);
             app_cfg->ste.b.prerec_state = 1 ;
 	    } 
 		

@@ -23,8 +23,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-/* ANSI Color CYAN */
-#define aprintf(x, ...)	printf(" [GNSS ] \033[36m%s: \033[0m" x, __func__, ##__VA_ARGS__);
 #define eprintf(x...) do { printf(" [GNSS ERR!] %s: ", __func__); printf(x); } while(0)
 #define dprintf(x...) do { printf(" [GNSS ] %s: ", __func__); printf(x); } while(0)
 

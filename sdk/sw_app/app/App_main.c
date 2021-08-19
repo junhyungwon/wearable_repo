@@ -366,8 +366,7 @@ int app_main(void)
         app_p2p_exit() ;
         app_p2p_stop() ;
     }
-
-    app_rec_stop(0);
+    app_rec_stop(OFF);
     app_snd_stop(); 
     app_cap_stop();
 
@@ -457,10 +456,10 @@ int main(int argc, char **argv)
 	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360V)
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB)
 //	#if SYS_CONFIG_VOIP
 			/* copy app_fitt.out or full update */
-			ctrl_auto_update();
+			ctrl_firmware_update();
 			/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
 			if (app_cfg->ste.b.pwr_off)
 				return 0;

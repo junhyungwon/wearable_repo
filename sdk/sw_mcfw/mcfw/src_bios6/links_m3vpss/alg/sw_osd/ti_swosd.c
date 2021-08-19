@@ -351,7 +351,7 @@ static int DM81XX_SWOSD_setWinParam(SWOSD_Hndl *osdHndl, int idx, int height, in
     }
     char_w = fontInfo->charWidth;
 	char_h = fontInfo->charHeight;
-
+Vps_printf("char_w =%d char_h = %d\n",char_w, char_h) ;
 	/*
 	bmpWinPrm.userTransparancy = SWOSD_RBOOLTRUE;
 	bmpWinPrm.enable = SWOSD_RBOOLTRUE;
@@ -645,7 +645,8 @@ int DM81XX_SWOSD_create(SWOSD_config_t * pSwOsdPrm)
         }
         else
         {
-            SWOSD_setNumWindows(osdHndl, SWOSD_WINMAX);
+			
+            SWOSD_setNumWindows(osdHndl, SWOSD_WINMAX); 
             DM81XX_SWOSD_setWinParam(osdHndl, i,
                                      gSWOSD_config.swosdConfig[i].cropHeight,
                                      gSWOSD_config.swosdConfig[i].cropWidth);

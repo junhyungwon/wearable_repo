@@ -148,7 +148,7 @@ static void *THR_usbnet_poll(void *prm)
 	int ret;
 	
 	tObj->active = 1;
-	aprintf("enter...!\n");
+	dprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -200,7 +200,7 @@ static void *THR_usbnet_poll(void *prm)
 	} 
 	
 	tObj->active = 0;
-	aprintf("...exit!\n");
+	dprintf("...exit!\n");
 	
 	return NULL;
 }

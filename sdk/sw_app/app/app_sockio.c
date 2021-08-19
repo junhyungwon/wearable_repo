@@ -102,6 +102,7 @@ static Void THR_csock(Void *prm)
     int ControlMainsock, exit = 0, cmd ;
 
     msginit () ;
+	Sock_Init() ;
 
     aprintf("enter....\n") ;
 #ifdef NETWORK_DEBUG

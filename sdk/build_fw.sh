@@ -10,7 +10,7 @@ function fmenu()
  echo "1. NEXX360 Basic                          "
  echo "2. NEXX360 Wireless                       "
  echo "3. NEXX ONE                               "
- echo "4. NEXX360 VOIP                           "
+ echo "4. NEXXB                                  "
  echo "=========================================="
 }
 
@@ -90,8 +90,8 @@ do
 			break;;
 		"4" )
 			echo " "
-			echo "select NEXX360 VOIP"
-			FW_PREFIX="NEXX360V"
+			echo "select NEXXB"
+			FW_PREFIX="NEXXB"
 			break;;
 		"3" )
 			echo " "
@@ -137,7 +137,7 @@ echo
 echo "Packaging files..."
 echo
 
-if [ "$FW_PREFIX" == "NEXX360V" ]
+if [ "$FW_PREFIX" == "NEXXB" ]
 then
 tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 #tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs rfs_fit.ubifs.md5
@@ -156,7 +156,7 @@ echo
 echo "Packaging files..."
 echo
 
-if [ "$FW_PREFIX" == "NEXX360V" ]
+if [ "$FW_PREFIX" == "NEXXB" ]
 then
 tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 elif [ "$FW_PREFIX" == "NEXXONE" ]
@@ -186,7 +186,7 @@ fi
 
 cp ./fit/bin/hw_diag.out ./$masspack_name
 
-if [ "$FW_PREFIX" == "NEXX360V" ]
+if [ "$FW_PREFIX" == "NEXXB" ]
 then
 cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs ./$masspack_name
 else

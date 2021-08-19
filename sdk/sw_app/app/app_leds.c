@@ -32,18 +32,18 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 typedef enum {
-	LED_IDX_RF_G = 0,
-	LED_IDX_RF_R,
-	LED_IDX_GPS_G,
-	LED_IDX_GPS_R,
+	LED_IDX_RF_G = 0,       //# kernel LED_RF_G
+	LED_IDX_RF_R,			//# kernel LED_RF_R 
+	LED_IDX_GPS_G,			//# kernel LED_GPS_G
+	LED_IDX_GPS_R,			//# kernel LED_GPS_R
 	LED_IDX_BAT_G1,
 	LED_IDX_BAT_G2,
 	LED_IDX_BAT_G3,
 	LED_IDX_BAT_G4,
-	LED_IDX_CAM1,  //# CAM1
-	LED_IDX_CAM3,  //# CAM2
-	LED_IDX_CAM4,  //# CAM3 
-	LED_IDX_CAM2,  //# CAM4
+	LED_IDX_CAM1,  			//# CAM1
+	LED_IDX_CAM3,  			//# CAM2
+	LED_IDX_CAM4,  			//# CAM3 
+	LED_IDX_CAM2,  			//# CAM4
 	LED_IDX_SD_G,
 	LED_IDX_SD_R,
 	LED_IDX_SD_G1,
@@ -250,6 +250,23 @@ int app_leds_cam_ctrl(int no, int ste)
 		return 0;
 	}
 
+	/*
+	 * NEXXB CAM4 LED is voip led
+	 */
+#ifdef NEXXB
+	switch (no) {
+	case 0:
+		index = LED_IDX_CAM1; 
+		break;
+	case 1:
+		return 0 ;
+	case 2:
+		index = LED_IDX_CAM3; 
+		break;
+	case 3:
+		index = LED_IDX_CAM4; 
+		break;
+#else
 	switch (no) {
 	case 0:
 		index = LED_IDX_CAM1; break;
@@ -259,6 +276,7 @@ int app_leds_cam_ctrl(int no, int ste)
 		index = LED_IDX_CAM3; break;
 	case 3:
 		index = LED_IDX_CAM4; break;
+#endif	
 	default:
 		eprintf("invalid camera led index (%d)\n", no);
 		return -1;
@@ -272,6 +290,7 @@ int app_leds_cam_ctrl(int no, int ste)
 	return ret;
 }
 
+#if SYS_CONFIG_VOIP
 /*----------------------------------------------------------------------------
  LED VOIP control. (
  *
@@ -287,8 +306,12 @@ int app_leds_voip_ctrl(int ste)
 	if (app_cfg->ste.b.busy) {
 		return 0;
 	}
-	
+
+#ifdef NEXXB	
+	index = LED_IDX_CAM2;
+#else
 	index = LED_IDX_CAM4;
+#endif	
 	ret = leds_ctrl(index, ste);
 	if (ret < 0) {
 		//eprintf("failed voip led control (%d)\n", index);
@@ -296,6 +319,7 @@ int app_leds_voip_ctrl(int ste)
 
 	return ret;
 }
+#endif
 
 /*----------------------------------------------------------------------------
  LED SD card (insert/remove) control.

@@ -219,7 +219,6 @@ static void *THR_gps_poll(void *prm)
 	app_thr_obj *tObj = &iproc->mObj;
 	int exit = 0, cmd;
 	
-//	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while(!exit)
@@ -280,8 +279,6 @@ static void *THR_gps_poll(void *prm)
 	gps_dev_exit(app_cfg->gps_fd);
 	tObj->active = 0;
 
-//	aprintf("exit...\n");
-		
 	return NULL;
 }
 
@@ -310,8 +307,6 @@ int app_gps_proc_init(void)
 		eprintf("create thread\n");
 		return -1;
 	}
-	
-	//aprintf("... done!\n");
 	
 	return 0;
 }

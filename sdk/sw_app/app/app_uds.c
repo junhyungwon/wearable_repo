@@ -722,7 +722,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 		if(app_rec_state())
 		{
 			sleep(1) ;
-			app_rec_stop(1);
+			app_rec_stop(ON);
 		}
 
 		app_set_write();
@@ -2038,7 +2038,7 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "SystemReboot") == 0)
 		{
 			sysprint("[APP_UDS] --- System Reboot ---\n");
-			ctrl_sys_reboot() ;
+			ctrl_sys_halt(0); /* reboot */
 			sleep(10); // client에 응답을 주지 않는다. Restarting....메시지 표시 때문에...
 		}
 		else if (strcmp(rbuf, "reload_config") == 0)

@@ -42,6 +42,15 @@ typedef struct TAG_GPSPACKET {
 #pragma pack()
 
 #pragma pack(1)
+typedef struct TAG_GPSREQ_RCV {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+} GPSREQRCV ;
+#pragma pack()
+
+
+#pragma pack(1)
 typedef struct TAG_EVENTPACKET {
 	unsigned short identifier ;
 	unsigned short cmd ;
@@ -49,6 +58,14 @@ typedef struct TAG_EVENTPACKET {
 	char uid[32] ;
 	char deviceId[32] ;
 } EVENTPACKET ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_EVENTREQ_RCV {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+} EVENTREQRCV ;
 #pragma pack()
 
 /*----------------------------------------------------------------------------
