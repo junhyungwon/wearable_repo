@@ -50,6 +50,13 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#if (FTP_CUR_DEV == FTP_DEV_ETH0)
+#define FTP_DEV_NAME		"eth0"
+#elif (FTP_CUR_DEV == FTP_DEV_ETH1)
+#define FTP_DEV_NAME		"eth1"
+#else
+#error "invalid ftp device"
+#endif
 
 #define FTP_CYCLE_TIME		100
 #define FTP_TIME_OUT		5	//# 2sec
@@ -284,7 +291,7 @@ static int createDataSock(char * host, int port)
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
-    strncpy(interface.ifr_ifrn.ifrn_name, "eth0", IFNAMSIZ);
+    strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
 
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
@@ -512,7 +519,7 @@ static int ftp_connect (char *hostname, int port)
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
-    strncpy(interface.ifr_ifrn.ifrn_name, "eth0", IFNAMSIZ);
+    strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
 
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
@@ -590,6 +597,18 @@ static int ftp_close(int sd)
 	return 0;
 }
 
+static int get_netdev_link_status(void)
+{
+#if (FTP_CUR_DEV == FTP_DEV_ETH0)	
+	int state = app_cfg->ste.b.cradle_eth_run;
+#elif (FTP_CUR_DEV == FTP_DEV_ETH1)
+	int state = app_cfg->ste.b.usbnet_run;
+#else
+#error "invalid ftp device"
+#endif	
+	return (state ? 1: 0);
+}
+
 static void ftp_send(void)
 {
 	int i=0;
@@ -613,8 +632,10 @@ static void ftp_send(void)
 		if(iftp->sdFtp >= 0)
 			close(iftp->sdFtp);
 
-        if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
-        	break;
+		// ethX off in ftp running
+		if(!get_netdev_link_status()) { 	
+			break;
+		}
  
 		iftp->sdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
 		if(iftp->sdFtp != -1)
@@ -675,8 +696,10 @@ static void ftp_send(void)
             if(get_ftp_send_file(FileName) == 0)   // do not exist file
                continue ;
 
-            if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
+			 // ethX off in ftp running
+            if(!get_netdev_link_status()) {
                 break;
+			}
 
 			if(app_set->ftp_info.file_type) // ftp send event file
 			{
@@ -761,7 +784,7 @@ static void ftp_send(void)
 			}
 			reset_filelist() ;
 		}
-	}
+	} /* end of if (iftp->ftp_state == FTP_STATE_SENDING)*/
 }
 
 int app_get_ftp_state(void)
@@ -801,7 +824,7 @@ static void *THR_ftp(void *prm)
 			break;
 		}
 		
-        if(app_cfg->ste.b.cradle_eth_run)
+		if(get_netdev_link_status())
         {
             if(iftp->ftp_state == FTP_STATE_NONE)
             {

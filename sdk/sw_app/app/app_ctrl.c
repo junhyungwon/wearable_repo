@@ -1294,4 +1294,6 @@ void ctrl_sys_halt(int shutdown)
 		app_buzz_ctrl(80, 2); //# Power Off Buzzer
 		app_mcu_pwr_off(OFF_RESET);
 	}
+	
+	aprintf("....exit!\n");
 }

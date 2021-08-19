@@ -313,7 +313,7 @@ int app_dev_init(void)
 		return EFAIL;
     }
 
-	aprintf("... done!\n");
+	aprintf("....done!\n");
 
 	return SOK;
 }
