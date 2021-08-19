@@ -486,7 +486,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	
-	aprintf("app_set->ch[%d].resol = %d\n", MODEL_CH_NUM, app_set->ch[MODEL_CH_NUM].resol) ;
+	dprintf("app_set->ch[%d].resol = %d\n", MODEL_CH_NUM, app_set->ch[MODEL_CH_NUM].resol) ;
 	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol) ; 
 	g_mem_init();
 

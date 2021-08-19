@@ -1317,7 +1317,7 @@ int app_set_write(void)
 #endif
 
 	sync();
-	printf(" [app] %s done...!\n", __func__);
+	aprintf("....exit!\n");
 
 	return 0;
 }

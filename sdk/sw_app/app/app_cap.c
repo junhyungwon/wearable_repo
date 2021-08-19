@@ -312,7 +312,7 @@ static void *THR_vid_cap(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("exit\n");
+	aprintf("....exit!\n");
 
 	return NULL;
 }
@@ -539,7 +539,7 @@ int app_cap_start(void)
 	ctrl_enc_multislice() ; 
 #endif
 
-	aprintf("done!\n");
+	aprintf("....done!\n");
 
 	return SOK;
 }
@@ -567,7 +567,7 @@ int app_cap_stop(void)
 
 	app_msleep(500);	//# wait m3 cap_stop done
 
-	aprintf("done!\n");
+	aprintf("....done!\n");
 
 	return SOK;
 }
