@@ -351,7 +351,7 @@ int app_rec_start(void)
 		OSA_waitMsecs(50);
 	}
 	
-	aprintf("Record Process Start!!\n");
+	dprintf("Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
     app_buzz_ctrl(100, 1);			//# buzz: rec start
@@ -373,7 +373,7 @@ int app_rec_evt(void)
 		OSA_waitMsecs(50);
 	}
 	
-	aprintf("Event Record Process Start!!\n");
+	dprintf("Event Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
     app_buzz_ctrl(500, 1);			//# buzz: rec start

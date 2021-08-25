@@ -272,7 +272,7 @@ static int app_sys_time(struct tm *ts)
 
     app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
   
-	aprintf("---reached app_sys_time ---\n");
+	dprintf("---reached app_sys_time ---\n");
     //# get current time
 	now = time(NULL);
 
@@ -301,7 +301,7 @@ static int app_sys_time(struct tm *ts)
 	    }
         app_cfg->ste.b.rec = 0 ;
 
-		aprintf("--- changed time from GPS ---\n");
+		dprintf("--- changed time from GPS ---\n");
 
 	}
 

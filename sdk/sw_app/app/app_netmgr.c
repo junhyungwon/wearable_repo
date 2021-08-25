@@ -322,15 +322,8 @@ static void __netmgr_dev_link_status_handler(void)
 	if (device == NETMGR_DEV_TYPE_CRADLE) {
 		if (link == NETMGR_DEV_ACTIVE) {
 			app_cfg->ste.b.cradle_eth_run = 1;
-			app_cfg->ftp_enable = ON;
-		} 
-		else if (link == NETMGR_DEV_ERROR)  {
+		} else {
 			app_cfg->ste.b.cradle_eth_run = 0;
-			app_cfg->ftp_enable = OFF;
-		}
-		else {
-			app_cfg->ste.b.cradle_eth_run = 0;
-			app_cfg->ftp_enable = OFF;
 		}
 	} else {
 		if (link == NETMGR_DEV_ACTIVE) {
@@ -348,6 +341,16 @@ static void __netmgr_dev_link_status_handler(void)
 			app_leds_rf_ctrl(LED_RF_OFF);
 		} 
 	}
+	
+#if (FTP_CUR_DEV == FTP_DEV_ETH0)
+	if (app_cfg->ste.b.cradle_eth_run)  app_cfg->ftp_enable = ON;
+	else								app_cfg->ftp_enable = OFF;
+#elif (FTP_CUR_DEV == FTP_DEV_ETH1)
+	if (app_cfg->ste.b.usbnet_run)  	app_cfg->ftp_enable = ON;
+	else								app_cfg->ftp_enable = OFF;
+#else
+#error "invalid ftp device"
+#endif	
 }
 
 static void __netmgr_dev_ip_status_handler(void)

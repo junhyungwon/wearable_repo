@@ -91,6 +91,15 @@
 #define EINVALID                (-3)
 #define EMEM                    (-4)
 
+#define FTP_DEV_ETH0			1
+#define FTP_DEV_ETH1			2
+
+#if defined(NEXXB) 
+#define FTP_CUR_DEV				FTP_DEV_ETH0 //#FTP_DEV_ETH1 /* TODO */
+#else
+#define FTP_CUR_DEV				FTP_DEV_ETH0
+#endif
+
 typedef enum {
 	STE_GPS = 0,
 	STE_DTIME,
