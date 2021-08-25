@@ -499,6 +499,9 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	}
 	
 	fread(list, sizeof(list_info_t)*lcnt, 1, f);
+
+	qsort(list, lcnt, sizeof(list_info_t), _cmpold);
+
 	/* add linked list */
 	tmp = list;
 	for (i = 0; i < lcnt; i++, tmp++) 
@@ -869,30 +872,9 @@ int get_ftp_send_file(char *path)
 	return (1);
 }
 
-int reset_filelist()
+void save_filelist()
 {
-	 char flist_path[256]={0,};
-     int res, status;
-     size_t num_of_files;
-
-     memset(ifile, 0, sizeof(app_file_t));
-     ifile->file_state = FILE_STATE_NORMAL;
-     sprintf(ifile->rec_root, "%s/%s", SD_MOUNT_PATH, REC_DIR);
-
-     //#-- create directories such as DCIM, ufs
-     _check_rec_dir((const char *)ifile->rec_root);
-     /* Get the number of files in DCIM */
-     num_of_files = get_file_count((const char *)ifile->rec_root);
-     /* set file list path */
-     sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
-     res = __load_file_list((const char *)flist_path, &ilist, num_of_files);
-     if (res < 0) {
-         status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, num_of_files);
-         if (status == EFAIL)    {
-             sysprint("Failed to make file list!!\n");
-             return status;
-         }
-     }
+	__save_file_list();
 }
 
 /*****************************************************************************

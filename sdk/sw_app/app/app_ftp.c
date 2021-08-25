@@ -612,7 +612,7 @@ static int get_netdev_link_status(void)
 static void ftp_send(void)
 {
 	int i=0;
-	int ret = 0, retry_cnt = 0;
+	int ret = 0, retry_cnt = 0, file_cnt = 0;
     char FileName[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
     char *s = NULL ;
@@ -634,6 +634,7 @@ static void ftp_send(void)
 
 		// ethX off in ftp running
 		if(!get_netdev_link_status()) { 	
+			iftp->ftp_state = FTP_STATE_NONE;
 			break;
 		}
  
@@ -689,15 +690,15 @@ static void ftp_send(void)
         app_leds_backup_state_ctrl(LED_FTP_ON);
         app_leds_eth_status_ctrl(LED_FTP_ON);
 
-		iftp->file_cnt = get_recorded_file_count() ;
 
-		for (i = 0; i < iftp->file_cnt; i++)
+		for (i = 0; i < iftp->file_cnt; i++)   // 전체 파일 리스트(event + normal)
         {
-            if(get_ftp_send_file(FileName) == 0)   // do not exist file
+            if(get_ftp_send_file(FileName) == 0)   // get all file list 
                continue ;
 
 			 // ethX off in ftp running
             if(!get_netdev_link_status()) {
+				iftp->ftp_state = FTP_STATE_NONE;
                 break;
 			}
 
@@ -732,7 +733,11 @@ static void ftp_send(void)
 			            }   
                         else
                         {
-                            restore_ftp_file(FileName) ;
+							if (access(FileName, 0) == -1) 
+								ftp_dbg(" \n[ftp] Do not exist file name - %s \n", FileName);
+							else
+								restore_ftp_file(FileName) ;
+
 				            ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
                             break;
 						}
@@ -752,38 +757,25 @@ static void ftp_send(void)
 
         } 
 
-		iftp->file_cnt = get_recorded_file_count() ;
-        if(iftp->file_cnt == 0)
-        {
+		if(app_set->ftp_info.file_type) // the status after sending files 
+		    file_cnt = get_recorded_efile_count() ;
+		else
+		    file_cnt = get_recorded_file_count() ;
+
+		if(file_cnt == 0)
+		{
             app_leds_backup_state_ctrl(LED_FTP_OFF);
             app_leds_eth_status_ctrl(LED_FTP_OFF);
 		    iftp->ftp_state = FTP_STATE_SEND_DONE;
             ftp_close(iftp->sdFtp);
-        }
-        else
-        {
+		}
+		else
+		{
             app_leds_eth_status_ctrl(LED_FTP_ERROR);
             app_leds_backup_state_ctrl(LED_FTP_ERROR);
             iftp->ftp_state = FTP_STATE_NONE ;
-			
-        }   
-		if(app_set->ftp_info.file_type) // ftp send event file
-		{
-	        if(get_recorded_efile_count() == 0)
-			{
-                app_leds_backup_state_ctrl(LED_FTP_OFF);
-                app_leds_eth_status_ctrl(LED_FTP_OFF);
-		        iftp->ftp_state = FTP_STATE_SEND_DONE;
-                ftp_close(iftp->sdFtp);
-			}
-			else
-			{
-                app_leds_eth_status_ctrl(LED_FTP_ERROR);
-                app_leds_backup_state_ctrl(LED_FTP_ERROR);
-                iftp->ftp_state = FTP_STATE_NONE ;
-			}
-			reset_filelist() ;
 		}
+
 	} /* end of if (iftp->ftp_state == FTP_STATE_SENDING)*/
 }
 
@@ -805,7 +797,7 @@ void app_ftp_state_reset(void)
 static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
-	int cmd, exit = 0 ;
+	int cmd, exit = 0, cradle_status = 0 ;
 
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -826,15 +818,28 @@ static void *THR_ftp(void *prm)
 		
 		if(get_netdev_link_status())
         {
+			cradle_status = ON ;
+
             if(iftp->ftp_state == FTP_STATE_NONE)
             {
-			    iftp->file_cnt = get_recorded_file_count() ;
-
 				if (app_rec_state())  // rec status
-                {
-                    app_rec_stop(ON);
-			     	app_cfg->ste.b.prerec_state = 1 ;
-                }
+				{
+					app_rec_stop(ON);
+					app_cfg->ste.b.prerec_state = 1 ;
+				}
+
+				if(app_set->ftp_info.file_type) // ftp send event file
+				{
+					if(get_recorded_efile_count() > 0)
+					{
+	                    ftp_dbg("get_recorded_efile_count = %d\n", get_recorded_efile_count());
+					    iftp->file_cnt = get_recorded_file_count() ;
+					}
+					else
+					    iftp->file_cnt = 0 ;
+				}
+                else
+					iftp->file_cnt = get_recorded_file_count() ;
 
                 if (iftp->file_cnt > 0)  
                 {
@@ -845,6 +850,7 @@ static void *THR_ftp(void *prm)
                         app_cfg->ste.b.ftp_run = 1 ;  // rec key disable
 
                         ftp_send() ;
+						save_filelist();
                         app_cfg->ste.b.ftp_run = 0 ;
 					}
                 }
@@ -852,6 +858,8 @@ static void *THR_ftp(void *prm)
                 {
                     app_cfg->ste.b.ftp_run = 0 ;
                     iftp->ftp_state = FTP_STATE_SEND_DONE ;
+					app_leds_backup_state_ctrl(LED_FTP_OFF);
+					app_leds_eth_status_ctrl(LED_FTP_OFF);
                 }  
             }
             else
@@ -873,11 +881,13 @@ static void *THR_ftp(void *prm)
         else
         {
 			/* cradle에서 분리 되었을 경우 처리*/
-//			if(iftp->sdFtp < 0)
+			if(cradle_status == ON)
 			{
-                iftp->ftp_state = FTP_STATE_NONE ;
-                app_cfg->ste.b.ftp_run = 0 ;
-            } 
+				save_filelist();
+				cradle_status = OFF ;
+            }
+            iftp->ftp_state = FTP_STATE_NONE ;
+            app_cfg->ste.b.ftp_run = 0 ;
 
             if (app_cfg->ste.b.prerec_state && app_cfg->en_rec)
 			{
@@ -892,8 +902,6 @@ static void *THR_ftp(void *prm)
         OSA_waitMsecs(1000) ;
 	}
 
-	if(app_set->ftp_info.file_type) // ftp send event file
-		reset_filelist() ;
 
     tObj->active = 0;
     aprintf("...exit\n");
