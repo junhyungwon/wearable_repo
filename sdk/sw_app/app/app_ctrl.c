@@ -169,8 +169,8 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 
 	*release = _is_firmware_for_release();
 	
-	//# *release is EFAIL means firmware is not for NEXONE.
-	if (*release == EFAIL)
+	//# *release TRUE = release(normal). *release == EFAIL (model name is not matched). release == FALSE (factory release)
+	if (*release == EFAIL) 
 		ret = EFAIL;
 	
 	return ret;
@@ -265,7 +265,7 @@ static int __normal_update(void)
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc
 	if (_unpack_N_check((const char *)pFile, (const char *)SD_MOUNT_PATH, &release) == EFAIL) {
-		sysprint("It is not firmware file !!!\n");
+		sysprint("It is not match model name in firmware file !!!\n");
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
@@ -338,7 +338,28 @@ static int __emergency_update(void)
 		
 	return 0;
 }
+
+static int Delete_updatefile()
+{
+    char cmd[MAX_CHAR_255] = {0,};
+    int i;
 	
+	for (i = 0; i < FW_FILE_NUM; i++)
+	{
+		sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
+		util_sys_exec(cmd);
+	}
+
+	// delete rfs_fit.ubifs.md5
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
+	if (access(cmd, F_OK) == 0)
+		remove(cmd) ;
+
+	return 0 ;
+}
+
 void *thrRunFWUpdate(void *arg)
 {
 	sysprint("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
@@ -360,15 +381,16 @@ curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192
 int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 {
 	char cmd[256];
-	int ret;
+	int ret, release;
 	
 	/* recording stop */
 	ret = app_rec_state();
 	if (ret) {
+	    app_cfg->ste.b.prerec_state = 1 ;
 		app_rec_stop(OFF);
 		sleep(1); /* wait for file close */
 	}
-	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
+	
 
 	// check tar content list	
 #if 1
@@ -420,59 +442,49 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	system(cmd);
 	sync();
 #endif
+    release = _is_firmware_for_release() ; 
 
-    if(TRUE != _is_firmware_for_release()) // RELEASE Version .. --> update file delete
+    if(EFAIL == release) // RELEASE Version .. --> update file delete
 	{
-		printf("firmware factory release version..\n") ;
-/*
+		
+
 		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
 
-		int i;
-		for (i = 0; i < FW_FILE_NUM; i++)
-		{
-			sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
-			printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
-			util_sys_exec(cmd);
-		}
-
-		// delete rfs_fit.ubifs.md5
-		memset(cmd, 0, sizeof(cmd));
-		snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
-		if (access(cmd, F_OK) == 0)
-			remove(cmd);
+		Delete_updatefile() ;	
 
 		return -1;
-*/
-	} else {
+    }
+	else // release or factory release version
+	{
+		app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
 		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
 	}
-	
+
 	//# micom version check..
 	_check_micom_update();
-	
-	// check md5sum
-	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
-	FILE *fp = popen(cmd, "r");
-	if(fp){
-		char line[255]={0};
-		fgets(line, 255, fp);
-		printf("%s\n", line);
+		// check md5sum
+		sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
+		FILE *fp = popen(cmd, "r");
+		if(fp){
+			char line[255]={0};
+			fgets(line, 255, fp);
+			printf("%s\n", line);
 
-		if(NULL == strstr(line, " OK")){
+			if(NULL == strstr(line, " OK")){
 
-			//TODO: 실패할 경우, 압축해제한 파일들 처리
+				//TODO: 실패할 경우, 압축해제한 파일들 처리
+				pclose(fp);
+				return -1;
+			}
+
 			pclose(fp);
+			// OK, ready to firmware upgrade
+		}
+		else {
+			eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+			//TODO: 실패할 경우, 압축해제한 파일들 처리
 			return -1;
 		}
-
-		pclose(fp);
-		// OK, ready to firmware upgrade
-	}
-	else {
-		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
-		//TODO: 실패할 경우, 압축해제한 파일들 처리
-		return -1;
-	}
 
 #if 0
 		thrRunFWUpdate(NULL);
@@ -489,6 +501,8 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		pthread_detach(tid_fw);
 	}
 #endif
+    if(FALSE == release)
+	    Delete_updatefile() ;
 	
 	return 0;
 }
@@ -523,25 +537,12 @@ void ctrl_firmware_update(void)
 
 void ctrl_reset_nand_update(void)
 {
-	int i;
-	char cmd[MAX_CHAR_255] = {0,};
-
 	//# delete full updated file
 	if(dev_fw_printenv("nand_update") == 2)
 	{
         if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
 		{
-		    for(i=0; i<FW_FILE_NUM; i++) {
-			    sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
-				printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n",full_upfiles[i]);
-			    util_sys_exec(cmd);
-		    }
-			
-			/* delete rfs_fit.ubifs.md5 */
-			memset(cmd, 0, sizeof(cmd));
-			snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
-			if (access(cmd, F_OK) == 0)
-				remove(cmd);
+		    Delete_updatefile() ;
 		}
 		
 		dev_fw_setenv("nand_update", "0", 0);
@@ -1249,14 +1250,14 @@ int ctrl_is_live_process(const char *process_name)
  */
 int ctrl_update_firmware_by_cgi(char *fwpath)
 {
-    app_leds_fw_update_ctrl();
-	
 	int ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
 	if (ret < 0)
 	{
-		app_leds_sys_normal_ctrl();
-		app_rec_start();
+        if(app_cfg->ste.b.prerec_state)
+		    app_rec_start();
 	}
+	else
+	    app_leds_fw_update_ctrl();
 
 	return ret ;     
 }
