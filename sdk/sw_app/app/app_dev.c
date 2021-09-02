@@ -224,7 +224,7 @@ static void *THR_dev(void *prm)
 			app_rec_evt() ;
 		#endif
 		}
-#elif defined(NEXX360W) || defined(NEXXB)
+#elif defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
 		#if SYS_CONFIG_VOIP
 		/* record key --> call function */
 		rkey = chk_rec_key();

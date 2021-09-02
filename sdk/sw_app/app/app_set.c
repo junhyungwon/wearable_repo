@@ -724,7 +724,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif
-#else //# NEXX360B, NEXX360H
+#else //# NEXX360B, NEXX360H, NEXX360W_MUX
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 #endif		
@@ -961,6 +961,7 @@ static void app_set_default(int default_type)
 	for (ich = 0; ich < channels; ich++)
 	{
 		app_set->ch[ich].resol		= RESOL_720P;
+
 		if(ich == MODEL_CH_NUM)
 		{
 #if defined(NEXXONE) || defined(NEXX360H)	
@@ -1088,7 +1089,7 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#else //# NEXX360B, NEXX360H
+#else //# NEXX360B, NEXX360H, NEXX360W_MUX
     app_set->rec_info.auto_rec      = OFF ;
 #endif
 

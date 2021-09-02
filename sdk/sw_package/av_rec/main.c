@@ -295,7 +295,9 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		//# get current date & time
 //          localtime_r((const time_t *)&ifr->t_sec, &ts);
 		    strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		    sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+		sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, 
+//				irec->deviceId, REC_CH_NUM);
+				irec->deviceId, 1) ;
 		
             memset(irec->fname, 0, sizeof(irec->fname));
 		    sprintf(irec->fname, "%s", filename);
@@ -564,13 +566,14 @@ static void *THR_rec_evt(void *prm)
 						}
 					}
 					#else
-					/* 실제 카메라- 0, 2, 3 (3ch) */
+/*
+					// 실제 카메라- 0, 2, 3 (3ch) 
 					#ifndef NEXXB
 					if (ifr->ch == 1) {
 					    if (ifr->is_key)
 					        irec->ch2_keyframe = 1 ;
                     }
-					#endif /* #ifndef NEXXB */
+					#endif // #ifndef NEXXB 
                     if (ifr->ch == 2) {
 					    if (ifr->is_key)
 					        irec->ch3_keyframe = 1 ;
@@ -587,7 +590,7 @@ static void *THR_rec_evt(void *prm)
 				            read_idx = idx_increase(read_idx);
 						    continue;
                         }
-						#endif /* #ifndef NEXXB */
+						#endif // #ifndef NEXXB 
 				        if (ifr->ch == 2 && !irec->ch3_keyframe)
 					    {
 				            app_msleep(10);
@@ -600,18 +603,20 @@ static void *THR_rec_evt(void *prm)
 				            read_idx = idx_increase(read_idx);
 						    continue;
                         }
-				
-				        ret = evt_file_write(ifr, irec->en_snd);
-				        if (ret < 0) {
-							send_msg(AV_CMD_REC_ERR, 0, NULL);
-							memset(msg, 0, sizeof(msg));
-							sprintf(msg, "avi write failed!");
-							avrec_log(msg);
-							eprintf("%s\n", msg);
-							/* loop exit */
-							break;
+					
+*/				
+                        if (ifr->ch < 1) {
+				            ret = evt_file_write(ifr, irec->en_snd);
+				            if (ret < 0) {
+							    send_msg(AV_CMD_REC_ERR, 0, NULL);
+						    	memset(msg, 0, sizeof(msg));
+							    sprintf(msg, "avi write failed!");
+							    avrec_log(msg);
+							    eprintf("%s\n", msg);
+							    /* loop exit */
+							    break;
+				            }
 				        }
-				    }
 					#endif
 				}
 				read_idx = idx_increase(read_idx);

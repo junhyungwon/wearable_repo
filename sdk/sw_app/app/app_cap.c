@@ -69,17 +69,24 @@ static FILE *fp = NULL;
 static FILE *jfp = NULL;
 #endif
 
+#if defined(NEXX360W_MUX)
+#define EXCHANNEL  3
+#else
+#define EXCHANNEL  0
+#endif 
+
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 void video_status(void)
 {
     int temp, count, ret, vcount = 0;
-	int vstatus[MODEL_CH_NUM] = {0,};
+	int vstatus[MODEL_CH_NUM + EXCHANNEL] = {0,};
 	int i;
-	
+    char msg[128] = {0,};
+
 	/* current maximum video count */
-	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
+	count = Vcap_get_video_status(MODEL_CH_NUM + EXCHANNEL, &vstatus[0], &temp);
 	
 #if defined(NEXXONE) || defined(NEXX360H)
 	app_leds_cam_ctrl(0, vstatus[0]);
@@ -156,11 +163,20 @@ static void proc_vid_cap(void)
 {
 	VCODEC_BITSBUF_LIST_S fullBufList;
 	VCODEC_BITSBUF_S *pFullBuf;
-	int i, idx;
+    int i, idx ;
+	
+#if defined(NEXX360W_MUX)
+	struct timeval ltime ;
+	int pre_msec = -1;
+	Uint64 pre_captime = -1 ;
+	int timezone = 0 ;
+#endif
+
 	Uint64 captime;
 	stream_info_t *ifr;
 	char *addr;
 	int meta_size = 0;
+    
 
 	meta_size = sizeof(app_gps_meta_t);
 	Venc_getBitstreamBuffer(&fullBufList, 0);
@@ -191,8 +207,15 @@ static void proc_vid_cap(void)
 			ifr->frm_rate = app_cfg->ich[ifr->ch].fr;
 			ifr->is_key = (pFullBuf->frameType == VCODEC_FRAME_TYPE_I_FRAME) ? 1:0;
 			captime = (Uint64)((Uint64)pFullBuf->upperTimeStamp<<32|pFullBuf->lowerTimeStamp);
+#if defined(NEXX360W_MUX)
+	        timezone = app_set->time_info.time_zone - 12 ; 
+			gettimeofday(&ltime, NULL) ;
+ 			ifr->t_sec = ltime.tv_sec + timezone*3600 ;
+			ifr->t_msec = ltime.tv_usec % 1000 ;
+#else			
 			ifr->t_sec = (Uint32)(captime/1000);
 			ifr->t_msec = (Uint32)(captime%1000);
+#endif			
 
 			app_memcpy(ifr->addr, (char*)pFullBuf->bufVirtAddr, ifr->b_size);
 			
@@ -502,7 +525,9 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 
 	vsysParams.captMode = CAPT_MODE_720P;
-	vsysParams.numChs = MODEL_CH_NUM;
+
+	vsysParams.numChs = MODEL_CH_NUM + EXCHANNEL;
+
 
 	app_cfg->wd_tot |= WD_ENC; /* Fixed */
 	app_cfg->num_ch = vsysParams.numChs;

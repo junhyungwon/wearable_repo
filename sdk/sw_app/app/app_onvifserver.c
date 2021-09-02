@@ -372,6 +372,8 @@ int app_onvif_init_config()
 		fputs("		<Model>NEXX360B</Model>\n", fp);
 #elif defined(NEXX360W)
 		fputs("		<Model>NEXX360W</Model>\n", fp);
+#elif defined(NEXX360W_MUX)
+		fputs("		<Model>NEXX360W_MUX</Model>\n", fp);
 #elif defined(NEXXB)
 		fputs("		<Model>NEXXB</Model>\n", fp);
 #elif defined(NEXX360H)
@@ -413,7 +415,7 @@ int app_onvif_init_config()
 		fputs("			<height>720</height>\n", fp);
 		fputs("			<quality>5</quality>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
 		fputs("			<framerate>30</framerate>\n", fp);
 #elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB)
 		fputs("			<framerate>15</framerate>\n", fp);
@@ -424,7 +426,7 @@ int app_onvif_init_config()
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
 		fputs("			<encoding>H264</encoding>\n", fp);
 		fputs("			<h264>\n", fp);
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
         fputs("				<gov_length>30</gov_length>\n", fp);
 #elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB)
         fputs("				<gov_length>15</gov_length>\n", fp);
@@ -466,7 +468,7 @@ int app_onvif_init_config()
 		fputs("			<width>720</width>\n", fp);
 		fputs("			<height>480</height>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
 		fputs("			<framerate>30</framerate>\n", fp);
 #elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB)
 		fputs("			<framerate>15</framerate>\n", fp);

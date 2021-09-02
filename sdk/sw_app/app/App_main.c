@@ -456,7 +456,7 @@ int main(int argc, char **argv)
 	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB)
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
 //	#if SYS_CONFIG_VOIP
 			/* copy app_fitt.out or full update */
 			ctrl_firmware_update();

@@ -29,6 +29,7 @@ extern "C" {
 #else
 //#define SW_MS_LINK_TIMER_DEFAULT_PERIOD (50)//# {1/20} for display framerate 20..
 #define SW_MS_LINK_TIMER_DEFAULT_PERIOD (66)  //# {1/15} for display framerate 15..
+//#define SW_MS_LINK_TIMER_DEFAULT_PERIOD (33)  //# {1/30}s
 #endif
 
 #define SW_MS_MAX_DEI_CH                (8)

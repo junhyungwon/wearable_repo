@@ -287,7 +287,7 @@ static void *THR_micom(void *prm)
 						dprintf("skip power switch event!!!\n");
 					}
 				} else {
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB)
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
 					#if SYS_CONFIG_VOIP 
 					if (!app_cfg->ste.b.ftp_run) 
 					{     

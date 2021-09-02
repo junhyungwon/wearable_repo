@@ -23,13 +23,16 @@ endif
 #    ====> STREAMING: OFF, CAM: 3CH, GPS: OFF, HDMI: ON, VOIP: ON
 #  NEXXONE_VOIP:
 #    ====> STREAMING: ON, CAM: 1CH, GPS: ON, HDMI: OFF, VOIP: ON
+#  NEXX360W_MUX:
+#    ====> STREAMING: ON, CAM: 4CH, GPS: ON, HDIM: OFF, VOIP: OFF, REC: 1(merged), STREAM :1 (merged)
 #
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
 #SYSTEM_PLATFORM := NEXX360W
 #SYSTEM_PLATFORM := NEXX360H
-SYSTEM_PLATFORM := NEXXB
-#SYSTEM_PLATFORM := NEXXONE_VOIP
+#SYSTEM_PLATFORM := NEXXB
+SYSTEM_PLATFORM := NEXXONE_VOIP
+#SYSTEM_PLATFORM := NEXX360W_MUX
 ######################################################################################
 
 #--- Build Type (debug/release)
@@ -117,6 +120,14 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	USE_VOIP = YES
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = PARTRON
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP = NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER  = AFO
 endif
 
 #---  KCMVP

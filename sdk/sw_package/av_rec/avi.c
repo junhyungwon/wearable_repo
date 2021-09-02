@@ -96,7 +96,8 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	memset(&aviInfo, 0, sizeof(AVI_SYSTEM_PARAM));
 	
-	aviInfo.nVidCh	= REC_CH_NUM;
+//	aviInfo.nVidCh	= REC_CH_NUM;
+	aviInfo.nVidCh	= 1;
 	aviInfo.bEnMeta	= TRUE; //# FALSE
 	aviInfo.uVideoType	= ENCODING_H264;
 	

@@ -140,8 +140,12 @@ int app_rtsptx_start(void)
 	{	
 #if defined(NEXXONE)
 		sprintf(dev_model, "%s", "NEXXONE") ;
-#else
+#elif defined(NEXX360W)
 		sprintf(dev_model, "%s", "NEXX360") ;
+#elif defined(NEXXB)
+		sprintf(dev_model, "%s", "NEXX-B") ;
+#elif defined(NEXX360W_MUX)
+		sprintf(dev_model, "%s", "NEXX360W_MUX") ;
 #endif
 		if(app_set->account_info.enctype)
         {
