@@ -37,6 +37,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+
+
 #include "app_comm.h"
 #include "app_ftp.h"
 #include "app_dev.h"
@@ -63,25 +65,27 @@
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 
-typedef struct {
-	app_thr_obj ftpObj;	//# key thread
-	int sdFtp;
-	int img_save;
-	int ftp_state;
-	int file_cnt;
-    int retry_cnt ;
-	char path[MAX_CHAR_128];
-} app_img_ftp_t;
+
 
 /*----------------------------------------------------------------------------
  Declares variable)s
 -----------------------------------------------------------------------------*/
-static app_img_ftp_t t_ftp;
-static app_img_ftp_t *iftp=&t_ftp;
+static app_ftp_t t_ftp;
+static app_ftp_t *iftp=&t_ftp;
+
 
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+
+
+
+	
+
+
+
+
+
 static int ftpRecvResponse(int sock, char * buf)
 {
     socklen_t lon ;
@@ -607,7 +611,8 @@ static int get_netdev_link_status(void)
 #error "invalid ftp device"
 #endif	
 	return (state ? 1: 0);
-}
+}				 								 													    
+
 
 static void ftp_send(void)
 {
@@ -918,7 +923,7 @@ int app_ftp_init(void)
 {
 	app_thr_obj *tObj;
 
-	memset(iftp, 0, sizeof(app_img_ftp_t));
+	memset(iftp, 0, sizeof(app_ftp_t));
 
 	sprintf(iftp->path , "%s/%s", SD_MOUNT_PATH, REC_DIR);
 
