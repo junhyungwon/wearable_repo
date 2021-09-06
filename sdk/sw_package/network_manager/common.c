@@ -27,16 +27,6 @@
 #include "event_hub.h"
 #include "common.h"
 
-/* Wi-Fi Module Path */
-#define RTL_8821A_PATH			"/lib/modules/8821au.ko"
-#define RTL_8812A_PATH			"/lib/modules/8812au.ko"
-
-/* Wi-Fi Module name */
-#define RTL_8821A_NAME			"8821au"
-#define RTL_8812A_NAME			"8812au"
-
-#define PROC_MODULE_FNAME		"/proc/modules"
-
 #define ARCH_NR_GPIOs		(256)
 #define SZ_BUF				64
 
@@ -80,17 +70,6 @@ static const char flagchars[] =
 struct gpio_desc_t {
 	int fd;         /* file descriptor for /gpio/valude */
 	int dir;		/* direction of gpio */
-};
-
-typedef struct {
-	int d_vid;
-	int d_pid;
-	
-} usb_dev_id_t;
-
-static usb_dev_id_t usb_wlan_list[NETMGR_USB_MAX_NUM] = {
-	{ .d_vid = RTL_8821A_VID, .d_pid = RTL_8821A_PID, },
-	{ .d_vid = RTL_8812A_VID, .d_pid = RTL_8812A_PID, }
 };
 
 static struct gpio_desc_t desc[ARCH_NR_GPIOs];
@@ -332,44 +311,6 @@ static int __set_static_ip(const char *ifce, const char *ip_str, const char *mas
 	close(fd);
 
 	return ret;
-}
-
-static int __wlan_get_module(const char *name)
-{
-    FILE *proc;
-    char line[256] = {};
-
-	if (name == NULL)
-		return 0;
-
-    if ((proc = fopen(PROC_MODULE_FNAME, "r")) == NULL) {
-        eprintf("Could not open /proc/modules!!\n");
-        return 0;
-    }
-
-    while ((fgets(line, sizeof(line), proc)) != NULL) {
-        if (strncmp(line, name, strlen(name)) == 0) {
-            fclose(proc);
-            return 1;
-        }
-    }
-    fclose(proc);
-
-    return 0;
-}
-
-static void __wlan_insmod(const char *module_path)
-{
-	char buf[256];
-	FILE *f = NULL;
-
-	/* load driver */
-	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/insmod %s", module_path);
-
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
 }
 
 int netmgr_net_link_detect(const char *ifce)
@@ -859,119 +800,6 @@ int gpio_get_value(int num, int *val)
 	}
 
 	return 0;
-}
-
-/*****************************************************************************
-* @brief Wi-Fi ??? ???? ??? ??? ?? ??? ???? ???
-*****************************************************************************/
-int netmgr_usb_is_exist(int usb_v, int usb_p)
-{
-	FILE *lsusbfs;
-
-	char cmd[128] = {0,};
-	char buffer[256] = {0,};
-	char vendor[5];
-	char product[5];
-	char *save_ptr;
-
-	vendor[4] = 0;
-	snprintf(vendor, sizeof(vendor), "%04x", usb_v);
-
-	product[4] = 0;
-	snprintf(product, sizeof(product), "%04x", usb_p);
-
-	snprintf(cmd, sizeof(cmd), USB_LS_CMD_STR);
-	lsusbfs = popen(cmd, "r");
-	if (lsusbfs == NULL) {
-		eprintf("couldn't access %s\n", cmd);
-		return 0;
-	}
-
-	while (fgets(buffer, 255, lsusbfs) != NULL) {
-		char *v, *p;
-		/* %*s->discard input */
-		memset(cmd, 0, sizeof(cmd));
-		sscanf(buffer, "%*s%*s%*s%*s%*s%s", cmd);
-		/* splite ":" */
-		if (cmd != NULL) {
-			v = strtok_r(cmd, ":", &save_ptr);
-			p = strtok_r(NULL, ":", &save_ptr);
-
-			if ((strncmp(v, vendor, 4) == 0) &&
-				(strncmp(p, product, 4) == 0))
-			{
-				pclose(lsusbfs);
-				return 1; //# founded usb
-			}
-		}
-	}
-	pclose(lsusbfs);
-
-	return 0;
-}
-
-/*****************************************************************************
- * * @section  DESC Description
- * *   - desc
- * cradle ipaddress eth0, usbtoEthernet cable eth1, wifi client ->wlan0
- * *******************************************************************************/
-int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid)
-{
-	usb_dev_id_t *pusb = usb_wlan_list;
-	int i, ret;
-
-	*dst_vid = 0; *dst_pid = 0;
-	for (i = 0; i < ARRAY_SIZE(usb_wlan_list); i++, pusb++) 
-	{
-		ret = netmgr_usb_is_exist(pusb->d_vid, pusb->d_pid);
-		if (ret) {
-			dprintf("founded device [%x, %x]\n", pusb->d_vid, pusb->d_pid);
-			*dst_vid = pusb->d_vid;  *dst_pid = pusb->d_pid;
-			return 0;
-		}
-	}
-
-	return (-1); //# error
-}
-
-int netmgr_wlan_load_kermod(int vid, int pid)
-{
-	char path[128] = {0,};
-	char name[128] = {0,};
-	
-	/* kernel module 파일명을 확인 */
-	if ((vid == RTL_8821A_VID) && (pid == RTL_8821A_PID)) {
-		strcpy(path, RTL_8821A_PATH);
-		strcpy(name, RTL_8821A_NAME);
-	} else if ((vid == RTL_8812A_VID) && (pid == RTL_8812A_PID)) {
-		strcpy(path, RTL_8812A_PATH);
-		strcpy(name, RTL_8812A_NAME);
-	} else {
-		/* invalid wifi usb module */
-		eprintf("Not Supported WiFi USB Module!!(%x, %x)\n", vid, pid);
-		return -1;
-	}
-				
-	/* 이미 모듈이 loading된 상태이면 insmod 수행 안 함 */
-	if (__wlan_get_module(name) == 0) {
-		__wlan_insmod(path);
-	} else {
-		/* unload driver TODO */
-		//snprintf(buf, sizeof(buf), "/sbin/rmmod %s", module_name);
-	}
-	
-	return 0;
-}
-
-int netmgr_wlan_wait_mod_active(void)
-{
-	int ret;
-	
-	ret = access("/sys/class/net/wlan0/operstate", R_OK);
-	if ((ret == 0) || (errno == EACCES)) {
-		return 0;
-	} 
-	return -1;
 }
 
 //#----------------------------------------------------------------------------------------------

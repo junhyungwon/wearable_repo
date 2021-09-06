@@ -37,8 +37,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-
-
 #include "app_comm.h"
 #include "app_ftp.h"
 #include "app_dev.h"
@@ -65,27 +63,15 @@
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 
-
-
 /*----------------------------------------------------------------------------
  Declares variable)s
 -----------------------------------------------------------------------------*/
 static app_ftp_t t_ftp;
 static app_ftp_t *iftp=&t_ftp;
 
-
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
-
-
-
-	
-
-
-
-
-
 static int ftpRecvResponse(int sock, char * buf)
 {
     socklen_t lon ;

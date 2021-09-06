@@ -70,10 +70,6 @@ typedef struct {
 	int shmid;
 	unsigned char *shm_buf;
 	
-	/* usb wi-fi vid, pid를 저장한다.*/
-	int wlan_vid;
-	int wlan_pid;
-	
 } app_netmgr_cfg_t;
 
 extern app_netmgr_cfg_t *app_cfg;

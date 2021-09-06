@@ -26,6 +26,8 @@
 #define TIME_USBNET_POLL_CYCLE			200		//# msec
 #define BLACKLIST_USB_VID				0x1076   //# PID9082 or 9003
 
+#define USBETHER_OPER_PATH	  			"/sys/class/net/eth1/operstate"
+
 typedef struct {
 	app_thr_obj pObj; /* device detect */
 	
@@ -162,7 +164,7 @@ static void *THR_usbnet_poll(void *prm)
 		if (ret > 0) {
 			/* set rndis attach event */
 			if (app_cfg->ste.bit.rndis == 0) {
-				dprintf("detected rndis_host device!!\n");
+				dprintf("attected rndis_host device!!\n");
 				app_cfg->ste.bit.rndis = 1;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_RNDIS, 1);
 			}

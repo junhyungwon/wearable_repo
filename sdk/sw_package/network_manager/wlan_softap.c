@@ -37,10 +37,8 @@
 #define HOSTAPD_PID_PATH			"/var/run/hostapd.pid"
 #define HOSTAPD_CONFIG				"/etc/hostapd.conf"
 
-#define __STAGE_SOFTAP_MOD_LOAD		(0x00)
-#define __STAGE_SOFTAP_MOD_WAIT		(0x01)
-#define __STAGE_SOFTAP_MOD_EXEC		(0x02)
-#define __STAGE_SOFTAP_GET_STATUS	(0x03)
+#define __STAGE_SOFTAP_MOD_EXEC		(0x01)
+#define __STAGE_SOFTAP_GET_STATUS	(0x02)
 #define __STAGE_SOFTAP_ERROR_STOP	(0x04)
 
 typedef struct {
@@ -54,7 +52,6 @@ typedef struct {
 	int channel;     /* channel number (2.4GH ->6, 5GHz -> 36) */
 	
 	int stage;
-	int hostap_timer;
 	
 } netmgr_wlan_hostapd_t;
 
@@ -327,24 +324,6 @@ static void *THR_wlan_hostapd_main(void *prm)
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 				break;
 			
-			case __STAGE_SOFTAP_MOD_WAIT:
-				if (netmgr_wlan_wait_mod_active() == 0) {
-					ihost->stage = __STAGE_SOFTAP_MOD_EXEC;
-				} else {
-					/* timeout 계산 */
-					ihost->hostap_timer++;
-					if (ihost->hostap_timer >= CNT_SOFTWAP_ACTIVE) {
-						/* fail */
-						ihost->stage = __STAGE_SOFTAP_ERROR_STOP;
-					} 
-				}
-				break;	
-			
-			case __STAGE_SOFTAP_MOD_LOAD:
-				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
-				ihost->stage = __STAGE_SOFTAP_MOD_WAIT;
-				break;
-				
 			case __STAGE_SOFTAP_ERROR_STOP:
 				/* error 상태를 mainapp에 알려줘야 함 */
 				quit = 1; /* exit loop */
@@ -421,9 +400,7 @@ int netmgr_wlan_hostapd_start(void)
 	ihost->channel = info->channel;
 	
 	/* START or STOP  명령을 수신하면 실행됨 */
-	ihost->stage = __STAGE_SOFTAP_MOD_LOAD;
-	ihost->hostap_timer = 0;
-				
+	ihost->stage = __STAGE_SOFTAP_MOD_EXEC;
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

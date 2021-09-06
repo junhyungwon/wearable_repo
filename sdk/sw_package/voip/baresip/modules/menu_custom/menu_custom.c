@@ -523,8 +523,10 @@ static void ua_event_handler(struct ua *ua, enum ua_event ev,
 	case UA_EVENT_REGISTER_FAIL:
 		if (strcmp(prm, "Connection timed out") == 0) {
 			/* ETIMEOUT (네트워크에 문제가 있음 */
-		} else if (strcmp(prm, "Protocol not supported")== 0) {
+		} else if (strcmp(prm, "Protocol not supported") == 0) {
 			/* 등록이 진행 중임 */
+		} else if (strcmp(prm, "No route to host") == 0) {
+			/* 서버 연결이 안 됨 */
 		}
 		cmenu_set_ipc_state(SIPC_STATE_CALL_IDLE, 0, 0, 0);
 		break;

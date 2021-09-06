@@ -41,6 +41,11 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define REC_KEY				GPIO_N(0, 6)	//# record switch
+#ifdef NEXXB
+#define SOS_KEY				GPIO_N(1, 14)	//# sos switch
+#endif
+
 #define TIME_DEV_CYCLE		100		//# msec
 #define DEV_CYCLE_TIME      500     //# temp
 
@@ -66,11 +71,17 @@ static app_dev_t *idev=&t_dev;
 static void dev_gpio_init(void)
 {
 	gpio_input_init(REC_KEY);
+#ifdef NEXXB
+	gpio_input_init(SOS_KEY);
+#endif
 }
 
 static void dev_gpio_exit(void)
 {
 	gpio_exit(REC_KEY);
+#ifdef NEXXB	
+	gpio_exit(SOS_KEY);
+#endif	
 }
 
 /*----------------------------------------------------------------------------
@@ -180,6 +191,44 @@ static int chk_rec_key(void)
 	return ste_key;
 }
 
+#ifdef NEXXB
+static int cnt_sos_key=0, ste_sos_key=KEY_NONE;
+static int chk_sos_key(void)
+{
+	int key = dev_ste_key(SOS_KEY);
+
+	if(ste_sos_key != KEY_NONE) {
+		if(key == 1) {
+			ste_sos_key = KEY_NONE;
+		}
+		return KEY_NONE;
+	}
+
+	if(cnt_sos_key)
+	{
+		if(key == 0) {	//# press
+			cnt_sos_key--;
+			if(cnt_sos_key == 0) {
+				ste_sos_key = KEY_LONG;
+			}
+		}
+		else {
+			cnt_sos_key = 0;
+			ste_sos_key = KEY_SHORT;
+		}
+	}
+	else {
+		if(ste_sos_key == KEY_NONE) {
+			if(key == 0) {
+				cnt_sos_key = 20;		//# 1sec
+			}
+		}
+	}
+
+	return ste_sos_key;
+}
+#endif
+
 /*****************************************************************************
 * @brief    dev thread function
 * @section  [desc]
@@ -188,8 +237,9 @@ static void *THR_dev(void *prm)
 {
     app_thr_obj *tObj = &idev->devObj;
 	int exit=0;
-	int mmc, rkey, cmd;
-
+	int mmc, cmd;
+	int rkey, rkey2;
+	
 	aprintf("enter...\n");
 	tObj->active = 1;
 
@@ -224,7 +274,7 @@ static void *THR_dev(void *prm)
 			app_rec_evt() ;
 		#endif
 		}
-#elif defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
+#elif defined(NEXX360W) || defined(NEXX360W_MUX)
 		#if SYS_CONFIG_VOIP
 		/* record key --> call function */
 		rkey = chk_rec_key();
@@ -281,7 +331,25 @@ static void *THR_dev(void *prm)
 			    app_rec_evt() ;
 			}
 		}
-#endif
+#elif defined(NEXXB)
+		/* record key --> call function */
+		rkey = chk_rec_key();
+		//# For button enable, when camera didn't connected 
+		if (rkey == KEY_SHORT) {		
+			/* Short KEY */
+			app_voip_event_noty();
+		} else if (rkey == KEY_LONG) {	
+			/* volume control */
+			app_rec_evt() ;
+		}
+		
+		rkey2 = chk_sos_key();
+		if (rkey2 == KEY_SHORT) {
+			dprintf("SOS Short Key Pressed!\n");
+		} else if (rkey2 == KEY_LONG) {	
+			dprintf("SOS Long Key Pressed!\n");
+		}
+#endif		
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
