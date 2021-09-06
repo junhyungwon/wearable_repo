@@ -484,7 +484,8 @@ void mcfw_capture_display_init(int mode)
 #if defined(LF_SYS_NEXX360W_MUX)
 	nsfPrm.outQueParams[0].nextLink		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 #else
-
+    nsfPrm.outQueParams[0].nextLink		= SYSTEM_VPSS_LINK_ID_DUP_0;
+	
 	//#--- dup link params
 	dupPrm0.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[0];
 	dupPrm0.inQueParams.prevLinkQueId	= 0;
