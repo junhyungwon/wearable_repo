@@ -46,7 +46,6 @@ typedef struct {
 	int device;
 	int insert;
 	int link_status;
-	int wlan_5G_enable;
 	int rssi_level;
 	int cur_usb_net;
 	
@@ -99,7 +98,6 @@ static int recv_msg(void)
 	if (msg.cmd == NETMGR_CMD_DEV_DETECT) {
 		inetmgr->device = msg.device;
 		inetmgr->insert = msg.status;
-		inetmgr->wlan_5G_enable = msg.wlan_5G_enable;
 	} 
 	else if (msg.cmd == NETMGR_CMD_DEV_LINK_STATUS) {
 		inetmgr->device      = msg.device;
@@ -141,20 +139,16 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			netmgr_iw_hostapd_req_info_t *info = 
 							(netmgr_iw_hostapd_req_info_t *)databuf;
 			/* sharded memory 이므로 NULL 검사 안 해도 됨 */
-		    /* AP MODE (5G or 2.4G) */
-			int enable = inetmgr->wlan_5G_enable;
-			
-			/* Wi-Fi AP Mode */
-			/* shared memory에 접속에 필요한 정보를 기록한다. */
+		    /* AP MODE (fixed 2.4G) */
 			snprintf(info->ssid, NETMGR_WLAN_SSID_MAX_SZ, "%s", app_set->sys_info.deviceId);
 			strcpy(info->passwd, NETMGR_WLAN_AP_PASSWD);
 			strcpy(info->ip_address, NETMGR_WLAN_AP_IPADDR);
 			strcpy(info->mask_address, NETMGR_WLAN_AP_MASKADDR);
 			strcpy(info->gw_address, NETMGR_WLAN_AP_GWADDR);
-			if (enable) info->channel = NETMGR_WLAN_AP_5G_CHANNEL; //36
-			else 		info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
+			/* 일본향과 구분이 안 됨 -->2.4G로 고정 */
+			info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
+			info->freq = 0;
 			info->stealth = 0;
-			info->freq = enable;
 			
 			dprintf("Wi-Fi SOFTAP start (NAME=%s).........\n", info->ssid);
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);

@@ -32,5 +32,6 @@ int app_rec_exit(void);
 int app_rec_start(void);
 int app_rec_stop(int buzz);
 int app_rec_state(void);
+int app_rec_evt(void);
 
 #endif	/* _APP_REC_H_ */

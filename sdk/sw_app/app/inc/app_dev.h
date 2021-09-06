@@ -27,9 +27,6 @@
 #define GIO_HI					1
 #define GIO_LO					0
 
-//# gpio
-#define REC_KEY					GPIO_N(0, 6)	//# record switch
-
 #define META_REC_SIZE           120
 #define META_MAX_COUNT          60
 #define META_REC_TOTAL          (META_REC_SIZE*META_MAX_COUNT)

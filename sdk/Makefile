@@ -329,15 +329,15 @@ lsp_all: lsp_clean lsp
 wlan:
 ifeq ($(USE_WIFI),YES)
 	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver modules
-	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver modules
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x2bu_driver modules
 endif
 
 wlan_clean:
 ifeq ($(USE_WIFI), YES)
 	-rm -f $(TARGET_FS)/lib/modules/8821au.ko
 	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver clean
-	-rm -f $(TARGET_FS)/lib/modules/8812au.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8812au_driver clean
+	-rm -f $(TARGET_FS)/lib/modules/88x2bu.ko
+	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x2bu_driver clean
 endif
 
 wlan_all: wlan_clean wlan
@@ -444,7 +444,7 @@ endif
 
 ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp $(KMODDIR)/wlan/8821au_driver/8821au.ko $(TARGET_FS)/lib/modules/.
-	sudo /bin/cp $(KMODDIR)/wlan/8812au_driver/8812au.ko $(TARGET_FS)/lib/modules/.
+	sudo /bin/cp $(KMODDIR)/wlan/88x2bu_driver/88x2bu.ko $(TARGET_FS)/lib/modules/.
 endif
 
 ifeq ($(USE_KCMVP), YES)

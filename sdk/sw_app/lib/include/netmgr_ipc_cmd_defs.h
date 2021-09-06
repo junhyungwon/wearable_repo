@@ -100,7 +100,6 @@ typedef struct {
 	int device;           /* 매크로 참조 */
 	int status;			  /* 0->remove, 1->insert */
 	int wlan_rssi;		  /* Wi-Fi RSSI Level return */
-	int wlan_5G_enable;
 	
 } to_netmgr_main_msg_t;
 

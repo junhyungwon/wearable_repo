@@ -56,7 +56,6 @@
 
 #define CONNECTED_AP_LIST		"/media/nand/aplist.lst"
 
-#define __STAGE_CLI_MOD_LOAD		(0x0)
 #define __STAGE_CLI_MOD_WAIT		(0x1)
 #define __STAGE_CLI_CHECK_ESSID		(0x2)
 #define __STAGE_CLI_AUTH_START		(0x3)
@@ -868,31 +867,17 @@ static void *THR_wlan_cli_main(void *prm)
 				break;
 				
 			case __STAGE_CLI_MOD_WAIT:
-				if (netmgr_wlan_wait_mod_active() == 0) {
-					res = netmgr_net_link_detect(cli_dev_name);
-					if (!res) {
-						/* Link up */
-						netmgr_net_link_up(cli_dev_name);
-						sleep(1); /* wait 1sec */
-					}
-					i_cli->cli_timer = 0;
-					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
-				} else {
-					/* timeout 계산 */
-					i_cli->cli_timer++;
-					if (i_cli->cli_timer >= CNT_CLI_ACTIVE) {
-						i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					} 
+				res = netmgr_net_link_detect(cli_dev_name);
+				if (!res) {
+					/* Link up */
+					netmgr_net_link_up(cli_dev_name);
+					sleep(1); /* wait 1sec */
 				}
-				break;
-			
-			case __STAGE_CLI_MOD_LOAD:
-				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
-				i_cli->stage = __STAGE_CLI_MOD_WAIT;
+				i_cli->cli_timer = 0;
+				i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 				break;
 			
 			case __STAGE_CLI_ERROR_STOP:
-				/* fail */
 				/* error 상태를 mainapp에 알려줘야 함 */
 				quit = 1;
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
@@ -976,7 +961,7 @@ int netmgr_wlan_cli_start(void)
 	}
 			
 	/* set default to idle */
-	i_cli->stage = __STAGE_CLI_MOD_LOAD;
+	i_cli->stage = __STAGE_CLI_MOD_WAIT;
 	i_cli->cli_timer = 0;
 	i_cli->dhcp = info->dhcp;
 	

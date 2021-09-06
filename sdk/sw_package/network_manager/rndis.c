@@ -49,6 +49,8 @@
 #define RNDIS_DEV_NAME_USB	  		1
 #define RNDIS_DEV_NAME_ETH	  		2
 
+#define RNDIS_OPER_PATH		  		"/sys/class/net/usb0/operstate"
+
 typedef struct {
 	app_thr_obj rObj; /* rndis mode */
 	
@@ -91,7 +93,7 @@ static int __wait_for_active(void)
 	if (0 == access(RNDIS_OPER_PATH, R_OK)) {
 		strcpy(devname, "usb0");
 		ret = RNDIS_DEV_NAME_USB;
-	} else if (0 == access(USBETHER_OPER_PATH, R_OK)) {
+	} else if (0 == access("/sys/class/net/eth1/operstate", R_OK)) {
 		strcpy(devname, "eth1");
 		ret = RNDIS_DEV_NAME_ETH;
 	} else {
