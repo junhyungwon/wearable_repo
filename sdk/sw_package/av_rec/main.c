@@ -550,7 +550,7 @@ static void *THR_rec_evt(void *prm)
 				
 				if (irec->fevt != NULL) 
 				{
-					#if defined(NEXXONE) || defined(NEXX360H)
+					#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
 					/* ch=1 스트리밍 채널이 gmem에 기록되어 있으므로 avi 저장 시 이를 막아야 함 */
 					if (ifr->ch < 1) {
 						ret = evt_file_write(ifr, irec->en_snd);
@@ -565,7 +565,7 @@ static void *THR_rec_evt(void *prm)
 						}
 					}
 					#else
-/*
+
 					// 실제 카메라- 0, 2, 3 (3ch) 
 					#ifndef NEXXB
 					if (ifr->ch == 1) {
@@ -603,19 +603,17 @@ static void *THR_rec_evt(void *prm)
 						    continue;
                         }
 					
-*/				
-                        if (ifr->ch < 1) {
-				            ret = evt_file_write(ifr, irec->en_snd);
-				            if (ret < 0) {
-							    send_msg(AV_CMD_REC_ERR, 0, NULL);
-						    	memset(msg, 0, sizeof(msg));
-							    sprintf(msg, "avi write failed!");
-							    avrec_log(msg);
-							    eprintf("%s\n", msg);
-							    /* loop exit */
-							    break;
-				            }
+				        ret = evt_file_write(ifr, irec->en_snd);
+				        if (ret < 0) {
+						    send_msg(AV_CMD_REC_ERR, 0, NULL);
+						 	memset(msg, 0, sizeof(msg));
+						    sprintf(msg, "avi write failed!");
+						    avrec_log(msg);
+						    eprintf("%s\n", msg);
+						    /* loop exit */
+						    break;
 				        }
+				    }
 					#endif
 				}
 				read_idx = idx_increase(read_idx);
