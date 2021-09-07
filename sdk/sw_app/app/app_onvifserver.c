@@ -562,8 +562,8 @@ void * onvifserver_thread(void * argv)
     int cradle_pre_status,  eth0_pre_status, eth0_cur_status;
 	int usbnet_pre_status;
 	
-    cradle_pre_status = app_cfg->ste.b.cradle_eth_ready;
-    eth0_pre_status   = app_cfg->ste.b.cradle_eth_run;
+    cradle_pre_status = app_cfg->ste.b.cradle_net_ready;
+    eth0_pre_status   = app_cfg->ste.b.cradle_net_run;
 	usbnet_pre_status = app_cfg->ste.b.usbnet_run;
 
 	// 초기화...
@@ -575,7 +575,7 @@ void * onvifserver_thread(void * argv)
 			break;
 		} 
 		// eth0
-		else if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+		else if (app_cfg->ste.b.cradle_net_ready && onvifserver_status == ONVIFSERVER_READY) {
 			init_onvifserver();
 			onvifserver_status = ONVIFSERVER_LOADED ;
 			break;
@@ -587,8 +587,8 @@ void * onvifserver_thread(void * argv)
     while (!exit)
     {
 		// changed cradle status
-        if (cradle_pre_status != app_cfg->ste.b.cradle_eth_ready) {
-			cradle_pre_status = app_cfg->ste.b.cradle_eth_ready;
+        if (cradle_pre_status != app_cfg->ste.b.cradle_net_ready) {
+			cradle_pre_status = app_cfg->ste.b.cradle_net_ready;
 			onvifserver_status = ONVIFSERVER_READY;
 
 			// USB Network connected..
@@ -598,7 +598,7 @@ void * onvifserver_thread(void * argv)
 			}
 
 			// eth0
-			if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+			if (app_cfg->ste.b.cradle_net_ready && onvifserver_status == ONVIFSERVER_READY) {
 				init_onvifserver() ;
 				onvifserver_status = ONVIFSERVER_LOADED ;
 			}
@@ -616,7 +616,7 @@ void * onvifserver_thread(void * argv)
 			}
 			else if (!app_cfg->ste.b.usbnet_run) {
 				// eth0
-				if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+				if (app_cfg->ste.b.cradle_net_ready && onvifserver_status == ONVIFSERVER_READY) {
 					init_onvifserver() ;
 					onvifserver_status = ONVIFSERVER_LOADED ;
 				}
@@ -624,8 +624,8 @@ void * onvifserver_thread(void * argv)
 		}
 
 		// changed ethernet status
-		eth0_cur_status = app_cfg->ste.b.cradle_eth_run;
-		if (app_cfg->ste.b.cradle_eth_ready && eth0_pre_status != eth0_cur_status) {
+		eth0_cur_status = app_cfg->ste.b.cradle_net_run;
+		if (app_cfg->ste.b.cradle_net_ready && eth0_pre_status != eth0_cur_status) {
 		    eth0_pre_status = eth0_cur_status ;
 			init_onvifserver() ;
 			onvifserver_status = ONVIFSERVER_LOADED ;

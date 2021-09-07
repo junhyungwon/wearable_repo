@@ -151,7 +151,7 @@ void send_sysinfo(void)
 	Infores.eth_type = htons(app_set->net_info.type) ;
 	
 	/* rupy: st_cradle로 통합관리 */
-	if (app_cfg->ste.b.cradle_eth_run)
+	if (app_cfg->ste.b.cradle_net_run)
         sprintf(Infores.ipaddr, "%s", app_set->net_info.eth_ipaddr);
 	else
         sprintf(Infores.ipaddr, "%s", "NA");

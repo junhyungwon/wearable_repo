@@ -166,7 +166,7 @@ typedef union {
 		unsigned int busy				: 1;	//# system busy (format, update)
 		unsigned int evt				: 1;    //# event recording
 		unsigned int usbnet_ready		: 1;    //# usb device detect (Wi-Fi, LTE, USB2Ether)
-		unsigned int usbnet_run			: 1;    //# usb device run (Wi-Fi, LTE, USB2Ether) ip allocation succeed
+		unsigned int usbnet_run			: 1;    //# usb device active (WiFi AP/ Client / LTE, USB2Ether), connect to wan
 		unsigned int rtsptx 			: 1;
 	    unsigned int log        		: 1;
 	    unsigned int sock       		: 1;
@@ -175,8 +175,8 @@ typedef union {
         unsigned int pwr_off			: 1;	// check power off
         unsigned int ftp_run    		: 1;    // under running ftp
         unsigned int onvifserver 		: 1;
-		unsigned int cradle_eth_ready  	: 1;    // status of attached or detached cradle
-		unsigned int cradle_eth_run   	: 1;    // cradle network(eth0) running   
+		unsigned int cradle_net_ready  	: 1;    // status of attached or detached cradle wired network
+		unsigned int cradle_net_run   	: 1;    // cradle wired network running   
 		unsigned int web_server 		: 1;    // web_server
 		unsigned int prerec_state  		: 1; 	// record state before using FTP
 		unsigned int nokey  	   		: 1; 	// prevent key

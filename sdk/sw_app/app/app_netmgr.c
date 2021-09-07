@@ -132,12 +132,12 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 					
 	if (ste) {
 		/* Wi-Fi 장치가 연결되었을 때 필요한 루틴을 수행 */
-		app_cfg->ste.b.usbnet_ready = 1;
-		
 		if (mode)
 		{
 			netmgr_iw_hostapd_req_info_t *info = 
 							(netmgr_iw_hostapd_req_info_t *)databuf;
+			/* AP 모드는 외부망 연결이 안되므로 ready를 0으로 설정 */
+			app_cfg->ste.b.usbnet_ready = 0;
 			/* sharded memory 이므로 NULL 검사 안 해도 됨 */
 		    /* AP MODE (fixed 2.4G) */
 			snprintf(info->ssid, NETMGR_WLAN_SSID_MAX_SZ, "%s", app_set->sys_info.deviceId);
@@ -157,6 +157,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			netmgr_iw_supplicant_req_info_t *info = 
 							(netmgr_iw_supplicant_req_info_t *)databuf;
 			
+			app_cfg->ste.b.usbnet_ready = 1;
 			/* 이전 CFG와 호환성을 위해서 */
 			strcpy(info->iw_data[0].ssid, app_set->wifiap.ssid);
 			if (strcmp(app_set->wifiap.pwd, "")==0) {
@@ -211,9 +212,8 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 		}
 		
 	} else {
-		app_cfg->ste.b.usbnet_ready = 0;
-		
 		dprintf("Wi-Fi %s STOP.........\n", mode?"AP":"CLIENT");
+		app_cfg->ste.b.usbnet_ready = 0;
 		/* Wi-Fi 장치가 제거되었을 때 필요한 루틴을 수행 */
 		if (mode) {
 			/* AP mode stop */
@@ -231,8 +231,8 @@ static void __netmgr_rndis_event_handler(int ste)
 	 */
 	if (ste) {
 		/* rndis 장치가 연결되었을 때 필요한 루틴을 수행 */
-		app_cfg->ste.b.usbnet_ready = 1;
 		send_msg(NETMGR_CMD_RNDIS_START);
+		app_cfg->ste.b.usbnet_ready = 1;
 	} else {
 		/* rndis 장치가 제거되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 0;
@@ -284,7 +284,7 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
-		app_cfg->ste.b.cradle_eth_ready = 1;
+		app_cfg->ste.b.cradle_net_ready = 1;
 		/* cradle 장치가 연결되었을 때 필요한 루틴을 수행 */
 		if (app_set->net_info.type == NET_TYPE_STATIC) {
 			info->dhcp = 0;
@@ -296,8 +296,8 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 		}
 		send_msg(NETMGR_CMD_CRADLE_ETH_START);
 	} else {
-		app_cfg->ste.b.cradle_eth_ready = 0;
 		/* cradle 장치가 제거되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.cradle_net_ready = 0;
 		send_msg(NETMGR_CMD_CRADLE_ETH_STOP);
 	}
 }
@@ -315,13 +315,21 @@ static void __netmgr_dev_link_status_handler(void)
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
 	if (device == NETMGR_DEV_TYPE_CRADLE) {
 		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.cradle_eth_run = 1;
+			app_cfg->ste.b.cradle_net_run = 1;
 		} else {
-			app_cfg->ste.b.cradle_eth_run = 0;
+			app_cfg->ste.b.cradle_net_run = 0;
 		}
 	} else {
 		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.usbnet_run = 1;
+			/* 
+			 * WiFi AP 모드는 WAN 연결이 안되므로
+			 * usbnet_run을 0으로 설정해서 FTP / VOIP / Time sync 등이 
+			 * 동작 안하도록 변경.
+			 */
+			if (app_cfg->ste.b.usbnet_ready)
+				app_cfg->ste.b.usbnet_run = 1;
+			else 
+				app_cfg->ste.b.usbnet_run = 0;
 			/* 현재 연결된 USB 장치를 저장 */
 			inetmgr->cur_usb_net = device;
 			app_leds_rf_ctrl(LED_RF_OK);
@@ -337,7 +345,7 @@ static void __netmgr_dev_link_status_handler(void)
 	}
 	
 #if (FTP_CUR_DEV == FTP_DEV_ETH0)
-	if (app_cfg->ste.b.cradle_eth_run)  app_cfg->ftp_enable = ON;
+	if (app_cfg->ste.b.cradle_net_run)  app_cfg->ftp_enable = ON;
 	else								app_cfg->ftp_enable = OFF;
 #elif (FTP_CUR_DEV == FTP_DEV_ETH1)
 	if (app_cfg->ste.b.usbnet_run)  	app_cfg->ftp_enable = ON;

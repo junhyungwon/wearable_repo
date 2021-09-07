@@ -178,9 +178,9 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
     }
 
     if (!rtmp_ready) {
-        if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_eth_run == 0) {
-            fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_eth_run: %d\n",
-                app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_eth_run);
+        if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_net_run == 0) {
+            fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_net_run: %d\n",
+                app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_net_run);
             return;
         }
 

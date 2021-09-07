@@ -86,7 +86,7 @@ int app_p2p_start(void)
     int ret = 0 ;
 	char *s = NULL;
 	
-    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_eth_run)
+    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
     {
 		int res;
 //        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.deviceId) ;

@@ -244,7 +244,7 @@ static void *THR_gui(void *prm)
 #ifdef OSD_SWVERSION
         if(!app_set->ch[MODEL_CH_NUM].resol)
         {
-            if(app_cfg->ste.b.cradle_eth_ready)
+            if(app_cfg->ste.b.cradle_net_ready)
             {
                 if(!igui->start)
                 {
