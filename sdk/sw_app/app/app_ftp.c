@@ -590,7 +590,7 @@ static int ftp_close(int sd)
 static int get_netdev_link_status(void)
 {
 #if (FTP_CUR_DEV == FTP_DEV_ETH0)	
-	int state = app_cfg->ste.b.cradle_eth_run;
+	int state = app_cfg->ste.b.cradle_net_run;
 #elif (FTP_CUR_DEV == FTP_DEV_ETH1)
 	int state = app_cfg->ste.b.usbnet_run;
 #else

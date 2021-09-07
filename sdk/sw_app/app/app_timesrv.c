@@ -386,7 +386,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 
-    ret = app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run;
+    ret = app_cfg->ste.b.cradle_net_run || app_cfg->ste.b.usbnet_run;
     if(!ret) {
         set_time_zone() ;  
         return FALSE  ;
@@ -495,14 +495,14 @@ static void *THR_tsync(void *prm)
         if (cmd == APP_CMD_STOP)  {
             break;
         }
-		if(app_cfg->ste.b.cradle_eth_ready || app_cfg->ste.b.usbnet_run) 
+		if(app_cfg->ste.b.cradle_net_ready || app_cfg->ste.b.usbnet_run) 
 		{
             if (itsync->tsync_status == TIMESYNC_READY)
 			{ 
                 retval = time_sync() ;
 			}
         } 
-		if(!app_cfg->ste.b.cradle_eth_ready && !app_cfg->ste.b.usbnet_ready)
+		if(!app_cfg->ste.b.cradle_net_ready && !app_cfg->ste.b.usbnet_ready)
 		{
             itsync->tsync_status = TIMESYNC_READY ;
 		}

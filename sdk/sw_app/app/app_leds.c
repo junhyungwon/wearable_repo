@@ -587,6 +587,8 @@ int app_leds_sys_normal_ctrl(void)
 	else
         leds_ctrl(LED_IDX_REC, DEV_LED_OFF);
 
+/*
+ *  move to netmgr.c 
 	if (app_cfg->ste.b.usbnet_run)
 	{
         g_val = DEV_LED_ON;
@@ -601,7 +603,7 @@ int app_leds_sys_normal_ctrl(void)
 	    leds_ctrl(LED_IDX_RF_G, g_val) ;
 	    leds_ctrl(LED_IDX_RF_R, r_val) ;
 	}
-
+*/
 	return 0 ;
 }
 
