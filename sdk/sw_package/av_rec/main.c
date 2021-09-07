@@ -325,8 +325,8 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    {
 			    unsigned long sz;
 		
-				s =strstr(irec->fname, "/mmc/DCIM/E_") ;
-                if(s == NULL)
+				s =strstr(irec->fname, "/mmc/DCIM/R_") ;
+                if(s != NULL)
 				{
 					printf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
@@ -337,8 +337,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				    irec->fevt = NULL ;
 					irec->pre_type = 1 ;   // event file 직전 파일이 normal file 일때 처리를 위한 부분 
                 }
+				else if(strstr(irec->fname, "/mmc/DCIM/S_"))  // 현재 recording 파일이 SOS file인 경우 
+				{
+					printf("ignore event ..\n") ;
+				}
 
-				if(s != NULL && irec->old_min != ts.tm_min && minute_change && irec->old_min != 0)
+				if(strstr(irec->fname, "/mmc/DCIM/E_") && irec->old_min != ts.tm_min && minute_change && irec->old_min != 0)
 				{
 					printf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current event file
@@ -388,7 +392,94 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 			}
 	    }
     }
+	if(cmd == APP_CMD_SOS) // SOS
+	{
+		// TODO File Type check and then select close or not 
+//        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
 
+	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
+	    {
+            if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
+                irec->old_min = 0 ; 
+
+		    if (irec->fevt != NULL) 
+		    {
+			    unsigned long sz;
+		
+				s =strstr(irec->fname, "/mmc/DCIM/R_") ;
+                if(s != NULL)  // 현재 recording 파일이 normal file 인 경우 
+				{
+					printf("normal irec->fname= %s\n",irec->fname) ;
+        	        avi_file_close(irec->fevt, irec->fname);	//# close current file
+			    /* calculate file size */
+					lstat(irec->fname, &sb);
+			        sz = (sb.st_size / KB); /* Byte->KB */
+					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+				    irec->fevt = NULL ;
+					irec->pre_type = 1 ;   // SOS file 직전 파일이 normal file 일때 처리를 위한 부분 
+                }
+				else if(strstr(irec->fname, "/mmc/DCIM/E_"))  // 현재 recording 파일이 event file인 경우 
+				{
+					printf("event irec->fname= %s\n",irec->fname) ;
+        	        avi_file_close(irec->fevt, irec->fname);	//# close current file
+			    /* calculate file size */
+					lstat(irec->fname, &sb);
+			        sz = (sb.st_size / KB); /* Byte->KB */
+					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+				    irec->fevt = NULL ;
+					irec->pre_type = 0 ;   // SOS file 직전 파일이 event file 일 경우 이전 상태로 돌아가지 않음 
+				}
+
+				if(strstr(irec->fname, "/mmc/DCIM/S_") && irec->old_min != ts.tm_min && minute_change && irec->old_min != 0)
+				{
+					printf("SOS irec->fname= %s\n",irec->fname) ;
+        	        avi_file_close(irec->fevt, irec->fname);	//# close current SOS file
+			    /* calculate file size */
+					lstat(irec->fname, &sb);
+					sz = (sb.st_size / KB); /* Byte->KB */
+					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+				    irec->fevt = NULL ;
+
+					if(irec->rec_evt_cnt == 0)
+					{
+						if(irec->pre_type == 1)  // SOS 발생전에 Normal recording 중인 경우 
+						{
+							evt_file_close();
+					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
+						}
+						else
+					        send_msg(AV_CMD_REC_EVT_END, 0, NULL);
+                    }
+                }  
+
+	            irec->old_min = ts.tm_min;
+                minute_change = 0;
+		    }	
+		}
+
+		if (irec->fevt == NULL)  // 이전상태 record 아님 
+		{
+            if(irec->rec_evt_cnt > 0)
+			{
+  		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
+		        sprintf(filename, "%s/%s/S_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+		
+		        memset(irec->fname, 0, sizeof(irec->fname));
+		        sprintf(irec->fname, "%s", filename);
+		
+		   	    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
+			    irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
+			    if (irec->fevt == NULL)
+				    return EFAIL;
+		
+			    irec->rec_evt_cnt -= 1;
+
+			    dprintf("AVI name %s opened!\n", irec->fname);
+
+			    return SOK;
+			}
+	    }
+    }
 	return 0;
 }
 
@@ -521,6 +612,27 @@ static void *THR_rec_evt(void *prm)
 				cmd = APP_CMD_EVT ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
             }
+
+			if(tObj->cmd == APP_CMD_SOS)
+			{
+				if(irec->fevt == NULL)   // SOS record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
+				{
+			        irec->rec_evt_cnt = 2;
+				}
+                else
+				{
+                    s =strstr(irec->fname, "/mmc/DCIM/S_") ;
+                    if(s == NULL)
+					{
+			            irec->rec_evt_cnt = 2;  // normal/event record 중에 SOS 발생시 1분 이상 녹화를 위한 부분 
+					}
+                    // SOS 추가 이벤트 처리 없음 
+
+                }
+				cmd = APP_CMD_SOS ;
+			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
+			}
+
 			if(tObj->cmd == APP_CMD_START)
 			{
 				cmd = APP_CMD_START ;
@@ -623,13 +735,13 @@ static void *THR_rec_evt(void *prm)
 			}
 		} /* while (1) */
 		
-		s =strstr(irec->fname, "/mmc/DCIM/E_") ;
-		if(s != NULL && irec->pre_type == 1)
+		s =strstr(irec->fname, "/mmc/DCIM/R_") ;
+		if(s == NULL && irec->pre_type == 1) // event or SOS
         {
 		    evt_file_close();
 		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
 		}
-		else
+		else // Normal file
 		{
 		    //# record done
 		    evt_file_close();
@@ -681,6 +793,9 @@ static void app_main(void)
 			break;
 		case AV_CMD_REC_EVT:
 			event_send(tObj, APP_CMD_EVT, 0, 0);
+			break;
+		case AV_CMD_REC_SOS:
+			event_send(tObj, APP_CMD_SOS, 0, 0);
 			break;
 		case AV_CMD_REC_STOP:
 			event_send(tObj, APP_CMD_STOP, 0, 0);

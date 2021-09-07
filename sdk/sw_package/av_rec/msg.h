@@ -115,6 +115,7 @@ typedef enum {
 	//# for thread
 	APP_CMD_START = 0x1,
 	APP_CMD_EVT,
+	APP_CMD_SOS,
 	APP_CMD_STOP,
 	APP_CMD_PAUSE,
 	APP_CMD_NOTY,

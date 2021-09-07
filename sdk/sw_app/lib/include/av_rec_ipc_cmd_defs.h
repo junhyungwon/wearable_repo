@@ -41,6 +41,7 @@ extern "C" {
 #define AV_CMD_REC_START				(0x600)
 #define AV_CMD_REC_EVT	    			(0x601)
 #define AV_CMD_REC_EVT_END              (0x602)
+#define AV_CMD_REC_SOS					(0x603)
 #define AV_CMD_REC_RESTART				(0x604)
 #define AV_CMD_REC_STOP					(0x605)
 #define AV_CMD_REC_EXIT					(0x606)

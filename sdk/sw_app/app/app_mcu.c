@@ -231,7 +231,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 static void *THR_micom(void *prm)
 {
 	app_thr_obj *tObj = &imcu->cObj;
-	int exit=0, ret=0;
+	int exit=0, ret=0, value = 0;
 	mic_msg_t msg;
 
 	aprintf("enter...\n");
@@ -290,12 +290,21 @@ static void *THR_micom(void *prm)
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
 					#if SYS_CONFIG_VOIP 
 					if (!app_cfg->ste.b.ftp_run) 
-					{     
+					{    
+#if defined(NEXXB)	
+						value = app_rec_state() ;
+						if (!value) {
+							app_rec_start();
+						} else if(value == ON)
+							app_rec_stop(ON);
+						
+#else
 						if (app_rec_state()) {
 							app_rec_stop(ON);
 						} else {
 							app_rec_start();
 						}
+#endif
 					}
 					#else
 					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {

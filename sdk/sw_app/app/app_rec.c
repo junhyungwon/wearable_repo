@@ -178,7 +178,7 @@ static void *THR_rec_recv_msg(void *prm)
 static void *THR_rec_send_msg(void *prm)
 {
 	app_thr_obj *tObj = &irec->sObj;
-	int cmd = 0;
+	int cmd = 0, option = 0;
 	int exit = 0;
 	
 	aprintf("enter...\n");
@@ -190,6 +190,7 @@ static void *THR_rec_send_msg(void *prm)
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
+		option = tObj->param0 ;
 		if (cmd == APP_CMD_EXIT) {
 			/* send exit command to rec process */
 			exit = 1;
@@ -201,9 +202,21 @@ static void *THR_rec_send_msg(void *prm)
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_REC_EVT) {
+#if defined(NEXXB)
+			if(option)
+			{
+				irec->rec_state  = 2;// SOS
+				send_msg(AV_CMD_REC_SOS);
+			}
+            else
+			{
+                irec->rec_state  = 1; // Event 
 			send_msg(AV_CMD_REC_EVT);
-
+			}
+#else
             irec->rec_state  = 1;  
+			send_msg(AV_CMD_REC_EVT);
+#endif
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_CMD_STOP) {
@@ -236,7 +249,7 @@ static void *THR_rec_send_msg(void *prm)
 static void *THR_evt_buzzer(void *prm)
 {
 	app_thr_obj *tObj = &irec->bObj;
-	int cmd = 0, buzzer_cnt = 0, evt_sndcnt = 0;
+	int cmd = 0, buzzer_cnt = 0, evt_sndcnt = 0, option = 0;
 	int exit = 0;
 	int status = 0, i = 0 ;
 	
@@ -246,6 +259,7 @@ static void *THR_evt_buzzer(void *prm)
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
+		option = tObj->param0 ;
 		if (cmd == APP_CMD_EXIT) {
 			/* send exit command to event buzzer process */
 			exit = 1;
@@ -281,7 +295,12 @@ static void *THR_evt_buzzer(void *prm)
                 {
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
+#if defined(NEXXB)
+						if(option) // SOS
 					    eventdata_send() ;
+#else
+							eventdata_send() ;
+#endif
 					    evt_sndcnt += 1 ;
 					}
 
@@ -360,7 +379,7 @@ int app_rec_start(void)
 	return SOK;
 }
 
-int app_rec_evt(void)
+int app_rec_evt(int etype)
 {
 	int start = 1, type = 1; // normal  0, event 1
 	unsigned long sz;
@@ -377,8 +396,8 @@ int app_rec_evt(void)
 	
 	//# Record start if captuer is not zero.
     app_buzz_ctrl(500, 1);			//# buzz: rec start
-	event_send(&irec->sObj, APP_REC_EVT, 0, 0);
-	event_send(&irec->bObj, APP_REC_EVT, 0, 0);
+	event_send(&irec->sObj, APP_REC_EVT, etype, 0);
+	event_send(&irec->bObj, APP_REC_EVT, etype, 0); // etype == 0 event, etype == 1 SOS
 	
 	return SOK;
 }

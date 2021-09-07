@@ -237,7 +237,7 @@ static void *THR_dev(void *prm)
 {
     app_thr_obj *tObj = &idev->devObj;
 	int exit=0;
-	int mmc, cmd;
+	int mmc, cmd, value = 0;
 	int rkey, rkey2;
 	
 	aprintf("enter...\n");
@@ -271,7 +271,7 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 		#if SYS_CONFIG_VOIP
-			app_rec_evt() ;
+			app_rec_evt(OFF) ;  // event
 		#endif
 		}
 #elif defined(NEXX360W) || defined(NEXX360W_MUX)
@@ -284,7 +284,7 @@ static void *THR_dev(void *prm)
 			app_voip_event_noty();
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
-			app_rec_evt() ;
+			app_rec_evt(OFF) ;
 		}
 		#else
 		if (!app_cfg->ste.b.ftp_run)
@@ -297,7 +297,7 @@ static void *THR_dev(void *prm)
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-			    app_rec_evt() ;
+			    app_rec_evt(OFF) ;
 			}
 		}
 		#endif /* #if SYS_CONFIG_VOIP */
@@ -308,12 +308,12 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(ON);
+					    app_rec_stop(ON);
 				} else {
-					app_rec_start();
+					    app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-			    app_rec_evt() ;
+			    app_rec_evt(OFF) ;
 			}
 		}
 #elif defined(NEXX360H)
@@ -323,12 +323,12 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(ON);
+					  app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-			    app_rec_evt() ;
+			    app_rec_evt(OFF) ;
 			}
 		}
 #elif defined(NEXXB)
@@ -338,13 +338,22 @@ static void *THR_dev(void *prm)
 		if (rkey == KEY_SHORT) {		
 			/* Short KEY */
 			app_voip_event_noty();
-		} else if (rkey == KEY_LONG) {	
-			/* volume control */
-			app_rec_evt() ;
+		} else if (rkey == KEY_LONG) {	 // EVENT Key
+			    value = app_rec_state() ;
+				if(value < 2) // REC Off or Event Rec or Normal Rec
+					app_rec_evt(OFF) ;
+            
 		}
 		
 		rkey2 = chk_sos_key();
-		if (rkey2 == KEY_SHORT) {
+		if (rkey2 == KEY_SHORT) {  // SOS REC ON/OFF toggle 
+		    value = app_rec_state() ;
+			if (value < 2)  //  Rec off or normal/event rec -> SOS ON
+			    app_rec_evt(ON) ;  // SOS REC
+			else if(value == 2) // value 2, SOS Rec  , Value 1 Normal/Event REc
+			    app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+				  
+
 			dprintf("SOS Short Key Pressed!\n");
 		} else if (rkey2 == KEY_LONG) {	
 			dprintf("SOS Long Key Pressed!\n");
