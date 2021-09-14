@@ -54,5 +54,6 @@ void app_dev_exit(void);
 
 int dev_ste_mmc(void);
 int dev_ste_key(int gio);
+void app_dev_usb_reset(void);
 
 #endif	/* _APP_DEV_H_ */
