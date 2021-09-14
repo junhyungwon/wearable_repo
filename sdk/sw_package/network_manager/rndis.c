@@ -38,8 +38,7 @@
 #define TIME_RNDIS_WAIT_DHCP		10000   //# 10sec
 #define CNT_RNDIS_WAIT_DHCP  		(TIME_RNDIS_WAIT_DHCP/TIME_RNDIS_CYCLE)
 
-#define __STAGE_RNDIS_WAIT_ACTIVE	(0x00)
-#define __STAGE_RNDIS_WAIT_DHCP		(0x01)
+#define __STAGE_RNDIS_WAIT_ACTIVE	(0x01)
 #define __STAGE_RNDIS_DHCP_VERIFY	(0x02)
 #define __STAGE_RNDIS_DHCP_NOTY		(0x03)
 #define __STAGE_RNDIS_GET_STATUS	(0x04)
@@ -212,36 +211,18 @@ static void *THR_rndis_main(void *prm)
 			
 			case __STAGE_RNDIS_DHCP_VERIFY:
 				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
-				res = netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
-				if (res < 0) {
+				netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
+				if (!strcmp(irndis->ip, "0.0.0.0")) {
+					/* dhcp로부터 IP 할당이 안된 경우 */
+					dprintf("couln't get dhcp ip address!\n");	
 					irndis->stage = __STAGE_RNDIS_ERROR_STOP;
 				} else {
-					if (!strcmp(irndis->ip, "0.0.0.0")) {
-						/* dhcp로부터 IP 할당이 안된 경우 */
-						dprintf("couln't get dhcp ip address!\n");	
-						irndis->stage = __STAGE_RNDIS_ERROR_STOP;
-					} else {
-						dprintf("rndis ip is %s\n", irndis->ip);
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
-						irndis->stage = __STAGE_RNDIS_DHCP_NOTY;	
-					}
+					dprintf("rndis ip is %s\n", irndis->ip);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
+					irndis->stage = __STAGE_RNDIS_DHCP_NOTY;	
 				}
 				break;
 					
-			case __STAGE_RNDIS_WAIT_DHCP:
-				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(RNDIS_DEVNAME(irndis->iftype))) {
-					irndis->stage = __STAGE_RNDIS_DHCP_VERIFY;
-					irndis->rndis_timer = 0;
-				} else {
-					irndis->rndis_timer++;
-					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_DHCP) {
-						dprintf("rndis can't alloc ip address..stopping...\n");
-						irndis->stage = __STAGE_RNDIS_ERROR_STOP;
-					} 
-				}
-				break;
-				
 			case __STAGE_RNDIS_WAIT_ACTIVE:
 				res = __wait_for_active();
 				if (res > 0) {
@@ -250,8 +231,8 @@ static void *THR_rndis_main(void *prm)
 						irndis->first = 1;
 					}
 					//dprintf("active rndis %d(%s)\n", irndis->iftype, RNDIS_DEVNAME(irndis->iftype));
-					netmgr_set_ip_dhcp(RNDIS_DEVNAME(irndis->iftype));
-					irndis->stage = __STAGE_RNDIS_WAIT_DHCP;
+					netmgr_udhcpc_start(RNDIS_DEVNAME(irndis->iftype));
+					irndis->stage = __STAGE_RNDIS_DHCP_VERIFY;
 					irndis->rndis_timer = 0;
 				} else {
 					irndis->rndis_timer++;

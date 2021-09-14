@@ -25,6 +25,8 @@
 #define B_REV_P3					GPIO_N(0, 3)
 #define B_REV_P4					GPIO_N(0, 4)
 #define REC_SWITCH					GPIO_N(0, 6)
+#define USB0_EN						GPIO_N(0, 7)
+
 /* #define BUZZER_EN					GPIO_N(0, 13) removed rev0.2 */
 #define SERDES_4_LED				GPIO_N(0, 14)
 #define SERDES_4_LED_FB				GPIO_N(0, 15)
