@@ -419,3 +419,10 @@ void app_dev_exit(void)
 
 	aprintf("... done!\n");
 }
+
+void app_dev_usb_reset(void)
+{
+	gpio_set_value(USB0_EN, 0);
+	app_msleep(500);
+	gpio_set_value(USB0_EN, 1);
+}

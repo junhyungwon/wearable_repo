@@ -432,9 +432,7 @@ void netmgr_udhcpc_start(const char *ifname)
 	 * -n; error exit. if lease cannot be immediately negotiated.
 	 */
 	memset(command, 0, sizeof(command));
-//	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 1 -t 5 -n -b -p %s", ifname, path);
-	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -n -b -p %s", ifname, path);
-	
+	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 3 -t 5 -n -b -p %s", ifname, path);
 	res = system(command);
 	/*
 	 * returning non-zero, child process is normally exited.

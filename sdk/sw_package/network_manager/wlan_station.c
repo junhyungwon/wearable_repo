@@ -408,51 +408,45 @@ static void __cli_stop(const char *ifce)
 static int __cli_get_auth_status(const char *essid)
 {
 	FILE *f = NULL;
-	char lbuf[128 + 1];
+	char lbuf[128 + 1]={0,};
 	char id[MAX_ESSID_LEN + 1];
 	int i;
 
-	/*
-	 * iwgetid
-	 * wlan0 ESSID:"UD-DMZ"
-	 */
+	/* iwgetid wlan0 ESSID:"UD-DMZ" */
 	f = popen(IWGETID_CMD, "r");
-	if (f == NULL) {
-		eprintf("Not supported %s\n", IWGETID_CMD);
-		return -1;
-	}
-
-	memset(lbuf, 0, sizeof(lbuf));
-	while (fgets(lbuf, sizeof(lbuf), f) != NULL)
+	if (f != NULL) 
 	{
-		char data_buf[128]={0,};
-		char *s;
-
-		/* find ESSID: */
-		if ((s = strstr(lbuf, "ESSID:\"")) != NULL)
+		while (fgets(lbuf, sizeof(lbuf), f) != NULL) 
 		{
-			s += 7; /* --> ESSID:" */
-			if (utf8_unescape(data_buf, s) < 0) {
-				id[0] = '\0';
-			} 
-			else {
-				for (i = 0; i < MAX_ESSID_LEN; i++) {
-					/* To fine next token: '"' */
-					if (data_buf[i] == '\0' || data_buf[i] == '"') {
-						break;
+			char data_buf[128]={0,};
+			char *s;
+
+			/* find ESSID: */
+			if ((s = strstr(lbuf, "ESSID:\"")) != NULL)
+			{
+				s += 7; /* --> ESSID:" */
+				if (utf8_unescape(data_buf, s) < 0) {
+					id[0] = '\0';
+				} else {
+					for (i = 0; i < MAX_ESSID_LEN; i++) {
+						/* To fine next token: '"' */
+						if (data_buf[i] == '\0' || data_buf[i] == '"') {
+							break;
+						}
+						id[i] = data_buf[i];
 					}
-					id[i] = data_buf[i];
-				}
-				
-				id[i] = '\0';
-				if (strcmp(id, essid) == 0) {
-					/* connection ok */
-					//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
-					pclose(f);
-					return 0;
+					
+					id[i] = '\0';
+					if (!strcmp(id, essid)) {
+						/* connection ok */
+						//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
+						pclose(f);
+						return 0;
+					}
 				}
 			}
 		}
+		pclose(f);
 	}
 	
 	return -1;
@@ -799,7 +793,7 @@ static void *THR_wlan_cli_main(void *prm)
 						 */
 						sleep(2);
 						/* For LED RED */
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_SUSPEND);
 						i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 					} else {
 						netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, level);
@@ -884,6 +878,7 @@ static void *THR_wlan_cli_main(void *prm)
 				quit = 1;
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
 				__cli_stop(cli_dev_name);
+				dprintf("__cli stopping!!!!\n");
 				break;
 			}
 			

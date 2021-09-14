@@ -334,13 +334,21 @@ static void __netmgr_dev_link_status_handler(void)
 			inetmgr->cur_usb_net = device;
 			app_leds_rf_ctrl(LED_RF_OK);
 		} 
-		else if (link == NETMGR_DEV_ERROR)  {
-			app_cfg->ste.b.usbnet_run = 0;
-			app_leds_rf_ctrl(LED_RF_FAIL);
-		} 
 		else {
 			app_cfg->ste.b.usbnet_run = 0;
-			app_leds_rf_ctrl(LED_RF_OFF);
+			if (link == NETMGR_DEV_SUSPEND)  {
+				/* error 상태는 아님 / client 모드에서 AP와 접속이 일시적으로 끊어진 상태 */
+				app_leds_rf_ctrl(LED_RF_FAIL);
+			} else if (link == NETMGR_DEV_ERROR)  {
+				/*
+				* DHCP 서버에서 IP를 수신하지 못하는 경우이다. USB Reset 수행해봄.
+				*/
+				app_leds_rf_ctrl(LED_RF_FAIL);
+				app_dev_usb_reset();
+			} else {
+				/* inactive state */
+				app_leds_rf_ctrl(LED_RF_OFF);
+			}
 		} 
 	}
 	

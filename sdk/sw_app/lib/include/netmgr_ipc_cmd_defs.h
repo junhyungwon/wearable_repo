@@ -81,6 +81,7 @@ typedef enum {
 #define NETMGR_DEV_ERROR				-1   /* Network 장치가 연결되고 동작에 문제가 발생 */ 
 #define NETMGR_DEV_INACTIVE				0   /* Network 장치가 연결되고 IP 할당이 완료 */ 
 #define NETMGR_DEV_ACTIVE				1   /* Network 장치가 연결되고 IP 할당이 완료 */ 
+#define NETMGR_DEV_SUSPEND				2   /* 일시적으로 연결이 중단된 상태. 자체적으로 wait */ 
 
 /*
  * @brief ipc message buffer type
