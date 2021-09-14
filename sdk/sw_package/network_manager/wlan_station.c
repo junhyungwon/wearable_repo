@@ -56,12 +56,11 @@
 
 #define CONNECTED_AP_LIST		"/media/nand/aplist.lst"
 
-#define __STAGE_CLI_MOD_WAIT		(0x1)
+#define __STAGE_CLI_WAIT_ACTIVE		(0x1)
 #define __STAGE_CLI_CHECK_ESSID		(0x2)
 #define __STAGE_CLI_AUTH_START		(0x3)
 #define __STAGE_CLI_WAIT_AUTH		(0x4)
 #define __STAGE_CLI_SET_IP			(0x5)
-#define __STAGE_CLI_WAIT_DHCP		(0x6)
 #define __STAGE_CLI_DHCP_VERIFY		(0x7)
 #define __STAGE_CLI_DHCP_NOTY		(0x8)
 #define __STAGE_CLI_CONNECT_STATS	(0x9)
@@ -283,7 +282,6 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
          */
          fprintf(config, "\tpsk=%s\n", phrase);
          fprintf(config, "\tpriority=2\n");
-
 		 fprintf(config, "\tbgscan=\"simple:5:-60:6300\"\n") ;
 	} else {
 		/*
@@ -302,6 +300,35 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 	sync(); //# /etc/wpa_supplicant.conf
 		
 	return 0;
+}
+
+/*****************************************************************************
+* @brief    network proc function!
+* @section  DESC Description
+*   - desc
+*****************************************************************************/
+/*
+ * 이 함수는 ifconfig wlan0 up을 해야 값을 읽을 수 있다.
+ */
+static int __is_cli_active(const char *devname)
+{
+	FILE *f = NULL;
+    char buf[128]={0,};
+	int data=0;
+	
+    snprintf(buf, sizeof(buf), "/sys/class/net/%s/flags", devname);
+	f = fopen(buf, "r") ;
+    if (f != NULL) {
+		fscanf(f, "%x", &data);
+		fclose(f);
+		
+		//dprintf("wlan0 flags %x\n", data);
+		if (data == 0x1003) {
+			return 1;
+        }
+    }
+	
+    return 0;
 }
 
 static int __cli_start(const char *ssid, const char *password, int encrypt)
@@ -326,9 +353,6 @@ static int __cli_start(const char *ssid, const char *password, int encrypt)
 		return -1;
 
 	pclose(f);
-
-//	THR_waitmsecs(500);
-//	sleep(1); //# wait for connection.
 
 	return 0;
 }
@@ -386,8 +410,7 @@ static int __cli_get_auth_status(const char *essid)
 	FILE *f = NULL;
 	char lbuf[128 + 1];
 	char id[MAX_ESSID_LEN + 1];
-
-	int r = 0, i;
+	int i;
 
 	/*
 	 * iwgetid
@@ -396,7 +419,7 @@ static int __cli_get_auth_status(const char *essid)
 	f = popen(IWGETID_CMD, "r");
 	if (f == NULL) {
 		eprintf("Not supported %s\n", IWGETID_CMD);
-		return r;
+		return -1;
 	}
 
 	memset(lbuf, 0, sizeof(lbuf));
@@ -420,20 +443,19 @@ static int __cli_get_auth_status(const char *essid)
 					}
 					id[i] = data_buf[i];
 				}
-				id[i] = '\0';
 				
-				//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
+				id[i] = '\0';
 				if (strcmp(id, essid) == 0) {
 					/* connection ok */
-					r = 1;
-					break;
+					//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
+					pclose(f);
+					return 0;
 				}
 			}
 		}
 	}
-
-	pclose(f);
-	return r;
+	
+	return -1;
 }
 
 /*
@@ -743,6 +765,7 @@ static void *THR_wlan_cli_main(void *prm)
 			continue;
 		}
 		
+		dprintf("__cli starting!!!!\n");
 		/* for loop */ 
 		quit = 0;
 		while (!quit)
@@ -794,34 +817,15 @@ static void *THR_wlan_cli_main(void *prm)
 				break;
 			
 			case __STAGE_CLI_DHCP_VERIFY:
-				res = netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-				if (res < 0) {
-					sysprint("udhcpc error\n");
+				netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
+				if (!strcmp(i_cli->ip, "0.0.0.0")) {
+					/* dhcp로부터 IP 할당이 안된 경우 */
+					sysprint("couln't get ip from %s!\n", i_cli->item.ssid);
 					i_cli->stage = __STAGE_CLI_ERROR_STOP;
 				} else {
-					if (!strcmp(i_cli->ip, "0.0.0.0")) {
-						/* dhcp로부터 IP 할당이 안된 경우 */
-						sysprint("couln't get ip from %s!\n", i_cli->item.ssid);
-						i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					} else {
-						sysprint("ip address of %s is %s\n", i_cli->item.ssid, i_cli->ip);
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
-						i_cli->stage = __STAGE_CLI_DHCP_NOTY;
-					}
-				}
-				break;
-					
-			case __STAGE_CLI_WAIT_DHCP:
-				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(cli_dev_name)) {
-					i_cli->cli_timer = 0;
-					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
-				} else {
-					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
-					i_cli->cli_timer++;
-					if (i_cli->cli_timer >= CNT_CLI_DHCP) {
-						i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					} 
+					sysprint("ip address of %s is %s\n", i_cli->item.ssid, i_cli->ip);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
+					i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 				}
 				break;
 					
@@ -830,14 +834,14 @@ static void *THR_wlan_cli_main(void *prm)
 					netmgr_set_ip_static(cli_dev_name, i_cli->ip, i_cli->mask, i_cli->gw);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_CONNECT_STATS;
-				} else {
-					netmgr_set_ip_dhcp(cli_dev_name);
-					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
+				} else { 
+					netmgr_udhcpc_start(cli_dev_name);
+					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
 				}
 				break;
 					
 			case __STAGE_CLI_WAIT_AUTH:
-				if (__cli_get_auth_status(i_cli->item.ssid)) {
+				if (__cli_get_auth_status(i_cli->item.ssid) == 0) {
 					/* IP 설정 Stage */
 					i_cli->stage = __STAGE_CLI_SET_IP;
 					i_cli->cli_timer = 0;
@@ -862,21 +866,19 @@ static void *THR_wlan_cli_main(void *prm)
 				res = __cli_check_essid(&i_cli->item);
 				if (res >= 0)
 					i_cli->stage = __STAGE_CLI_AUTH_START;
-				else
+				else {
 					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
-				break;
-				
-			case __STAGE_CLI_MOD_WAIT:
-				res = netmgr_net_link_detect(cli_dev_name);
-				if (!res) {
-					/* Link up */
-					netmgr_net_link_up(cli_dev_name);
-					sleep(1); /* wait 1sec */
 				}
-				i_cli->cli_timer = 0;
-				i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 				break;
 			
+			case __STAGE_CLI_WAIT_ACTIVE:
+				res = __is_cli_active(cli_dev_name);
+				if (res) {
+					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
+					i_cli->cli_timer = 0;	
+				}
+				break;
+					
 			case __STAGE_CLI_ERROR_STOP:
 				/* error 상태를 mainapp에 알려줘야 함 */
 				quit = 1;
@@ -940,6 +942,7 @@ int netmgr_wlan_cli_start(void)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
 	netmgr_iw_supplicant_req_info_t *info;
+	
 	char *databuf;
 	int i, key=0;
 	
@@ -961,7 +964,7 @@ int netmgr_wlan_cli_start(void)
 	}
 			
 	/* set default to idle */
-	i_cli->stage = __STAGE_CLI_MOD_WAIT;
+	i_cli->stage = __STAGE_CLI_WAIT_ACTIVE;
 	i_cli->cli_timer = 0;
 	i_cli->dhcp = info->dhcp;
 	
@@ -978,6 +981,7 @@ int netmgr_wlan_cli_start(void)
 		sysprint("Wi-Fi client ip address set dhcp!\n");
 	}
 	
+//	netmgr_net_link_up(cli_dev_name);
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

@@ -41,6 +41,8 @@
 #define __STAGE_SOFTAP_GET_STATUS	(0x02)
 #define __STAGE_SOFTAP_ERROR_STOP	(0x04)
 
+#define NETMGR_SOFTAP_DEVNAME		"wlan0"
+
 typedef struct {
 	app_thr_obj hObj; /* wlan client mode */
 	
@@ -155,7 +157,6 @@ static int __wlan_hostapd_run(void)
 {
 	char buf[256] = {0,};
 	int ret = 0;
-	FILE *f;
 	
 	ret = __create_hostapd_conf(ihost->ssid, ihost->passwd, 
 				ihost->channel, ihost->freq, ihost->stealth);
@@ -165,23 +166,17 @@ static int __wlan_hostapd_run(void)
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "/usr/sbin/hostapd %s -B -P %s", HOSTAPD_CONFIG,
 					HOSTAPD_PID_PATH);
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	system(buf);
 	
 	/* ip setup IP 변경될 경우 main에서 수신해야 함 */
 	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/ifconfig wlan0 192.168.0.1 up");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	snprintf(buf, sizeof(buf), "/sbin/ifconfig %s 192.168.0.1 up", NETMGR_SOFTAP_DEVNAME);
+	system(buf);
 		
 	/* dhcpd start */
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "/usr/sbin/udhcpd /etc/udhcpd.conf");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	system(buf);
 	
 	dprintf("Wi-Fi HOSTAPD Done!!\n");
 	return 0;
@@ -208,17 +203,13 @@ static void __wlan_hostapd_stop(void)
 
 	/* wifi-link down */
 	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/ifconfig wlan0 down");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	snprintf(buf, sizeof(buf), "/sbin/ifconfig %s down", NETMGR_SOFTAP_DEVNAME);
+	system(buf);
 	
 	/* dhcpd stop */
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "killall udhcpd");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	system(buf);
 }
 
 static int __wlan_hostapd_is_active(const char *process_name)

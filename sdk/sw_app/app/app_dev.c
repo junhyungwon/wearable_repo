@@ -42,6 +42,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define REC_KEY				GPIO_N(0, 6)	//# record switch
+#define USB0_EN				GPIO_N(0, 7)	//# usb enable
 #ifdef NEXXB
 #define SOS_KEY				GPIO_N(1, 14)	//# sos switch
 #endif
@@ -70,6 +71,7 @@ static app_dev_t *idev=&t_dev;
 -----------------------------------------------------------------------------*/
 static void dev_gpio_init(void)
 {
+	gpio_output_init(USB0_EN, 1);
 	gpio_input_init(REC_KEY);
 #ifdef NEXXB
 	gpio_input_init(SOS_KEY);
@@ -78,6 +80,7 @@ static void dev_gpio_init(void)
 
 static void dev_gpio_exit(void)
 {
+	gpio_exit(USB0_EN);
 	gpio_exit(REC_KEY);
 #ifdef NEXXB	
 	gpio_exit(SOS_KEY);

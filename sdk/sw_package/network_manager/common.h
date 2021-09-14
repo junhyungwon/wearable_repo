@@ -48,16 +48,14 @@ int gpio_set_value(int num, int value);
 int gpio_get_value(int num, int *val);
 
 int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask, char *gw);
+void netmgr_net_link_up(const char *ifce);
 void netmgr_net_link_down(const char *ifce);
-int netmgr_net_link_up(const char *ifce);
-int netmgr_net_link_detect(const char *ifce);
 
 int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mask, const char *gateway);
-int netmgr_set_ip_dhcp(const char *ifname);
-
-int netmgr_udhcpc_is_run(const char *ifname);
-void netmgr_udhcpc_stop(const char *ifname);
 int netmgr_set_shm_ip_info(int dev, const char *ip, const char *mask, const char *gw);
+void netmgr_udhcpc_start(const char *ifname);
+void netmgr_udhcpc_stop(const char *ifname);
+int netmgr_udhcpc_is_run(const char *ifname);
 
 int utf8_unescape(const char *dst, char *src);
 int hextobin(unsigned char c);

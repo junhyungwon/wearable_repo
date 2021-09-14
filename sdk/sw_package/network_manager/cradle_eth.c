@@ -30,8 +30,7 @@
 #define TIME_CRADLE_ETH_WAIT_DHCP		10000   //# 10sec
 #define CNT_CRADLE_ETH_WAIT_DHCP  		(TIME_CRADLE_ETH_WAIT_DHCP/TIME_CRADLE_ETH_CYCLE)
 
-#define __STAGE_CRADLE_ETH_WAIT_ACTIVE	(0x00)
-#define __STAGE_CRADLE_ETH_WAIT_DHCP	(0x01)
+#define __STAGE_CRADLE_ETH_WAIT_ACTIVE	(0x01)
 #define __STAGE_CRADLE_ETH_DHCP_VERIFY	(0x02)
 #define __STAGE_CRADLE_ETH_DHCP_NOTY	(0x03)
 #define __STAGE_CRADLE_ETH_GET_STATUS	(0x04)
@@ -140,41 +139,19 @@ static void *THR_cradle_eth_main(void *prm)
 			
 			case __STAGE_CRADLE_ETH_DHCP_VERIFY:
 				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
-				res = netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
-				if (res < 0) {
+				netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
+				if (!strcmp(icradle->ip, "0.0.0.0")) {
+					/* dhcp로부터 IP 할당이 안된 경우 */
+					dprintf("couln't get DHCP ip address!\n");	
 					icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
 				} else {
-					if (!strcmp(icradle->ip, "0.0.0.0")) {
-						/* dhcp로부터 IP 할당이 안된 경우 */
-						dprintf("couln't get dhcp ip address!\n");	
-						icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
-					} else {
-						dprintf("cradle dhcp ip is %s\n", icradle->ip);
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
-						icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;	
-					}
+					dprintf("cradle DHCP ip ==> %s\n", icradle->ip);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
+					icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;	
 				}
 				break;
 				
-			case __STAGE_CRADLE_ETH_WAIT_DHCP:
-				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(NETMGR_CRADLE_ETH_DEVNAME)) {
-					icradle->stage = __STAGE_CRADLE_ETH_DHCP_VERIFY;
-					icradle->cradle_eth_timer = 0; 
-				} else {
-					if (icradle->cradle_eth_timer >= CNT_CRADLE_ETH_WAIT_DHCP) {
-						/* error */
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ERROR);
-						icradle->cradle_eth_timer = 0;
-						quit = 1; /* loop exit */
-					} else {
-						icradle->cradle_eth_timer++;
-					}
-				}
-				break;
-			
 			case __STAGE_CRADLE_ETH_WAIT_ACTIVE:
 				res = __is_ether_active();
 				if (res) {
@@ -189,8 +166,8 @@ static void *THR_cradle_eth_main(void *prm)
 						app_cfg->ste.bit.eth0 = 1;
 					} else {
 						/* dhcp ip alloc */
-						netmgr_set_ip_dhcp(NETMGR_CRADLE_ETH_DEVNAME);
-						icradle->stage = __STAGE_CRADLE_ETH_WAIT_DHCP;
+						netmgr_udhcpc_start(NETMGR_CRADLE_ETH_DEVNAME);
+						icradle->stage = __STAGE_CRADLE_ETH_DHCP_VERIFY;
 					}
 				}
 				break;
@@ -257,8 +234,8 @@ int netmgr_cradle_eth_exit(void)
 int netmgr_cradle_eth_event_start(void)
 {
 	app_thr_obj *tObj = &icradle->cObj;
-	char *databuf;
 	netmgr_cradle_eth_req_info_t *info;
+	char *databuf;
 	
 	/* shared memory로부터 IP 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
@@ -281,9 +258,8 @@ int netmgr_cradle_eth_event_start(void)
 		//dprintf("cradle eth set ip dhcp!\n");
 	}
 	
-	netmgr_net_link_up(NETMGR_CRADLE_ETH_DEVNAME); 
+	netmgr_net_link_up(NETMGR_CRADLE_ETH_DEVNAME);
    	event_send(tObj, APP_CMD_START, 0, 0);
-	
 	dprintf("enter...!\n");
 	
 	return 0;
