@@ -156,11 +156,15 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	int bg_lv = -1;
 	int threshold=0;
 	
-#ifdef NEXXB
-	threshold = ebatt;
-#else
+#ifdef EXT_BATT_ONLY
+	/* 
+	 * 외장 보조배터리를 사용하는 경우 항상 전압이 고정돼서 출력되므로
+	 * 배터리 단계를 측정할 수 없다. 또한 Low Battery로 측정이 불가능 함.
+	 * 그냥 꺼짐.
+	 */
+	return 0;
+#endif
 	threshold = ibatt;
-#endif	
 	
 	if (power_on_lv) {
 		power_on_lv = 0;
