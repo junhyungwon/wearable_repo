@@ -1,5 +1,5 @@
 #
-# boot script for fitt
+# boot script for external battery only
 #
 echo "update NAND"
 
@@ -42,7 +42,7 @@ setenv nand_update 2
 saveenv
 
 #--- mcu -----------------------------------------
-if mmc rescan;fatload mmc 0 0x81000000 mcu_nexb.txt; then
+if mmc rescan;fatload mmc 0 0x81000000 mcu_extb.txt; then
 	mcu update
 fi
 
