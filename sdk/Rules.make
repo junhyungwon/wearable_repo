@@ -88,6 +88,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	USE_VOIP := NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER := AFO
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	#--- Select Wi-Fi method (YES/NO)
@@ -96,6 +98,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	USE_VOIP = YES
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = AFO
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360H)
 	#--- Select Wi-Fi method (YES/NO)
@@ -104,6 +108,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360H)
 	USE_VOIP = NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = PARTRON
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXB)
 	#--- Select Wi-Fi method (YES/NO)
@@ -112,6 +118,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXXB)
 	USE_VOIP = YES
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = AFO
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#--- Select Wi-Fi method (YES/NO)
@@ -120,6 +128,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	USE_VOIP = YES
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = PARTRON
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = YES
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	#--- Select Wi-Fi method (YES/NO)
@@ -128,6 +138,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	USE_VOIP = NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = AFO
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
 endif
 
 #---  KCMVP
