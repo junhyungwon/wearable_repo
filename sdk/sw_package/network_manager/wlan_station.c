@@ -101,7 +101,8 @@ static netmgr_wlan_cli_t *i_cli = &t_cli;
 static iw_item_t userList[NETMGR_WLAN_CONN_MAX_CNT];
 
 //# 검색된 AP 목록
-static iw_item_t scanList[MAX_AP_SCAN_LIST];
+static iw_item_t scanList5G[MAX_AP_SCAN_LIST];
+static iw_item_t scanList2G[MAX_AP_SCAN_LIST];
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -238,6 +239,8 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 	fprintf(config, "ctrl_interface=/var/run/wpa_supplicant\n");
 	fprintf(config, "#ap_scan=1\n");
 	fprintf(config, "network={\n");
+	//#Array of allowed frequencies 5G: Ch36, Ch44 2.4G: Ch1~Ch11, Ch12, 13->not used */
+	//fprintf(config, "\tfreq_list=5180 5220 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462\n") ;
 	/* update ssid */
 	fprintf(config, "\tssid=\"%s\"\n", ssid);
 
@@ -561,9 +564,10 @@ static int __cli_check_essid(iw_item_t *dst)
 	char mac[18];
 		
 	int wep, inCell, valid;
-	int master, cnt, level;
-	int i, j;
+	int master, level, i, j;
+	int cnt_5G=0, cnt_2G=0;
 	
+	float freq=0.0;
 	/* wlan0     Scan completed :
      *           Cell 01 - Address: 00:25:A6:B5:6F:D3
      *              ESSID:"ollehWiFi"
@@ -588,9 +592,9 @@ static int __cli_check_essid(iw_item_t *dst)
 	/* initialize parser helper */
 	mac[0] = '\0'; ssid[0] = '\0';
 
-	cnt = 0; 	inCell = 0; valid = 0;
 	level = -1; wep = -1; master = -1;
-
+	inCell = 0; valid = 0;
+	
 	memset(listbuf, 0, sizeof(listbuf));
 	
 	f = popen(CMD_IWLIST, "r");
@@ -684,20 +688,36 @@ static int __cli_check_essid(iw_item_t *dst)
 				} else {
 					wep = 0;
 				}
+			} else if (inCell && (start = strstr(listbuf, "Frequency:"))) {
+				char *ptr;
+				
+				start += 10; /* Frequency: */
+				/* value is X.XXX GHz, 공백으로 분리됨 */
+				ptr = strtok(start, " ");
+				if (ptr != NULL) {
+					sscanf(ptr, "%f", &freq);
+				}
 			}
 
-			if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0')
+			if ((ssid[0] != '\0') && (level != -1) && (wep != -1) &&
+				(master != -1) && (mac[0] != '\0') && (freq != 0.0))
 			{
-				/* save current sincell information */
-				scanList[cnt].en_key = wep;
-				strcpy(scanList[cnt].ssid, ssid);
-				cnt++;
-
+				/* 5G or 2G */
+				if (freq > 3.0) {
+					/* save current sincell information */
+					scanList5G[cnt_5G].en_key = wep;
+					strcpy(scanList5G[cnt_5G].ssid, ssid);
+					cnt_5G++;
+				} else {
+					scanList2G[cnt_2G].en_key = wep;
+					strcpy(scanList2G[cnt_2G].ssid, ssid);
+					cnt_5G++;
+				}	
 				/* initialize parser helper */
 				memset(listbuf, 0, sizeof(listbuf));
 				mac[0] = '\0'; ssid[0] = '\0';
 
-				inCell = 0; level = -1; wep = -1; master = -1;
+				inCell = 0; level = -1; wep = -1; master = -1; freq = 0.0;
 				
 				//# next loop..
 				delay_msecs(5);
@@ -705,22 +725,42 @@ static int __cli_check_essid(iw_item_t *dst)
 		} /* while (fgets(listBuf, sizeof(listBuf), f) != NULL) */
 		
 		/* 사용자 요청 List와 비교해서 연결 */
-		for (i = 0; i < NETMGR_WLAN_CONN_MAX_CNT; i++) {
-			/* 현재 검색된 AP 목록수 */
-			for (j = 0; j < cnt; j++) 
+		for (i = 0; i < NETMGR_WLAN_CONN_MAX_CNT; i++) 
+		{
+			/* 현재 검색된 AP 목록수 : 5G 대역이 후순위에 검색이 됨. */
+			/* 5G 대역 */
+			for (j = (cnt_5G - 1); j >= 0; j--) 
 			{
-				//dprintf("ssid compare %s %s\n", userList[i].ssid, scanList[j].ssid);
-				if (strcmp(userList[i].ssid, scanList[j].ssid) == 0) {
+				//dprintf("ssid compare %s %s\n", userList[i].ssid, scanList5G[j].ssid);
+				if (strcmp(userList[i].ssid, scanList5G[j].ssid) == 0) {
 					/* founded valid essid return 0 */
 					memcpy(dst->ssid, userList[i].ssid, NETMGR_WLAN_SSID_MAX_SZ);
 					memcpy(dst->passwd, userList[i].passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
 					dst->en_key = userList[i].en_key;
-					dprintf("wifi connect to AP (ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
+					dprintf("wifi connect to 5GHz AP (ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
 							dst->passwd, dst->en_key);
 					
 					pclose(f);
 					return 0;
-				}
+				}	
+			}
+			delay_msecs(5);
+			
+			/* 2G 대역 */
+			for (j = 0; j < cnt_2G; j++) 
+			{
+				//dprintf("ssid compare %s %s\n", userList[i].ssid, scanList2G[j].ssid);
+				if (strcmp(userList[i].ssid, scanList2G[j].ssid) == 0) {
+					/* founded valid essid return 0 */
+					memcpy(dst->ssid, userList[i].ssid, NETMGR_WLAN_SSID_MAX_SZ);
+					memcpy(dst->passwd, userList[i].passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
+					dst->en_key = userList[i].en_key;
+					dprintf("wifi connect to 2GH AP (ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
+							dst->passwd, dst->en_key);
+					
+					pclose(f);
+					return 0;
+				}	
 			}
 			delay_msecs(5);
 		}
