@@ -180,12 +180,13 @@ echo
 echo "Mass production package file"
 echo
 
-if [ "$FW_PREFIX" == "NEXXONE" ]
-then
+#if [ "$FW_PREFIX" == "NEXXONE" ]
+#then
 masspack_name=hw_test_binary_"$FW_PREFIX"
-else
-masspack_name=hw_test_binary_"$ver4"
-fi
+#else
+#masspack_name=hw_test_binary_"$ver4"
+#fi
+
 
 if [ ! -f "$masspack_name" ]; then
 mkdir "$masspack_name"
