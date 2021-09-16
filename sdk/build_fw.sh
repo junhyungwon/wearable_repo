@@ -123,6 +123,13 @@ _parsing_fw_ver
 ver_name="$ver1.$ver2.$ver3"
 fw_name=""$FW_PREFIX"_"$ver_name"_full.dat"
 
+if [ "$FW_PREFIX" == "NEXX360B" ]
+then
+ver4="B"
+else
+ver4="N"
+fi
+
 # factory distribute package
 factory_fw_name=""$FW_PREFIX"_"$ver_name"_full_F.dat"
 
@@ -180,13 +187,7 @@ echo
 echo "Mass production package file"
 echo
 
-#if [ "$FW_PREFIX" == "NEXXONE" ]
-#then
 masspack_name=hw_test_binary_"$FW_PREFIX"
-#else
-#masspack_name=hw_test_binary_"$ver4"
-#fi
-
 
 if [ ! -f "$masspack_name" ]; then
 mkdir "$masspack_name"
