@@ -63,6 +63,11 @@
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 
+//#define USE_SSL             
+
+X509* server_cert ;
+X509_NAME *certname = NULL ;
+
 /*----------------------------------------------------------------------------
  Declares variable)s
 -----------------------------------------------------------------------------*/
@@ -72,6 +77,45 @@ static app_ftp_t *iftp=&t_ftp;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+
+void  ssl_info_callback(const SSL *s, int where, int ret)
+{
+	char * writeString;
+	int w;
+
+	w = where & ~SSL_ST_MASK;
+
+	if (w & SSL_ST_CONNECT)
+		writeString="SSL_connect";
+	else if (w & SSL_ST_ACCEPT)
+		writeString="SSL_accept";
+	else
+		writeString="undefined";
+
+	fprintf(stderr, "======== writeString = [%s]\n", writeString);
+
+	if (where & SSL_CB_LOOP)
+	{
+		fprintf(stderr, "======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+				writeString, SSL_state_string_long(s));
+	}
+	else if (where & SSL_CB_ALERT)
+	{
+		if (ret == 0)
+		{
+			fprintf(stderr,"======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+					writeString, SSL_state_string_long(s));
+		}
+		else if (ret < 0)
+		{
+			fprintf(stderr,"======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+					writeString, SSL_state_string_long(s));
+		}
+	}
+}
+
+
+
 static int ftpRecvResponse(int sock, char * buf)
 {
     socklen_t lon ;
@@ -126,7 +170,11 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
     }
     else
     {
+#if defined(USE_SSL)
+	    if (SSL_write(iftp->lsslHandle, buf, strlen(buf)) == -1) {
+#else
 	    if (send(sock, buf, strlen(buf), 0) == -1) {
+#endif
 		    perror("send");
 		    return -1;
 	    }
@@ -380,6 +428,7 @@ static int ftp_send_file(int sd, char *filename)
     char tmpHost[100];
     int tmpPort, data_sock;
     char buf[MSIZE];
+	char source_fname[64], dest_fname[64] ;
 
 	if(ftpNewCmd(sd, buf, "TYPE", "I") != 0)
 		return -1 ;
@@ -402,17 +451,10 @@ static int ftp_send_file(int sd, char *filename)
 
 		if(data_sock > 0)
 		{
-/*
-		    if(ftpNewCmd(sd,buf,"REST", 0) != 0)
-				return -1 ;
-	
-			if(ftpRecvResponse(sd, buf) != 0)
-                return -1 ;
+			sprintf(source_fname, "_%s",&filename[strlen(iftp->path) + 1]) ;
+			sprintf(dest_fname, "%s",&filename[strlen(iftp->path) + 1]) ;
 
-            if(strncmp(buf, "350", 3) == 0) 
-	            ftp_dbg("ftpRecvResponse REST success = %s\n", buf);
-*/
-		    if(ftpNewCmd(sd,buf,"STOR",&filename[strlen(iftp->path) + 1]) != 0)
+		    if(ftpNewCmd(sd,buf,"STOR", source_fname) != 0)
                 return -1 ;
 
 		    if(ftpRecvResponse(sd, buf) != 0)
@@ -429,8 +471,32 @@ static int ftp_send_file(int sd, char *filename)
 					{
 				        if (strncmp(buf, "226", 3) == 0) 
 					    {
-					        printf("%s transfer completed.\n", &filename[strlen(iftp->path) + 1]);
-					        return 0;
+					        printf("%s transfer completed.\n", dest_fname);
+
+							if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
+								return -1 ;
+
+							if(ftpRecvResponse(sd, buf) == 0)
+							{		
+								if (strncmp(buf, "350", 3) == 0) 
+								{
+									if(ftpNewCmd(sd,buf,"RNTO", dest_fname) != 0)
+										return -1 ;
+
+									if(ftpRecvResponse(sd, buf) == 0)
+									{		
+										if (strncmp(buf, "250", 3) == 0)
+										{
+											printf("Rename from %s to %s \n",source_fname, dest_fname) ;
+										    return 0 ;
+										}
+										 else
+											return -1 ;
+									}
+								}
+							}	
+							else
+								return -1 ;
 				        }
 					}
 					else
@@ -583,7 +649,7 @@ static int ftp_close(int sd)
 
 	close(sd); //close the socket
 
-	iftp->sdFtp = -1 ;
+	iftp->lsdFtp = -1 ;
 	return 0;
 }
 
@@ -599,6 +665,106 @@ static int get_netdev_link_status(void)
 	return (state ? 1: 0);
 }				 								 													    
 
+void SSL_Create()
+{
+	char *str ;
+	// Register the error strings for libcrypto &libssl
+	SSL_load_error_strings() ;
+
+	SSLeay_add_ssl_algorithms();
+	SSL_load_error_strings() ;
+
+	// Register the available ciphers and digests
+
+	// New context saying we are a client, and using SSL 2 or 3
+
+	iftp->lsslContext = SSL_CTX_new(SSLv23_client_method()) ;
+	if(iftp->lsslContext == NULL)
+		ERR_print_errors_fp (stderr) ;
+
+	// Disabling SSLv2 will leaave v3 and TLSv1 for negotiation
+
+	SSL_CTX_set_options(iftp->lsslContext, SSL_OP_NO_SSLv2) ;
+
+	SSL_CTX_set_info_callback(iftp->lsslContext, ssl_info_callback) ;
+	if(SSL_CTX_use_certificate_file(iftp->lsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0)
+	{
+		ERR_print_errors_fp(stderr) ;
+		exit(3) ;
+	}
+	if(SSL_CTX_use_PrivateKey_file(iftp->lsslContext, CLIENT_KEYF, SSL_FILETYPE_PEM) <= 0)
+	{
+		ERR_print_errors_fp(stderr) ;
+		exit(4) ;
+	}
+	if(!SSL_CTX_check_private_key(iftp->lsslContext))
+	{
+		ERR_print_errors_fp(stderr) ;
+		fprintf(stderr, "Private key does not match the cerificate public key\n") ;
+		exit(5) ;
+	}
+	if(!SSL_CTX_load_verify_locations(iftp->lsslContext, CLIENT_CA_CERTF, NULL))
+	{
+		ERR_print_errors_fp(stderr) ;
+		exit(1) ;
+	}
+
+	SSL_CTX_set_verify(iftp->lsslContext, SSL_VERIFY_PEER, NULL) ;
+	SSL_CTX_set_verify_depth(iftp->lsslContext, 1);
+	// Create an SSL struct for the connection
+	iftp->lsslHandle = SSL_new(iftp->lsslContext) ;
+	if(iftp->lsslHandle == NULL)
+		ERR_print_errors_fp(stderr) ;
+
+	// Connect the SSL struct to our connection 
+	if(!SSL_set_fd(iftp->lsslHandle, iftp->lsdFtp))
+		ERR_print_errors_fp(stderr);
+
+	// Initiate SSL handshake
+	if(SSL_connect(iftp->lsslHandle) != 1)
+	{
+printf("555555555555555555555555555\n") ;
+		ERR_print_errors_fp(stderr);
+	}
+	else
+	{
+		printf("SSL_connect.. OK\n") ;
+		printf("SSL connection using %s\n", SSL_get_cipher(iftp->lsslHandle)) ;
+		printf("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->lsslHandle)));
+
+		SSL_CTX_set_cipher_list(iftp->lsslContext, SSL_get_cipher(iftp->lsslHandle)) ;
+
+		server_cert = SSL_get_peer_certificate (iftp->lsslHandle) ;
+
+		if(server_cert != NULL)
+		{
+			if(SSL_get_verify_result(iftp->lsslHandle) == X509_V_OK)
+				printf("client verification with SSL_get_verify_result() succeeded. \n") ;
+            else
+				printf("client verification with SSL_get_verify_result() failed.\n") ;
+
+			printf("Server cerificate:\n") ;
+
+			str = X509_NAME_oneline(X509_get_subject_name (server_cert), 0, 0) ;
+			printf("\t subject: %s\n",str) ;
+
+			OPENSSL_free(str) ;
+
+			str = X509_NAME_oneline(X509_get_issuer_name (server_cert), 0, 0) ;
+			printf("\t issuer: %s\n",str) ;
+			
+			OPENSSL_free(str) ;
+
+			certname = X509_NAME_new() ;
+			certname = X509_get_subject_name(server_cert) ;
+
+			X509_free(server_cert) ;
+
+		}
+		else
+			printf("Server certificated fail..\n") ;
+	}
+}
 
 static void ftp_send(void)
 {
@@ -606,7 +772,6 @@ static void ftp_send(void)
 	int ret = 0, retry_cnt = 0, file_cnt = 0;
     char FileName[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
-    char *s = NULL ;
 
 	iftp->ftp_state = FTP_STATE_CONNECTING;
 
@@ -620,8 +785,8 @@ static void ftp_send(void)
 		}
 
 		//#--- ping check for ftp IP
-		if(iftp->sdFtp >= 0)
-			close(iftp->sdFtp);
+		if(iftp->lsdFtp >= 0)
+			close(iftp->lsdFtp);
 
 		// ethX off in ftp running
 		if(!get_netdev_link_status()) { 	
@@ -629,14 +794,17 @@ static void ftp_send(void)
 			break;
 		}
  
-		iftp->sdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
-		if(iftp->sdFtp != -1)
+		iftp->lsdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
+		if(iftp->lsdFtp != -1)
 		{
+#if defined(USE_SSL)
+			SSL_Create() ;
+#endif
             retry_cnt = 0 ;
 		 //read result
 			while(1)
 			{
-		        ret = ftp_login(iftp->sdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
+		        ret = ftp_login(iftp->lsdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
 	            if(ret == 0)
                 {
 			        iftp->ftp_state = FTP_STATE_SENDING;
@@ -705,19 +873,19 @@ static void ftp_send(void)
             strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /20190823/DeviceID
 		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
 		    {
-                if(ftp_change_dir(iftp->sdFtp, temp, 0) != 0)
+                if(ftp_change_dir(iftp->lsdFtp, temp, 0) != 0)
                 {
                     iftp->ftp_state = FTP_STATE_NONE ;
                 }
 				else
 				{	
-                    if(ftp_change_dir(iftp->sdFtp, app_set->sys_info.deviceId, 0) != 0)
+                    if(ftp_change_dir(iftp->lsdFtp, app_set->sys_info.deviceId, 0) != 0)
                     {
                         iftp->ftp_state = FTP_STATE_NONE ;
                     }
 					else
 					{
-                        if(ftp_send_file(iftp->sdFtp, FileName) == 0)
+                        if(ftp_send_file(iftp->lsdFtp, FileName) == 0)
                         {
 					        ftp_dbg(" \n[ftp] Send image -- %s \n", FileName);
                             delete_ftp_send_file(FileName) ;
@@ -733,7 +901,7 @@ static void ftp_send(void)
                             break;
 						}
 
-                        if(ftp_change_dir(iftp->sdFtp, temp, 1) != 0)
+                        if(ftp_change_dir(iftp->lsdFtp, temp, 1) != 0)
                         {
                             iftp->ftp_state = FTP_STATE_NONE ;
 						}
@@ -758,7 +926,7 @@ static void ftp_send(void)
             app_leds_backup_state_ctrl(LED_FTP_OFF);
             app_leds_eth_status_ctrl(LED_FTP_OFF);
 		    iftp->ftp_state = FTP_STATE_SEND_DONE;
-            ftp_close(iftp->sdFtp);
+            ftp_close(iftp->lsdFtp);
 		}
 		else
 		{

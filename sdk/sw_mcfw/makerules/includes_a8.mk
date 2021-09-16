@@ -41,6 +41,8 @@ SHLIB_DIR=$(APP_DIR)/lib
 
 CMEM_LIB=$(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/lib/cmem.a470MV
 
+TLS_LIBS=$(linuxdevkit_PATH)/usr/lib
+
 BLKID_LIBS=$(linuxdevkit_PATH)/usr/lib/libblkid.so.1.1.0
 endif # ifndef $(INCLUDES_MK)
 

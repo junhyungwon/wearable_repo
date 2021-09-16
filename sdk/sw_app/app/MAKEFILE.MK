@@ -30,4 +30,6 @@ ifeq ($(USE_RTMP), YES)
 LIBS += $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
 endif
 
+LIBS += -L$(TLS_LIBS) -lssl -lcrypto
+
 include $(MCFW_ROOT_PATH)/makerules/common_footer_a8.mk
