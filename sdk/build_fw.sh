@@ -145,7 +145,7 @@ echo
 
 if [ "$FW_PREFIX" == "NEXXB" ]
 then
-tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_extb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 #tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit rfs_fit.ubifs rfs_fit.ubifs.md5
 else
 tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
@@ -164,7 +164,8 @@ echo
 
 if [ "$FW_PREFIX" == "NEXXB" ]
 then
-tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+#tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_extb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 elif [ "$FW_PREFIX" == "NEXXONE" ]
 then
 #tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs rfs_fit.ubifs.md5
@@ -194,7 +195,8 @@ cp ./fit/bin/hw_diag.out ./$masspack_name
 
 if [ "$FW_PREFIX" == "NEXXB" ]
 then
-cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs ./$masspack_name
+#cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_nexb.txt rfs_fit.ubifs ./$masspack_name
+cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_extb.txt rfs_fit.ubifs ./$masspack_name
 else
 cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt rfs_fit.ubifs ./$masspack_name
 fi
