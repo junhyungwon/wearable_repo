@@ -273,7 +273,7 @@ uboot:
 
 ubootscr:
 ifeq ($(SYSTEM_PLATFORM), NEXXB)
-	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_nexb.sh $(UBOOTDIR)/boot.scr
+	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_extb.sh $(UBOOTDIR)/boot.scr
 else
 	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_fit.sh $(UBOOTDIR)/boot.scr
 endif
