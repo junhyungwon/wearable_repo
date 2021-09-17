@@ -76,18 +76,6 @@ static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
 #define FW_DIR      		"/mmc/fw_version.txt"
 #define FW_UBIFS			"/mmc/rfs_fit.ubifs"
 
-#ifdef EXT_BATT_ONLY
-static char *full_upfiles[FW_FILE_NUM] = {
-	"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
-	"uImage_fit", "rfs_fit.ubifs", "mcu_extb.txt"
-};
-#else
-static char *full_upfiles[FW_FILE_NUM] = {
-	"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
-	"uImage_fit", "rfs_fit.ubifs", "mcu_fitt.txt"
-};
-#endif
-	
 typedef struct {
     char item[8];
     char value[32];
@@ -343,8 +331,12 @@ static int Delete_updatefile()
 {
     char cmd[MAX_CHAR_255] = {0,};
     int i;
+	char *full_upfiles[FW_FILE_NUM-1] = {
+		"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
+		"uImage_fit", "rfs_fit.ubifs"};
 	
-	for (i = 0; i < FW_FILE_NUM; i++)
+	//# remove micom firmware,-->(-1) 
+	for (i = 0; i < FW_FILE_NUM-1; i++)
 	{
 		sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
 		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
@@ -354,9 +346,27 @@ static int Delete_updatefile()
 	// delete rfs_fit.ubifs.md5
 	memset(cmd, 0, sizeof(cmd));
 	snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
-	if (access(cmd, F_OK) == 0)
-		remove(cmd) ;
-
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}
+	
+	// delete mcu_fitt.txt
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/mcu_fitt.txt");
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}
+	
+	// delete mcu_extb.txt
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/mcu_extb.txt");
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}		
+	
 	return 0 ;
 }
 
