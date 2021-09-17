@@ -127,8 +127,6 @@ static inline u32 get_board_rev(void)
 void fitt_gpio_init(void)
 {
 	/* GPIO BANK_0 */
-	gpio_direction_output(USB0_EN, 1);	       //# (0, 7) usb enable
-	
     gpio_direction_input(B_REV_P1);            //# (0, 1)
     gpio_direction_input(B_REV_P2);            //# (0, 2)
     gpio_direction_input(B_REV_P3);            //# (0, 3)

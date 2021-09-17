@@ -344,7 +344,6 @@ static void __netmgr_dev_link_status_handler(void)
 				* DHCP 서버에서 IP를 수신하지 못하는 경우이다. USB Reset 수행해봄.
 				*/
 				app_leds_rf_ctrl(LED_RF_FAIL);
-				app_dev_usb_reset();
 			} else {
 				/* inactive state */
 				app_leds_rf_ctrl(LED_RF_OFF);
