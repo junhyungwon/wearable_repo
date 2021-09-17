@@ -129,7 +129,7 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = PARTRON
 	#--- Select External Battery method (YES/NO)
-	EXTERNAL_BATTERY_ONLY = YES
+	EXTERNAL_BATTERY_ONLY = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	#--- Select Wi-Fi method (YES/NO)
