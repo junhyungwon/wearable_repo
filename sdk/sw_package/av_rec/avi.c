@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include <cmem.h>
 
 #include "main.h"
@@ -104,7 +105,11 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 		aviInfo.nVidWi[i] = ifr->frm_wi;
 		aviInfo.nVidHe[i] = ifr->frm_he;
 	}
-	aviInfo.fFrameRate	= (double)(ifr->frm_rate*1000./1001.);
+	/*
+	 * 정수를 소수로 변환하는 과정에서 1->0.9xxx로 되면 재생할 때 문제가 발생함.
+	 * 따라서 반올림 후 소수를 버림.(floor)
+	 */
+	aviInfo.fFrameRate	= floor((ifr->frm_rate*1000./1001.)+0.5L);
 
 	if (snd_on) {
 		aviInfo.bEnAudio 			= TRUE;

@@ -262,6 +262,9 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 //    localtime_r((const time_t *)&ifr->t_sec, &ts);
     memcpy(&ts, gmtm, sizeof(struct tm));
 	
+	/*
+	 * 두 번째 레코드 파일부터 해당됨.
+	 */
     if (!irec->rec_first)
     {
 		if ((ts.tm_min%irec->rec_min) == 0) {
@@ -269,6 +272,9 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
         }
     }
 	
+	/*
+	 * 첫 번째 레코드 파일인 경우.
+	 */
     if (irec->rec_first) {
         minute_change = 1;
         irec->rec_first = 0;
@@ -311,12 +317,13 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    return SOK;
 	    }
 	}
+	
 	if(cmd == APP_CMD_EVT) // event 
 	{
 		// TODO File Type check and then select close or not 
 //        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
-
-	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
+		/*  warning: suggest parentheses around '&&' within '||' */
+		if ((irec->old_min != ts.tm_min && minute_change) || (irec->rec_evt_cnt > 0))
 	    {
             if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
                 irec->old_min = 0 ; 
@@ -330,7 +337,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    /* calculate file size */
+			    	/* calculate file size */
 					lstat(irec->fname, &sb);
 			        sz = (sb.st_size / KB); /* Byte->KB */
 					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
@@ -346,7 +353,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current event file
-			    /* calculate file size */
+			    	/* calculate file size */
 					lstat(irec->fname, &sb);
 					sz = (sb.st_size / KB); /* Byte->KB */
 					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
@@ -387,16 +394,15 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 			    irec->rec_evt_cnt -= 1;
 
 			    dprintf("AVI name %s opened!\n", irec->fname);
-
 			    return SOK;
 			}
 	    }
     }
+	
 	if(cmd == APP_CMD_SOS) // SOS
 	{
 		// TODO File Type check and then select close or not 
 //        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
-
 	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
 	    {
             if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
@@ -411,7 +417,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    /* calculate file size */
+			    	/* calculate file size */
 					lstat(irec->fname, &sb);
 			        sz = (sb.st_size / KB); /* Byte->KB */
 					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
@@ -422,7 +428,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    /* calculate file size */
+			    	/* calculate file size */
 					lstat(irec->fname, &sb);
 			        sz = (sb.st_size / KB); /* Byte->KB */
 					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
@@ -434,7 +440,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("SOS irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current SOS file
-			    /* calculate file size */
+			    	/* calculate file size */
 					lstat(irec->fname, &sb);
 					sz = (sb.st_size / KB); /* Byte->KB */
 					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
@@ -466,7 +472,6 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		
 		        memset(irec->fname, 0, sizeof(irec->fname));
 		        sprintf(irec->fname, "%s", filename);
-		
 		   	    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
 			    irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
 			    if (irec->fevt == NULL)
@@ -475,7 +480,6 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 			    irec->rec_evt_cnt -= 1;
 
 			    dprintf("AVI name %s opened!\n", irec->fname);
-
 			    return SOK;
 			}
 	    }
@@ -581,8 +585,8 @@ static void *THR_rec_evt(void *prm)
 
 		while (1)
 		{
+			/* recv_msg() 에 의해서 tObj->cmd 값이 변경됨. */
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
-                
 				break;
 			}
 
@@ -594,7 +598,6 @@ static void *THR_rec_evt(void *prm)
 
 			if(tObj->cmd == APP_CMD_EVT)
 			{
-
 				if(irec->fevt == NULL)   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
 				{
 			        irec->rec_evt_cnt = 2;
@@ -611,7 +614,7 @@ static void *THR_rec_evt(void *prm)
                 }
 				cmd = APP_CMD_EVT ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
-            }
+            } /* if(tObj->cmd == APP_CMD_EVT) */
 
 			if(tObj->cmd == APP_CMD_SOS)
 			{
@@ -631,7 +634,7 @@ static void *THR_rec_evt(void *prm)
                 }
 				cmd = APP_CMD_SOS ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
-			}
+			} /* if(tObj->cmd == APP_CMD_SOS) */
 
 			if(tObj->cmd == APP_CMD_START)
 			{
@@ -640,14 +643,11 @@ static void *THR_rec_evt(void *prm)
 			}
 
 //			printf("irec->rec_evt_cnt = %d cmd = %d\n", irec->rec_evt_cnt, cmd) ;
-
 			for (i = 0; i < frame_num; i++)
 			{
 				ifr = &imem->ifr[read_idx];
 				if ((ifr->d_type==DATA_TYPE_VIDEO) && (ifr->ch==0) && ifr->is_key) {
-
 				    ret = evt_file_open(ifr, cmd);
-
 					if (ret < 0) {
 						send_msg(AV_CMD_REC_ERR, 0, NULL);
 						memset(msg, 0, sizeof(msg));
