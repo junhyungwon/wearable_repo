@@ -79,5 +79,6 @@ void gpsdatareq(int, char*, int) ;
 void eventdatareq(int, char*, int) ;
 void gpsdata_send(void *data);
 void eventdata_send(void);
+void sosdata_send(void);
 
 #endif // _APP_PROCESS_H

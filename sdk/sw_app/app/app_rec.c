@@ -211,7 +211,7 @@ static void *THR_rec_send_msg(void *prm)
             else
 			{
                 irec->rec_state  = 1; // Event 
-			send_msg(AV_CMD_REC_EVT);
+			    send_msg(AV_CMD_REC_EVT);
 			}
 #else
             irec->rec_state  = 1;  
@@ -297,9 +297,9 @@ static void *THR_evt_buzzer(void *prm)
 					{
 #if defined(NEXXB)
 						if(option) // SOS
-					    eventdata_send() ;
+							sosdata_send() ;
 #else
-							eventdata_send() ;
+						eventdata_send() ;
 #endif
 					    evt_sndcnt += 1 ;
 					}

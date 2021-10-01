@@ -215,5 +215,33 @@ void eventdata_send(void)
 #endif
 		}
     }
+}
 
+void sosdata_send(void)
+{
+    int sendlen = 0, i;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("SOSdata reached...\n") ;
+#endif
+    EVENTPACKET Sospacket ;
+
+	Sospacket.identifier = htons(IDENTIFIER) ;
+	Sospacket.cmd = htons(CMD_SOSDATA_RES) ;
+	Sospacket.length = htons(EVENTPACKET_SIZE) ;
+ 
+	sprintf(Sospacket.uid, "%s", app_set->sys_info.uid) ;
+	sprintf(Sospacket.deviceId, "%s", app_set->sys_info.deviceId) ;
+
+	memcpy(m_SendBuffer, &Sospacket, EVENTPACKET_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Sosdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+    }
 }
