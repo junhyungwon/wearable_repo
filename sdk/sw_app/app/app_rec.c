@@ -281,15 +281,10 @@ static void *THR_evt_buzzer(void *prm)
 						status = OFF ;
 					else
 						status = ON ;
-
-#if defined(NEXXONE) || defined(NEXX360H)
-					app_leds_cam_ctrl(0, status) ;
-#else
-					for(i = 0 ; i < MODEL_CH_NUM; i++)
+					for(i = 0 ; i < MODEL_CH_NUM + EXCHANNEL; i++)
 					{
 						app_leds_cam_ctrl(i, status);
 					}
-#endif
 				}
 				if(!(buzzer_cnt % 20))
                 {
@@ -298,24 +293,27 @@ static void *THR_evt_buzzer(void *prm)
 #if defined(NEXXB)
 						if(option) // SOS
 							sosdata_send() ;
+						else
+						    eventdata_send() ;					    
 #else
 						eventdata_send() ;
 #endif
 					    evt_sndcnt += 1 ;
 					}
+                    
+					if(option) // SOS
+					   app_buzz_ctrl(100, 3) ;
 
-					app_buzz_ctrl(100, 3) ;
                     buzzer_cnt = 0 ;
 				}
 			}
-			status = ON ;
-			for(i = 0 ; i < MODEL_CH_NUM; i++)
-			{
-				app_leds_cam_ctrl(i, status);
-			}
-
 			OSA_waitMsecs(50);
 			buzzer_cnt += 1 ;
+        }
+		status = ON ;
+		for(i = 0 ; i < MODEL_CH_NUM + EXCHANNEL; i++)
+		{
+		    app_leds_cam_ctrl(i, status);
 		}
 		evt_sndcnt = 0 ;
 	}
@@ -395,7 +393,7 @@ int app_rec_evt(int etype)
 	dprintf("Event Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
-    app_buzz_ctrl(500, 1);			//# buzz: rec start
+    app_buzz_ctrl(100, 3);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_EVT, etype, 0);
 	event_send(&irec->bObj, APP_REC_EVT, etype, 0); // etype == 0 event, etype == 1 SOS
 	

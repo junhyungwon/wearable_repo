@@ -69,11 +69,6 @@ static FILE *fp = NULL;
 static FILE *jfp = NULL;
 #endif
 
-#if defined(NEXX360W_MUX)
-#define EXCHANNEL  3
-#else
-#define EXCHANNEL  0
-#endif 
 
 /*----------------------------------------------------------------------------
  Declares a function prototype

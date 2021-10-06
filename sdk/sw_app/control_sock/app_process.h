@@ -68,6 +68,22 @@ typedef struct TAG_EVENTREQ_RCV {
 } EVENTREQRCV ;
 #pragma pack()
 
+#pragma pack(1)
+typedef struct TAG_USERAUTHREQ {
+	char id[32] ;
+	char passwd[32] ;
+} USERAUTHREQ ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_USERAUTHRES {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+	unsigned short result ;
+} USERAUTHRES ;
+#pragma pack()
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -80,5 +96,6 @@ void eventdatareq(int, char*, int) ;
 void gpsdata_send(void *data);
 void eventdata_send(void);
 void sosdata_send(void);
+void userauthreq(int, char*, int) ;
 
 #endif // _APP_PROCESS_H

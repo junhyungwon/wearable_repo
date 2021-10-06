@@ -95,6 +95,12 @@
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif
 
+#if defined(NEXX360W_MUX)
+#define EXCHANNEL  3
+#else
+#define EXCHANNEL  0
+#endif
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/

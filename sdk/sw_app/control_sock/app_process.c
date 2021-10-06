@@ -83,6 +83,8 @@ const int GPSPACKET_SIZE = sizeof(GPSPACKET) ;
 const int GPSREQRCV_SIZE = sizeof(GPSREQRCV) ;
 const int EVENTPACKET_SIZE = sizeof(EVENTPACKET) ;
 const int EVENTREQRCV_SIZE = sizeof(EVENTREQRCV) ;
+const int USERAUTHRES_SIZE = sizeof(USERAUTHRES) ;
+
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
@@ -181,7 +183,7 @@ void eventdatareq(int channel, char *data, int len)
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTREQRCV_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+    DEBUG_PRI("eventdatareq res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
         }
 	}
@@ -245,3 +247,67 @@ void sosdata_send(void)
 		}
     }
 }
+
+void userauthreq(int channel, char *data, int len) 
+{
+	int sendlen = 0, result = 0, i = 0 ;
+    char rtsp_userid[32] = {0, } ;
+	char rtsp_passwd[32] = {0, } ;
+
+
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("userauthreq reached...\n") ;
+#endif
+	USERAUTHREQ *Userauthreq ;
+    USERAUTHRES Userauthres ;
+
+    Userauthreq = (USERAUTHREQ *)data ;
+
+	if(app_set->account_info.enctype)
+	{
+	    decrypt_aes(app_set->account_info.rtsp_userid, rtsp_userid, 32) ;
+        decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
+    }
+	else
+	{
+		strncpy(rtsp_userid, app_set->account_info.rtsp_userid, 32) ; 
+		strncpy(rtsp_passwd, app_set->account_info.rtsp_passwd, 32) ; 
+	}
+
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("Userauth req Userauthreq->id = %s, passwd = %s\n",Userauthreq->id, Userauthreq->passwd) ;
+DEBUG_PRI(" Userid = %s, passwd = %s\n",rtsp_userid, rtsp_passwd) ;
+#endif
+
+
+	result = strcmp(rtsp_userid, Userauthreq->id) ;
+	result += strcmp(rtsp_passwd, Userauthreq->passwd) ;
+	if(result)
+		result = FALSE ;
+	else
+		result = TRUE ;
+
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("Userauth req result = %d\n",result) ;
+#endif
+
+	Userauthres.identifier = htons(IDENTIFIER) ;
+	Userauthres.cmd = htons(CMD_USERAUTH_RES) ;
+	Userauthres.length = htons(USERAUTHRES_SIZE) ;
+    Userauthres.result = htons(result) ;
+
+	memcpy(m_SendBuffer, &Userauthres, USERAUTHRES_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, USERAUTHRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Userauthres packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+	}
+
+}
+
