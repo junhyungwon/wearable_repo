@@ -50,7 +50,7 @@
 
 typedef struct {
 	char name[FILE_MAX_PATH_LEN];
-	Uint32 size;  /* ?? ? ? */
+	Uint32 padding;  /* for align */
 
 } list_info_t;
 
@@ -58,7 +58,6 @@ typedef struct {
 struct disk_list {
 	struct list_head queue;
 	char fullname[FILE_MAX_PATH_LEN];
-	Uint32 filesz; /* ??? ?? ?? */
 };
 
 typedef struct {
@@ -124,6 +123,20 @@ static void _check_threshold_size(app_file_t *pInfo)
 //	dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
 }
 
+static Uint32 _check_file_size(const char *fname)
+{
+	struct stat st;
+	Uint32 len=0;
+	
+	if (fname != NULL) {
+		stat(fname, &st);
+		len = (st.st_size / KB); /* byte -> KB */
+		dprintf("file size checking %s(%dKB)\n", fname, len);
+	} 
+		
+	return len;
+}
+
 /*****************************************************************************
  * @brief	 check free space of disk.
  * @section  DESC Description
@@ -131,12 +144,11 @@ static void _check_threshold_size(app_file_t *pInfo)
  *****************************************************************************/
 int app_file_check_disk_free_space(void)
 {
-//	unsigned long used = ifile->disk_used;
 	unsigned long avail = ifile->disk_avail;
 	int ret = 0;
 	
-//	dprintf("Check free : %lu(KB) / USED: %lu(KB) / threshold : %lu(KB)!\n", avail, used, MIN_THRESHOLD_SIZE);
-	if ( avail < MIN_THRESHOLD_SIZE ) 
+//	dprintf("Check free : %lu(KB) / threshold : %lu(KB)!\n", avail, MIN_THRESHOLD_SIZE);
+	if (avail < MIN_THRESHOLD_SIZE) 
 		ret = -1; /* disk full state */
 	
 	return ret;
@@ -187,14 +199,14 @@ static Uint32 get_file_count(const char *dpath)
  *****************************************************************************/
 static int delete_file(const char *pathname)
 {
-	if (pathname == NULL) {
-		eprintf("filename is null!\n");
-		return -1;
-	}
-
-	if (remove(pathname) < 0) {
-		eprintf("can't remove %s(%d)\n", pathname, errno);
-		return -1;
+	int ret=0;
+	
+	if (pathname != NULL) {
+		ret = remove(pathname);
+		if (ret < 0) {
+			eprintf("can't remove %s(%d)\n", pathname, errno);
+			return -1;
+		}
 	}
 	
 	return 0;
@@ -224,14 +236,13 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 	Uint32 sz = 0;
 
 	ptr = list_last_entry(head, struct disk_list, queue);
-	if (ptr != NULL)
-	{
+	if (ptr != NULL) {
 		if (delete_file(ptr->fullname) < 0) {
 			*del_sz = 0;
 			return -1;
 		}
 			
-		sz = ptr->filesz; /* return file size */
+		sz = _check_file_size((const char *)ptr->fullname); /* return file size */
 		dprintf("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
 		list_del(&ptr->queue);
 		ifile->file_count--;
@@ -257,8 +268,8 @@ static int _get_rec_file_head(struct list_head *head, char *path)
 	ptr = list_last_entry(head, struct disk_list, queue);
 	if (ptr != NULL) {
 		sprintf(path, "%s", ptr->fullname);
-		sz = ptr->filesz; /* return file size */
-		
+		 /* return file size */
+		sz = _check_file_size((const char *)ptr->fullname);
 //		dprintf("Get List Head FILE : %s\n", ptr->fullname);
 		list_del(&ptr->queue);
 		ifile->file_count--;
@@ -307,7 +318,7 @@ static void display_node(struct list_head *head)
  * @section  DESC Description
  *	 - desc : file name is full path
  *****************************************************************************/
-static int add_node_tail(const char *path, struct list_head *head, unsigned int iSize)
+static int add_node_tail(const char *path, struct list_head *head)
 {
 	struct disk_list *ptr = NULL;
 
@@ -317,11 +328,8 @@ static int add_node_tail(const char *path, struct list_head *head, unsigned int 
 		return -1;
 	}
 
-	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
-
-//	dprintf(" Add List name: %s, size %u\n", path, iSize);
-
+//	dprintf(" Add List name: %s\n", path);
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add(&ptr->queue, head);
 	ifile->file_count++;
@@ -336,7 +344,7 @@ static int add_node_tail(const char *path, struct list_head *head, unsigned int 
  * @section  DESC Description
  *	 - desc : file name is full path
  *****************************************************************************/
-static int add_node_head(const char *path, struct list_head *head, unsigned int iSize)
+static int add_node_head(const char *path, struct list_head *head)
 {
 	struct disk_list *ptr = NULL;
 
@@ -346,11 +354,8 @@ static int add_node_head(const char *path, struct list_head *head, unsigned int 
 		return -1;
 	}
 
-	ptr->filesz = iSize;
 	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
-
-//	dprintf(" Add List name: %s, size %u(KB)\n", path, iSize);
-
+//	dprintf(" Add List name: %s\n", path);
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add_tail(&ptr->queue, head);
 	ifile->file_count++;
@@ -405,10 +410,11 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	char __path[256] = {0,};
 	DIR *dp;
 	
-	size_t index, len;
+	size_t index=0, len;
 	int i;
 
-	list_info_t *list, *tmp;
+	list_info_t *list=NULL;
+	list_info_t *tmp=NULL;
 	
 	/* add slash */
 	len = strlen(search_path); //# /mmc/DCIM
@@ -422,8 +428,12 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 		return -1;
 	}
 
-	index = 0;
 	list = (list_info_t *)malloc(sizeof(list_info_t)*bcnt);
+	if (list == NULL) {
+		closedir(dp);
+		return -1;
+	}
+	
 	/* traverse directory (assume -> subdir isn't existed) */
 	tmp = list;
 	while ((entry = readdir(dp)) != NULL)
@@ -438,23 +448,19 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 			if (fnmatch(filters, entry->d_name, FNM_CASEFOLD) == 0) {
 				strcpy(tmp->name, __path); /* fname[][0] except (/) */
 				strcat(tmp->name, entry->d_name);
-
-				//printf("founded index %d, fullname %s\n", index, tmp->name);
 				index++; tmp++;
 			}
 		}
 	}
-
+	//dprintf("directory scanning done!!\n");
 	closedir(dp);
 	qsort(list, index, sizeof(list_info_t), _cmpold);
-
 	/* add linked list */
 	tmp = list;
 	if (index) {
 		for (i = 0; i < index; i++, tmp++) {
-			lstat(tmp->name, &statbuf);
-			len = (statbuf.st_size / KB); /* byte -> KB */
-			add_node_tail(tmp->name, head, len);
+			add_node_tail(tmp->name, head);
+			//dprintf("index %d, fullname %s\n", i, tmp->name);
 		}
 	}
 
@@ -499,18 +505,12 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	}
 	
 	fread(list, sizeof(list_info_t)*lcnt, 1, f);
-
 	qsort(list, lcnt, sizeof(list_info_t), _cmpold);
-
 	/* add linked list */
 	tmp = list;
-	for (i = 0; i < lcnt; i++, tmp++) 
-	{
-		size_t len;
-		
-		len = tmp->size; /* byte -> KB */
-		//("name is %s, size %u(KB) loaded from video list\n", tmp->name, len);
-		add_node_tail(tmp->name, head, len);
+	for (i = 0; i < lcnt; i++, tmp++) {
+		//("%s video file loaded from list\n", tmp->name);
+		add_node_tail(tmp->name, head);
 	}
 		
 	fclose(f);
@@ -553,8 +553,7 @@ static int __save_file_list(void)
 		ptr = list_entry(iter, struct disk_list, queue);
 		if (ptr != NULL) {
 			strcpy(info.name, ptr->fullname);
-			info.size = ptr->filesz;
-			//dprintf("saved name %s, size %u in video list!\n", ptr->fullname, ptr->filesz);
+			//dprintf("saved name %s, in video list!\n", ptr->fullname);
 			fwrite(&info, sizeof(list_info_t), 1, f);	
 		}
 	}
@@ -844,10 +843,10 @@ unsigned long app_file_get_free_size(void)
 * @brief    add file to list
 * @section  [desc]
 *****************************************************************************/
-int app_file_add_list(const char *pathname, int size)
+int app_file_add_list(const char *pathname)
 {
 	OSA_mutexLock(&ifile->mutex_file);	
-	add_node_tail(pathname, &ilist, (unsigned int)size);
+	add_node_tail(pathname, &ilist);
 //	dprintf("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
 	OSA_mutexUnlock(&ifile->mutex_file);
 
@@ -872,7 +871,7 @@ int get_ftp_send_file(char *path)
 	return (1);
 }
 
-void save_filelist()
+void save_filelist(void)
 {
 	__save_file_list();
 }
@@ -890,7 +889,7 @@ int restore_ftp_file(char *pathname)
 	
     lstat(pathname, &sb);
 	len = (sb.st_size / KB);
-	add_node_head(pathname, &ilist, len);
+	add_node_head(pathname, &ilist);
 	
 	return 0;
 }

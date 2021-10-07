@@ -103,14 +103,13 @@ static void app_msleep(unsigned int msecs)
 /*----------------------------------------------------------------------------
  message send/recv function
 -----------------------------------------------------------------------------*/
-static int send_msg(int cmd, int du, char *name)
+static int send_msg(int cmd, char *name)
 {
 	to_main_msg_t msg;
 	
 	msg.type = REC_MSG_TYPE_TO_MAIN;
 	msg.cmd = cmd;
 	if(cmd == AV_CMD_REC_FLIST) {
-		msg.du = du;
 		strncpy(msg.fname, name, 128);
 	}
 	return Msg_Send(irec->qid, (void *)&msg, sizeof(to_main_msg_t));
@@ -224,16 +223,10 @@ static int search_frame(int sec)
 
 static void evt_file_close(void)
 {
-	struct stat sb;
-	unsigned long sz;
-	
 	if (irec->fevt) {
 		avi_file_close(irec->fevt, irec->fname);
 		irec->pre_type = -1 ;
-		/* calculate file size */
-		lstat(irec->fname, &sb);
-		sz = (sb.st_size / KB); /* Byte->KB */
-		send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+		send_msg(AV_CMD_REC_FLIST, irec->fname);
 		irec->fevt = NULL;
 	}
 
@@ -250,7 +243,6 @@ static void evt_file_close(void)
 *****************************************************************************/
 static int evt_file_open(stream_info_t *ifr, int cmd)
 {
-	struct stat sb;
 	struct tm ts, *gmtm;
 	char buf_time[64];
 	char filename[128];
@@ -289,14 +281,9 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		
 		    if (irec->fevt != NULL) 
 		    {
-			    unsigned long sz;
 		        // TODO File Type check and then select close or not 
-			
         	    avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    /* calculate file size */
-			    lstat(irec->fname, &sb);
-			    sz = (sb.st_size / KB); /* Byte->KB */
-			    send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+			    send_msg(AV_CMD_REC_FLIST, irec->fname);
 		    }	
 		//# get current date & time
 //          localtime_r((const time_t *)&ifr->t_sec, &ts);
@@ -330,17 +317,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 		    if (irec->fevt != NULL) 
 		    {
-			    unsigned long sz;
-		
-				s =strstr(irec->fname, "/mmc/DCIM/R_") ;
-                if(s != NULL)
+				s = strstr(irec->fname, "/mmc/DCIM/R_") ;
+                if (s != NULL)
 				{
 					printf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    	/* calculate file size */
-					lstat(irec->fname, &sb);
-			        sz = (sb.st_size / KB); /* Byte->KB */
-					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
 					irec->pre_type = 1 ;   // event file 직전 파일이 normal file 일때 처리를 위한 부분 
                 }
@@ -353,10 +335,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current event file
-			    	/* calculate file size */
-					lstat(irec->fname, &sb);
-					sz = (sb.st_size / KB); /* Byte->KB */
-					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
 
 					if(irec->rec_evt_cnt == 0)
@@ -364,10 +343,10 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 						if(irec->pre_type == 1)  // event 발생전에 recording 중인 경우 
 						{
 							evt_file_close();
-					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
+					        send_msg(AV_CMD_REC_RESTART, NULL);
 						}
 						else
-					        send_msg(AV_CMD_REC_EVT_END, 0, NULL);
+					        send_msg(AV_CMD_REC_EVT_END, NULL);
                     }
                 }  
 
@@ -410,17 +389,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 		    if (irec->fevt != NULL) 
 		    {
-			    unsigned long sz;
-		
-				s =strstr(irec->fname, "/mmc/DCIM/R_") ;
+				s = strstr(irec->fname, "/mmc/DCIM/R_") ;
                 if(s != NULL)  // 현재 recording 파일이 normal file 인 경우 
 				{
 					printf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    	/* calculate file size */
-					lstat(irec->fname, &sb);
-			        sz = (sb.st_size / KB); /* Byte->KB */
-					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
 					irec->pre_type = 1 ;   // SOS file 직전 파일이 normal file 일때 처리를 위한 부분 
                 }
@@ -428,10 +402,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
-			    	/* calculate file size */
-					lstat(irec->fname, &sb);
-			        sz = (sb.st_size / KB); /* Byte->KB */
-					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
 					irec->pre_type = 0 ;   // SOS file 직전 파일이 event file 일 경우 이전 상태로 돌아가지 않음 
 				}
@@ -440,10 +411,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				{
 					printf("SOS irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current SOS file
-			    	/* calculate file size */
-					lstat(irec->fname, &sb);
-					sz = (sb.st_size / KB); /* Byte->KB */
-					send_msg(AV_CMD_REC_FLIST, sz, irec->fname);
+					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
 
 					if(irec->rec_evt_cnt == 0)
@@ -451,10 +419,10 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 						if(irec->pre_type == 1)  // SOS 발생전에 Normal recording 중인 경우 
 						{
 							evt_file_close();
-					        send_msg(AV_CMD_REC_RESTART, 0, NULL);
+					        send_msg(AV_CMD_REC_RESTART, NULL);
 						}
 						else
-					        send_msg(AV_CMD_REC_EVT_END, 0, NULL);
+					        send_msg(AV_CMD_REC_EVT_END, NULL);
                     }
                 }  
 
@@ -574,7 +542,7 @@ static void *THR_rec_evt(void *prm)
         if (ifr->ch == 0  && ifr->d_type == DATA_TYPE_VIDEO && ifr->is_key) {
 		    ret = evt_file_open(&imem->ifr[read_idx], cmd);
 			if (ret < 0) {
-				send_msg(AV_CMD_REC_ERR, 0, NULL);
+				send_msg(AV_CMD_REC_ERR, NULL);
 				memset(msg, 0, sizeof(msg));
 				sprintf(msg, "1.Failed to open AVI (%s)!", irec->fname);
 				avrec_log(msg);
@@ -649,7 +617,7 @@ static void *THR_rec_evt(void *prm)
 				if ((ifr->d_type==DATA_TYPE_VIDEO) && (ifr->ch==0) && ifr->is_key) {
 				    ret = evt_file_open(ifr, cmd);
 					if (ret < 0) {
-						send_msg(AV_CMD_REC_ERR, 0, NULL);
+						send_msg(AV_CMD_REC_ERR, NULL);
 						memset(msg, 0, sizeof(msg));
 						sprintf(msg, "2.Failed to open AVI (%s)!", irec->fname);
 						avrec_log(msg);
@@ -667,7 +635,7 @@ static void *THR_rec_evt(void *prm)
 					if (ifr->ch < 1) {
 						ret = evt_file_write(ifr, irec->en_snd);
 						if (ret < 0) {
-							send_msg(AV_CMD_REC_ERR, 0, NULL);
+							send_msg(AV_CMD_REC_ERR, NULL);
 							memset(msg, 0, sizeof(msg));
 							sprintf(msg, "avi write failed!");
 							avrec_log(msg);
@@ -717,7 +685,7 @@ static void *THR_rec_evt(void *prm)
 					
 				        ret = evt_file_write(ifr, irec->en_snd);
 				        if (ret < 0) {
-						    send_msg(AV_CMD_REC_ERR, 0, NULL);
+						    send_msg(AV_CMD_REC_ERR, NULL);
 						 	memset(msg, 0, sizeof(msg));
 						    sprintf(msg, "avi write failed!");
 						    avrec_log(msg);
@@ -739,7 +707,7 @@ static void *THR_rec_evt(void *prm)
 		if(s == NULL && irec->pre_type == 1) // event or SOS
         {
 		    evt_file_close();
-		    send_msg(AV_CMD_REC_RESTART, 0, NULL);
+		    send_msg(AV_CMD_REC_RESTART, NULL);
 		}
 		else // Normal file
 		{
@@ -774,7 +742,7 @@ static void app_main(void)
 	
 	//# communication main process ---------------
 	irec->qid = Msg_Init(REC_MSG_KEY);
-	send_msg(AV_CMD_REC_READY, 0, 0);
+	send_msg(AV_CMD_REC_READY, 0);
 	
 	while (!exit)
 	{

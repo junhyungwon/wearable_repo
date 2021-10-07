@@ -40,7 +40,7 @@ int app_file_init(void);
 void app_file_exit(void);
 unsigned long app_file_get_free_size(void);
 void app_file_update_disk_usage(void);
-int app_file_add_list(const char *pathname, int size);
+int app_file_add_list(const char *pathname);
 int get_ftp_send_file(char *path);
 int restore_ftp_file(char *path);
 int delete_ftp_send_file(char *path);

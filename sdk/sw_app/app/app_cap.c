@@ -202,7 +202,7 @@ static void proc_vid_cap(void)
 			ifr->frm_rate = app_cfg->ich[ifr->ch].fr;
 			ifr->is_key = (pFullBuf->frameType == VCODEC_FRAME_TYPE_I_FRAME) ? 1:0;
 			captime = (Uint64)((Uint64)pFullBuf->upperTimeStamp<<32|pFullBuf->lowerTimeStamp);
-#if defined(NEXX360W_MUX)
+#if 0 //defined(NEXX360W_MUX)
 	        timezone = app_set->time_info.time_zone - 12 ; 
 			gettimeofday(&ltime, NULL) ;
  			ifr->t_sec = ltime.tv_sec + timezone*3600 ;
