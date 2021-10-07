@@ -10,12 +10,15 @@
 #include <mcfw/src_bios6/links_m3vpss/avsync/avsync_m3vpss.h>
 #include <mcfw/interfaces/common_def/ti_vsys_common_def.h>
 
-
-UInt_64 input_timestamp[300];
-Bool  waitingOnDriverCbSWMS[SYSTEM_SW_MS_MAX_INST] = {FALSE};
-
 #define SWMSLINK_DEBUG_BLANK_OUTPUT_BUFFER                              (FALSE)
 
+//UInt_64 input_timestamp[300];
+Bool  waitingOnDriverCbSWMS[SYSTEM_SW_MS_MAX_INST] = {FALSE};
+
+#if defined(LF_SYS_NEXX360W_MUX)
+UInt64 prevTs=0;
+#endif
+	
 static
 Int32 SwMsLink_fillDataPattern(Utils_DmaChObj *swMsDmaChObj,
                                FVID2_Format * pFormat,
@@ -1925,7 +1928,12 @@ Int32 SwMsLink_drvMakeFrameLists(SwMsLink_Obj * pObj, FVID2_Frame * pOutFrame)
     System_FrameInfo *pFrameInfo;
     System_LinkChInfo *rtChannelInfo;
     UInt32  maxChnl;
-
+	
+	#if defined(LF_SYS_NEXX360W_MUX)
+	System_FrameInfo *pOutFrameInfo;
+	System_FrameInfo *pInFrameInfo;
+	#endif
+			
     pInQueParams = &pObj->createArgs.inQueParams;
 
     for (i = 0; i < pObj->createArgs.numSwMsInst; i++)
@@ -2094,7 +2102,7 @@ Int32 SwMsLink_drvMakeFrameLists(SwMsLink_Obj * pObj, FVID2_Frame * pOutFrame)
         if (pInFrame)
         {
             UInt32 latency;
-
+			
             /* got new frame, free any frame which is being held */
             if (pWinObj->pCurInFrame != NULL)
             {
@@ -2107,7 +2115,17 @@ Int32 SwMsLink_drvMakeFrameLists(SwMsLink_Obj * pObj, FVID2_Frame * pOutFrame)
 
             latency = Utils_getCurTimeInMsec() - pInFrame->timeStamp;
             pOutFrame->timeStamp = pInFrame->timeStamp;
-            if(latency>pWinObj->maxLatency)
+            
+			#if defined(LF_SYS_NEXX360W_MUX)
+			pInFrameInfo = (System_FrameInfo *) pInFrame->appData;
+			pOutFrameInfo = (System_FrameInfo *) pOutFrame->appData;
+			if (pInFrameInfo != NULL) {
+                pOutFrameInfo->ts64  = pInFrameInfo->ts64;
+				prevTs = pOutFrameInfo->ts64;
+			}
+			#endif
+			
+			if(latency>pWinObj->maxLatency)
                 pWinObj->maxLatency = latency;
             if(latency<pWinObj->minLatency)
                 pWinObj->minLatency = latency;
@@ -2117,6 +2135,11 @@ Int32 SwMsLink_drvMakeFrameLists(SwMsLink_Obj * pObj, FVID2_Frame * pOutFrame)
             /* no new frame, repeat previous frame */
             pWinObj->framesRepeatCount++;
             repeatFld = TRUE;
+			#if defined(LF_SYS_NEXX360W_MUX)
+			pOutFrameInfo = (System_FrameInfo *) pOutFrame->appData;
+			pOutFrameInfo->ts64 = prevTs;
+			//Vps_printf("SwMs no new frame, use prevTs == > %llu\n", pOutFrameInfo->ts64);
+			#endif
         }
 
         if (pWinObj->pCurInFrame == NULL)
@@ -2129,7 +2152,7 @@ Int32 SwMsLink_drvMakeFrameLists(SwMsLink_Obj * pObj, FVID2_Frame * pOutFrame)
             /* use actual frame */
             pInFrame = pWinObj->pCurInFrame;
         }
-
+		
         pDrvObj = &pObj->DrvObj[drvInst];
         if (pObj->DrvObj[drvInst].isDeiDrv)
         {
@@ -2332,7 +2355,7 @@ Int32 SwMsLink_drvDoScaling(SwMsLink_Obj * pObj)
     FVID2_Frame *pOutFrame;
     Int32 status;
     UInt32 curTime = Utils_getCurTimeInMsec();
-
+	
     if(pObj->pause)
     {
     	status = Utils_bufGetEmptyFrame(&pObj->bufOutQue, &pOutFrame, BIOS_NO_WAIT);

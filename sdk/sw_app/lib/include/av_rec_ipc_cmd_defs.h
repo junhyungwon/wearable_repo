@@ -74,7 +74,6 @@ typedef struct {
 	int cmd;
 
 	//# file list
-	int du;
 	char fname[256];
 } to_main_msg_t;
 
