@@ -156,7 +156,6 @@ Int32 SwosdLink_create(SwosdLink_Obj * pObj, SwosdLink_CreateParams * pPrm)
 
 		swOsdPrm.swosdConfig[strId].update_datetime = OSD_NO;
 		swOsdPrm.swosdConfig[strId].update_volt = OSD_NO;
-		swOsdPrm.swosdConfig[strId].update_temp = OSD_NO;
 		swOsdPrm.swosdConfig[strId].update_speed = OSD_NO;
 		swOsdPrm.swosdConfig[strId].update_gsens = OSD_NO;
 		swOsdPrm.swosdConfig[strId].update_userstr = OSD_NO;
@@ -435,22 +434,20 @@ void SwosdLink_tskMain(struct Utils_TskHndl * pTsk, Utils_MsgHndl * pMsg)
 				DM81XX_SWOSD_setWindowEnable(pSwOsdGuiPrm->streamId, OSDWIN_4, pSwOsdGuiPrm->enable);
 				Utils_tskAckOrFreeMsg(pMsg, status);
 				break;
-
-			case SWOSDLINK_CMD_VOLTAGE:
-            	pSwOsdGuiPrm = (SwosdLink_GuiParams *) Utils_msgGetPrm(pMsg);
+			
+			case SWOSDLINK_CMD_CALLSTAT:
+				pSwOsdGuiPrm = (SwosdLink_GuiParams *) Utils_msgGetPrm(pMsg);
 
 				DM81XX_SWOSD_setWindowEnable(pSwOsdGuiPrm->streamId, OSDWIN_5, pSwOsdGuiPrm->enable);
-				if(pSwOsdGuiPrm->enable)
-            		DM81XX_SWOSD_setVolt(pSwOsdGuiPrm->streamId, pSwOsdGuiPrm->volt);
-            	Utils_tskAckOrFreeMsg(pMsg, status);
+				Utils_tskAckOrFreeMsg(pMsg, status);
 				break;
-
-			case SWOSDLINK_CMD_TEMPERATURE:
+				
+			case SWOSDLINK_CMD_VOLTAGE:
             	pSwOsdGuiPrm = (SwosdLink_GuiParams *) Utils_msgGetPrm(pMsg);
 
 				DM81XX_SWOSD_setWindowEnable(pSwOsdGuiPrm->streamId, OSDWIN_6, pSwOsdGuiPrm->enable);
 				if(pSwOsdGuiPrm->enable)
-            		DM81XX_SWOSD_setTemp(pSwOsdGuiPrm->streamId, pSwOsdGuiPrm->temp);
+            		DM81XX_SWOSD_setVolt(pSwOsdGuiPrm->streamId, pSwOsdGuiPrm->volt);
             	Utils_tskAckOrFreeMsg(pMsg, status);
 				break;
 

@@ -295,7 +295,7 @@ static void __call_status_handler(void)
 		case SIPC_STATE_CALL_ESTABLISHED:
 			/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
 			app_leds_voip_ctrl(DEV_LED_BLINK);
-			ctrl_swosd_userstr("C", 1);
+			ctrl_swosd_callstatus(0, 1); //# ch0 fixed
 			if (app_cfg->ste.b.voip_buzz)
 				app_cfg->ste.b.voip_buzz = 0;
 			break;
@@ -313,7 +313,7 @@ static void __call_status_handler(void)
 			
 		default:
 			app_leds_voip_ctrl(DEV_LED_ON);
-			ctrl_swosd_userstr("C", 0);
+			ctrl_swosd_callstatus(0, 0);
 			if (app_cfg->ste.b.voip_buzz)
 				app_cfg->ste.b.voip_buzz = 0;
 			break;	
@@ -321,7 +321,7 @@ static void __call_status_handler(void)
 	} 
 	else {
 		app_leds_voip_ctrl(DEV_LED_OFF);
-		ctrl_swosd_userstr("C", 0);
+		ctrl_swosd_callstatus(0, 0);
 	}
 }
 

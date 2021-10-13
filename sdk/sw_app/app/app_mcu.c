@@ -56,21 +56,6 @@
 #define MBATT_MIN					600
 #define IBATT_MIN		    		620 //590 //#  5.90 V->6.4V, minimum battery voltage
 
-#ifdef NEXXB
-#define EBATT_MIN		    		880	//#  8.80 V (외장 트레블 어탭터 사용 시)
-
-#define BOOTUP_BATT_THRES_0			900
-#define BOOTUP_BATT_THRES_1			905
-#define BOOTUP_BATT_THRES_2			915
-
-#define RUNTIME_BATT_THRES_3_MAX	915
-#define RUNTIME_BATT_THRES_2_MAX	914
-#define RUNTIME_BATT_THRES_2_MIN	910
-#define RUNTIME_BATT_THRES_1_MAX	908
-#define RUNTIME_BATT_THRES_1_MIN	900
-#define RUNTIME_BATT_THRES_0_MAX	890
-#define RUNTIME_BATT_THRES_0_MIN	880
-#else
 #define EBATT_MIN		    		970	//#  9.7 V (3s->1s per 1V) minimum battery voltage
 
 #define BOOTUP_BATT_THRES_0			731
@@ -84,7 +69,6 @@
 #define RUNTIME_BATT_THRES_1_MIN	731
 #define RUNTIME_BATT_THRES_0_MAX	729
 #define RUNTIME_BATT_THRES_0_MIN	600
-#endif
 
 typedef struct {
 	app_thr_obj cObj;	//# micom thread
@@ -197,11 +181,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 					app_leds_int_batt_ctrl(bg_lv);
 				}
 #if 0
-#ifdef NEXXB				
-				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d(via Ext)\n", ibatt, ebatt, mbatt, bg_lv);
-#else
-				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d(via Int)\n", ibatt, ebatt, mbatt, bg_lv);
-#endif
+				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 			}
 		} else {

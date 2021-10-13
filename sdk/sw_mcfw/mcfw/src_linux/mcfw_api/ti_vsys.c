@@ -456,14 +456,14 @@ Int32 Vsys_setSwOsdPrm(VSYS_SWOSD_SETPARAM swOsdSetPrm, Vsys_swOsdPrm *pSwOsdPrm
 						SWOSDLINK_CMD_MOTION,
 						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
 			break;
+		case VSYS_SWOSD_CALLSTAT:
+			System_linkControl(gVsysModuleContext.swOsdId,
+						SWOSDLINK_CMD_CALLSTAT,
+						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
+			break;	
 		case VSYS_SWOSD_VOLTAGE:
 			System_linkControl(gVsysModuleContext.swOsdId,
 						SWOSDLINK_CMD_VOLTAGE,
-						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
-			break;
-		case VSYS_SWOSD_TEMPERATURE:
-			System_linkControl(gVsysModuleContext.swOsdId,
-						SWOSDLINK_CMD_TEMPERATURE,
 						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
 			break;
 		case VSYS_SWOSD_SPEED:

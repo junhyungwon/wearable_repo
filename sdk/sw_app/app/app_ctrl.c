@@ -1186,6 +1186,16 @@ void ctrl_swosd_enable(int idx, int ch, int draw)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
+void ctrl_swosd_callstatus(int ch, int draw)
+{
+	Vsys_swOsdPrm swosdGuiPrm;
+
+	swosdGuiPrm.streamId = ch;
+	swosdGuiPrm.enable = draw;
+
+	Vsys_setSwOsdPrm(VSYS_SWOSD_CALLSTAT, &swosdGuiPrm);
+}
+
 void ctrl_swosd_userstr(char *str, int draw)
 {
 	Vsys_swOsdPrm swosdGuiPrm;

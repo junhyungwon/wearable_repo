@@ -59,6 +59,7 @@ int ctrl_mmc_check_fsck(void);
 int ctrl_mmc_run_fsck(void);
 
 void ctrl_swosd_enable(int idx, int ch, int draw);
+void ctrl_swosd_callstatus(int ch, int draw);
 void ctrl_swosd_userstr(char *str, int draw);
 int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec);
 

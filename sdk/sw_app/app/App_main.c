@@ -231,6 +231,7 @@ static void __syslogd_enable(int en)
 int app_main(void)
 {
     char micom_ver[128] = {0, } ;
+	char sw_ver[128] = {0, } ;
 
 	app_thr_obj *tObj = &app_cfg->mObj;
 	#if !USE_CONSOLE_MENU
@@ -264,7 +265,11 @@ int app_main(void)
 	
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
-
+	
+	//# swosd version set.
+	snprintf(sw_ver, sizeof(sw_ver), "%s", FITT360_SW_VER);
+	ctrl_swosd_userstr(sw_ver, 1);
+	
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
