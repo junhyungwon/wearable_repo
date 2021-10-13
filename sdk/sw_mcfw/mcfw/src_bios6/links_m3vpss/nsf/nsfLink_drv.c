@@ -593,7 +593,7 @@ Int32 NsfLink_drvDelete(NsfLink_Obj * pObj)
     UInt32 queId, chId;
     NsfLink_ChObj *nsfChObj;
 
-#ifdef SYSTEM_DEBUG_DEI
+#ifdef SYSTEM_DEBUG_NSF
     Vps_printf(" %d: NSF    : Fields = %d (fps = %d) !!!\n",
                Utils_getCurTimeInMsec(),
                pObj->outFrameGivenCount,
