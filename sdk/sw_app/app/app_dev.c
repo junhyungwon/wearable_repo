@@ -353,7 +353,10 @@ static void *THR_dev(void *prm)
 				value = app_rec_state() ;
 
 				if (value < 2)  //  Rec off or normal/event rec -> SOS ON
+				{
+					app_rec_stop(OFF) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_rec_evt(ON) ;  // SOS REC
+				}
 				else if(value == 2) // value 2, SOS Rec  , Value 1 Normal/Event REc
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 				  
