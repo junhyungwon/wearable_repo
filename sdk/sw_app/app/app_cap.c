@@ -556,7 +556,7 @@ int app_cap_start(void)
 	cap_enc_late_init();
 
 #ifndef USE_RTMP
-	//ctrl_enc_multislice() ; 
+	ctrl_enc_multislice() ; 
 #endif
 
 	aprintf("....done!\n");
