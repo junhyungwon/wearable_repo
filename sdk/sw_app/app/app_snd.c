@@ -304,11 +304,12 @@ static void *THR_snd_cap(void *prm)
 			}
 			#endif
 
-#if 1 // Enable Audio Streaming for NEXX360
+#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXXONE
+			struct timeval tv;
 			gettimeofday(&tv, NULL) ;
-			timestamp = tv.tv_sec + tv.tv_usec*1000 ;
+			long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
 			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
-#endif// Enable Audio Streaming for NEXX360
+#endif// Audio Streaming for NEXXONE
 		}
 #else		
 			//# audio codec : g.711
@@ -328,11 +329,11 @@ static void *THR_snd_cap(void *prm)
 		//ifr->t_msec = (Uint32)(captime%1000);
 		app_memcpy(addr, isnd->snd_in.sampv, bytes);
 
-#if 1 // Enable Audio Streaming for NEXX360
+#if 0 // Audio Streaming for NEXX360
 		gettimeofday(&tv, NULL) ;
 		timestamp = tv.tv_sec + tv.tv_usec*1000 ;
 		app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
-#endif// Enable Audio Streaming for NEXX360
+#endif// Audio Streaming for NEXX360
 
 #endif
 
