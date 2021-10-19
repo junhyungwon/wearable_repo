@@ -263,29 +263,35 @@ void userauthreq(int channel, char *data, int len)
 
     Userauthreq = (USERAUTHREQ *)data ;
 
-	if(app_set->account_info.enctype)
-	{
-	    decrypt_aes(app_set->account_info.rtsp_userid, rtsp_userid, 32) ;
-        decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
-    }
-	else
-	{
-		strncpy(rtsp_userid, app_set->account_info.rtsp_userid, 32) ; 
-		strncpy(rtsp_passwd, app_set->account_info.rtsp_passwd, 32) ; 
-	}
+	if(app_set->account_info.enctype == ntohs(Userauthreq->encrypt_value))
+    {
+		if(app_set->account_info.enctype)
+		{
+			decrypt_aes(app_set->account_info.rtsp_userid, rtsp_userid, 32) ;
+			decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
+		}
+		else
+		{
+			strncpy(rtsp_userid, app_set->account_info.rtsp_userid, 32) ; 
+			strncpy(rtsp_passwd, app_set->account_info.rtsp_passwd, 32) ; 
+		}
 
 #ifdef NETWORK_DEBUG
 DEBUG_PRI("Userauth req Userauthreq->id = %s, passwd = %s\n",Userauthreq->id, Userauthreq->passwd) ;
 DEBUG_PRI(" Userid = %s, passwd = %s\n",rtsp_userid, rtsp_passwd) ;
 #endif
 
-
-	result = strcmp(rtsp_userid, Userauthreq->id) ;
-	result += strcmp(rtsp_passwd, Userauthreq->passwd) ;
-	if(result)
-		result = FALSE ;
+		result = strcmp(rtsp_userid, Userauthreq->id) ;
+		result += strcmp(rtsp_passwd, Userauthreq->passwd) ;
+		if(result)
+			result = FALSE ;
+		else
+			result = TRUE ;
+	}
 	else
-		result = TRUE ;
+	{
+		result = 2 ;  // different encrypt value between device and nexx manager
+	}
 
 #ifdef NETWORK_DEBUG
 DEBUG_PRI("Userauth req result = %d\n",result) ;
@@ -294,7 +300,7 @@ DEBUG_PRI("Userauth req result = %d\n",result) ;
 	Userauthres.identifier = htons(IDENTIFIER) ;
 	Userauthres.cmd = htons(CMD_USERAUTH_RES) ;
 	Userauthres.length = htons(USERAUTHRES_SIZE) ;
-    Userauthres.result = htons(result) ;
+	Userauthres.result = htons(result) ;
 
 	memcpy(m_SendBuffer, &Userauthres, USERAUTHRES_SIZE) ;
 

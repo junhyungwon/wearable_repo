@@ -72,6 +72,7 @@ typedef struct TAG_EVENTREQ_RCV {
 typedef struct TAG_USERAUTHREQ {
 	char id[32] ;
 	char passwd[32] ;
+	unsigned short encrypt_value ;
 } USERAUTHREQ ;
 #pragma pack()
 

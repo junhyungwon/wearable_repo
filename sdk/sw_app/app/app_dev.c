@@ -338,12 +338,15 @@ static void *THR_dev(void *prm)
 		if (rkey == KEY_SHORT) {		
 			/* Short KEY */
 			app_voip_event_noty();
+			sysprint("[APP_VOIP] Voip Key Pressed !! \n") ;	
 		} 
-		else if (rkey == KEY_LONG) {	 // EVENT Key
+		else if (rkey == KEY_LONG) {	 // Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 
 			if(!app_cfg->ste.b.ftp_run) {
-				value = app_rec_state() ;
-			if(value < 2) // REC Off or Event Rec or Normal Rec
-				app_rec_evt(OFF) ;
+				if (app_rec_state()) {
+					  app_rec_stop(ON);
+				} else {
+					app_rec_start();
+				}
 			}
 		}
 		
@@ -356,10 +359,13 @@ static void *THR_dev(void *prm)
 				{
 					app_rec_stop(OFF) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_rec_evt(ON) ;  // SOS REC
+					sysprint("[APP_SOS] Occurs SOS Event !! \n") ;	
 				}
 				else if(value == 2) // value 2, SOS Rec  , Value 1 Normal/Event REc
+                {
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
-				  
+					sysprint("[APP_SOS] End SOS Event !! \n") ;	
+				}
 				dprintf("SOS Short Key Pressed!\n");
 			} 
 			else if (rkey2 == KEY_LONG) {	

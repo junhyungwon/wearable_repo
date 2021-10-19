@@ -276,12 +276,12 @@ static void *THR_micom(void *prm)
 					if (!app_cfg->ste.b.ftp_run) 
 					{    
 #if defined(NEXXB)	
-						value = app_rec_state() ;
-						if (!value) {
-							app_rec_start();
-						} else if(value == ON)
-							app_rec_stop(ON);
-						
+				 		value = app_rec_state() ;
+			            if(value < 2) // REC Off or Event Rec or Normal Rec
+						{
+						    app_rec_evt(OFF) ;
+							sysprint("[APP_MICOM] - Event Record Start ---\n");
+						}
 #else
 						if (app_rec_state()) {
 							app_rec_stop(ON);
