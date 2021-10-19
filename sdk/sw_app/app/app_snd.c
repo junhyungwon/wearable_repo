@@ -303,6 +303,13 @@ static void *THR_snd_cap(void *prm)
 				iwave->wave_frame_cnt++;
 			}
 			#endif
+
+#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXXONE
+			struct timeval tv;
+			gettimeofday(&tv, NULL) ;
+			long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
+			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
+#endif// Audio Streaming for NEXXONE
 		}
 #else		
 			//# audio codec : g.711
@@ -322,11 +329,11 @@ static void *THR_snd_cap(void *prm)
 		//ifr->t_msec = (Uint32)(captime%1000);
 		app_memcpy(addr, isnd->snd_in.sampv, bytes);
 
-#if 0 // Enable Audio Streaming for NEXX360
+#if 0 // Audio Streaming for NEXX360
 		gettimeofday(&tv, NULL) ;
 		timestamp = tv.tv_sec + tv.tv_usec*1000 ;
 		app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
-#endif// Enable Audio Streaming for NEXX360
+#endif// Audio Streaming for NEXX360
 
 #endif
 
@@ -356,11 +363,12 @@ static void *THR_snd_cap(void *prm)
 #define BCPLAY_CMD_CONFIG				(0x625)
 #define BCPLAY_CMD_REQ_DATA			    (0x626) /* request audio data */
 #define BCPLAY_CMD_AUD_DATA			    (0x627) /* delivery audio data */
+#define BCPLAY_RCV_SIZE 				2048
 typedef struct {
 	long mtext;
 	int cmd;
 	int len;
-	unsigned char sbuf[1044];
+	unsigned char sbuf[BCPLAY_RCV_SIZE];
 } bcplay_to_main_msg_t;
 typedef struct {
 	app_thr_obj rObj;		//# message receive thread
@@ -369,7 +377,7 @@ typedef struct {
 	int shmid;
 	
 	int len;
-	unsigned char sbuf[1044];
+	unsigned char sbuf[BCPLAY_RCV_SIZE];
 	
 	OSA_MutexHndl mutex_bcplay;
 	
@@ -428,7 +436,7 @@ static void *THR_bc_play(void *prm)
 {
 	int ret, cmd, exit=0;
 	int bytes = 0;
-	short lbuf[1040];
+	short lbuf[2048];
 	
 	/* get alsa period size (in sec) */
 	int read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
@@ -457,6 +465,7 @@ static void *THR_bc_play(void *prm)
 		cmd = bcplay_recv_msg();
 		if (cmd < 0) {
 			eprintf("failed to receive gps process msg!\n");
+			sleep(1);
 			continue;
 		}
 		bytes = 0;

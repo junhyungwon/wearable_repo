@@ -436,13 +436,13 @@ int app_onvif_init_config()
 		fputs("				<h264_profile>High</h264_profile>\n", fp);
 		fputs("			</h264>\n", fp);
 		fputs("		</video_encoder>\n", fp);
-#if 0 // not supported
+#if 1 // not supported
 		fputs("		<audio_source></audio_source>\n", fp);
 		fputs("		<audio_encoder>\n", fp);
-		fputs("			<session_timeout>30</session_timeout>\n", fp);
-		fputs("			<sample_rate>16</sample_rate>\n", fp);
-		fputs("			<bitrate>8</bitrate>\n", fp);
-		fputs("			<encoding>PCMU</encoding>\n", fp);
+		fputs("			<session_timeout>10</session_timeout>\n", fp);
+		fputs("			<sample_rate>8</sample_rate>\n", fp);
+		fputs("			<bitrate>64</bitrate>\n", fp);
+		fputs("			<encoding>G711</encoding>\n", fp);
 		fputs("		</audio_encoder>\n", fp);
 #endif
 		{
