@@ -44,7 +44,7 @@
 #include "ti_vdis_priv.h"
 #include "ti_vdis.h"
 #include "ti_vdis_timings.h"
-
+#include "multich_common.h"
 
 #include <mcfw/interfaces/link_api/displayLink.h>
 #include <mcfw/interfaces/link_api/swMsLink.h>

@@ -188,7 +188,7 @@ Int32 Vsys_datetime_init(void)
     struct tm *pgm = gmtime(&tv.tv_sec);
     time_t gm_sec  = mktime(pgm);
 
-    printf("%s, timezone = %d, is_dst:%d, tm_zone:%s, gmtoff:%ld\n", __func__, (tv.tv_sec-gm_sec)/3600, pgm->tm_isdst, pgm->tm_zone, pgm->tm_gmtoff);
+    printf("%s, timezone = %ld, is_dst:%d, tm_zone:%s, gmtoff:%ld\n", __func__, (tv.tv_sec-gm_sec)/3600, pgm->tm_isdst, pgm->tm_zone, pgm->tm_gmtoff);
     unsigned int cur_sec = tv.tv_sec + (tv.tv_sec-gm_sec);
 
 	cur_time = (((UInt_64)cur_sec*1000000 + tv.tv_usec)/1000);
@@ -456,14 +456,14 @@ Int32 Vsys_setSwOsdPrm(VSYS_SWOSD_SETPARAM swOsdSetPrm, Vsys_swOsdPrm *pSwOsdPrm
 						SWOSDLINK_CMD_MOTION,
 						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
 			break;
+		case VSYS_SWOSD_CALLSTAT:
+			System_linkControl(gVsysModuleContext.swOsdId,
+						SWOSDLINK_CMD_CALLSTAT,
+						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
+			break;	
 		case VSYS_SWOSD_VOLTAGE:
 			System_linkControl(gVsysModuleContext.swOsdId,
 						SWOSDLINK_CMD_VOLTAGE,
-						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
-			break;
-		case VSYS_SWOSD_TEMPERATURE:
-			System_linkControl(gVsysModuleContext.swOsdId,
-						SWOSDLINK_CMD_TEMPERATURE,
 						swOsdGuiPrm, sizeof(SwosdLink_GuiParams), TRUE);
 			break;
 		case VSYS_SWOSD_SPEED:

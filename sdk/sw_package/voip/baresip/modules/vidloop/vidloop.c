@@ -1,7 +1,7 @@
 /**
  * @file vidloop.c  Video loop
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -32,6 +32,11 @@
  */
 
 
+enum {
+	VIDEO_SRATE = 90000
+};
+
+
 /** Video Statistics */
 struct vstat {
 	uint64_t tsamp;
@@ -57,7 +62,9 @@ struct video_loop {
 	struct config_video cfg;
 	struct videnc_state *enc;
 	struct viddec_state *dec;
+	const struct vidisp *vd;
 	struct vidisp_st *vidisp;
+	struct vidsrc *vs;
 	struct vidsrc_st *vsrc;
 	struct vidsrc_prm srcprm;
 	struct list filtencl;
@@ -130,6 +137,12 @@ static double timestamp_state_duration(const struct timestamp_state *ts,
 }
 
 
+static void vidframe_clear(struct vidframe *frame)
+{
+	frame->data[0] = NULL;
+}
+
+
 static void display_handler(void *arg)
 {
 	struct video_loop *vl = arg;
@@ -143,7 +156,7 @@ static void display_handler(void *arg)
 		goto out;
 
 	/* display frame */
-	err = vidisp_display(vl->vidisp, "Video Loop",
+	err = vl->vd->disph(vl->vidisp, "Video Loop",
 			     vl->frame, vl->frame_timestamp);
 	vl->new_frame = false;
 
@@ -169,25 +182,25 @@ static int display(struct video_loop *vl, struct vidframe *frame,
 	if (!vidframe_isvalid(frame))
 		return 0;
 
-	/* Process video frame through all Video Filters */
-	for (le = vl->filtdecl.head; le; le = le->next) {
-
-		struct vidfilt_dec_st *st = le->data;
+	if (!list_isempty(&vl->filtdecl)) {
 
 		/* Some video decoders keeps the displayed video frame
 		 * in memory and we should not write to that frame.
 		 */
-		if (!frame_filt) {
 
-			err = vidframe_alloc(&frame_filt, frame->fmt,
-					     &frame->size);
-			if (err)
-				return err;
+		err = vidframe_alloc(&frame_filt, frame->fmt, &frame->size);
+		if (err)
+			return err;
 
-			vidframe_copy(frame_filt, frame);
+		vidframe_copy(frame_filt, frame);
 
-			frame = frame_filt;
-		}
+		frame = frame_filt;
+	}
+
+	/* Process video frame through all Video Filters */
+	for (le = vl->filtdecl.head; le; le = le->next) {
+
+		struct vidfilt_dec_st *st = le->data;
 
 		if (st->vf->dech)
 			err |= st->vf->dech(st, frame, &timestamp);
@@ -260,7 +273,7 @@ static int packet_handler(bool marker, uint64_t rtp_ts,
 	vl->stat.bytes += mbuf_get_left(mb);
 
 	/* decode */
-	frame.data[0] = NULL;
+	vidframe_clear(&frame);
 	if (vl->vc_dec && vl->dec) {
 		err = vl->vc_dec->dech(vl->dec, &frame, &keyframe,
 				       marker, vl->seq++, mb);
@@ -371,7 +384,7 @@ static int print_stats(struct re_printf *pf, const struct video_loop *vl)
 
 	/* Source */
 	if (vl->vsrc) {
-		struct vidsrc *vs = vidsrc_get(vl->vsrc);
+		struct vidsrc *vs = vl->vs;
 		double avg_fps = .0;
 
 		if (vl->stats.src_frames >= 2)
@@ -427,7 +440,7 @@ static int print_stats(struct re_printf *pf, const struct video_loop *vl)
 		double avg_pktrate;
 		double dur;
 
-		dur = timestamp_state_duration(&vl->ts_rtp, 90000);
+		dur = timestamp_state_duration(&vl->ts_rtp, VIDEO_SRATE);
 		avg_bitrate = 8.0 * (double)vl->stats.enc_bytes / dur;
 		avg_pktrate = (double)vl->stats.enc_packets / dur;
 
@@ -459,7 +472,7 @@ static int print_stats(struct re_printf *pf, const struct video_loop *vl)
 
 	/* Display */
 	if (vl->vidisp) {
-		struct vidisp *vd = vidisp_get(vl->vidisp);
+		const struct vidisp *vd = vl->vd;
 
 		err |= re_hprintf(pf,
 				  "* Display\n"
@@ -504,7 +517,7 @@ static void vidloop_destructor(void *arg)
 }
 
 
-static int enable_codec(struct video_loop *vl, const char *name)
+static int enable_encoder(struct video_loop *vl, const char *name)
 {
 	struct list *vidcodecl = baresip_vidcodecl();
 	struct videnc_param prm;
@@ -515,8 +528,6 @@ static int enable_codec(struct video_loop *vl, const char *name)
 	prm.bitrate = vl->cfg.bitrate;
 	prm.max_fs  = -1;
 
-	/* Use the first video codec */
-
 	vl->vc_enc = vidcodec_find_encoder(vidcodecl, name);
 	if (!vl->vc_enc) {
 		warning("vidloop: could not find encoder (%s)\n", name);
@@ -526,6 +537,22 @@ static int enable_codec(struct video_loop *vl, const char *name)
 	info("vidloop: enabled encoder %s (%.2f fps, %u bit/s)\n",
 	     vl->vc_enc->name, prm.fps, prm.bitrate);
 
+	err = vl->vc_enc->encupdh(&vl->enc, vl->vc_enc, &prm, NULL,
+				  packet_handler, vl);
+	if (err) {
+		warning("vidloop: update encoder failed: %m\n", err);
+		return err;
+	}
+
+	return 0;
+}
+
+
+static int enable_decoder(struct video_loop *vl, const char *name)
+{
+	struct list *vidcodecl = baresip_vidcodecl();
+	int err;
+
 	vl->vc_dec = vidcodec_find_decoder(vidcodecl, name);
 	if (!vl->vc_dec) {
 		warning("vidloop: could not find decoder (%s)\n", name);
@@ -533,13 +560,6 @@ static int enable_codec(struct video_loop *vl, const char *name)
 	}
 
 	info("vidloop: enabled decoder %s\n", vl->vc_dec->name);
-
-	err = vl->vc_enc->encupdh(&vl->enc, vl->vc_enc, &prm, NULL,
-				  packet_handler, vl);
-	if (err) {
-		warning("vidloop: update encoder failed: %m\n", err);
-		return err;
-	}
 
 	if (vl->vc_dec->decupdh) {
 		err = vl->vc_dec->decupdh(&vl->dec, vl->vc_dec, NULL);
@@ -628,9 +648,13 @@ static int vsrc_reopen(struct video_loop *vl, const struct vidsz *sz)
 	if (err) {
 		warning("vidloop: vidsrc '%s' failed: %m\n",
 			vl->cfg.src_dev, err);
+		return err;
 	}
 
-	return err;
+	vl->vs = (struct vidsrc *)vidsrc_find(baresip_vidsrcl(),
+					      vl->cfg.src_mod);
+
+	return 0;
 }
 
 
@@ -661,6 +685,7 @@ static void update_vidsrc(void *arg)
 
 static int video_loop_alloc(struct video_loop **vlp)
 {
+	struct vidisp_prm disp_prm;
 	struct video_loop *vl;
 	struct config *cfg;
 	struct le *le;
@@ -692,18 +717,23 @@ static int video_loop_alloc(struct video_loop **vlp)
 	/* Video filters */
 	for (le = list_head(baresip_vidfiltl()); le; le = le->next) {
 		struct vidfilt *vf = le->data;
-		struct vidfilt_prm prm;
+		struct vidfilt_prm prmenc, prmdec;
 		void *ctx = NULL;
 
-		prm.width  = vl->cfg.width;
-		prm.height = vl->cfg.height;
-		prm.fmt    = vl->cfg.enc_fmt;
-		prm.fps    = vl->cfg.fps;
+		prmenc.width  = vl->cfg.width;
+		prmenc.height = vl->cfg.height;
+		prmenc.fmt    = vl->cfg.enc_fmt;
+		prmenc.fps    = vl->cfg.fps;
 
-		info("vidloop: added video-filter `%s'\n", vf->name);
+		prmdec.width  = 0;
+		prmdec.height = 0;
+		prmdec.fmt    = -1;
+		prmdec.fps    = .0;
 
-		err |= vidfilt_enc_append(&vl->filtencl, &ctx, vf, &prm, 0);
-		err |= vidfilt_dec_append(&vl->filtdecl, &ctx, vf, &prm, 0);
+		info("vidloop: added video-filter '%s'\n", vf->name);
+
+		err |= vidfilt_enc_append(&vl->filtencl, &ctx, vf, &prmenc, 0);
+		err |= vidfilt_dec_append(&vl->filtdecl, &ctx, vf, &prmdec, 0);
 		if (err) {
 			warning("vidloop: vidfilt error: %m\n", err);
 		}
@@ -712,13 +742,17 @@ static int video_loop_alloc(struct video_loop **vlp)
 	info("vidloop: open video display (%s.%s)\n",
 	     vl->cfg.disp_mod, vl->cfg.disp_dev);
 
+	disp_prm.fullscreen = cfg->video.fullscreen;
+
 	err = vidisp_alloc(&vl->vidisp, baresip_vidispl(),
-			   vl->cfg.disp_mod, NULL,
+			   vl->cfg.disp_mod, &disp_prm,
 			   vl->cfg.disp_dev, NULL, vl);
 	if (err) {
 		warning("vidloop: video display failed: %m\n", err);
 		goto out;
 	}
+
+	vl->vd = vidisp_find(baresip_vidispl(), vl->cfg.disp_mod);
 
 	tmr_start(&vl->tmr_bw, 1000, timeout_bw, vl);
 
@@ -767,7 +801,8 @@ static int vidloop_start(struct re_printf *pf, void *arg)
 
 	if (str_isset(codec_name)) {
 
-		err = enable_codec(gvl, codec_name);
+		err  = enable_encoder(gvl, codec_name);
+		err |= enable_decoder(gvl, codec_name);
 		if (err) {
 			gvl = mem_deref(gvl);
 			return err;

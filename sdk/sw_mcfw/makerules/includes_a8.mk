@@ -23,7 +23,7 @@ CODEC_INC=-I$(xdais_PATH)/packages -I$(h264dec_PATH)/Inc -I$(h264enc_PATH)/Inc
 
 LINUXDEVKIT_INC=-I$(linuxdevkit_PATH)/usr/include
 
-MCFW_INC=-I$(MCFW_ROOT_PATH)/mcfw/interfaces -I$(MCFW_ROOT_PATH)/mcfw/interfaces/common_def
+MCFW_INC=-I$(MCFW_ROOT_PATH)/mcfw/interfaces -I$(MCFW_ROOT_PATH)/mcfw/interfaces/common_def -I$(MCFW_ROOT_PATH)/mcfw/src_linux/mcfw_api/usecases
 
 XDAIS_INC=-I$(xdais_PATH)/packages
 
@@ -40,6 +40,8 @@ MCFW_LIBS=$(LIB_DIR)/ipnc_rdk_mcfw_api.a $(LIB_DIR)/ipnc_rdk_link_api.a $(LIB_DI
 SHLIB_DIR=$(APP_DIR)/lib
 
 CMEM_LIB=$(linuxutils_PATH)/packages/ti/sdo/linuxutils/cmem/lib/cmem.a470MV
+
+TLS_LIBS=$(linuxdevkit_PATH)/usr/lib
 
 BLKID_LIBS=$(linuxdevkit_PATH)/usr/lib/libblkid.so.1.1.0
 endif # ifndef $(INCLUDES_MK)

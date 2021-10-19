@@ -1,7 +1,7 @@
 /**
  * @file src/message.c  SIP MESSAGE -- RFC 3428
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <baresip.h>
@@ -38,20 +38,22 @@ static void listener_destructor(void *data)
 
 
 static void handle_message(struct message_lsnr *lsnr, struct ua *ua,
-			   const struct sip_msg *msg)
+			   const struct sip_msg *msg, bool hdld)
 {
 	static const char ctype_text[] = "text/plain";
 	struct pl ctype_pl = {ctype_text, sizeof(ctype_text)-1};
 	(void)ua;
 
-	if (msg_ctype_cmp(&msg->ctyp, "text", "plain") && lsnr->recvh) {
+	if (msg_ctype_cmp(&msg->ctyp, "text", "plain")) {
 
-		lsnr->recvh(ua, &msg->from.auri, &ctype_pl,
-			    msg->mb, lsnr->arg);
+		if (lsnr->recvh)
+			lsnr->recvh(ua, &msg->from.auri, &ctype_pl,
+				    msg->mb, lsnr->arg);
 
-		(void)sip_reply(uag_sip(), msg, 200, "OK");
+		if (!hdld)
+			(void)sip_reply(uag_sip(), msg, 200, "OK");
 	}
-	else {
+	else if (!hdld) {
 		(void)sip_replyf(uag_sip(), msg, 415, "Unsupported Media Type",
 				 "Accept: %s\r\n"
 				 "Content-Length: 0\r\n"
@@ -71,7 +73,7 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 	if (pl_strcmp(&msg->met, "MESSAGE"))
 		return false;
 
-	ua = uag_find(&msg->uri.user);
+	ua = uag_find_msg(msg);
 	if (!ua) {
 		(void)sip_treply(NULL, uag_sip(), msg, 404, "Not Found");
 		return true;
@@ -82,7 +84,7 @@ static bool request_handler(const struct sip_msg *msg, void *arg)
 
 		le = le->next;
 
-		handle_message(lsnr, ua, msg);
+		handle_message(lsnr, ua, msg, hdld);
 
 		hdld = true;
 	}
@@ -223,5 +225,54 @@ int message_send(struct ua *ua, const char *peer, const char *msg,
 
 	mem_deref(uri);
 
+	return err;
+}
+
+
+/**
+ * Encode a SIP instant MESSAGE to a dictionary
+ *
+ * @param od    Dictionary to encode into
+ * @param acc   User-Agent account
+ * @param peer  Peer address URI
+ * @param ctype Content type ("text/plain")
+ * @param body  Buffer containing the SIP message body
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int message_encode_dict(struct odict *od, struct account *acc,
+			const struct pl *peer, const struct pl *ctype,
+			struct mbuf *body)
+{
+	int err = 0;
+	char *buf1 = NULL;
+	char *buf2 = NULL;
+	char *buf3 = NULL;
+	size_t pos = 0;
+
+	if (!od || !acc || !pl_isset(peer))
+		return EINVAL;
+
+	err  = pl_strdup(&buf1, peer);
+	err |= pl_strdup(&buf2, ctype);
+	if (body) {
+		pos = body->pos;
+		err |= mbuf_strdup(body, &buf3, mbuf_get_left(body));
+		body->pos = pos;
+	}
+
+	if (err)
+		goto out;
+
+	err |= odict_entry_add(od, "ua", ODICT_STRING, account_aor(acc));
+	err |= odict_entry_add(od, "from",  ODICT_STRING, buf1);
+	err |= odict_entry_add(od, "ctype", ODICT_STRING, buf2);
+	if (buf3)
+		err |= odict_entry_add(od, "body",  ODICT_STRING, buf3);
+
+out:
+	mem_deref(buf1);
+	mem_deref(buf2);
+	mem_deref(buf3);
 	return err;
 }

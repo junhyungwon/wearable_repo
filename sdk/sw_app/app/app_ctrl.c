@@ -36,7 +36,6 @@
 #include "dev_wifi.h"
 #include "dev_disk.h"
 #include "app_set.h"
-#include "app_log.h"
 #include "app_rec.h"
 #include "app_cap.h"
 #include "app_rtsptx.h"
@@ -57,10 +56,509 @@
  Declares variables
 -----------------------------------------------------------------------------*/
 static const char *fw_app_name  = "/mmc/app_fitt.out";
+
+#ifdef EXT_BATT_ONLY
+static const char *fw_mcu_name  = "/mmc/mcu_extb.txt";
+#else
+static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
+#endif
 	
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------
+ firmware update
+-----------------------------------------------------------------------------*/
+#define FW_FILE_NUM 		8
+#define FW_TYPE     		0   //# "release" or "debug"
+#define DEV_MODEL			1	//# "NEXXONE"
+#define F_RELEASE   		"release"
+#define FW_DIR      		"/mmc/fw_version.txt"
+#define FW_UBIFS			"/mmc/rfs_fit.ubifs"
+
+typedef struct {
+    char item[8];
+    char value[32];
+} fw_version_t;
+
+//------------------------------------------------------//
+static int _is_firmware_for_release(void)
+{
+    fw_version_t fw[FW_FILE_NUM];
+    FILE *F_fw;
+    F_fw = fopen(FW_DIR, "r");
+    int i=0, ret = FALSE;
+
+    if (F_fw != NULL) {
+        while (!feof(F_fw)) {
+            fscanf(F_fw,"%s %s", fw[i].item, fw[i].value);
+            i++;        
+
+            if (i == FW_FILE_NUM)
+                break;          
+        }       
+        fclose(F_fw);
+
+        if (strcmp(fw[FW_TYPE].value, F_RELEASE) == 0) {
+           	dprintf("\n TYPE RELEASE!!\n");
+        	ret = TRUE;
+        }
+
+		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
+			sysprint("This FW is not for %s !!!\n", MODEL_NAME);
+			ret = EFAIL;
+		}
+    }
+    return ret ;
+}
+
+//# find /mmc/*.dat 
+static char *_findFirmware(const char *root)
+{
+	static char extPath[255];
+	char path[255]={0,};
+	glob_t globbuf;
+
+	memset(&globbuf, 0, sizeof(glob_t));
+	memset(extPath, 0, sizeof(extPath));
+	
+	//# /mmc/*.dat scanning
+	//# FW_EXT -> .dat
+	snprintf(path, sizeof(path), "%s/*%s", root, FW_EXT);
+	if (glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0) {
+		if(globbuf.gl_pathc > 0) {
+			strcpy(extPath,globbuf.gl_pathv[0]);
+			globfree(&globbuf);
+			return extPath;
+		}
+	} else {
+		notice("Not found firmware file in %s\n", root);
+	}
+	globfree(&globbuf);
+
+	return NULL;
+}
+
+static int _unpack_N_check(const char* pFile, const char* root, int* release)
+{
+	char buf[256]={0,};
+	int ret = SOK;
+	
+	sprintf(buf, "tar xvf %s -C %s", pFile, root);
+	system(buf);
+	sync();
+	/* change 3--> 1*/
+	sleep(1/*3*/);
+
+	if(-1 == access(FW_DIR, 0)) {
+		sysprint("Failed to read %s!!!\n", FW_DIR);
+		return EFAIL;
+	}
+
+	*release = _is_firmware_for_release();
+	
+	//# *release TRUE = release(normal). *release == EFAIL (model name is not matched). release == FALSE (factory release)
+	if (*release == EFAIL) 
+		ret = EFAIL;
+	
+	return ret;
+}
+
+/* check mcu firmware and delete */
+static void _check_micom_update(void)
+{
+	FILE *f = NULL;
+	char cmd[256]={0,};
+	
+	unsigned int byte1, byte2;
+	int ret = 0, mcu_ver;
+	
+	f = fopen(fw_mcu_name, "r");
+	if (f != NULL) 
+	{
+		/*
+		 * 1st: @f000
+		 * 2nd: 20 00 .....(ascii 코드로 구성)
+		 *    : 0x32 0x30 0x20(space) 0x30 0x30
+		 */
+		memset(cmd, 0, sizeof(cmd));
+		fgets(cmd, sizeof(cmd), f);
+		/* 2번째 라인에 버전 정보가 있다. */
+		fgets(cmd, sizeof(cmd), f);
+		sscanf(cmd, "%02x %02x\n", &byte1, &byte2);
+		ret = ((byte2 << 8) | byte1);
+		//printf("ver = 0x%04x\n", ret);
+		fclose(f);
+		
+		mcu_ver = ctrl_get_mcu_version(NULL);
+		if ((ret > 0) && (ret == mcu_ver)) {
+			if (access(fw_mcu_name, F_OK)==0) {
+				remove(fw_mcu_name);
+				//# update 함수 마지막에 sync() 가 호출됨
+				//sync();
+				//printf("remove %s\n", fw_mcu_name);
+			}
+		}
+	} else {
+		eprintf("Failed to open %s\n", fw_mcu_name);
+	}
+}
+
+/* only application binary update */
+static int __app_only_replace(void)
+{
+	char path[64] = {0, };
+	char cmd[255] = {0, };
+	
+	memset(path, 0, sizeof(path));
+	sprintf(path, fw_app_name);
+	
+	if (0 == access(path, 0)) { // existence only
+		dprintf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
+		sprintf(cmd, "cp %s /opt/fit/bin/.", path);
+		util_sys_exec(cmd);
+		sprintf(cmd, "rm %s", path);
+		util_sys_exec(cmd);
+		sync();
+		//# wait for safe
+		app_msleep(500);		
+		return 0;
+	}
+	return -1;
+}
+
+static int __normal_update(void)
+{
+	char cmd[256]={0,};
+	char *pFile = NULL;
+	
+	int ret = 0;
+	int release = 1;
+	
+	aprintf("start...\n");
+	
+	//# buzz: update
+	app_buzz_ctrl(50, 3);
+	
+	/* firmware update 시 종료키 이벤트 skip */
+	app_cfg->ste.b.busy = 1;
+	pFile = _findFirmware(SD_MOUNT_PATH);
+	if (pFile == NULL) {
+		sysprint("Firmware file is not exist !!!\n");
+        app_cfg->ste.b.busy = 0;
+		return EFAIL;
+	}
+	
+	//# unpack fw file and type check, release/debug and update full or binary only
+	// pFile = /mmc/xxxxxx.dat
+	// disk  = /mmc
+	if (_unpack_N_check((const char *)pFile, (const char *)SD_MOUNT_PATH, &release) == EFAIL) {
+		sysprint("It is not match model name in firmware file !!!\n");
+        ret = EFAIL;
+		/* TODO : delete unpack update files.... */
+		goto fw_exit;
+	}
+	_check_micom_update();
+	
+	//# LED work for firmware update.
+	app_leds_fw_update_ctrl();
+	dev_fw_setenv("nand_update", "1", 0);
+	sysprint("Full version Firmware update done....\n");
+	dprintf("done! will restart\n");
+	ret = SOK;
+	
+fw_exit:
+	//# clear busy flag...
+	app_cfg->ste.b.busy = 0;
+	if (release) { // RELEASE Version .. --> update file delete
+	    sprintf(cmd, "rm -rf %s", pFile);
+	    system(cmd);
+    }
+	sync();
+	//# wait for safe
+	app_msleep(500);
+	return ret;
+}
+
+static int __emergency_update(void)
+{
+	char *pFile = NULL;
+	char cmd[256]={0,};
+	
+	/* firmware update 시 종료키 이벤트 skip */
+	app_cfg->ste.b.busy = 1;
+	//# /mmc/firmware/*.dat 파일이 있는 지 확인.
+	pFile = _findFirmware(EMERGENCY_UPDATE_DIR);
+	if (pFile == NULL) {
+		sysprint("Emergency Firmware file is not exist !!!\n");
+        app_cfg->ste.b.busy = 0;
+		return -1;
+	}
+	
+	//# buzz: update
+	aprintf("start...\n");
+	app_buzz_ctrl(50, 3);
+	
+	/* unpack firmware */
+	sprintf(cmd, "tar xvf %s -C %s", pFile, SD_MOUNT_PATH);
+	system(cmd);
+	sync();
+	/* wait untar done! */
+	sleep(1);
+	
+	/* 만일 micom 버전이 현재 버전과 같은면 업데이트 파일 삭제 */
+	_check_micom_update();
+	
+	//# LED work for firmware update.
+	app_leds_fw_update_ctrl();
+	dev_fw_setenv("nand_update", "1", 0);
+	
+	//# clear busy flag...
+	app_cfg->ste.b.busy = 0;
+	
+	//# delete update files.
+	memset(cmd, 0, sizeof(cmd));
+	sprintf(cmd, "rm -rf %s", pFile);
+	system(cmd);
+	sync();
+	//# wait for safe
+	app_msleep(500);
+		
+	return 0;
+}
+
+static int Delete_updatefile()
+{
+    char cmd[MAX_CHAR_255] = {0,};
+    int i;
+	char *full_upfiles[FW_FILE_NUM-1] = {
+		"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
+		"uImage_fit", "rfs_fit.ubifs"};
+	
+	//# remove micom firmware,-->(-1) 
+	for (i = 0; i < FW_FILE_NUM-1; i++)
+	{
+		sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
+		util_sys_exec(cmd);
+	}
+
+	// delete rfs_fit.ubifs.md5
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}
+	
+	// delete mcu_fitt.txt
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/mcu_fitt.txt");
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}
+	
+	// delete mcu_extb.txt
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/mcu_extb.txt");
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}		
+	
+	return 0 ;
+}
+
+void *thrRunFWUpdate(void *arg)
+{
+	sysprint("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
+
+	app_buzz_ctrl(50, 3);		//# buzz: update
+	dev_fw_setenv("nand_update", "1", 0);
+	sync();
+
+	dprintf("\nfw update ready ! It will restart\n\n");
+	app_mcu_pwr_off(OFF_RESET);
+
+	return NULL;
+}
+
+/* example remote update
+ *
+curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
+*/
+int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
+{
+	char cmd[256];
+	int ret, release;
+	
+	/* recording stop */
+	ret = app_rec_state();
+	if (ret) {
+	    app_cfg->ste.b.prerec_state = 1 ;
+		app_rec_stop(OFF);
+		sleep(1); /* wait for file close */
+	}
+	
+
+	// check tar content list	
+#if 1
+	{
+		sprintf(cmd, "tar tf %s > /tmp/fw.list", fwpath);
+		printf("cmd:%s\n", cmd);
+		system(cmd);
+		FILE *fp = fopen("/tmp/fw.list", "r");
+		if (!fp)
+		{
+			printf("failed tar tf %s > /tmp/fw.list\n", fwpath);
+			return -1;
+		}
+		char line[255] = {0};
+		while(fgets(line, 255, fp)){
+
+			int len = strlen(line);
+			if (len > 1)
+			{
+				// remote CR
+				if (line[len - 1] == '\n')
+					line[len - 1] = '\0';
+
+				if(strcmp(line, "boot.scr")==0){
+					printf("checked boot.scr\n");
+				}
+				else if(strcmp(line, "MLO")==0){
+					printf("checked MLO\n");
+				}
+				else if(strcmp(line, "fw_version.txt")==0){
+					printf("checked fw_version.txt\n");
+				}
+				else if(strcmp(line, "rfs_fit.ubifs")==0){
+					printf("checked %s\n", "rfs_fit.ubifs");
+				}
+				else if(strcmp(line, "rfs_fit.ubifs.md5")==0){
+					printf("checked rfs_fit.ubifs.md5\n");
+				}
+			}
+		}
+		fclose(fp);
+	}
+#endif
+
+#if 1 // untar
+	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
+	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
+	printf("fwupdate cmd:%s\n", cmd);
+	system(cmd);
+	sync();
+#endif
+    release = _is_firmware_for_release() ; 
+
+    if(EFAIL == release) // RELEASE Version .. --> update file delete
+	{
+		
+
+		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
+
+		Delete_updatefile() ;	
+
+		return -1;
+    }
+	else // release or factory release version
+	{
+		app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
+		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
+	}
+
+	//# micom version check..
+	_check_micom_update();
+		// check md5sum
+		sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
+		FILE *fp = popen(cmd, "r");
+		if(fp){
+			char line[255]={0};
+			fgets(line, 255, fp);
+			printf("%s\n", line);
+
+			if(NULL == strstr(line, " OK")){
+
+				//TODO: 실패할 경우, 압축해제한 파일들 처리
+				pclose(fp);
+				return -1;
+			}
+
+			pclose(fp);
+			// OK, ready to firmware upgrade
+		}
+		else {
+			eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+			//TODO: 실패할 경우, 압축해제한 파일들 처리
+			return -1;
+		}
+
+#if 0
+		thrRunFWUpdate(NULL);
+#else
+	// thread로 전환..웹에 펌업 시작을 알릴 목적으로..
+	{
+		pthread_t tid_fw;
+		int ret = pthread_create(&tid_fw, NULL, thrRunFWUpdate, NULL);
+		if (ret != 0) {
+			eprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
+			return -1;
+		}
+		pthread_setname_np(tid_fw, __FILENAME__);
+		pthread_detach(tid_fw);
+	}
+#endif
+    if(FALSE == release)
+	    Delete_updatefile() ;
+	
+	return 0;
+}
+
+/*
+ * if /mmc/app_fitt.out is exist, copy app_fitt.out to /opt/fit/bin/.
+ * if /mmc/fitt_firmware_full_N.dat is exist, firmware update...
+ */
+void ctrl_firmware_update(void)
+{
+	/* 1. application binary만 업데이트 하는 경우 */
+	if (__app_only_replace() == 0) {
+		app_mcu_pwr_off(OFF_RESET);
+		//# 다른 업데이트 진행 안되게 막음.
+		return;
+	}
+	
+	/* 2. 일반 업데이트 */
+	if (__normal_update() == 0) {
+		app_mcu_pwr_off(OFF_RESET);
+		//# 다른 업데이트 진행 안되게 막음.
+		return;
+	}
+	
+	/* 3. 강제 업데이트 (basic / wireless 전환을 위해서) */
+	if (__emergency_update() == 0) {
+		app_mcu_pwr_off(OFF_RESET);
+		//# 다른 업데이트 진행 안되게 막음.
+		return;
+	}
+}
+
+void ctrl_reset_nand_update(void)
+{
+	//# delete full updated file
+	if(dev_fw_printenv("nand_update") == 2)
+	{
+        if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
+		{
+		    Delete_updatefile() ;
+		}
+		
+		dev_fw_setenv("nand_update", "0", 0);
+	}
+}
+//########################### End of Firmware Update ############################################
 
 /*****************************************************************************
 * @brief    rate control (VRB/CBR)
@@ -68,8 +566,6 @@ static const char *fw_app_name  = "/mmc/app_fitt.out";
 *****************************************************************************/
 int ctrl_vid_rate(int ch, int rc, int br)
 {
-    char log[128] = {0, };
-
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
   
     params.rateControl = rc ;
@@ -79,7 +575,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 
 	if(rc == RATE_CTRL_VBR)
 	{
-        sprintf(log, "[APP_CTRL] --- ch %d set vid rate control to VBR ---",ch);
+        sysprint("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
 
 		params.qpMax 	= 45;
 		params.qpInit 	= -1;
@@ -101,7 +597,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 	else	//# RATE_CTRL_CBR
 	{
-        sprintf(log, "[APP_CTRL] --- ch %d set vid rate control to CBR ---",ch);
+        sysprint("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
  
 		params.qpMin	= 2;//10;	//# for improve quality: 10->0
 		params.qpMax 	= 40;
@@ -109,8 +605,6 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 
 	Venc_setDynamicParam(ch, 0, &params, VENC_QPVAL_P);  // set QP range
-
-    app_log_write( MSG_LOG_WRITE, log );
 
 	return SOK;
 }
@@ -150,7 +644,7 @@ int ctrl_vid_framerate(int ch, int framerate)
 	{
         ret = app_rec_state() ;
 	    if (ret) { 
-	        app_rec_stop(1);
+	        app_rec_stop(ON);
 	        sleep(1); /* wait for file close */
         }
 	}
@@ -176,7 +670,6 @@ int ctrl_vid_framerate(int ch, int framerate)
 int ctrl_vid_bitrate(int ch, int bitrate) 
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
-    int br;
 
     app_set->ch[ch].quality = bitrate;
 	// resol 480P 0 720P 1 1080P 2
@@ -212,7 +705,6 @@ int ctrl_vid_gop_set(int ch, int gop)
 *****************************************************************************/
 int ctrl_vid_resolution(int resol_idx) 
 {
-    char buf[128] = {0, };
     int ret = 0 ;
 
     //# to prevent key input
@@ -220,10 +712,9 @@ int ctrl_vid_resolution(int resol_idx)
     Vdis_disp_ctrl_exit();
 
 // to do rec stop
-
     ret = app_rec_state() ;
     if (ret) {
-        app_rec_stop(1);
+        app_rec_stop(ON);
 	    sleep(1); 
 	}
 	app_cfg->ste.b.rec = 1; // previous flag for capture start
@@ -233,9 +724,7 @@ int ctrl_vid_resolution(int resol_idx)
     app_msleep(200);
 
 	app_set->ch[MODEL_CH_NUM].resol = resol_idx;
-
     Vdis_disp_ctrl_init(resol_idx);
-
     app_cap_start();    
 
     if (ret) {
@@ -249,20 +738,18 @@ int ctrl_vid_resolution(int resol_idx)
 	switch(resol_idx) {
 	default:
 	case 0:
-		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 480P ---");
+		sysprint("[APP_CTRL] --- change Display Mode to 480P ---\n");
 		break;
 	case 1:
-		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 720P ---");
+		sysprint("[APP_CTRL] --- change Display Mode to 720P ---\n");
 		break;
 	case 2:
-		snprintf(buf, sizeof(buf), "[APP_CTRL] --- change Display Mode to 1080P ---");
+		sysprint("[APP_CTRL] --- change Display Mode to 1080P ---\n");
 		break;
     }
 	
-    app_log_write(MSG_LOG_WRITE, buf);
-	
     app_cfg->ste.b.nokey = 0;
-	printf("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
+	dprintf("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
 
     return SOK ;
 }
@@ -297,7 +784,7 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 
 		if (ret)
 		{
-			app_rec_stop(1);
+			app_rec_stop(ON);
 			sleep(1);
 		}
 
@@ -396,8 +883,6 @@ int ctrl_set_port(int http_port, int https_port, int rtsp_port)
 *****************************************************************************/
 int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const char *subnet)
 {
-    char log[256] = {0,};
-	
 	if (!net_type)  // STATIC
 	{
 		if (strcmp(token, "wlan0") == 0) {
@@ -406,21 +891,19 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 			if (subnet != NULL)
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
-			sprintf(log, "[APP] --- Wireless ipaddress changed System Restart ---");
-			app_log_write(MSG_LOG_SHUTDOWN, log);		
+			sysprint("[APP] --- Wireless ipaddress changed System Restart ---\n");
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			sprintf(log, "[APP] --- Ethernet ipaddress changed System Restart ---");
-			app_log_write(MSG_LOG_SHUTDOWN, log);	
+			sysprint("[APP] --- Ethernet ipaddress changed System Restart ---\n");
 		}
 	}	
 	
 	app_set->net_info.type = net_type;
-	ctrl_sys_reboot();
+	ctrl_sys_halt(0); /* reboot */
 	
     return SOK ;
 }
@@ -431,15 +914,11 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 *****************************************************************************/
 int ctrl_set_gateway(const char *gw)
 {
-    char log[255]={0,};
-
     if (gw != NULL)
         strcpy(app_set->net_info.eth_gateway, gw);
 	
-	sprintf(log, "[APP] --- Ethernet gateway changed System Restart ---");
-    dprintf("%s\n", log);
-	app_log_write( MSG_LOG_SHUTDOWN, log );
-	ctrl_sys_reboot();	
+	sysprint("[APP] --- Ethernet gateway changed System Restart ---\n");
+	ctrl_sys_halt(0); /* reboot */	
 
     return SOK;
 }
@@ -475,7 +954,8 @@ int ctrl_get_mcu_version(char *version)
 	int ver;
 
 	ver = (int)mic_get_version();
-	sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF);
+	if (version != NULL)
+		sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF);
 
 	return ver;
 }
@@ -484,7 +964,7 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
 {
     struct tm ts;
     time_t set;
-    char msg[MAX_CHAR_128], buf[MAX_CHAR_64];
+    char buf[MAX_CHAR_64]={0,};
 
     ts.tm_year = (year - 1900);
     ts.tm_mon  = (mon - 1);
@@ -496,16 +976,14 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
     set = mktime(&ts);
 
     strftime( buf, sizeof(buf), "%Y%2m%2d_%2H%2M%2S", &ts );
-    sprintf( msg, "[APP_CTRL] Time Change : %s", buf );
-    app_log_write( MSG_LOG_WRITE, msg );
+    sysprint("[APP_CTRL] Time Change : %s\n", buf);
 
     stime(&set);
     Vsys_datetime_init();   //# m3 Date/Time init
     OSA_waitMsecs(100);
 
     if (dev_rtc_set_time(ts) < 0) {
-        sprintf(msg, "[APP_CTRL] !!! Failed to set system time to rtc !!!");
-        app_log_write( MSG_LOG_WRITE, msg );
+        sysprint("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
     }   
 
     return 0;
@@ -708,6 +1186,16 @@ void ctrl_swosd_enable(int idx, int ch, int draw)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
+void ctrl_swosd_callstatus(int ch, int draw)
+{
+	Vsys_swOsdPrm swosdGuiPrm;
+
+	swosdGuiPrm.streamId = ch;
+	swosdGuiPrm.enable = draw;
+
+	Vsys_setSwOsdPrm(VSYS_SWOSD_CALLSTAT, &swosdGuiPrm);
+}
+
 void ctrl_swosd_userstr(char *str, int draw)
 {
 	Vsys_swOsdPrm swosdGuiPrm;
@@ -719,434 +1207,6 @@ void ctrl_swosd_userstr(char *str, int draw)
 	Vsys_setSwOsdPrm(VSYS_SWOSD_USERSTR, &swosdGuiPrm);
 }
 
-/*----------------------------------------------------------------------------
- firmware update
------------------------------------------------------------------------------*/
-#define FW_FILE_NUM 		8
-#define FW_TYPE     		0   //# "release" or "debug"
-#define DEV_MODEL			1	//# "NEXXONE"
-#define F_RELEASE   		"release"
-#define FW_DIR      		"/mmc/fw_version.txt"
-#define FW_UBIFS			"/mmc/rfs_fit.ubifs"
-
-static char *full_upfiles[FW_FILE_NUM] = {
-	"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
-	"uImage_fit", "rfs_fit.ubifs", "mcu_fitt.txt"
-};
-	
-typedef struct {
-    char item[8];
-    char value[10];
-} fw_version_t;
-
-//------------------------------------------------------//
-static int _is_firmware_for_release(void)
-{
-    fw_version_t fw[FW_FILE_NUM];
-    FILE *F_fw;
-    F_fw = fopen(FW_DIR, "r");
-    int i=0, ret = FALSE;
-	char buf[256]={0,};
-
-    if (F_fw != NULL) {
-        while (!feof(F_fw)) {
-            fscanf(F_fw,"%s %s", fw[i].item, fw[i].value);
-            i++;        
-
-            if (i == FW_FILE_NUM)
-                break;          
-        }       
-        fclose(F_fw);
-
-        if (strcmp(fw[FW_TYPE].value, F_RELEASE) == 0) {
-            printf("\n TYPE RELEASE!!\n");
-            ret = TRUE;
-        }
-
-		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
-			sprintf(buf, "This FW is not for %s !!!", MODEL_NAME);
-			printf("%s\n", buf);
-			app_log_write(MSG_LOG_WRITE, buf);
-			ret = EFAIL;
-		}
-    }
-    return ret ;
-}
-
-#if 0
-static int _chk_firmware_checksum(const char *filename)
-{
-    unsigned long stored_crc32 = 0;
-    FILE *infile = NULL;
-    int ret = -1;
-    int fsize = 0, tmp_sz;
-    unsigned int calc_crc = 0;
-
-    infile = fopen(filename, "r");
-    if (infile != NULL) {
-        size_t bytes;
-
-        //# Get file size.
-        fseek(infile, 0L, SEEK_END);
-        fsize = ftell(infile);
-        fseek(infile, 0L, SEEK_SET); //# back to beginning of file.
-
-        //# read generated crc32 value.
-        tmp_sz = fsize - 4; //# 파일의 맨 마지막 4 바이트에 저장함.
-        fseek(infile, tmp_sz, SEEK_SET); //# back to beginning of file.
-        fread(&stored_crc32, 4, 1, infile);
-        //printf("read crc %x\n", stored_crc32);
-
-        fseek(infile, 0L, SEEK_SET); //# back to beginning of file.
-        while (tmp_sz > 0) {
-            char buf[1024];
-
-            bytes = fread(buf, 1, 1024, infile);
-            calc_crc = util_gen_crc32(calc_crc, buf, bytes);
-            tmp_sz -= bytes;
-        }
-
-        //printf("n byte read %d, crc32 = %08x\n", bytes, calc_crc);
-        fclose(infile);
-
-        if (stored_crc32 == calc_crc) ret = 0;
-        else                          ret = -1;      
-    }
-
-    return ret;
-}
-#endif
-
-static char *_findFirmware(const char* root)
-{
-	char path[255];
-	static char extPath[255];
-	glob_t globbuf;
-
-	memset(&globbuf, 0, sizeof(glob_t));
-	
-	//# /mmc/*.dat scanning
-	sprintf(path, "%s/*%s", root, FW_EXT);
-	if(glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0)
-	{
-		if(globbuf.gl_pathc > 0)
-		{
-			strcpy(extPath,globbuf.gl_pathv[0]);
-			globfree(&globbuf);
-			return extPath;
-		}
-	}
-	else
-	{
-		eprintf("Not found firmware file: %s\n",root);
-	}
-
-	globfree(&globbuf);
-
-	return NULL;
-}
-
-static int _unpack_N_check(const char* pFile, const char* root, int* release)
-{
-	char buf[256]={0,};
-	int ret = SOK;
-	sprintf(buf, "tar xvf %s -C %s", pFile, root);
-	system(buf);
-	/* change 3--> 1*/
-	sleep(1/*3*/);
-
-	if(-1 == access(FW_DIR, 0)) {
-		memset(buf, 0, sizeof(buf));
-		sprintf(buf, "Failed to read %s!!!", FW_DIR);
-		app_log_write(MSG_LOG_WRITE, buf);
-		return EFAIL;
-	}
-
-	*release = _is_firmware_for_release();
-	
-	//# *release is EFAIL means firmware is not for NEXONE.
-	if (*release == EFAIL)
-		ret = EFAIL;
-	
-	return ret;
-}
-
-/*****************************************************************************
-* @brief    Firmware update
-* @section  DESC Description
-*   - desc
-*****************************************************************************/
-static int _sw_update(const char *disk)
-{
-	char cmd[256]={0,};
-	char msg[128]={0,};
-	char *pFile = NULL;
-	int ret = 0;
-	int release = 1;
-	
-	aprintf("start...\n");
-	
-	//# buzz: update
-	app_buzz_ctrl(50, 3);		
-
-	app_cfg->ste.b.busy = 1;
-	pFile = _findFirmware(disk);
-	if (pFile == NULL) {
-		sprintf(msg, "Firmware file is not exist !!!");
-		app_log_write(MSG_LOG_WRITE, msg);
-		printf("%s\n", msg);
-        app_cfg->ste.b.busy = 0;
-		return EFAIL;
-	}
-	/* firmware update 시 종료키 이벤트를 막기 위해서 위치를 변경함 */
-	//app_cfg->ste.b.busy = 0;
-	
-	//# unpack fw file and type check, release/debug and update full or binary only
-	// pFile = /mmc/xxxxxx.dat
-	// disk  = /mmc
-	if (_unpack_N_check((const char *)pFile, (const char *)disk, &release) == EFAIL) {
-		sprintf(msg, "It is not firmware file !!!");
-		app_log_write(MSG_LOG_WRITE, msg);
-		printf("%s\n", msg);
-        ret = EFAIL;
-		/* TODO : delete unpack update files.... */
-		goto fw_exit;
-	}
-	
-	//# LED work for firmware update.
-	app_leds_fw_update_ctrl();
-	dev_fw_setenv("nand_update", "1", 0);
-	app_log_write(MSG_LOG_WRITE, "Full version Firmware update done....");
-
-	aprintf("done! will restart\n");
-	ret = SOK;
-	
-fw_exit:
-	//# clear busy flag...
-	app_cfg->ste.b.busy = 0;
-	if (release) // RELEASE Version .. --> update file delete
-    { 
-	    sprintf(cmd, "rm -rf %s", pFile);
-	    system(cmd);
-    }
-	
-	sync();
-	app_msleep(500);		//# wait for safe	
-	
-	return ret;
-}
-
-void *thrRunFWUpdate(void *arg)
-{
-	app_log_write( MSG_LOG_WRITE, "[APP_FITT360] Web Remote Update Temp version Firmware update done....");
-
-	app_buzz_ctrl(50, 3);		//# buzz: update
-	dev_fw_setenv("nand_update", "1", 0);
-	sync();
-
-	printf("\nfw update ready ! It will restart\n\n");
-
-	app_mcu_pwr_off(OFF_RESET);
-
-	return NULL;
-}
-
-/* example remote update
- *
-curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192.168.40.129/cgi/upload.cgi
-*/
-int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
-{
-	char cmd[256];
-	int ret;
-	
-	/* recording stop */
-	ret = app_rec_state();
-	if (ret) {
-		app_rec_stop(1);
-		sleep(1); /* wait for file close */
-	}
-	app_file_save_flist(); /* save file list */
-
-	// check tar content list	
-#if 1
-	{
-		sprintf(cmd, "tar tf %s > /tmp/fw.list", fwpath);
-		printf("cmd:%s\n", cmd);
-		system(cmd);
-		FILE *fp = fopen("/tmp/fw.list", "r");
-		if (!fp)
-		{
-			printf("failed tar tf %s > /tmp/fw.list\n", fwpath);
-			return -1;
-		}
-		char line[255] = {0};
-		while(fgets(line, 255, fp)){
-
-			int len = strlen(line);
-			if (len > 1)
-			{
-				// remote CR
-				if (line[len - 1] == '\n')
-					line[len - 1] = '\0';
-
-				if(strcmp(line, "boot.scr")==0){
-					printf("checked boot.scr\n");
-				}
-				else if(strcmp(line, "MLO")==0){
-					printf("checked MLO\n");
-				}
-				else if(strcmp(line, "fw_version.txt")==0){
-					printf("checked fw_version.txt\n");
-				}
-				else if(strcmp(line, "rfs_fit.ubifs")==0){
-					printf("checked %s\n", "rfs_fit.ubifs");
-				}
-				else if(strcmp(line, "rfs_fit.ubifs.md5")==0){
-					printf("checked rfs_fit.ubifs.md5\n");
-				}
-			}
-		}
-		fclose(fp);
-	}
-#endif
-
-#if 1 // untar
-	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
-	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
-	printf("fwupdate cmd:%s\n", cmd);
-	system(cmd);
-#endif
-
-    if(TRUE != _is_firmware_for_release()) // RELEASE Version .. --> update file delete
-	{
-		printf("firmware factory release version..\n") ;
-/*
-		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
-
-		int i;
-		for (i = 0; i < FW_FILE_NUM; i++)
-		{
-			sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
-			printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
-			util_sys_exec(cmd);
-		}
-
-		// delete rfs_fit.ubifs.md5
-		memset(cmd, 0, sizeof(cmd));
-		snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
-		if (access(cmd, F_OK) == 0)
-			remove(cmd);
-
-		return -1;
-*/
-	} else {
-		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
-	}
-
-	// check md5sum
-	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
-	FILE *fp = popen(cmd, "r");
-	if(fp){
-		char line[255]={0};
-		fgets(line, 255, fp);
-		printf("%s\n", line);
-
-		if(NULL == strstr(line, " OK")){
-
-			//TODO: 실패할 경우, 압축해제한 파일들 처리
-			pclose(fp);
-			return -1;
-		}
-
-		pclose(fp);
-		// OK, ready to firmware upgrade
-	}
-	else {
-		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
-		//TODO: 실패할 경우, 압축해제한 파일들 처리
-		return -1;
-	}
-
-#if 0
-		thrRunFWUpdate(NULL);
-#else
-	// thread로 전환..웹에 펌업 시작을 알릴 목적으로..
-	{
-		pthread_t tid_fw;
-		int ret = pthread_create(&tid_fw, NULL, thrRunFWUpdate, NULL);
-		if (ret != 0) {
-			eprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
-			return -1;
-		}
-		pthread_setname_np(tid_fw, __FILENAME__);
-		pthread_detach(tid_fw);
-	}
-#endif
-	
-	return 0;
-}
-
-/*
- * if /mmc/app_fitt.out is exist, copy app_fitt.out to /opt/fit/bin/.
- * if /mmc/fitt_firmware_full_N.dat is exist, firmware update...
- */
-void ctrl_auto_update(void)
-{
-	char path[64] = {0, };
-	char cmd[255] = {0, };
-		
-	/* First, full firmware check.. */
-	//# 업데이트 파일명이 비정상적인 경우를 제외하고는 
-	if (_sw_update(SD_MOUNT_PATH) == 0) {
-		app_mcu_pwr_off(OFF_RESET);
-	}
-		
-	memset(path, 0, sizeof(path));
-	sprintf(path, fw_app_name);
-	if(0 == access(path, 0)) // existence only
-	{
-		dprintf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
-		sprintf(cmd, "cp %s /opt/fit/bin/.", path);
-		util_sys_exec(cmd);
-		
-		sprintf(cmd, "rm %s", path);
-		util_sys_exec(cmd);
-
-		sync();
-		OSA_waitMsecs(300);
-		app_mcu_pwr_off(OFF_RESET);
-	}
-}
-
-void ctrl_reset_nand_update(void)
-{
-	int i;
-	char cmd[MAX_CHAR_255] = {0,};
-
-	//# delete full updated file
-	if(dev_fw_printenv("nand_update") == 2)
-	{
-        if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
-		{
-		    for(i=0; i<FW_FILE_NUM; i++) {
-			    sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
-				printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n",full_upfiles[i]);
-			    util_sys_exec(cmd);
-		    }
-			
-			/* delete rfs_fit.ubifs.md5 */
-			memset(cmd, 0, sizeof(cmd));
-			snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
-			if (access(cmd, F_OK) == 0)
-				remove(cmd);
-		}
-		
-		dev_fw_setenv("nand_update", "0", 0);
-	}
-}
-
-//########################### End of Firmware Update ############################################
 /*
  * testing live555 process 
  */  
@@ -1210,14 +1270,14 @@ int ctrl_is_live_process(const char *process_name)
  */
 int ctrl_update_firmware_by_cgi(char *fwpath)
 {
-    app_leds_fw_update_ctrl();
-	
 	int ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
 	if (ret < 0)
 	{
-		app_leds_sys_normal_ctrl();
-		app_rec_start();
+        if(app_cfg->ste.b.prerec_state)
+		    app_rec_start();
 	}
+	else
+	    app_leds_fw_update_ctrl();
 
 	return ret ;     
 }
@@ -1225,46 +1285,36 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 /*
  * record stop and reboot.
  */
-void ctrl_sys_reboot(void)
+void ctrl_sys_halt(int shutdown)
 {
-    int recording = 0;
-
-    recording = app_rec_state();
-    if (recording) {
-        app_rec_stop(1); /* buzzer on */
-		app_msleep(500);
-    }
-	app_file_save_flist(); /* save file list */
-#if SYS_CONFIG_VOIP
-	app_voip_save_config(); /* save voip volume */
-#endif
-//    app_file_exit(); ??
-    app_set_write();
-	app_buzz_ctrl(80, 2); //# Power Off Buzzer
-	app_mcu_pwr_off(OFF_RESET);
-}
-
-/*
- * record stop and halt.
- */
-void ctrl_sys_shutdown(void)
-{
-    int recording = 0;
-
-    recording = app_rec_state();
-    if (recording) {
-		app_rec_stop(0);
-    }
-	app_buzz_ctrl(80, 2); //# Power Off Buzzer
-	if (recording) {
-		/* 먼저 buzzer를 울리기 위해서 */
-		app_msleep(500);	
+    int ste = 0;
+	
+	ste = app_rec_state();
+	if (shutdown) {
+		if (ste) {
+			app_rec_stop(OFF);
+		}
+		app_buzz_ctrl(80, 2); //# Power Off Buzzer
+		if (ste)
+			app_msleep(1500); /* 먼저 buzzer를 울리기 위해서 */	
+	} 
+	else {
+		/* reboot */
+		if (ste) {
+       		app_rec_stop(OFF);
+			app_msleep(500);
+    	}
 	}
-	app_file_save_flist(); /* save file list */
-#if SYS_CONFIG_VOIP
-	app_voip_save_config(); /* save voip volume */	
-#endif
-//    app_file_exit(); ??
-    app_set_write();
-	app_mcu_pwr_off(OFF_NORMAL);
+	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
+    dprintf("file manager exit success.(while system %s!)\n", shutdown ? "shutdown" : "reboot");
+	app_set_write();
+	
+	if (shutdown) {
+		app_mcu_pwr_off(OFF_NORMAL);
+	} else {
+		app_buzz_ctrl(80, 2); //# Power Off Buzzer
+		app_mcu_pwr_off(OFF_RESET);
+	}
+	
+	aprintf("....exit!\n");
 }

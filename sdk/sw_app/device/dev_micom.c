@@ -219,10 +219,6 @@ int mic_send_ready(void)
 	minor = imic.ver & 0xFF;
 	printf(" [dev ] micom sync ok! (v%02x.%02x)\n", major, minor );
 
-	if(imic.ver < MIC_VERSION) {
-		printf(" [warning] micom version is old!!!\n");
-	}
-
 	return 0;
 }
 

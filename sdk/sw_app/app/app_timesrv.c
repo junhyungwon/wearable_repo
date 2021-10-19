@@ -46,6 +46,7 @@
 #include "app_ctrl.h"
 #include "ti_vcap.h"
 #include "app_set.h"
+#include "app_rec.h"
 
 /*------------------------------------------------------------------------------
 Defines
@@ -143,7 +144,6 @@ char *get_timezone (int timezone, int daylightsaving)
     memset (&buffer, 0, sizeof(buffer));
 
     sprintf (buffer, "%s", TZfiles[tz_idx][daylightsaving]);
-//	printf("get_timezone:%s\n", buffer);
 
     return buffer ;
 }
@@ -161,7 +161,6 @@ int set_time_zone()
 			PATH_ZONE_INFO,
 			get_timezone(timezone, daylight),
 			PATH_LOCALTIME) ;
-//	printf("set_time_zone(), %s\n", buf);
     Fp = popen(buf, "w") ;
 
     if(Fp == NULL)
@@ -185,12 +184,6 @@ int set_time_manual(int year, int month, int day, int hour, int minute, int seco
 	time_t set;
 
 	dprintf("--- changed time by manual ---\n");
-	printf("year   = %d\n", year) ;
-	printf("month  = %d\n", month) ;
-	printf("day    = %d\n", day) ;
-	printf("hour   = %d\n", hour) ;
-	printf("minute = %d\n", minute) ;
-	printf("second = %d\n", second) ;
 
 	stm.tm_year = year  - 1900; 
 	stm.tm_mon  = month - 1;
@@ -224,7 +217,6 @@ int check_ipaddress(char *addr)
 
     if(strcmp(addr, " ") == 0)
 	{
-		printf("IP address NULL \n");
 		return FALSE ;
 	}
 
@@ -255,8 +247,6 @@ int check_ipaddress(char *addr)
 int set_time_by_ntp()
 {
 	int retval = FALSE, cnt=0;
-    time_t timeval ;
-    struct tm *ptm;
     struct hostent *hp;
     char buff[MAX_CHAR_128], server_addr[MAX_CHAR_32] ;
 	FILE *fd;
@@ -264,7 +254,6 @@ int set_time_by_ntp()
     if(check_ipaddress(app_set->time_info.time_server))
 	{
 		strncpy(server_addr, app_set->time_info.time_server, strlen(app_set->time_info.time_server));
-	    printf("ipv4 time_server:%s\n", app_set->time_info.time_server);
 	}
 	else
 	{	
@@ -274,7 +263,6 @@ int set_time_by_ntp()
             return FALSE;
         }
 
-	    printf("time_server:%s\n", app_set->time_info.time_server);
 		strncpy(server_addr, inet_ntoa(*((struct in_addr *)hp->h_addr_list[0])), strlen(inet_ntoa(*((struct in_addr *)hp->h_addr_list[0]))));
 	}
 
@@ -293,12 +281,14 @@ int set_time_by_ntp()
         {
             break ;
         }
-		printf("check npt.txt --- %d\n", cnt);
         OSA_waitMsecs(1000);
     }
     if((fd = fopen("/mmc/ntp.txt", "r")) != NULL)
     {
         int readsize = fread(buff, sizeof buff, 1,  fd) ;
+		if (readsize < 0) {
+			; /* TODO */
+		}
 
         if(strstr(buff, "Configuration"))
         {
@@ -330,14 +320,14 @@ int gettime_from_ntp(char *server_addr)
     char buff[MAX_CHAR_128] ;
     char buffer[1024] ;
 
-    int retval = FALSE, cnt = 0 ;
+    int retval = -1, cnt = 0 ;
 
     if(set_time_zone())  // temp
     {
 		//# 0:computer(same as manual), 1:syncronize with NTP server
 		if(app_set->time_info.timesync_type != TIMESYNC_NTP) {
-			// FALSE로 리턴하면 시간이 2000년 설정됨.
-			return TRUE;
+			// -1 로 리턴하면 시간이 2020년으로 설정됨.
+			return FALSE; // 0
 		}
         sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
 
@@ -396,7 +386,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 
-    ret = app_cfg->ste.b.cradle_eth_run || app_cfg->ste.b.usbnet_run;
+    ret = app_cfg->ste.b.cradle_net_run || app_cfg->ste.b.usbnet_run;
     if(!ret) {
         set_time_zone() ;  
         return FALSE  ;
@@ -405,7 +395,6 @@ static int time_sync(void)
     if(check_ipaddress(app_set->time_info.time_server))
 	{
 		strncpy(timesrv_addr, app_set->time_info.time_server, strlen(app_set->time_info.time_server));
-	    printf("ipv4 time_server:%s\n", app_set->time_info.time_server);
 	}
 	else
 	{
@@ -415,12 +404,17 @@ static int time_sync(void)
 		    perror("gethostbyname:");
             return FALSE;
         }
-	    printf("time_server:%s\n", app_set->time_info.time_server);
 		strncpy(timesrv_addr, inet_ntoa(*((struct in_addr *)hp->h_addr_list[0])), strlen(inet_ntoa(*((struct in_addr *)hp->h_addr_list[0]))));
     }
 
-    if(gettime_from_ntp(timesrv_addr))
+    if(gettime_from_ntp(timesrv_addr) == TRUE)
     {
+        if(app_rec_state())
+		{
+			app_rec_stop(ON);
+            app_cfg->ste.b.prerec_state = 1 ;
+		}
+
         app_msleep(100);
         Vsys_datetime_init2(app_set->time_info.daylight_saving);   //# m3 Date/Time init
 
@@ -444,14 +438,17 @@ static int time_sync(void)
         }
 
     }
-    else
+    else if(gettime_from_ntp(timesrv_addr) == FALSE)  // TIME SYNC 사용 안할때 , 더이상 시도 하지 않도록 
+		retval = TRUE ;
+
+    else if(gettime_from_ntp(timesrv_addr) == -1)  // TIME SYNC 실패시 
     {
         time(&time_val) ;
         localtime_r(&time_val, &tv);
 
-        if(tv.tm_year + 1900 < 2000)
+        if(tv.tm_year + 1900 < 2020)
         {
-            tv.tm_year = 2000 ;
+            tv.tm_year = 2020 ;
 
             set = mktime(&tv);
             stime(&set) ;
@@ -464,7 +461,14 @@ static int time_sync(void)
             else
                 dprintf("--- changed time default 2000 ---\n");
         }
+		retval = FALSE ;
     }
+
+	if(app_cfg->ste.b.prerec_state && !app_rec_state() && !app_cfg->ste.b.ftp_run)
+	{
+		app_rec_start() ;
+	}
+
     return retval;
 }
 
@@ -491,13 +495,14 @@ static void *THR_tsync(void *prm)
         if (cmd == APP_CMD_STOP)  {
             break;
         }
-		if(app_cfg->ste.b.cradle_eth_ready || app_cfg->ste.b.usbnet_run) {
+		if(app_cfg->ste.b.cradle_net_ready || app_cfg->ste.b.usbnet_run) 
+		{
             if (itsync->tsync_status == TIMESYNC_READY)
 			{ 
                 retval = time_sync() ;
 			}
         } 
-		if(!app_cfg->ste.b.cradle_eth_ready && !app_cfg->ste.b.usbnet_ready)
+		if(!app_cfg->ste.b.cradle_net_ready && !app_cfg->ste.b.usbnet_ready)
 		{
             itsync->tsync_status = TIMESYNC_READY ;
 		}
@@ -506,7 +511,7 @@ static void *THR_tsync(void *prm)
             itsync->tsync_status = TIMESYNC_DONE ;
             retval = FALSE ;
         } else {
-			if (retry_cnt == 59) // retry per 5 sec (60 x 5)
+			if (retry_cnt == 59) // retry per 5 sec (60 x 5)  5Min retry
 			{
                 itsync->tsync_status = TIMESYNC_DONE ;
 				retry_cnt = 0;

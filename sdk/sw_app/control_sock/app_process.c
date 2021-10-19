@@ -80,32 +80,43 @@ char m_SendBuffer[MAXBUFF] ;
 #define PACKETSIZE	20480
 
 const int GPSPACKET_SIZE = sizeof(GPSPACKET) ;
+const int GPSREQRCV_SIZE = sizeof(GPSREQRCV) ;
+const int EVENTPACKET_SIZE = sizeof(EVENTPACKET) ;
+const int EVENTREQRCV_SIZE = sizeof(EVENTREQRCV) ;
+const int USERAUTHRES_SIZE = sizeof(USERAUTHRES) ;
+
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
 
 void gpsdatareq(int channel, char *data, int len)
 {
+	int sendlen = 0, i ; 
+
+	GPSREQRCV Gpsreqrcv ;
+
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdatareq packet receive...\n") ;
 #endif
-    int sendlen = 0;
-/*
-	GPSDATA Gpsdatares ;
+	SystemInfo.gps_req[channel] = ON ;
 
-    Gpsdatares.identifier = htons(IDENTIFIER) ;
-    Gpsdatares.cmd        = htons(CMD_GPSDATA_RES);
-    Gpsdatares.length     = htons(GPSDATA_SIZE) ;
+	Gpsreqrcv.identifier = htons(IDENTIFIER) ;
+	Gpsreqrcv.cmd = htons(CMD_GPSREQ_RCV) ;
+	Gpsreqrcv.length = htons(GPSREQRCV_SIZE) ;
 
-    memcpy(m_SendBuffer[channel], &Timesetcfgres, TIMESETCFGRES_SIZE) ;
-
-    sendlen = send(SystemInfo.Channel[channel], m_SendBuffer[channel], TIMESETCFGRES_SIZE, 0) ;
-*/
-
+	memcpy(m_SendBuffer, &Gpsreqrcv, GPSREQRCV_SIZE) ;
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0 )
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSREQRCV_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("timesetcfgres packet sendlen = %d\n",sendlen) ;
+    DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+        }
+	}
 }
+
 
 void gpsdata_send(void *data)
 {
@@ -145,9 +156,161 @@ void gpsdata_send(void *data)
 		{
             sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+    DEBUG_PRI("gpsdata packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
 		}
     }
+}
+
+void eventdatareq(int channel, char *data, int len)
+{
+	int sendlen = 0, i ;
+
+	EVENTREQRCV Eventreqrcv ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("eventdatareq packet receive...\n") ;
+#endif
+	SystemInfo.event_req[channel] = ON ;
+
+	Eventreqrcv.identifier = htons(IDENTIFIER) ;
+	Eventreqrcv.cmd = htons(CMD_EVENTREQ_RCV) ;
+	Eventreqrcv.length = htons(EVENTREQRCV_SIZE) ;
+
+	memcpy(m_SendBuffer, &Eventreqrcv, EVENTREQRCV_SIZE) ;
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0 )
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTREQRCV_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("eventdatareq res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+        }
+	}
+}
+
+
+void eventdata_send(void)
+{
+    int sendlen = 0, i;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Eventdata reached...\n") ;
+#endif
+    EVENTPACKET Eventpacket ;
+
+	Eventpacket.identifier = htons(IDENTIFIER) ;
+	Eventpacket.cmd = htons(CMD_EVENTDATA_RES) ;
+	Eventpacket.length = htons(EVENTPACKET_SIZE) ;
+ 
+	sprintf(Eventpacket.uid, "%s", app_set->sys_info.uid) ;
+	sprintf(Eventpacket.deviceId, "%s", app_set->sys_info.deviceId) ;
+
+	memcpy(m_SendBuffer, &Eventpacket, EVENTPACKET_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Eventdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+    }
+}
+
+void sosdata_send(void)
+{
+    int sendlen = 0, i;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("SOSdata reached...\n") ;
+#endif
+    EVENTPACKET Sospacket ;
+
+	Sospacket.identifier = htons(IDENTIFIER) ;
+	Sospacket.cmd = htons(CMD_SOSDATA_RES) ;
+	Sospacket.length = htons(EVENTPACKET_SIZE) ;
+ 
+	sprintf(Sospacket.uid, "%s", app_set->sys_info.uid) ;
+	sprintf(Sospacket.deviceId, "%s", app_set->sys_info.deviceId) ;
+
+	memcpy(m_SendBuffer, &Sospacket, EVENTPACKET_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Sosdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+    }
+}
+
+void userauthreq(int channel, char *data, int len) 
+{
+	int sendlen = 0, result = 0;
+    char rtsp_userid[32] = {0, } ;
+	char rtsp_passwd[32] = {0, } ;
+
+
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("userauthreq reached...\n") ;
+#endif
+	USERAUTHREQ *Userauthreq ;
+    USERAUTHRES Userauthres ;
+
+    Userauthreq = (USERAUTHREQ *)data ;
+
+	if(app_set->account_info.enctype == ntohs(Userauthreq->encrypt_value))
+    {
+		if(app_set->account_info.enctype)
+		{
+			decrypt_aes(app_set->account_info.rtsp_userid, rtsp_userid, 32) ;
+			decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
+		}
+		else
+		{
+			strncpy(rtsp_userid, app_set->account_info.rtsp_userid, 32) ; 
+			strncpy(rtsp_passwd, app_set->account_info.rtsp_passwd, 32) ; 
+		}
+
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("Userauth req Userauthreq->id = %s, passwd = %s\n",Userauthreq->id, Userauthreq->passwd) ;
+DEBUG_PRI(" Userid = %s, passwd = %s\n",rtsp_userid, rtsp_passwd) ;
+#endif
+
+		result = strcmp(rtsp_userid, Userauthreq->id) ;
+		result += strcmp(rtsp_passwd, Userauthreq->passwd) ;
+		if(result)
+			result = FALSE ;
+		else
+			result = TRUE ;
+	}
+	else
+	{
+		result = 2 ;  // different encrypt value between device and nexx manager
+	}
+
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("Userauth req result = %d\n",result) ;
+#endif
+
+	Userauthres.identifier = htons(IDENTIFIER) ;
+	Userauthres.cmd = htons(CMD_USERAUTH_RES) ;
+	Userauthres.length = htons(USERAUTHRES_SIZE) ;
+	Userauthres.result = htons(result) ;
+
+	memcpy(m_SendBuffer, &Userauthres, USERAUTHRES_SIZE) ;
+
+	if(SystemInfo.Channel[channel] != 0)
+	{
+        sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, USERAUTHRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("Userauthres packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+	}
 
 }
+

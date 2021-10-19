@@ -41,6 +41,50 @@ typedef struct TAG_GPSPACKET {
 } GPSPACKET ;
 #pragma pack()
 
+#pragma pack(1)
+typedef struct TAG_GPSREQ_RCV {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+} GPSREQRCV ;
+#pragma pack()
+
+
+#pragma pack(1)
+typedef struct TAG_EVENTPACKET {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+	char uid[32] ;
+	char deviceId[32] ;
+} EVENTPACKET ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_EVENTREQ_RCV {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+} EVENTREQRCV ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_USERAUTHREQ {
+	char id[32] ;
+	char passwd[32] ;
+	unsigned short encrypt_value ;
+} USERAUTHREQ ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_USERAUTHRES {
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+	unsigned short result ;
+} USERAUTHRES ;
+#pragma pack()
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -49,6 +93,10 @@ typedef struct TAG_GPSPACKET {
  Declares a     function prototype
 -----------------------------------------------------------------------------*/
 void gpsdatareq(int, char*, int) ;
+void eventdatareq(int, char*, int) ;
 void gpsdata_send(void *data);
+void eventdata_send(void);
+void sosdata_send(void);
+void userauthreq(int, char*, int) ;
 
 #endif // _APP_PROCESS_H

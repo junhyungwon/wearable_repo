@@ -35,7 +35,6 @@
 #include "app_onvifserver.h"
 #include "app_uds.h"
 #include "app_main.h"
-#include "app_log.h"
 #include "app_rec.h"
 #include "app_dev.h"
 #include "app_set.h"
@@ -176,7 +175,7 @@ static int  onvif_is_wireless_up()
 	return retval;  // if 1 , upped, else down
 }
 
-
+#if 0
 static int  onvif_get_gateway(const char *devName, char *out_gw)
 {
 	int ret = -1;
@@ -290,6 +289,7 @@ static int onvif_get_net_info(const char *devName, ONVIF_NET_INFO * out_info)
 
 	return -1;
 }
+#endif
 
 // You must free the result if result is non-NULL.
 static char *str_replace(char *orig, char *rep, char *with) {
@@ -372,6 +372,10 @@ int app_onvif_init_config()
 		fputs("		<Model>NEXX360B</Model>\n", fp);
 #elif defined(NEXX360W)
 		fputs("		<Model>NEXX360W</Model>\n", fp);
+#elif defined(NEXX360W_MUX)
+		fputs("		<Model>NEXX360W_MUX</Model>\n", fp);
+#elif defined(NEXXB)
+		fputs("		<Model>NEXXB</Model>\n", fp);
 #elif defined(NEXX360H)
 		fputs("		<Model>NEXX360H</Model>\n", fp);
 #elif defined(FITT360_SECURITY)
@@ -411,9 +415,9 @@ int app_onvif_init_config()
 		fputs("			<height>720</height>\n", fp);
 		fputs("			<quality>5</quality>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
 		fputs("			<framerate>30</framerate>\n", fp);
-#elif defined(NEXX360B) || defined(NEXX360W) 
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB)
 		fputs("			<framerate>15</framerate>\n", fp);
 #elif defined(FITT360_SECURITY)
 		fputs("			<framerate>15</framerate>\n", fp);
@@ -422,9 +426,9 @@ int app_onvif_init_config()
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
 		fputs("			<encoding>H264</encoding>\n", fp);
 		fputs("			<h264>\n", fp);
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
         fputs("				<gov_length>30</gov_length>\n", fp);
-#elif defined(NEXX360B) || defined(NEXX360W)
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB)
         fputs("				<gov_length>15</gov_length>\n", fp);
 #elif defined(FITT360_SECURITY)
         fputs("				<gov_length>15</gov_length>\n", fp);
@@ -464,9 +468,9 @@ int app_onvif_init_config()
 		fputs("			<width>720</width>\n", fp);
 		fputs("			<height>480</height>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX)
 		fputs("			<framerate>30</framerate>\n", fp);
-#elif defined(NEXX360B) || defined(NEXX360W)
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB)
 		fputs("			<framerate>15</framerate>\n", fp);
 #elif defined(FITT360_SECURITY)
 		fputs("			<framerate>15</framerate>\n", fp);
@@ -558,8 +562,8 @@ void * onvifserver_thread(void * argv)
     int cradle_pre_status,  eth0_pre_status, eth0_cur_status;
 	int usbnet_pre_status;
 	
-    cradle_pre_status = app_cfg->ste.b.cradle_eth_ready;
-    eth0_pre_status   = app_cfg->ste.b.cradle_eth_run;
+    cradle_pre_status = app_cfg->ste.b.cradle_net_ready;
+    eth0_pre_status   = app_cfg->ste.b.cradle_net_run;
 	usbnet_pre_status = app_cfg->ste.b.usbnet_run;
 
 	// 초기화...
@@ -571,7 +575,7 @@ void * onvifserver_thread(void * argv)
 			break;
 		} 
 		// eth0
-		else if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+		else if (app_cfg->ste.b.cradle_net_ready && onvifserver_status == ONVIFSERVER_READY) {
 			init_onvifserver();
 			onvifserver_status = ONVIFSERVER_LOADED ;
 			break;
@@ -583,8 +587,8 @@ void * onvifserver_thread(void * argv)
     while (!exit)
     {
 		// changed cradle status
-        if (cradle_pre_status != app_cfg->ste.b.cradle_eth_ready) {
-			cradle_pre_status = app_cfg->ste.b.cradle_eth_ready;
+        if (cradle_pre_status != app_cfg->ste.b.cradle_net_ready) {
+			cradle_pre_status = app_cfg->ste.b.cradle_net_ready;
 			onvifserver_status = ONVIFSERVER_READY;
 
 			// USB Network connected..
@@ -594,7 +598,7 @@ void * onvifserver_thread(void * argv)
 			}
 
 			// eth0
-			if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+			if (app_cfg->ste.b.cradle_net_ready && onvifserver_status == ONVIFSERVER_READY) {
 				init_onvifserver() ;
 				onvifserver_status = ONVIFSERVER_LOADED ;
 			}
@@ -612,7 +616,7 @@ void * onvifserver_thread(void * argv)
 			}
 			else if (!app_cfg->ste.b.usbnet_run) {
 				// eth0
-				if (app_cfg->ste.b.cradle_eth_ready && onvifserver_status == ONVIFSERVER_READY) {
+				if (app_cfg->ste.b.cradle_net_ready && onvifserver_status == ONVIFSERVER_READY) {
 					init_onvifserver() ;
 					onvifserver_status = ONVIFSERVER_LOADED ;
 				}
@@ -620,8 +624,8 @@ void * onvifserver_thread(void * argv)
 		}
 
 		// changed ethernet status
-		eth0_cur_status = app_cfg->ste.b.cradle_eth_run;
-		if (app_cfg->ste.b.cradle_eth_ready && eth0_pre_status != eth0_cur_status) {
+		eth0_cur_status = app_cfg->ste.b.cradle_net_run;
+		if (app_cfg->ste.b.cradle_net_ready && eth0_pre_status != eth0_cur_status) {
 		    eth0_pre_status = eth0_cur_status ;
 			init_onvifserver() ;
 			onvifserver_status = ONVIFSERVER_LOADED ;

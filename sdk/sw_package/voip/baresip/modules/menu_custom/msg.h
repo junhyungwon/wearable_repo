@@ -8,13 +8,15 @@
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
+#include <syslog.h>
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define aprintf(...) do { printf(" [app ] \033[32m%s: \033[0m", __func__); printf(__VA_ARGS__);} while(0)
-#define eprintf(...) do { printf(" [app !err] %s: ", __func__); printf(__VA_ARGS__); } while(0)
-#define dprintf(...) do { printf(" [app ] %s: ", __func__); printf(__VA_ARGS__); } while(0)
+/* ANSI Color MAGENTA */
+#define aprintf(...) do { printf(" [VOIP ] %s:", __func__); printf(__VA_ARGS__);} while(0)
+
+#define sysprint(...) do { printf(" [VOIP LOG] %s: ", __func__); printf(__VA_ARGS__); syslog(LOG_INFO, __VA_ARGS__);} while(0)
 
 #define MAX_PENDING_SEM_CNT		(1)
 

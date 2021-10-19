@@ -1,7 +1,7 @@
 /**
  * @file src/main.c  Main application code
  *
- * Copyright (C) 2010 - 2015 Creytiv.com
+ * Copyright (C) 2010 - 2021 Alfred E. Heggestad
  */
 #ifdef SOLARIS
 #define __EXTENSIONS__ 1
@@ -10,7 +10,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_GETOPT
 #include <getopt.h>
+#endif
 #include <re.h>
 #include <baresip.h>
 
@@ -20,6 +22,7 @@ static void signal_handler(int sig)
 	static bool term = false;
 
 	if (term) {
+		module_app_unload();
 		mod_close();
 		exit(0);
 	}
@@ -107,7 +110,7 @@ int main(int argc, char *argv[])
 	setbuf(stdout, NULL);
 
 	(void)re_fprintf(stdout, "baresip v%s"
-			 " Copyright (C) 2010 - 2020"
+			 " Copyright (C) 2010 - 2021"
 			 " Alfred E. Heggestad et al.\n",
 			 BARESIP_VERSION);
 
@@ -119,6 +122,7 @@ int main(int argc, char *argv[])
 
 	tmr_init(&tmr_quit);
 
+#ifdef HAVE_GETOPT
 	for (;;) {
 		const int c = getopt(argc, argv, "46de:f:p:hu:n:vst:m:");
 		if (0 > c)
@@ -197,6 +201,10 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+#else
+	(void)argc;
+	(void)argv;
+#endif
 
 	err = conf_configure();
 	if (err) {
@@ -206,8 +214,6 @@ int main(int argc, char *argv[])
 
 	/*
 	 * Set the network interface before initializing the config
-	 * ethX, wlan, ppp등 특정 네트워크 인터페이스를 사용할 경우
-	 * 현재는 사용 안 함.
 	 */
 	if (net_interface) {
 		struct config *theconf = conf_config();
@@ -220,13 +226,13 @@ int main(int argc, char *argv[])
 	 * Set prefer_ipv6 preferring the one given in -6 argument (if any)
 	 */
 	if (af != AF_UNSPEC)
-		conf_config()->net.af = af; //# config.c 파일의 core_config 구조체를 사용함.
+		conf_config()->net.af = af;
 
 	/*
 	 * Initialise the top-level baresip struct, must be
 	 * done AFTER configuration is complete.
 	*/
-	err = baresip_init(conf_config()); //# baresip.c 
+	err = baresip_init(conf_config());
 	if (err) {
 		warning("main: baresip init failed (%m)\n", err);
 		goto out;
@@ -236,7 +242,6 @@ int main(int argc, char *argv[])
 	if (audio_path)
 		play_set_path(baresip_player(), audio_path);
 	else if (str_isset(conf_config()->audio.audio_path)) {
-		/* wav 파일이 저장되는 폴더를 정의  /usr/baresip 로 고정시킴 */
 		play_set_path(baresip_player(),
 			      conf_config()->audio.audio_path);
 	}
@@ -262,7 +267,8 @@ int main(int argc, char *argv[])
 		      true, true, true);
 	if (err)
 		goto out;
-
+		
+	/* LF_Rupy comment out */
 //	net_change(baresip_network(), 60, net_change_handler, NULL);
 
 	uag_set_exit_handler(ua_exit_handler, NULL);

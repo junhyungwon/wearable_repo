@@ -1,7 +1,7 @@
 /**
  * @file config.c  Core Configuration
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <string.h>
 #include <dirent.h>
@@ -16,6 +16,11 @@
 #endif
 
 
+#if defined (DARWIN)
+#include <TargetConditionals.h>
+#endif
+
+
 /** Core Run-time Configuration - populated from config file */
 static struct config core_config = {
 
@@ -24,13 +29,18 @@ static struct config core_config = {
 		"",
 		"",
 		"",
-		""
+		"",
+		"",
+		SIP_TRANSP_UDP,
+		false,
 	},
 
 	/** Call config */
 	{
-		20, /*120, local_time_out */
-		1   /* max call */
+		/* default value changed LF_Rupy */
+		20,/* <--120: local_time_out */
+		1, /* <--4: max call */
+		true
 	},
 
 	/** Audio */
@@ -49,16 +59,16 @@ static struct config core_config = {
 		AUFMT_S16LE,
 		AUFMT_S16LE,
 		AUFMT_S16LE,
-		{20, 160}, /* min 20m ~ 160 */
+		{20, 160},
 	},
 
 	/** Video */
 	{
 		"", "",
 		"", "",
-		352, 288,
-		500000,
-		25,
+		640, 480,
+		1000000,
+		30,
 		true,
 		VID_FMT_YUV420P,
 	},
@@ -69,7 +79,9 @@ static struct config core_config = {
 		{1024, 49152},
 		{0, 0},
 		false,
+		JBUF_FIXED,
 		{5, 10},
+		0,
 		false,
 		0
 	},
@@ -78,7 +90,7 @@ static struct config core_config = {
 	{
 		AF_UNSPEC,
 		"",
-		{ {""} },
+		{ {"",0} },
 		0
 	},
 };
@@ -93,7 +105,7 @@ static int range_print(struct re_printf *pf, const struct range *rng)
 }
 
 
-static int dns_server_handler(const struct pl *pl, void *arg)
+static int dns_handler(const struct pl *pl, void *arg, bool fallback)
 {
 	struct config_net *cfg = arg;
 	const size_t max_count = ARRAY_SIZE(cfg->nsv);
@@ -108,6 +120,9 @@ static int dns_server_handler(const struct pl *pl, void *arg)
 	/* Append dns_server to the network config */
 	err = pl_strcpy(pl, cfg->nsv[cfg->nsc].addr,
 			sizeof(cfg->nsv[0].addr));
+
+	cfg->nsv[cfg->nsc].fallback = fallback;
+
 	if (err) {
 		warning("config: dns_server: could not copy string (%r)\n",
 			pl);
@@ -117,6 +132,26 @@ static int dns_server_handler(const struct pl *pl, void *arg)
 	++cfg->nsc;
 
 	return 0;
+}
+
+
+static int dns_server_handler(const struct pl *pl, void *arg)
+{
+	int err;
+
+	err = dns_handler(pl, arg, false);
+
+	return err;
+}
+
+
+static int dns_fallback_handler(const struct pl *pl, void *arg)
+{
+	int err;
+
+	err = dns_handler(pl, arg, true);
+
+	return err;
 }
 
 
@@ -183,6 +218,32 @@ static int conf_get_vidfmt(const struct conf *conf, const char *name,
 }
 
 
+static const char *jbuf_type_str(enum jbuf_type jbtype)
+{
+	switch (jbtype) {
+	case JBUF_OFF:
+		return "off";
+	case JBUF_FIXED:
+		return "fixed";
+	case JBUF_ADAPTIVE:
+		return "adaptive";
+	}
+
+	return "?";
+}
+
+
+static enum jbuf_type resolve_jbuf_type(const struct pl *pl)
+{
+	if (0 == pl_strcasecmp(pl, "off"))      return JBUF_OFF;
+	if (0 == pl_strcasecmp(pl, "fixed"))    return JBUF_FIXED;
+	if (0 == pl_strcasecmp(pl, "adaptive")) return JBUF_ADAPTIVE;
+
+	warning("unsupported jitter buffer type (%r)\n", pl);
+	return JBUF_FIXED;
+}
+
+
 /**
  * Parse the core configuration file and update baresip core config
  *
@@ -197,6 +258,8 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 	enum poll_method method;
 	struct vidsz size = {0, 0};
 	struct pl txmode;
+	struct pl jbtype;
+	struct pl tr;
 	uint32_t v;
 	int err = 0;
 
@@ -222,14 +285,28 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 			   sizeof(cfg->sip.local));
 	(void)conf_get_str(conf, "sip_certificate", cfg->sip.cert,
 			   sizeof(cfg->sip.cert));
+
+	cfg->sip.verify_server = true;
 	(void)conf_get_str(conf, "sip_cafile", cfg->sip.cafile,
 			   sizeof(cfg->sip.cafile));
+	(void)conf_get_str(conf, "sip_capath", cfg->sip.capath,
+			   sizeof(cfg->sip.capath));
+	if (!str_isset(cfg->sip.cafile) && !str_isset(cfg->sip.capath))
+		cfg->sip.verify_server = false;
+
+	(void)conf_get_bool(conf, "sip_verify_server",
+			&cfg->sip.verify_server);
+
+	if (!conf_get(conf, "sip_trans_def", &tr))
+		cfg->sip.transp = sip_transp_decode(&tr);
 
 	/* Call */
 	(void)conf_get_u32(conf, "call_local_timeout",
 			   &cfg->call.local_timeout);
 	(void)conf_get_u32(conf, "call_max_calls",
 			   &cfg->call.max_calls);
+	(void)conf_get_bool(conf, "call_hold_other_calls",
+			   &cfg->call.hold_other_calls);
 
 	/* Audio */
 	(void)conf_get_str(conf, "audio_path", cfg->audio.audio_path,
@@ -307,8 +384,13 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 	}
 
 	(void)conf_get_bool(conf, "rtcp_mux", &cfg->avt.rtcp_mux);
+	if (0 == conf_get(conf, "jitter_buffer_type", &jbtype))
+		cfg->avt.jbtype = resolve_jbuf_type(&jbtype);
+
 	(void)conf_get_range(conf, "jitter_buffer_delay",
 			     &cfg->avt.jbuf_del);
+	(void)conf_get_u32(conf, "jitter_buffer_wish",
+			     &cfg->avt.jbuf_wish);
 	(void)conf_get_bool(conf, "rtp_stats", &cfg->avt.rtp_stats);
 	(void)conf_get_u32(conf, "rtp_timeout", &cfg->avt.rtp_timeout);
 
@@ -318,6 +400,8 @@ int config_parse_conf(struct config *cfg, const struct conf *conf)
 
 	/* Network */
 	(void)conf_apply(conf, "dns_server", dns_server_handler, &cfg->net);
+	(void)conf_apply(conf, "dns_fallback",
+			   dns_fallback_handler, &cfg->net);
 	(void)conf_get_str(conf, "net_interface",
 			   cfg->net.ifname, sizeof(cfg->net.ifname));
 
@@ -346,10 +430,14 @@ int config_print(struct re_printf *pf, const struct config *cfg)
 			 "sip_listen\t\t%s\n"
 			 "sip_certificate\t%s\n"
 			 "sip_cafile\t\t%s\n"
+			 "sip_capath\t\t%s\n"
+			 "sip_trans_def\t%s\n"
+			 "sip_verify_server\t%s\n"
 			 "\n"
 			 "# Call\n"
 			 "call_local_timeout\t%u\n"
 			 "call_max_calls\t\t%u\n"
+			 "call_hold_other_calls\t%s\n"
 			 "\n"
 			 "# Audio\n"
 			 "audio_path\t\t%s\n"
@@ -364,6 +452,7 @@ int config_print(struct re_printf *pf, const struct config *cfg)
 			 "\n"
 			 "# Video\n"
 			 "video_source\t\t%s,%s\n"
+			 "#video_source\t\tavformat,rtmp://127.0.0.1/app/foo\n"
 			 "video_display\t\t%s,%s\n"
 			 "video_size\t\t\"%ux%u\"\n"
 			 "video_bitrate\t\t%u\n"
@@ -376,7 +465,9 @@ int config_print(struct re_printf *pf, const struct config *cfg)
 			 "rtp_ports\t\t%H\n"
 			 "rtp_bandwidth\t\t%H\n"
 			 "rtcp_mux\t\t%s\n"
+			 "jitter_buffer_type\t%s\n"
 			 "jitter_buffer_delay\t%H\n"
+			 "jitter_buffer_wish\t%u\n"
 			 "rtp_stats\t\t%s\n"
 			 "rtp_timeout\t\t%u # in seconds\n"
 			 "\n"
@@ -386,9 +477,13 @@ int config_print(struct re_printf *pf, const struct config *cfg)
 			 ,
 
 			 cfg->sip.local, cfg->sip.cert, cfg->sip.cafile,
+			 cfg->sip.capath,
+			 sip_transp_name(cfg->sip.transp),
+			 cfg->sip.verify_server ? "yes" : "no",
 
 			 cfg->call.local_timeout,
 			 cfg->call.max_calls,
+			 cfg->call.hold_other_calls ? "yes" : "no",
 
 			 cfg->audio.audio_path,
 			 cfg->audio.play_mod,  cfg->audio.play_dev,
@@ -409,7 +504,9 @@ int config_print(struct re_printf *pf, const struct config *cfg)
 			 range_print, &cfg->avt.rtp_ports,
 			 range_print, &cfg->avt.rtp_bw,
 			 cfg->avt.rtcp_mux ? "yes" : "no",
+			 jbuf_type_str(cfg->avt.jbtype),
 			 range_print, &cfg->avt.jbuf_del,
+			 cfg->avt.jbuf_wish,
 			 cfg->avt.rtp_stats ? "yes" : "no",
 			 cfg->avt.rtp_timeout,
 
@@ -422,7 +519,9 @@ int config_print(struct re_printf *pf, const struct config *cfg)
 
 static const char *default_cafile(void)
 {
-#ifdef DARWIN
+#if defined (DEFAULT_CAFILE)
+	return DEFAULT_CAFILE;
+#elif defined (DARWIN) || defined (FREEBSD)
 	return "/etc/ssl/cert.pem";
 #else
 	return "/etc/ssl/certs/ca-certificates.crt";
@@ -432,10 +531,17 @@ static const char *default_cafile(void)
 
 static const char *default_audio_device(void)
 {
-#if defined (ANDROID)
+#if defined (DEFAULT_AUDIO_DEVICE)
+	return DEFAULT_AUDIO_DEVICE;
+#elif defined (ANDROID)
 	return "opensles,nil";
 #elif defined (DARWIN)
+	#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE || \
+	    defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+	return "audiounit,default";
+	#else
 	return "coreaudio,default";
+	#endif
 #elif defined (FREEBSD)
 	return "oss,/dev/dsp";
 #elif defined (OPENBSD)
@@ -451,13 +557,7 @@ static const char *default_audio_device(void)
 static const char *default_video_device(void)
 {
 #ifdef DARWIN
-
-#ifdef QTCAPTURE_RUNLOOP
-	return "qtcapture,nil";
-#else
 	return "avcapture,nil";
-#endif
-
 #elif defined (WIN32)
 	return "dshow,nil";
 #else
@@ -487,7 +587,6 @@ static const char *default_avcodec_hwaccel(void)
 #else
 	return "none";
 #endif
-
 }
 
 
@@ -523,14 +622,23 @@ static int core_config_template(struct re_printf *pf, const struct config *cfg)
 			  "\n# SIP\n"
 			  "#sip_listen\t\t0.0.0.0:5060\n"
 			  "#sip_certificate\tcert.pem\n"
-			  "#sip_cafile\t\t%s\n"
+#if defined (DEFAULT_CAFILE) || defined (DARWIN) || defined (LINUX) \
+	|| defined (FREEBSD)
+			 "sip_cafile\t\t%s\n"
+#else
+			 "#sip_cafile\t\t%s\n"
+#endif
+			  "#sip_trans_def\t\tudp\n"
+			  "#sip_verify_server\tyes\n"
 			  "\n"
 			  "# Call\n"
 			  "call_local_timeout\t%u\n"
 			  "call_max_calls\t\t%u\n"
+			  "call_hold_other_calls\tyes\n"
 			  "\n"
 			  "# Audio\n"
-#if defined (SHARE_PATH) /* SHARE_PATH ¡§¿«µ  PREFIX∞° ¡§¿«µ«¡ˆ æ æ∆º≠ /share/baresip∑Œ µ , Makefile */
+			  /* Reference to Makefle SHARE_PATH, PREFIX ?Ç≠?†ú?ï®. */
+#if defined (SHARE_PATH)
 			  "#audio_path\t\t" SHARE_PATH "\n"
 #elif defined (PREFIX)
 			  "#audio_path\t\t" PREFIX "/share/baresip\n"
@@ -556,9 +664,10 @@ static int core_config_template(struct re_printf *pf, const struct config *cfg)
 			  default_cafile(),
 			  cfg->call.local_timeout,
 			  cfg->call.max_calls,
-			  default_audio_device(), /* audip player "alsa,default" */
-			  "alsa,plughw:1,1", /* default_audio_device() audip source "alsa,default" */
-			  default_audio_device(), /* audip alert "alsa,default" */
+			  /* LF_Rupy default value changed */
+			  default_audio_device(), /* audio player "alsa,default" */
+			  "alsa,plughw:1,1",      /* <-- default_audio_device(), audio source "alsa,default" */
+			  default_audio_device(), /* audio alert "alsa,default" */
 			  range_print, &cfg->audio.buffer);
 
 	err |= re_hprintf(pf,
@@ -583,14 +692,24 @@ static int core_config_template(struct re_printf *pf, const struct config *cfg)
 			  "#rtp_ports\t\t10000-20000\n"
 			  "#rtp_bandwidth\t\t512-1024 # [kbit/s]\n"
 			  "rtcp_mux\t\tno\n"
+			  "jitter_buffer_type\tfixed\t\t# off, fixed,"
+				" adaptive\n"
 			  "jitter_buffer_delay\t%u-%u\t\t# frames\n"
+			  "#jitter_buffer_wish\t%u\t\t# frames for start\n"
 			  "rtp_stats\t\tno\n"
 			  "#rtp_timeout\t\t60\n"
 			  "\n# Network\n"
 			  "#dns_server\t\t1.1.1.1:53\n"
 			  "#dns_server\t\t1.0.0.1:53\n"
-			  "#net_interface\t\t%H\n",
+			  "#dns_fallback\t\t8.8.8.8:53\n"
+			  "#net_interface\t\t%H\n"
+			  "\n"
+			  "# Play tones\n"
+			  "#file_ausrc\t\taufile\n"
+			  "#file_srate\t\t16000\n"
+			  "#file_channels\t\t1\n",
 			  cfg->avt.jbuf_del.min, cfg->avt.jbuf_del.max,
+			  cfg->avt.jbuf_del.min + 1,
 			  default_interface_print, NULL);
 
 	return err;
@@ -628,11 +747,11 @@ static uint32_t count_modules(const char *path)
 static const char *detect_module_path(bool *valid)
 {
 	static const char * const pathv[] = {
-	/* Makefileø° MOD_PATH∞° ¡§¿«µ  /usr/local/lib/baresip/modules */
-	/* /usr/baresip/modules ∑Œ ∫Ø∞Ê */	
+	/* LF_Rupy */	
+	/* Makefile?óê MOD_PATHÍ∞? ?†ï?ùò?ê® /usr/local/lib/baresip/modules */
+	/* /usr/baresip/modules Î°? Î≥?Í≤? */			
 #if defined (MOD_PATH)
-		//MOD_PATH,
-		"/usr/baresip/modules",
+		"/usr/baresip/modules", /* <--MOD_PATH, */
 #elif defined (PREFIX)
 		"" PREFIX "/lib/baresip/modules",
 #else
@@ -713,6 +832,7 @@ int config_write_template(const char *file, const struct config *cfg)
 #if defined (WIN32)
 	(void)re_fprintf(f, "module\t\t\t" "wincons" MOD_EXT "\n");
 #else
+	/* LF_Rupy not used stdio */
 	(void)re_fprintf(f, "#module\t\t\t" "stdio" MOD_EXT "\n");
 #endif
 	(void)re_fprintf(f, "#module\t\t\t" "cons" MOD_EXT "\n");
@@ -731,7 +851,6 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "#module\t\t\t" "mpa" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "codec2" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "ilbc" MOD_EXT "\n");
-	(void)re_fprintf(f, "#module\t\t\t" "isac" MOD_EXT "\n");
 
 	(void)re_fprintf(f, "\n# Audio filter Modules (in encoding order)\n");
 	(void)re_fprintf(f, "#module\t\t\t" "vumeter" MOD_EXT "\n");
@@ -744,8 +863,14 @@ int config_write_template(const char *file, const struct config *cfg)
 #if defined (ANDROID)
 	(void)re_fprintf(f, "module\t\t\t" "opensles" MOD_EXT "\n");
 #elif defined (DARWIN)
+	#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE || \
+	    defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+	(void)re_fprintf(f, "#module\t\t\t" "coreaudio" MOD_EXT "\n");
+	(void)re_fprintf(f, "module\t\t\t" "audiounit" MOD_EXT "\n");
+	#else
 	(void)re_fprintf(f, "module\t\t\t" "coreaudio" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "audiounit" MOD_EXT "\n");
+	#endif
 #elif defined (FREEBSD)
 	(void)re_fprintf(f, "module\t\t\t" "oss" MOD_EXT "\n");
 #elif defined (OPENBSD)
@@ -753,14 +878,20 @@ int config_write_template(const char *file, const struct config *cfg)
 #elif defined (WIN32)
 	(void)re_fprintf(f, "module\t\t\t" "winwave" MOD_EXT "\n");
 #else
-	(void)re_fprintf(f, "module\t\t\t" "alsa" MOD_EXT "\n");
-	(void)re_fprintf(f, "#module\t\t\t" "pulse" MOD_EXT "\n");
+	if (!strncmp(default_audio_device(), "pulse", 5)) {
+		(void)re_fprintf(f, "#module\t\t\t" "alsa" MOD_EXT "\n");
+		(void)re_fprintf(f, "module\t\t\t" "pulse" MOD_EXT "\n");
+	}
+	else {
+		(void)re_fprintf(f, "module\t\t\t" "alsa" MOD_EXT "\n");
+		(void)re_fprintf(f, "#module\t\t\t" "pulse" MOD_EXT "\n");
+	}
 #endif
 	(void)re_fprintf(f, "#module\t\t\t" "jack" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "portaudio" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "aubridge" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "aufile" MOD_EXT "\n");
-
+	(void)re_fprintf(f, "#module\t\t\t" "ausine" MOD_EXT "\n");
 
 	(void)re_fprintf(f, "\n# Video codec Modules (in order)\n");
 	(void)re_fprintf(f, "#module\t\t\t" "avcodec" MOD_EXT "\n");
@@ -772,15 +903,12 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "#module\t\t\t" "snapshot" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "swscale" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module\t\t\t" "vidinfo" MOD_EXT "\n");
+	(void)re_fprintf(f, "#module\t\t\t" "avfilter" MOD_EXT "\n");
 
 	(void)re_fprintf(f, "\n# Video source modules\n");
 #if defined (DARWIN)
 
-#ifdef QTCAPTURE_RUNLOOP
-	(void)re_fprintf(f, "module\t\t\t" "qtcapture" MOD_EXT "\n");
-#else
 	(void)re_fprintf(f, "module\t\t\t" "avcapture" MOD_EXT "\n");
-#endif
 
 #elif defined (WIN32)
 	(void)re_fprintf(f, "module\t\t\t" "dshow" MOD_EXT "\n");
@@ -828,6 +956,7 @@ int config_write_template(const char *file, const struct config *cfg)
 			 "------------------------------------------\n");
 	(void)re_fprintf(f, "# Temporary Modules (loaded then unloaded)\n");
 	(void)re_fprintf(f, "\n");
+	/* LF_Rupy not used uuid, account */
 	(void)re_fprintf(f, "#module_tmp\t\t" "uuid" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module_tmp\t\t" "account" MOD_EXT "\n");
 	(void)re_fprintf(f, "\n");
@@ -842,14 +971,21 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "#module_app\t\t"  "debug_cmd"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t"  "echo"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "gtk" MOD_EXT "\n");
+	/* LF_Rupy: not used menu */
 	(void)re_fprintf(f, "#module_app\t\t"  "menu"MOD_EXT"\n");
+	/* LF_Rupy: add menu_custom */
 	(void)re_fprintf(f, "module_app\t\t" "menu_custom"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t"  "mwi"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "presence"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "serreg"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "syslog"MOD_EXT"\n");
 	(void)re_fprintf(f, "#module_app\t\t" "mqtt" MOD_EXT "\n");
 	(void)re_fprintf(f, "#module_app\t\t" "ctrl_tcp" MOD_EXT "\n");
+	/* LF_Rupy: not used vidloop */
 	(void)re_fprintf(f, "#module_app\t\t" "vidloop"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "ctrl_dbus"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "httpreq"MOD_EXT"\n");
+	(void)re_fprintf(f, "#module_app\t\t" "multicast"MOD_EXT"\n");
 	(void)re_fprintf(f, "\n");
 
 	(void)re_fprintf(f, "\n#------------------------------------"
@@ -858,13 +994,16 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "\n");
 
 	(void)re_fprintf(f, "\n# UI Modules parameters\n");
-	(void)re_fprintf(f, "cons_listen\t\t0.0.0.0:5555 # cons\n");
+	(void)re_fprintf(f, "cons_listen\t\t0.0.0.0:5555 # cons - "
+				"Console UI UDP/TCP sockets\n");
 
 	(void)re_fprintf(f, "\n");
-	(void)re_fprintf(f, "http_listen\t\t0.0.0.0:8000 # httpd - server\n");
+	(void)re_fprintf(f, "http_listen\t\t0.0.0.0:8000 # httpd - "
+				"HTTP Server\n");
 
 	(void)re_fprintf(f, "\n");
-	(void)re_fprintf(f, "ctrl_tcp_listen\t\t0.0.0.0:4444 # ctrl_tcp\n");
+	(void)re_fprintf(f, "ctrl_tcp_listen\t\t0.0.0.0:4444 # ctrl_tcp - "
+				"TCP interface JSON\n");
 
 	(void)re_fprintf(f, "\n");
 	(void)re_fprintf(f, "evdev_device\t\t/dev/input/event0\n");
@@ -880,13 +1019,14 @@ int config_write_template(const char *file, const struct config *cfg)
 	(void)re_fprintf(f, "#opus_complexity\t10\n");
 	(void)re_fprintf(f, "#opus_application\taudio\t# {voip,audio}\n");
 	(void)re_fprintf(f, "#opus_samplerate\t48000\n");
-	(void)re_fprintf(f, "#opus_packet_loss\t10\t# 0-100 percent\n");
+	(void)re_fprintf(f, "#opus_packet_loss\t10\t# 0-100 percent "
+				"(expected packet loss)\n");
 
 	(void)re_fprintf(f, "\n# Opus Multistream codec parameters\n");
 	(void)re_fprintf(f,
 			 "#opus_ms_channels\t2\t#total channels (2 or 4)\n");
 	(void)re_fprintf(f,
-			 "#opus_ms_streams\t\t2\t#number of streams\n");
+			 "#opus_ms_streams\t2\t#number of streams\n");
 	(void)re_fprintf(f,
 			"#opus_ms_c_streams\t2\t#number of coupled streams\n");
 
@@ -902,21 +1042,32 @@ int config_write_template(const char *file, const struct config *cfg)
 			"#selfview_size\t\t64x64\n");
 
 	(void)re_fprintf(f,
-			"\n# ICE\n"
-			"ice_debug\t\tno\n");
-
-	(void)re_fprintf(f,
 			"\n# ZRTP\n"
 			"#zrtp_hash\t\tno  # Disable SDP zrtp-hash "
 			"(not recommended)\n");
 
 	(void)re_fprintf(f,
 			"\n# Menu\n"
-			"#menu_bell\t\tyes\n"
 			"#redial_attempts\t0 # Num or <inf>\n"
 			"#redial_delay\t\t5 # Delay in seconds\n"
 			"#ringback_disabled\tno\n"
-			"#statmode_default\toff\n");
+			"#statmode_default\toff\n"
+			"#menu_clean_number\tno\n"
+			"#sip_autoanswer_beep\tyes\n"
+			"#sip_autoanswer_method\trfc5373 "
+			"# {rfc5373,call-info,alert-info}\n"
+			"#ring_aufile\t\tring.wav\n"
+			"#callwaiting_aufile\tcallwaiting.wav\n"
+			"#ringback_aufile\tringback.wav\n"
+			"#notfound_aufile\tnotfound.wav\n"
+			"#busy_aufile\t\tbusy.wav\n"
+			"#error_aufile\t\terror.wav\n"
+			"#sip_autoanswer_aufile\tautoanswer.wav\n"
+			);
+
+	(void)re_fprintf(f,
+			"\n# GTK\n"
+			"#gtk_clean_number\tno\n");
 
 	(void)re_fprintf(f,
 			"\n# avcodec\n"
@@ -928,10 +1079,17 @@ int config_write_template(const char *file, const struct config *cfg)
 			default_avcodec_hwaccel());
 
 	(void)re_fprintf(f,
+			"\n# ctrl_dbus\n"
+			"#ctrl_dbus_use\tsystem\t\t# system, session\n");
+
+	(void)re_fprintf(f,
 			 "\n# mqtt\n"
-			 "#mqtt_broker_host\t127.0.0.1\n"
+			 "#mqtt_broker_host\tsollentuna.example.com\n"
 			 "#mqtt_broker_port\t1883\n"
-			 "#mqtt_broker_clientid\tbaresip01\n"
+			 "#mqtt_broker_cafile\t/path/to/broker-ca.crt\t"
+				"# set this to enforce TLS\n"
+			 "#mqtt_broker_clientid\tbaresip01\t"
+				"# has to be unique\n"
 			 "#mqtt_broker_user\tuser\n"
 			 "#mqtt_broker_password\tpass\n"
 			 "#mqtt_basetopic\t\tbaresip/01\n");
@@ -944,6 +1102,22 @@ int config_write_template(const char *file, const struct config *cfg)
 			 "\n# EBU ACIP\n"
 			 "#ebuacip_jb_type\tfixed\t# auto,fixed\n");
 
+	(void)re_fprintf(f,
+			 "\n# HTTP request module\n"
+			 "#httpreq_ca\t\ttrusted1.pem\n"
+			 "#httpreq_ca\t\ttrusted2.pem\n"
+			 "#httpreq_dns\t\t1.1.1.1\n"
+			 "#httpreq_dns\t\t8.8.8.8\n"
+			 "#httpreq_hostname\tmyserver\n"
+			 "#httpreq_cert\t\tcert.pem\n"
+			 "#httpreq_key\t\tkey.pem\n");
+
+	(void)re_fprintf(f,
+			 "\n# multicast receivers (in priority order)"
+			 "- port number must be even\n"
+			 "#multicast_call_prio\t0\n"
+			 "#multicast_listener\t224.0.2.21:50000\n"
+			 "#multicast_listener\t224.0.2.21:50002\n");
 	if (f)
 		(void)fclose(f);
 

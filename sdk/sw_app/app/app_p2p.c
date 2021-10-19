@@ -86,7 +86,7 @@ int app_p2p_start(void)
     int ret = 0 ;
 	char *s = NULL;
 	
-    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_eth_run)
+    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
     {
 		int res;
 //        sprintf(p2p_cmd, "%s %s &",P2P_SERVER, app_set->sys_info.deviceId) ;
@@ -102,8 +102,14 @@ int app_p2p_start(void)
 				{
 #if defined(NEXXONE)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXONE", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
-#else
-					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#elif defined(NEXX360W)
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#elif defined(NEXX360W_MUX)
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W_MUX", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#elif defined(NEXX360H)
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360H", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#elif defined(NEXXB)
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXB", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #endif
 					printf("%s!\n", p2p_cmd) ;
 					system(p2p_cmd) ;

@@ -69,26 +69,27 @@ static FILE *fp = NULL;
 static FILE *jfp = NULL;
 #endif
 
+
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 void video_status(void)
 {
-    int i, temp, count, ret, vcount = 0;
-	int vstatus[MODEL_CH_NUM] = {0,};
-
+    int temp, count, ret, vcount = 0;
+	int vstatus[MODEL_CH_NUM + EXCHANNEL] = {0,};
+	int i;
     char msg[128] = {0,};
 
 	/* current maximum video count */
-	count = Vcap_get_video_status(MODEL_CH_NUM, &vstatus[0], &temp);
+	count = Vcap_get_video_status(MODEL_CH_NUM + EXCHANNEL, &vstatus[0], &temp);
 	
 #if defined(NEXXONE) || defined(NEXX360H)
 	app_leds_cam_ctrl(0, vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
 #else
-	for (i = 0; i < count; i++)
-    {
+	/* nexx_b 3ch -> 0, 2, 3번에 카메라 연결됨 */
+	for (i = 0; i < count; i++) {
 		/* cam led on/off */
 		app_leds_cam_ctrl(i, vstatus[i]);
 		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
@@ -96,14 +97,13 @@ void video_status(void)
 	}
 #endif
 	app_cfg->vid_count = vcount;
-    sprintf(msg, " Camera Detected Count: %d", count);
-	app_log_write(MSG_LOG_WRITE, msg);
+	sysprint("[APP_CAP] Camera Detected Count: %d\n", count);
 	
 	if (app_cfg->ste.b.cap == 0) {
 #if defined(NEXXONE) || defined(NEXX360H)
 		if (app_cfg->vid_count > 0) {
 			app_cfg->ste.b.cap = 1;
-			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec) {
+			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec && !app_cfg->ste.b.ftp_run) {
 				app_rec_start();  
 			}
 			app_cfg->ste.b.rec = 0 ;
@@ -112,20 +112,19 @@ void video_status(void)
 		/* required for avi open */
 		if ((app_cfg->vid_count > 0) && (vstatus[0] > 0)) {
 			app_cfg->ste.b.cap = 1;
-			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec) {
+			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec && !app_cfg->ste.b.ftp_run) {
 				app_rec_start();  
 			}
 			app_cfg->ste.b.rec = 0 ;
 		}
 #endif
-
 	} /* if (app_cfg->ste.b.cap == 0) */
 	
     if (app_cfg->vid_count == 0)
     {
 		ret = app_rec_state();
 		if (ret) {
-        	app_rec_stop(1);
+        	app_rec_stop(ON);
 			sleep(1); /* wait for file close */
 		}
     } 
@@ -159,11 +158,20 @@ static void proc_vid_cap(void)
 {
 	VCODEC_BITSBUF_LIST_S fullBufList;
 	VCODEC_BITSBUF_S *pFullBuf;
-	int i, idx, pre_msec = -1;
-	Uint64 captime, pre_captime = -1;
+    int i, idx ;
+	
+#if defined(NEXX360W_MUX)
+	struct timeval ltime ;
+	int pre_msec = -1;
+	Uint64 pre_captime = -1 ;
+	int timezone = 0 ;
+#endif
+
+	Uint64 captime;
 	stream_info_t *ifr;
 	char *addr;
 	int meta_size = 0;
+    
 
 	meta_size = sizeof(app_gps_meta_t);
 	Venc_getBitstreamBuffer(&fullBufList, 0);
@@ -194,8 +202,15 @@ static void proc_vid_cap(void)
 			ifr->frm_rate = app_cfg->ich[ifr->ch].fr;
 			ifr->is_key = (pFullBuf->frameType == VCODEC_FRAME_TYPE_I_FRAME) ? 1:0;
 			captime = (Uint64)((Uint64)pFullBuf->upperTimeStamp<<32|pFullBuf->lowerTimeStamp);
+#if 0 //defined(NEXX360W_MUX)
+	        timezone = app_set->time_info.time_zone - 12 ; 
+			gettimeofday(&ltime, NULL) ;
+ 			ifr->t_sec = ltime.tv_sec + timezone*3600 ;
+			ifr->t_msec = ltime.tv_usec % 1000 ;
+#else			
 			ifr->t_sec = (Uint32)(captime/1000);
 			ifr->t_msec = (Uint32)(captime%1000);
+#endif			
 
 			app_memcpy(ifr->addr, (char*)pFullBuf->bufVirtAddr, ifr->b_size);
 			
@@ -233,7 +248,7 @@ static void proc_vid_cap(void)
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
 				/* ch == 2 --> JPEG  */
-                else if(pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == JPEG_CH_NUM)
+                else if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == JPEG_CH_NUM)
                 {
 					FILE *jpeg_f = NULL;
 //                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
@@ -315,7 +330,7 @@ static void *THR_vid_cap(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("exit\n");
+	aprintf("....exit!\n");
 
 	return NULL;
 }
@@ -349,7 +364,7 @@ static void vid_cap_stop(void)
 
     //#--- recording stop
     if (app_rec_state()) {
-        app_rec_stop(1);
+        app_rec_stop(ON);
 		sleep(1); /* wait for file close */
 	}
 
@@ -428,7 +443,7 @@ static void cap_enc_late_init(void)
 
 static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 {
-	int idx=0, wi, he, br, channels;
+	int idx=0, wi, he, channels;
 	app_ch_cfg_t *ch_prm;
 
 	channels = MODEL_CH_NUM+1;
@@ -505,7 +520,9 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 
 	vsysParams.captMode = CAPT_MODE_720P;
-	vsysParams.numChs = MODEL_CH_NUM;
+
+	vsysParams.numChs = MODEL_CH_NUM + EXCHANNEL;
+
 
 	app_cfg->wd_tot |= WD_ENC; /* Fixed */
 	app_cfg->num_ch = vsysParams.numChs;
@@ -542,7 +559,7 @@ int app_cap_start(void)
 	//ctrl_enc_multislice() ; 
 #endif
 
-	aprintf("done!\n");
+	aprintf("....done!\n");
 
 	return SOK;
 }
@@ -570,7 +587,7 @@ int app_cap_stop(void)
 
 	app_msleep(500);	//# wait m3 cap_stop done
 
-	aprintf("done!\n");
+	aprintf("....done!\n");
 
 	return SOK;
 }

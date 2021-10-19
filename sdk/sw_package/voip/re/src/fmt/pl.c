@@ -55,6 +55,88 @@ void pl_set_mbuf(struct pl *pl, const struct mbuf *mb)
 
 
 /**
+ * Convert a pointer-length object to an int32_t.
+ *
+ * @param pl Pointer-length object
+ *
+ * @return int value
+ */
+int32_t pl_i32(const struct pl *pl)
+{
+	int32_t v = 0;
+	uint32_t mul = 1;
+	const char *p;
+	bool neg = false;
+
+	if (!pl || !pl->p)
+		return 0;
+
+	p = &pl->p[pl->l];
+	while (p > pl->p) {
+		const char ch = *--p;
+
+		if ('0' <= ch && ch <= '9') {
+			v += mul * (ch - '0');
+			mul *= 10;
+		}
+		else if (ch == '-' && p == pl->p) {
+			neg = true;
+			break;
+		}
+		else if (ch == '+' && p == pl->p) {
+			break;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	return neg ? -v : v;
+}
+
+
+/**
+ * Convert a pointer-length object to an int64_t.
+ *
+ * @param pl Pointer-length object
+ *
+ * @return int value
+ */
+int64_t pl_i64(const struct pl *pl)
+{
+	int64_t v = 0;
+	uint64_t mul = 1;
+	const char *p;
+	bool neg = false;
+
+	if (!pl || !pl->p)
+		return 0;
+
+	p = &pl->p[pl->l];
+	while (p > pl->p) {
+		const char ch = *--p;
+
+		if ('0' <= ch && ch <= '9') {
+			v += mul * (ch - '0');
+			mul *= 10;
+		}
+		else if (ch == '-' && p == pl->p) {
+			neg = true;
+			break;
+		}
+		else if (ch == '+' && p == pl->p) {
+			break;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	return neg ? -v : v;
+}
+
+
+/**
  * Convert a pointer-length object to a numeric 32-bit value
  *
  * @param pl Pointer-length object
@@ -497,6 +579,31 @@ const char *pl_strchr(const struct pl *pl, char c)
 
 	end = pl->p + pl->l;
 	for (p = pl->p; p < end; p++) {
+		if (*p == c)
+			return p;
+	}
+
+	return NULL;
+}
+
+
+/**
+ * Locate the last occurrence of character in pointer-length string
+ *
+ * @param pl  Pointer-length string
+ * @param c   Character to locate
+ *
+ * @return Pointer to last char if found, otherwise NULL
+ */
+const char *pl_strrchr(const struct pl *pl, char c)
+{
+	const char *p, *end;
+
+	if (!pl_isset(pl))
+		return NULL;
+
+	end = pl->p + pl->l - 1;
+	for (p = end; p >= pl->p; p--) {
 		if (*p == c)
 			return p;
 	}

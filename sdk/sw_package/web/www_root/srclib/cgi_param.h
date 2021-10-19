@@ -17,6 +17,7 @@ typedef struct _tagCgiParam {
 /* start of servers settings */
 typedef struct _tagBackupServer {
 	int  enable;
+    int  upload_files;      // Type of record files to upload to backup server. 0:all, 1:event
 	char serveraddr[32];
 	char id[32];
 	char pw[32];
@@ -153,6 +154,16 @@ typedef struct _tagCgiNetworkConfiguration {
 	int		  live_stream_account_enctype;
     T_CGI_ACCOUNT live_stream_account;
 }T_CGI_NETWORK_CONFIG;
+typedef struct _tagCgiNetworkConfiguration2 {
+    T_CGI_NETWORK_INTERFACE wireless;
+    T_CGI_NETWORK_INTERFACE cradle;
+    T_CGI_ACCOUNT wifi_ap;
+    T_CGI_ACCOUNT wifi_ap_list[4];
+    int       wifi_ap_multi;                // 1:enable, 0:disable
+    int       live_stream_account_enable;
+	int		  live_stream_account_enctype;
+    T_CGI_ACCOUNT live_stream_account;
+}T_CGI_NETWORK_CONFIG2;
 
 typedef struct _tagCgiSystemConfiguration{
 	char model[32];

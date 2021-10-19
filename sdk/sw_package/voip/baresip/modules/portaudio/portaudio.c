@@ -1,7 +1,7 @@
 /**
  * @file portaudio.c  Portaudio sound driver
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +26,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;      /* inheritance */
 	PaStream *stream_rd;
 	ausrc_read_h *rh;
 	void *arg;
@@ -36,12 +35,12 @@ struct ausrc_st {
 };
 
 struct auplay_st {
-	const struct auplay *ap;      /* inheritance */
 	PaStream *stream_wr;
 	auplay_write_h *wh;
 	void *arg;
 	volatile bool ready;
 	unsigned ch;
+	enum aufmt fmt;
 };
 
 
@@ -89,6 +88,7 @@ static int write_callback(const void *inputBuffer, void *outputBuffer,
 			  PaStreamCallbackFlags statusFlags, void *userData)
 {
 	struct auplay_st *st = userData;
+	struct auframe af;
 	size_t sampc;
 
 	(void)inputBuffer;
@@ -100,7 +100,9 @@ static int write_callback(const void *inputBuffer, void *outputBuffer,
 
 	sampc = frameCount * st->ch;
 
-	st->wh(outputBuffer, sampc, st->arg);
+	auframe_init(&af, st->fmt, outputBuffer, sampc);
+
+	st->wh(&af, st->arg);
 
 	return paContinue;
 }
@@ -234,7 +236,6 @@ static int src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
 	st->ch  = prm->ch;
@@ -278,10 +279,10 @@ static int play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!st)
 		return ENOMEM;
 
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
 	st->ch  = prm->ch;
+	st->fmt = prm->fmt;
 
 	st->ready = true;
 

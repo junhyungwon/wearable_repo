@@ -275,7 +275,7 @@ int MemMng_Init( MEM_MNG_INFO *pInfo )
 		goto MEM_INIT_FAIL;
 	}
 
-	dprintf("done... totalsize %d\n", pInfo->totalsize);
+	dprintf_rt("done... totalsize %d\n", pInfo->totalsize);
 	#endif
 
 	pInfo->freesize			= pInfo->totalsize;
@@ -402,10 +402,10 @@ void printheader(char *pData, int size)
 {
 	int cnt = 0;
 
-	dprintf("printheader = %d\n", size);
+	dprintf_rt("printheader = %d\n", size);
 	for(cnt=0; cnt<size; cnt++)
 	{
-		dprintf(" 0x%X ",*pData++);
+		dprintf_rt(" 0x%X ",*pData++);
 		if( cnt!=0 && cnt%4 == 0 )
 			printf("\n");
 	}
@@ -657,7 +657,7 @@ VIDEO_FRAME * MemMng_GetFrameBySerial( int serial , VIDEO_BLK_INFO *pVidInfo)
 		}
 	}
 
-	dprintf("MemMng_GetFrameBySerial: Search no frame\n");
+	dprintf_rt("MemMng_GetFrameBySerial: Search no frame\n");
 
 	return NULL;
 }

@@ -29,6 +29,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netinet/ip.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
@@ -49,31 +50,72 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#if (FTP_CUR_DEV == FTP_DEV_ETH0)
+#define FTP_DEV_NAME		"eth0"
+#elif (FTP_CUR_DEV == FTP_DEV_ETH1)
+#define FTP_DEV_NAME		"eth1"
+#else
+#error "invalid ftp device"
+#endif
 
 #define FTP_CYCLE_TIME		100
 #define FTP_TIME_OUT		5	//# 2sec
 #define FTP_RETRY_CNT       5
-#define MSIZE 8192*2  // buffer size
+#define MSIZE 8192*8  // buffer size
 
-typedef struct {
-	app_thr_obj ftpObj;	//# key thread
-	int sdFtp;
-	int img_save;
-	int ftp_state;
-	int file_cnt;
-    int retry_cnt ;
-	char path[MAX_CHAR_128];
-} app_img_ftp_t;
+//#define USE_SSL             
+
+X509* server_cert ;
+X509_NAME *certname = NULL ;
 
 /*----------------------------------------------------------------------------
  Declares variable)s
 -----------------------------------------------------------------------------*/
-static app_img_ftp_t t_ftp;
-static app_img_ftp_t *iftp=&t_ftp;
+static app_ftp_t t_ftp;
+static app_ftp_t *iftp=&t_ftp;
 
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+
+void  ssl_info_callback(const SSL *s, int where, int ret)
+{
+	char * writeString;
+	int w;
+
+	w = where & ~SSL_ST_MASK;
+
+	if (w & SSL_ST_CONNECT)
+		writeString="SSL_connect";
+	else if (w & SSL_ST_ACCEPT)
+		writeString="SSL_accept";
+	else
+		writeString="undefined";
+
+	fprintf(stderr, "======== writeString = [%s]\n", writeString);
+
+	if (where & SSL_CB_LOOP)
+	{
+		fprintf(stderr, "======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+				writeString, SSL_state_string_long(s));
+	}
+	else if (where & SSL_CB_ALERT)
+	{
+		if (ret == 0)
+		{
+			fprintf(stderr,"======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+					writeString, SSL_state_string_long(s));
+		}
+		else if (ret < 0)
+		{
+			fprintf(stderr,"======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+					writeString, SSL_state_string_long(s));
+		}
+	}
+}
+
+
+
 static int ftpRecvResponse(int sock, char * buf)
 {
     socklen_t lon ;
@@ -128,7 +170,11 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
     }
     else
     {
+#if defined(USE_SSL)
+	    if (SSL_write(iftp->lsslHandle, buf, strlen(buf)) == -1) {
+#else
 	    if (send(sock, buf, strlen(buf), 0) == -1) {
+#endif
 		    perror("send");
 		    return -1;
 	    }
@@ -248,7 +294,7 @@ static int ftp_transfer_file(int sd, char *filename)
                 break ;
             }
 		}
-        OSA_waitMsecs(5) ;
+        OSA_waitMsecs(1) ;
 	}
 	fclose(in);
 
@@ -261,7 +307,6 @@ static int createDataSock(char * host, int port)
 
 	struct sockaddr_in pin;
 	struct ifreq interface ;
-	struct hostent *hp;
     struct timeval tv ;
     struct linger stLinger ;
 
@@ -269,26 +314,22 @@ static int createDataSock(char * host, int port)
 
     stLinger.l_onoff = 1 ;
     stLinger.l_linger = 0 ;
-
-	if ((hp = gethostbyname(host)) == 0) {
-		perror("gethostbyname");
-		return -1;
-	}
-
-	memset(&pin, 0, sizeof(pin));
+	
+ 	memset(&pin, 0, sizeof(pin));
 	pin.sin_family = AF_INET;
-	pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+	pin.sin_addr.s_addr = inet_addr(host);
 	pin.sin_port = htons(port);
 
-	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-		perror("socket");
+    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+	{
+	    perror("socket");
 		return -1;
-	}
+    }
 
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
-    strncpy(interface.ifr_ifrn.ifrn_name, "eth0", IFNAMSIZ);
+    strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
 
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
@@ -337,6 +378,14 @@ static int ftp_change_dir(int sd, char *dirname, int day_dir)
 
         if(ftpRecvResponse(sd, buf) != 0)
             return -1;
+
+        if(ftpNewCmd(sd, buf, "CDUP", "") != 0)
+            return -1 ;
+
+        if(ftpRecvResponse(sd, buf) != 0)
+            return -1;
+
+		return 0 ;
     }
 
     if(ftpNewCmd(sd, buf, "CWD", dirname) != 0)
@@ -379,6 +428,7 @@ static int ftp_send_file(int sd, char *filename)
     char tmpHost[100];
     int tmpPort, data_sock;
     char buf[MSIZE];
+	char source_fname[64], dest_fname[64] ;
 
 	if(ftpNewCmd(sd, buf, "TYPE", "I") != 0)
 		return -1 ;
@@ -401,17 +451,10 @@ static int ftp_send_file(int sd, char *filename)
 
 		if(data_sock > 0)
 		{
-/*
-		    if(ftpNewCmd(sd,buf,"REST", 0) != 0)
-				return -1 ;
-	
-			if(ftpRecvResponse(sd, buf) != 0)
-                return -1 ;
+			sprintf(source_fname, "_%s",&filename[strlen(iftp->path) + 1]) ;
+			sprintf(dest_fname, "%s",&filename[strlen(iftp->path) + 1]) ;
 
-            if(strncmp(buf, "350", 3) == 0) 
-	            ftp_dbg("ftpRecvResponse REST success = %s\n", buf);
-*/
-		    if(ftpNewCmd(sd,buf,"STOR",&filename[strlen(iftp->path) + 1]) != 0)
+		    if(ftpNewCmd(sd,buf,"STOR", source_fname) != 0)
                 return -1 ;
 
 		    if(ftpRecvResponse(sd, buf) != 0)
@@ -428,8 +471,32 @@ static int ftp_send_file(int sd, char *filename)
 					{
 				        if (strncmp(buf, "226", 3) == 0) 
 					    {
-					        printf("%s transfer completed.\n", &filename[strlen(iftp->path) + 1]);
-					        return 0;
+					        printf("%s transfer completed.\n", dest_fname);
+
+							if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
+								return -1 ;
+
+							if(ftpRecvResponse(sd, buf) == 0)
+							{		
+								if (strncmp(buf, "350", 3) == 0) 
+								{
+									if(ftpNewCmd(sd,buf,"RNTO", dest_fname) != 0)
+										return -1 ;
+
+									if(ftpRecvResponse(sd, buf) == 0)
+									{		
+										if (strncmp(buf, "250", 3) == 0)
+										{
+											printf("Rename from %s to %s \n",source_fname, dest_fname) ;
+										    return 0 ;
+										}
+										 else
+											return -1 ;
+									}
+								}
+							}	
+							else
+								return -1 ;
 				        }
 					}
 					else
@@ -468,27 +535,30 @@ static int ftp_login(int sd, char *username, char *password)
 static int ftp_connect (char *hostname, int port)
 {
 	char buf[MSIZE];
-	int sd, res, valopt, reuse = 1;
-	fd_set myset;
+	int sd, res, reuse = 1;
 	struct timeval tv;
-	socklen_t lon;
-
     int keepalive = 1, keepcnt = 1, keepidle = 1, keepintvl = 1 ;
 
 	struct ifreq interface ;
 	struct sockaddr_in pin;
 	struct hostent *hp;
+#if 0	
+	socklen_t lon;
+	fd_set myset;
+	int valopt;
+#endif
+	
+    if ((hp = gethostbyname(hostname)) == 0) 
+	{
+	    perror ("gethostbyname");
+	    return -1;
+    }
 
-	if ((hp = gethostbyname(hostname)) == 0) {
-		perror ("gethostbyname");
-		return -1;
-	}
-
-	memset (&pin, 0, sizeof(pin));
-	pin.sin_family 		= AF_INET;
-	pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-	pin.sin_port 		= htons(port);
-
+    memset (&pin, 0, sizeof(pin));
+    pin.sin_family 		= AF_INET;
+    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
+    pin.sin_port 		= htons(port);
+	
 	//#--- create socket
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("socket");
@@ -505,7 +575,7 @@ static int ftp_connect (char *hostname, int port)
     tv.tv_sec = 10;
     tv.tv_usec = 0;
 
-    strncpy(interface.ifr_ifrn.ifrn_name, "eth0", IFNAMSIZ);
+    strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
 
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
@@ -579,14 +649,127 @@ static int ftp_close(int sd)
 
 	close(sd); //close the socket
 
-	iftp->sdFtp = -1 ;
+	iftp->lsdFtp = -1 ;
 	return 0;
+}
+
+static int get_netdev_link_status(void)
+{
+#if (FTP_CUR_DEV == FTP_DEV_ETH0)	
+	int state = app_cfg->ste.b.cradle_net_run;
+#elif (FTP_CUR_DEV == FTP_DEV_ETH1)
+	int state = app_cfg->ste.b.usbnet_run;
+#else
+#error "invalid ftp device"
+#endif	
+	return (state ? 1: 0);
+}				 								 													    
+
+void SSL_Create()
+{
+	char *str ;
+	// Register the error strings for libcrypto &libssl
+	SSL_load_error_strings() ;
+
+	SSLeay_add_ssl_algorithms();
+	SSL_load_error_strings() ;
+
+	// Register the available ciphers and digests
+
+	// New context saying we are a client, and using SSL 2 or 3
+
+	iftp->lsslContext = SSL_CTX_new(SSLv23_client_method()) ;
+	if(iftp->lsslContext == NULL)
+		ERR_print_errors_fp (stderr) ;
+
+	// Disabling SSLv2 will leaave v3 and TLSv1 for negotiation
+
+	SSL_CTX_set_options(iftp->lsslContext, SSL_OP_NO_SSLv2) ;
+
+	SSL_CTX_set_info_callback(iftp->lsslContext, ssl_info_callback) ;
+	if(SSL_CTX_use_certificate_file(iftp->lsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0)
+	{
+		ERR_print_errors_fp(stderr) ;
+		exit(3) ;
+	}
+	if(SSL_CTX_use_PrivateKey_file(iftp->lsslContext, CLIENT_KEYF, SSL_FILETYPE_PEM) <= 0)
+	{
+		ERR_print_errors_fp(stderr) ;
+		exit(4) ;
+	}
+	if(!SSL_CTX_check_private_key(iftp->lsslContext))
+	{
+		ERR_print_errors_fp(stderr) ;
+		fprintf(stderr, "Private key does not match the cerificate public key\n") ;
+		exit(5) ;
+	}
+	if(!SSL_CTX_load_verify_locations(iftp->lsslContext, CLIENT_CA_CERTF, NULL))
+	{
+		ERR_print_errors_fp(stderr) ;
+		exit(1) ;
+	}
+
+	SSL_CTX_set_verify(iftp->lsslContext, SSL_VERIFY_PEER, NULL) ;
+	SSL_CTX_set_verify_depth(iftp->lsslContext, 1);
+	// Create an SSL struct for the connection
+	iftp->lsslHandle = SSL_new(iftp->lsslContext) ;
+	if(iftp->lsslHandle == NULL)
+		ERR_print_errors_fp(stderr) ;
+
+	// Connect the SSL struct to our connection 
+	if(!SSL_set_fd(iftp->lsslHandle, iftp->lsdFtp))
+		ERR_print_errors_fp(stderr);
+
+	// Initiate SSL handshake
+	if(SSL_connect(iftp->lsslHandle) != 1)
+	{
+printf("555555555555555555555555555\n") ;
+		ERR_print_errors_fp(stderr);
+	}
+	else
+	{
+		printf("SSL_connect.. OK\n") ;
+		printf("SSL connection using %s\n", SSL_get_cipher(iftp->lsslHandle)) ;
+		printf("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->lsslHandle)));
+
+		SSL_CTX_set_cipher_list(iftp->lsslContext, SSL_get_cipher(iftp->lsslHandle)) ;
+
+		server_cert = SSL_get_peer_certificate (iftp->lsslHandle) ;
+
+		if(server_cert != NULL)
+		{
+			if(SSL_get_verify_result(iftp->lsslHandle) == X509_V_OK)
+				printf("client verification with SSL_get_verify_result() succeeded. \n") ;
+            else
+				printf("client verification with SSL_get_verify_result() failed.\n") ;
+
+			printf("Server cerificate:\n") ;
+
+			str = X509_NAME_oneline(X509_get_subject_name (server_cert), 0, 0) ;
+			printf("\t subject: %s\n",str) ;
+
+			OPENSSL_free(str) ;
+
+			str = X509_NAME_oneline(X509_get_issuer_name (server_cert), 0, 0) ;
+			printf("\t issuer: %s\n",str) ;
+			
+			OPENSSL_free(str) ;
+
+			certname = X509_NAME_new() ;
+			certname = X509_get_subject_name(server_cert) ;
+
+			X509_free(server_cert) ;
+
+		}
+		else
+			printf("Server certificated fail..\n") ;
+	}
 }
 
 static void ftp_send(void)
 {
 	int i=0;
-	int ret = 0,ftp_cycle = 0, retry_cnt = 0;
+	int ret = 0, retry_cnt = 0, file_cnt = 0;
     char FileName[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
 
@@ -602,20 +785,26 @@ static void ftp_send(void)
 		}
 
 		//#--- ping check for ftp IP
-		if(iftp->sdFtp >= 0)
-			close(iftp->sdFtp);
+		if(iftp->lsdFtp >= 0)
+			close(iftp->lsdFtp);
 
-        if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
-        	break;
+		// ethX off in ftp running
+		if(!get_netdev_link_status()) { 	
+			iftp->ftp_state = FTP_STATE_NONE;
+			break;
+		}
  
-		iftp->sdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
-		if(iftp->sdFtp != -1)
+		iftp->lsdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
+		if(iftp->lsdFtp != -1)
 		{
+#if defined(USE_SSL)
+			SSL_Create() ;
+#endif
             retry_cnt = 0 ;
 		 //read result
 			while(1)
 			{
-		        ret = ftp_login(iftp->sdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
+		        ret = ftp_login(iftp->lsdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
 	            if(ret == 0)
                 {
 			        iftp->ftp_state = FTP_STATE_SENDING;
@@ -660,69 +849,93 @@ static void ftp_send(void)
         app_leds_backup_state_ctrl(LED_FTP_ON);
         app_leds_eth_status_ctrl(LED_FTP_ON);
 
-        if(ftp_change_dir(iftp->sdFtp, app_set->sys_info.deviceId, 0) != 0)
+
+		for (i = 0; i < iftp->file_cnt; i++)   // 전체 파일 리스트(event + normal)
         {
-            iftp->ftp_state = FTP_STATE_NONE ;
-        }
-		else
-		{
-		    iftp->file_cnt = get_recorded_file_count() ;
+            if(get_ftp_send_file(FileName) == 0)   // get all file list 
+               continue ;
 
-		    for (i = 0; i < iftp->file_cnt; i++)
-            {
-                if(get_ftp_send_file(FileName) == 0)   // do not exist file
-                   continue ;
+			 // ethX off in ftp running
+            if(!get_netdev_link_status()) {
+				iftp->ftp_state = FTP_STATE_NONE;
+                break;
+			}
 
-                if(!app_cfg->ste.b.cradle_eth_run)  // eth0 off in ftp running
-                    break;
+			if(app_set->ftp_info.file_type) // ftp send event file
+			{
+			    if(strstr(FileName, "/mmc/DCIM/R_"))
+                {
+//                    restore_ftp_file(FileName) ;
+					continue ;
+				}
+			}
 
-                strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /deviceID/20190823/
-
-			    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
-			    {
-                    if(ftp_change_dir(iftp->sdFtp, temp, i) != 0)
+            strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /20190823/DeviceID
+		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
+		    {
+                if(ftp_change_dir(iftp->lsdFtp, temp, 0) != 0)
+                {
+                    iftp->ftp_state = FTP_STATE_NONE ;
+                }
+				else
+				{	
+                    if(ftp_change_dir(iftp->lsdFtp, app_set->sys_info.deviceId, 0) != 0)
                     {
-                       iftp->ftp_state = FTP_STATE_NONE ;
+                        iftp->ftp_state = FTP_STATE_NONE ;
                     }
 					else
-					{	
-                        if(ftp_send_file(iftp->sdFtp, FileName) == 0)
+					{
+                        if(ftp_send_file(iftp->lsdFtp, FileName) == 0)
                         {
 					        ftp_dbg(" \n[ftp] Send image -- %s \n", FileName);
                             delete_ftp_send_file(FileName) ;
-				        }   
+			            }   
                         else
                         {
-                            restore_ftp_file(FileName) ;
-					        ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
-                            break;
-						}	
-                    }
-			    }
-                else
-                {
-                    break ;
-                }
-            } 
-		}   
+							if (access(FileName, 0) == -1) 
+								ftp_dbg(" \n[ftp] Do not exist file name - %s \n", FileName);
+							else
+								restore_ftp_file(FileName) ;
 
-		iftp->file_cnt = get_recorded_file_count() ;
-        if(iftp->file_cnt == 0)
-        {
+				            ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
+                            break;
+						}
+
+                        if(ftp_change_dir(iftp->lsdFtp, temp, 1) != 0)
+                        {
+                            iftp->ftp_state = FTP_STATE_NONE ;
+						}
+
+					}	
+                }
+		    }
+            else
+            {
+                break ;
+            }
+
+        } 
+
+		if(app_set->ftp_info.file_type) // the status after sending files 
+		    file_cnt = get_recorded_efile_count() ;
+		else
+		    file_cnt = get_recorded_file_count() ;
+
+		if(file_cnt == 0)
+		{
             app_leds_backup_state_ctrl(LED_FTP_OFF);
             app_leds_eth_status_ctrl(LED_FTP_OFF);
 		    iftp->ftp_state = FTP_STATE_SEND_DONE;
-            ftp_close(iftp->sdFtp);
-        }
-        else
-        {
+            ftp_close(iftp->lsdFtp);
+		}
+		else
+		{
             app_leds_eth_status_ctrl(LED_FTP_ERROR);
             app_leds_backup_state_ctrl(LED_FTP_ERROR);
-          
             iftp->ftp_state = FTP_STATE_NONE ;
-        }   
-	}
+		}
 
+	} /* end of if (iftp->ftp_state == FTP_STATE_SENDING)*/
 }
 
 int app_get_ftp_state(void)
@@ -743,8 +956,7 @@ void app_ftp_state_reset(void)
 static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
-	int cmd, exit = 0 ;
-	unsigned long ret = 0;
+	int cmd, exit = 0, cradle_status = 0 ;
 
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -752,7 +964,7 @@ static void *THR_ftp(void *prm)
     iftp->ftp_state = FTP_STATE_NONE;
     iftp->retry_cnt = 0 ;
 
-    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
+//    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
 
 	while (!exit)
 	{
@@ -763,17 +975,30 @@ static void *THR_ftp(void *prm)
 			break;
 		}
 		
-        if(app_cfg->ste.b.cradle_eth_run)
+		if(get_netdev_link_status())
         {
+			cradle_status = ON ;
+
             if(iftp->ftp_state == FTP_STATE_NONE)
             {
-			    iftp->file_cnt = get_recorded_file_count() ;
-
 				if (app_rec_state())  // rec status
-                {
-                    app_rec_stop(1);
-			     	app_cfg->ste.b.prerec_state = 1 ;
-                }
+				{
+					app_rec_stop(ON);
+					app_cfg->ste.b.prerec_state = 1 ;
+				}
+
+				if(app_set->ftp_info.file_type) // ftp send event file
+				{
+					if(get_recorded_efile_count() > 0)
+					{
+	                    ftp_dbg("get_recorded_efile_count = %d\n", get_recorded_efile_count());
+					    iftp->file_cnt = get_recorded_file_count() ;
+					}
+					else
+					    iftp->file_cnt = 0 ;
+				}
+                else
+					iftp->file_cnt = get_recorded_file_count() ;
 
                 if (iftp->file_cnt > 0)  
                 {
@@ -784,6 +1009,7 @@ static void *THR_ftp(void *prm)
                         app_cfg->ste.b.ftp_run = 1 ;  // rec key disable
 
                         ftp_send() ;
+						save_filelist();
                         app_cfg->ste.b.ftp_run = 0 ;
 					}
                 }
@@ -791,6 +1017,8 @@ static void *THR_ftp(void *prm)
                 {
                     app_cfg->ste.b.ftp_run = 0 ;
                     iftp->ftp_state = FTP_STATE_SEND_DONE ;
+					app_leds_backup_state_ctrl(LED_FTP_OFF);
+					app_leds_eth_status_ctrl(LED_FTP_OFF);
                 }  
             }
             else
@@ -801,29 +1029,38 @@ static void *THR_ftp(void *prm)
 			/* ftp connection 실패시 auto record 설정 On, 및 현재 record 상태 였으면 이전 상태로 돌리기 위한 작업 */
             if (app_cfg->ste.b.prerec_state && iftp->ftp_state == FTP_STATE_SEND_DONE)
 			{      
-                app_rec_start() ;  // rec start after ftp send
-			    app_cfg->ste.b.prerec_state = 0 ;
+				if(!app_rec_state())
+				{
+                    app_rec_start() ;  // rec start after ftp send
+			        app_cfg->ste.b.prerec_state = 0 ;
+				}
             } 
 			
         }
         else
         {
 			/* cradle에서 분리 되었을 경우 처리*/
-//			if(iftp->sdFtp < 0)
+			if(cradle_status == ON)
 			{
-                iftp->ftp_state = FTP_STATE_NONE ;
-                app_cfg->ste.b.ftp_run = 0 ;
-            } 
+				save_filelist();
+				cradle_status = OFF ;
+            }
+            iftp->ftp_state = FTP_STATE_NONE ;
+            app_cfg->ste.b.ftp_run = 0 ;
 
             if (app_cfg->ste.b.prerec_state && app_cfg->en_rec)
 			{
-                app_rec_start() ;  // rec start after ftp send
-				app_cfg->ste.b.prerec_state = 0 ;
+				if(!app_rec_state())
+				{
+                    app_rec_start() ;  // rec start after ftp send
+				    app_cfg->ste.b.prerec_state = 0 ;
+				}
 			}
         }
    
         OSA_waitMsecs(1000) ;
 	}
+
 
     tObj->active = 0;
     aprintf("...exit\n");
@@ -840,7 +1077,7 @@ int app_ftp_init(void)
 {
 	app_thr_obj *tObj;
 
-	memset(iftp, 0, sizeof(app_img_ftp_t));
+	memset(iftp, 0, sizeof(app_ftp_t));
 
 	sprintf(iftp->path , "%s/%s", SD_MOUNT_PATH, REC_DIR);
 

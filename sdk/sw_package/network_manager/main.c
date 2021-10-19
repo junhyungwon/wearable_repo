@@ -112,6 +112,8 @@ static void ___thread_start(void)
 	netmgr_poll_wlan_init();
 	netmgr_poll_cradle_init();
 	netmgr_poll_usbnet_init();
+	
+	dprintf("enter...!\n");
 }
 
 /*****************************************************************************
@@ -157,8 +159,6 @@ static void app_main(void)
 *****************************************************************************/
 int main(int argc, char **argv)
 {
-	int rc = 0;
-	
 	main_thread_init();
 	shared_mem_init();
 	
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 	
 	main_thread_exit();
 	
-	printf(" [netmgr] process exit!\n");
+	dprintf("...exit!\n");
 	
 	return 0;
 }

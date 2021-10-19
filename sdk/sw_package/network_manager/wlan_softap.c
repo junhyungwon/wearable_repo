@@ -24,6 +24,7 @@
 #include "netmgr_ipc_cmd_defs.h"
 #include "wlan_softap.h"
 #include "common.h"
+#include "event_hub.h"
 #include "main.h"
 
 /*----------------------------------------------------------------------------
@@ -36,11 +37,11 @@
 #define HOSTAPD_PID_PATH			"/var/run/hostapd.pid"
 #define HOSTAPD_CONFIG				"/etc/hostapd.conf"
 
-#define __STAGE_SOFTAP_MOD_LOAD		(0x00)
-#define __STAGE_SOFTAP_MOD_WAIT		(0x01)
-#define __STAGE_SOFTAP_MOD_EXEC		(0x02)
-#define __STAGE_SOFTAP_GET_STATUS	(0x03)
+#define __STAGE_SOFTAP_MOD_EXEC		(0x01)
+#define __STAGE_SOFTAP_GET_STATUS	(0x02)
 #define __STAGE_SOFTAP_ERROR_STOP	(0x04)
+
+#define NETMGR_SOFTAP_DEVNAME		"wlan0"
 
 typedef struct {
 	app_thr_obj hObj; /* wlan client mode */
@@ -49,11 +50,10 @@ typedef struct {
 	char passwd[NETMGR_WLAN_PASSWD_MAX_SZ+1];  //64
 	
 	int freq;        /* 0-> 2.4GHz 1-> 5GHz */
-	int stealth;     /* Hiddel SSID */
+	int stealth;     /* Hidden SSID */
 	int channel;     /* channel number (2.4GH ->6, 5GHz -> 36) */
 	
 	int stage;
-	int hostap_timer;
 	
 } netmgr_wlan_hostapd_t;
 
@@ -142,6 +142,7 @@ static int __create_hostapd_conf(const char *usr_id, char *usr_pw, int ch, int i
 	fprintf(fp, "wpa_pairwise=CCMP\n");
 	fprintf(fp, "max_num_sta=2\n");
 	fprintf(fp, "wpa_group_rekey=86400\n");
+	fprintf(fp, "ignore_broadcast_ssid=%d\n",stealth) ;
 
 	fflush(fp);
 	fclose(fp);
@@ -156,7 +157,6 @@ static int __wlan_hostapd_run(void)
 {
 	char buf[256] = {0,};
 	int ret = 0;
-	FILE *f;
 	
 	ret = __create_hostapd_conf(ihost->ssid, ihost->passwd, 
 				ihost->channel, ihost->freq, ihost->stealth);
@@ -166,23 +166,17 @@ static int __wlan_hostapd_run(void)
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "/usr/sbin/hostapd %s -B -P %s", HOSTAPD_CONFIG,
 					HOSTAPD_PID_PATH);
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	system(buf);
 	
 	/* ip setup IP 변경될 경우 main에서 수신해야 함 */
 	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/ifconfig wlan0 192.168.0.1 up");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	snprintf(buf, sizeof(buf), "/sbin/ifconfig %s 192.168.0.1 up", NETMGR_SOFTAP_DEVNAME);
+	system(buf);
 		
 	/* dhcpd start */
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "/usr/sbin/udhcpd /etc/udhcpd.conf");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	system(buf);
 	
 	dprintf("Wi-Fi HOSTAPD Done!!\n");
 	return 0;
@@ -209,17 +203,13 @@ static void __wlan_hostapd_stop(void)
 
 	/* wifi-link down */
 	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/ifconfig wlan0 down");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	snprintf(buf, sizeof(buf), "/sbin/ifconfig %s down", NETMGR_SOFTAP_DEVNAME);
+	system(buf);
 	
 	/* dhcpd stop */
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "killall udhcpd");
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
+	system(buf);
 }
 
 static int __wlan_hostapd_is_active(const char *process_name)
@@ -282,6 +272,7 @@ static void *THR_wlan_hostapd_main(void *prm)
 	int quit = 0;
 	
 	tObj->active = 1;
+	dprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -324,24 +315,6 @@ static void *THR_wlan_hostapd_main(void *prm)
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 				break;
 			
-			case __STAGE_SOFTAP_MOD_WAIT:
-				if (netmgr_wlan_wait_mod_active() == 0) {
-					ihost->stage = __STAGE_SOFTAP_MOD_EXEC;
-				} else {
-					/* timeout 계산 */
-					ihost->hostap_timer++;
-					if (ihost->hostap_timer >= CNT_SOFTWAP_ACTIVE) {
-						/* fail */
-						ihost->stage = __STAGE_SOFTAP_ERROR_STOP;
-					} 
-				}
-				break;	
-			
-			case __STAGE_SOFTAP_MOD_LOAD:
-				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
-				ihost->stage = __STAGE_SOFTAP_MOD_WAIT;
-				break;
-				
 			case __STAGE_SOFTAP_ERROR_STOP:
 				/* error 상태를 mainapp에 알려줘야 함 */
 				quit = 1; /* exit loop */
@@ -355,6 +328,7 @@ static void *THR_wlan_hostapd_main(void *prm)
 	}
 	
 	tObj->active = 0;
+	dprintf("...exit!\n");
 	
 	return NULL;
 }
@@ -404,11 +378,11 @@ int netmgr_wlan_hostapd_start(void)
 {
 	app_thr_obj *tObj = &ihost->hObj;
 	char *databuf;
-	netmgr_shm_request_info_t *info;
+	netmgr_iw_hostapd_req_info_t *info;
 	
 	/* shared memory로부터 ssid / password / channel등의 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_iw_hostapd_req_info_t *)databuf;
 	
 	memcpy(ihost->ssid, info->ssid, NETMGR_WLAN_SSID_MAX_SZ);
 	memcpy(ihost->passwd, info->passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
@@ -417,9 +391,7 @@ int netmgr_wlan_hostapd_start(void)
 	ihost->channel = info->channel;
 	
 	/* START or STOP  명령을 수신하면 실행됨 */
-	ihost->stage = __STAGE_SOFTAP_MOD_LOAD;
-	ihost->hostap_timer = 0;
-				
+	ihost->stage = __STAGE_SOFTAP_MOD_EXEC;
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

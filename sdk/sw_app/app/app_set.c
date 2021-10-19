@@ -22,6 +22,7 @@
 #include <glob.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 
 #include "dev_common.h"
 #include "dev_micom.h"
@@ -131,7 +132,6 @@ static size_t get_cfg_size (const char *file_name)
 
 static void set_uid()
 {
-	int retval = 0 ;
     char uid[MAX_CHAR_32] = {0, };
 
     if(dev_board_uid_read(uid, MAX_CHAR_16) == 0)
@@ -206,6 +206,7 @@ static void char_memset(void)
     memset(app_set->ftp_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
 
     app_set->ftp_info.ON_OFF = OFF ;
+    app_set->ftp_info.file_type = OFF ; // OFF NORMAL, ON Event file
 
     memset(app_set->ftp_info.reserved, CFG_INVALID, 126);
 
@@ -215,6 +216,17 @@ static void char_memset(void)
     memset(app_set->wifiap.pwd, CHAR_MEMSET, MAX_CHAR_64 + 1) ;
 	app_set->wifiap.stealth = CFG_INVALID ;
     memset(app_set->wifiap.reserved, CFG_INVALID, 72) ;
+
+    
+	//# Wifilist information
+	for(i = 0; i < WIFIAP_CNT; i++)
+	{
+		app_set->wifilist[i].en_key = CFG_INVALID ;
+		memset(app_set->wifilist[i].ssid, CHAR_MEMSET, MAX_CHAR_32 + 3) ;
+		memset(app_set->wifilist[i].pwd, CHAR_MEMSET, MAX_CHAR_64 + 1) ;
+		app_set->wifilist[i].stealth = CFG_INVALID ;
+		memset(app_set->wifilist[i].reserved, CFG_INVALID, 72) ;
+    }
 
 	//# Versions
     memset(app_set->sys_info.fw_ver, CHAR_MEMSET, MAX_CHAR_32);
@@ -258,6 +270,7 @@ static void char_memset(void)
 	memset(app_set->account_info.onvif.pw, CHAR_MEMSET, MAX_CHAR_32) ;
 
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
+    app_set->multi_ap.ON_OFF = CFG_INVALID ;
 
 #if SYS_CONFIG_VOIP
 	// VOIP size : 66 
@@ -268,9 +281,9 @@ static void char_memset(void)
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
 	app_set->voip.use_stun = 0 ;
     memset(app_set->voip.reserved, CHAR_MEMSET, 40) ;
-    memset(app_set->reserved, CFG_INVALID, 362) ;
+    memset(app_set->reserved, CFG_INVALID, 360) ;
 #else
-    memset(app_set->reserved, CFG_INVALID, 474) ;
+    memset(app_set->reserved, CFG_INVALID, 472) ;
 #endif
 //    memset(app_set->reserved, CFG_INVALID, 794) ;
 }
@@ -367,6 +380,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->ftp_info.id     = %s\n", pset->ftp_info.id);
     printf("pset->ftp_info.pwd    = %s\n", pset->ftp_info.pwd);
     printf("pset->ftp_info.ON_OFF = %d\n", pset->ftp_info.ON_OFF);
+    printf("pset->ftp_info.file_type = %d\n", pset->ftp_info.file_type);
 	printf("\n");
 
     printf("pset->wifiap.en_key = %d\n", pset->wifiap.en_key);
@@ -374,6 +388,15 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->wifiap.pwd    = %s\n", pset->wifiap.pwd);
     printf("pset->wifiap.stealth    = %d\n", pset->wifiap.stealth);
 	printf("\n");
+
+	for(i = 0 ; i < WIFIAP_CNT; i++)
+	{
+		printf("pset->wifilist[%d].en_key = %d\n",i,  pset->wifilist[i].en_key);
+		printf("pset->wifilist[%d].ssid   = %s\n",i, pset->wifilist[i].ssid);
+		printf("pset->wifilist[%d].pwd    = %s\n",i, pset->wifilist[i].pwd);
+		printf("pset->wifilist[%d].stealth    = %d\n",i, pset->wifilist[i].stealth);
+		printf("\n");
+	}
 
     printf("pset->sys_info.fw_ver   = %s\n", pset->sys_info.fw_ver);
     printf("pset->sys_info.hw_ver   = %s\n", pset->sys_info.hw_ver);
@@ -422,6 +445,8 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.lv = %d\n", pset->account_info.onvif.lv) ;
     printf("pset->account_info.onvif.id = %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
+    printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
+
 #if SYS_CONFIG_VOIP
     printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
     printf("pset->voip.port   = %d\n", pset->voip.port);
@@ -442,7 +467,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
     char MacAddr[12]  ;
     char compbuff[32];
     char uid[MAX_CHAR_32] = {0, };
-	int ich=0, channels = 0;
+	int ich=0, channels = 0, i = 0;
 	
 	channels = MODEL_CH_NUM+1;
 	//# Encoding cfg per channel
@@ -527,7 +552,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		strcpy(pset->net_info.dns_server2, "168.154.160.4");  // Microsoft dns
         
     if(pset->net_info.type < NET_TYPE_STATIC || pset->net_info.type > NET_TYPE_DHCP)
-        pset->net_info.type = NET_TYPE_STATIC ;
+        pset->net_info.type = NET_TYPE_DHCP ;
 
     if(pset->net_info.http_port <= 0 || pset->net_info.http_port >= 65535)
         pset->net_info.http_port = 80 ;
@@ -585,8 +610,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->sys_info.osd_set < OFF || pset->sys_info.osd_set > ON)
         pset->sys_info.osd_set = ON ; 
 
-    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)
-        pset->sys_info.P2P_ON_OFF = ON ; 
+//    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)  
+    pset->sys_info.P2P_ON_OFF = ON ;  // Ignore previous version values, Always ON
 
     if((int)pset->sys_info.p2p_id[0] == CHAR_INVALID)
         strcpy(pset->sys_info.p2p_id, P2P_DEFAULT_ID) ;
@@ -632,6 +657,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->ftp_info.pwd[0]  == CHAR_INVALID || (int)pset->ftp_info.pwd[0] == 0)
 		strcpy(pset->ftp_info.pwd, "FTP_PASSWORD");
 
+    if(pset->ftp_info.file_type <= CFG_INVALID)
+        pset->ftp_info.file_type = OFF ;
+
 	//# Wifi AP information
 
 	if(pset->wifiap.en_key != ON && pset->wifiap.en_key != OFF)
@@ -648,26 +676,32 @@ static void cfg_param_check_nexx(app_set_t *pset)
     #else
 	if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
     #endif
-    strcpy(pset->wifiap.pwd,"AP_PASSWORD");
-/*
+        strcpy(pset->wifiap.pwd,"AP_PASSWORD");
+	
+
+
+	//# Wifilist information
+
+	for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
-	    if(pset->wifiap.en_key != ON && pset->wifiap.en_key != OFF)
-		    pset->wifiap.en_key = ON;
+		if(pset->wifilist[i].en_key != ON && pset->wifilist[i].en_key != OFF)
+			pset->wifilist[i].en_key = ON;
 
-	    if((int)pset->wifiap.ssid[0] == CHAR_INVALID || (int)pset->wifiap.ssid[0] == 0)
-		    strcpy(pset->wifiap.ssid, "NEXX360_AP");
+		if((int)pset->wifilist[i].ssid[0] == CHAR_INVALID)
+			memset(pset->wifilist[i].ssid, 0, MAX_CHAR_32);
 
-	    if((int)pset->wifiap.stealth == CFG_INVALID )
-	        pset->wifiap.stealth = OFF ;
+		if((int)pset->wifilist[i].stealth == CFG_INVALID || (int)pset->wifilist[i].stealth == CHAR_INVALID)
+	        pset->wifilist[i].stealth = OFF ;
 
-        #if 0
-	    if((int)pset->wifiap.pwd[0] == CHAR_INVALID || (int)pset->wifiap.pwd[0] == 0)
-        #else
-	    if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
-        #endif
-		    strcpy(pset->wifiap.pwd,"12345678");
-    }
-*/
+		#if 0
+		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID || (int)pset->wifilist[i].pwd[0] == 0)
+		#else
+		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
+		#endif
+		    memset(pset->wifilist[i].pwd, 0, MAX_CHAR_64);
+
+	}
+
 	if(pset->rec_info.period_idx < REC_PERIOD_01 && pset->rec_info.period_idx >= REC_PERIOD_MAX)
 		pset->rec_info.period_idx = REC_PERIOD_01;
 
@@ -682,7 +716,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif	
-#elif defined(NEXX360W)
+#elif defined(NEXX360W) || defined(NEXXB)
 	#if SYS_CONFIG_VOIP
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = ON ;
@@ -690,7 +724,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif
-#else //# NEXX360B, NEXX360H
+#else //# NEXX360B, NEXX360H, NEXX360W_MUX
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 #endif		
@@ -734,7 +768,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->account_info.ON_OFF = ON ;
 
     printf("pset->account_info.ON_OFF		= %d\n", pset->account_info.ON_OFF) ;
- 
+
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
 	
@@ -818,6 +852,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
     printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
     printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
 
+    if((int)pset->multi_ap.ON_OFF <= CFG_INVALID || (int)pset->multi_ap.ON_OFF > 1 )
+        pset->multi_ap.ON_OFF = OFF ;
+
+    printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
 #if SYS_CONFIG_VOIP	
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
@@ -855,7 +893,6 @@ static int cfg_read(int is_mmc, char* cfg_path)
 {
     int readSize=0, app_set_size=0;
     int saved_cfg_size=0;
-	char msg[MAX_CHAR_255]={0,};
 	
 	if(is_mmc){
 		if (!app_cfg->ste.b.mmc) {
@@ -883,12 +920,10 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
-		snprintf(msg, sizeof(msg), " #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####", cfg_path, app_set_size, saved_cfg_size);
-		app_log_write(MSG_LOG_WRITE, msg);
-		eprintf("%s\n", msg);
+		sysprint(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
+										cfg_path, app_set_size, saved_cfg_size);
 		return EFAIL;
-	}
-	else{
+	} else {
 	    //#--- ucx app setting param
     	OSA_fileReadFile(cfg_path, (Uint8*)app_set, app_set_size, (Uint32*)&readSize);
 		if(readSize == 0 || readSize != app_set_size) {
@@ -903,21 +938,16 @@ static int cfg_read(int is_mmc, char* cfg_path)
 	return SOK;
 }
 
-
 static void app_set_default(int default_type)
 {
     char MacAddr[12] ;
     char enc_ID[32] = {0, } ;
     char enc_Passwd[32] = {0, } ;
-	char msg[MAX_CHAR_255]={0,};
-	
     app_set_t tmp_set ;
 
-	int ich=0, channels = 0;
+	int ich=0, channels = 0, i = 0;
 	
-	snprintf(msg, sizeof(msg), " [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s", MODEL_NAME);
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
+	sysprint(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
 
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;
@@ -931,6 +961,7 @@ static void app_set_default(int default_type)
 	for (ich = 0; ich < channels; ich++)
 	{
 		app_set->ch[ich].resol		= RESOL_720P;
+
 		if(ich == MODEL_CH_NUM)
 		{
 #if defined(NEXXONE) || defined(NEXX360H)	
@@ -957,7 +988,7 @@ static void app_set_default(int default_type)
     if (default_type)  // FULL reset or hw reset
     {
     	//# Network information for device
-        app_set->net_info.type = NET_TYPE_STATIC ;
+        app_set->net_info.type = NET_TYPE_DHCP ;
         strcpy(app_set->net_info.wlan_ipaddr, "192.168.0.252");
 	    app_set->wifiap.stealth = OFF;
         strcpy(app_set->net_info.wlan_netmask, "255.255.0.0");
@@ -1017,6 +1048,16 @@ static void app_set_default(int default_type)
     strcpy(app_set->wifiap.pwd,"AP_PASSWORD") ;
 	app_set->wifiap.stealth = OFF;
 
+	//# Wifilist information
+    for(i = 0 ; i < WIFIAP_CNT; i++)
+	{
+		app_set->wifilist[i].en_key = ON;
+		//# 0으로 초기화
+		memset(app_set->wifilist[i].ssid, 0, MAX_CHAR_32);
+		memset(app_set->wifilist[i].pwd, 0, MAX_CHAR_64);
+		app_set->wifilist[i].stealth = OFF;
+    }
+
 	app_set_version_read();
 
     if (!DefaultGetMac(MacAddr)) {
@@ -1042,13 +1083,13 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#elif defined(NEXX360W)	
+#elif defined(NEXX360W)	|| defined(NEXXB)
     #if SYS_CONFIG_VOIP
 	app_set->rec_info.auto_rec      = ON ;
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#else //# NEXX360B, NEXX360H
+#else //# NEXX360B, NEXX360H, NEXX360W_MUX
     app_set->rec_info.auto_rec      = OFF ;
 #endif
 
@@ -1110,6 +1151,8 @@ static void app_set_default(int default_type)
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
 
+    app_set->multi_ap.ON_OFF = OFF ; 
+
 #if SYS_CONFIG_VOIP
     strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);
     app_set->voip.port = PBX_SERVER_PORT;
@@ -1123,14 +1166,28 @@ static void app_set_default(int default_type)
 
 static void app_set_delete_cfg(void)
 {
-    char cmd[MAX_CHAR_128]={0,};
-
-	sprintf(cmd, "rm -Rf %s", CFG_DIR_NAND);
-	dev_execlp(cmd);
-
-	if (app_cfg->ste.b.mmc) {
-		sprintf(cmd, "rm -Rf %s", CFG_DIR_MMC);
-		dev_execlp(cmd);
+	int res=0;
+	
+	/* remove cfg directory in nand */
+	res = access(CFG_DIR_NAND, R_OK|W_OK);
+    if ((res == 0) || (errno == EACCES)) {
+		remove(CFG_DIR_NAND);
+	} else {
+		fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_NAND,
+							strerror(errno));
+		/* TODO 에러가 발생했을 경우??? */	
+	} 
+		
+	if (app_cfg->ste.b.mmc) 
+	{
+		res = access(CFG_DIR_MMC, R_OK|W_OK);
+		if ((res == 0) || (errno == EACCES)) {
+			remove(CFG_DIR_MMC);
+		} else {
+			fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_MMC, 
+							strerror(errno));
+			/* TODO 에러가 발생했을 경우??? */
+		}
 	}
 	sync();
 }
@@ -1139,14 +1196,15 @@ int app_set_open(void)
 {
     int ret=SOK;
     char *pFile = NULL;
-	char cmd[MAX_CHAR_128]={0,};
 
 	//# delete cfg file
 	pFile = find_reset();
 	if (pFile != NULL) {
-		sprintf(cmd, "rm -f %s", pFile);
-		dev_execlp(cmd);
-
+		ret = access(pFile, R_OK|W_OK);
+		if ((ret == 0) || (errno == EACCES)) {
+			remove(pFile);
+		}
+		
 		app_set_delete_cfg();
 		printf("[%s] CFG delete done!! \n", __func__);
 	}
@@ -1183,7 +1241,9 @@ int app_set_open(void)
 		else
 			ret = SOK ;
 	}
-
+	
+	//# cfg read done!!
+	sync();
 	if (ret == EFAIL) 
 	    app_set_default(FULL_RESET);
 	
@@ -1198,13 +1258,11 @@ int app_set_open(void)
 
 void app_setting_reset(int type)  // sw reset, hw reset(include network setting) 
 {
-    int ret ;
-
     if (type >= 0 && type < 2)
     {
         app_set_default(type);  // onvif factory default
         set_uid() ;  // read uid from nand and then set uid to app_set
-	    ctrl_sys_reboot();
+	    ctrl_sys_halt(0); /* reboot */
     } 
 }
 
@@ -1260,7 +1318,7 @@ int app_set_write(void)
 #endif
 
 	sync();
-	printf(" [app] %s done...!\n", __func__);
+	aprintf("....exit!\n");
 
 	return 0;
 }

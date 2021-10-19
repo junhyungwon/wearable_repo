@@ -526,7 +526,8 @@ int SYS_PRI_printBwReg(int bwRegId)
     "EDMA_WR0", "EDMA_RD1", "EDMA_WR1", "DSP     ",
     "SGX     ",
   };
-
+	
+	(void)name;
   bandwidth = gSYS_PRI_ctrl.bwReg[bwRegId]->bandwidth;
   watermark = gSYS_PRI_ctrl.bwReg[bwRegId]->watermark & 0xFFF;
   pressH    = (gSYS_PRI_ctrl.bwReg[bwRegId]->pressure >> 0) & 3;

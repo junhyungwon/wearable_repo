@@ -58,16 +58,9 @@ static int send_msg(int cmd, int param1, int param2)
 	
 	msg.device = param1;
 	msg.status = param2;
-	msg.wlan_5G_enable = 0;
 	
 	if (param1 == NETMGR_DEV_TYPE_WIFI) 
 	{
-		if ((app_cfg->wlan_vid == RTL_8821A_VID) && 
-			(app_cfg->wlan_pid == RTL_8821A_PID))
-		{
-			/* AP 모드 사용 시 5GHz 대역이 사용가능 함을 알려주기 위해서 */
-			msg.wlan_5G_enable = 1;		
-		}
 		/* RF Receive Signal Strength (0 ~ 100%)*/
 		msg.wlan_rssi = param2;
 	}
@@ -78,7 +71,6 @@ static int send_msg(int cmd, int param1, int param2)
 static int recv_msg(void)
 {
 	to_netmgr_msg_t msg;
-	int size;
 	
 	//# blocking
 	if (Msg_Rsv(ievt->qid, NETMGR_MSG_TYPE_TO_NETMGR, (void *)&msg, sizeof(to_netmgr_msg_t)) < 0) {

@@ -46,7 +46,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define SOCKWAIT                30000
-#define DDNS_LOOP_INTERVAL           20
+#define DDNS_LOOP_INTERVAL      200// 20 너무 작음..동작 안함
 #define SOCK_THRFXN_TSK_PRI     (3)
 
 typedef struct {
@@ -102,6 +102,7 @@ static Void THR_csock(Void *prm)
     int ControlMainsock, exit = 0, cmd ;
 
     msginit () ;
+	Sock_Init() ;
 
     aprintf("enter....\n") ;
 #ifdef NETWORK_DEBUG
@@ -156,9 +157,7 @@ static Void *THR_ddns(Void *prm)
     else
 		interval = 60 * 1000 ; // l min
 
-    retval = app_cfg->ste.b.cradle_eth_run;
-    
-    if (app_cfg->ste.b.usbnet_ready || retval)
+    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
     {
         system(start_buffer) ;
     }
@@ -172,9 +171,7 @@ static Void *THR_ddns(Void *prm)
  
         if(app_set->ddns_info.ON_OFF)  // change ddns setting in run time 
         {
-            retval = app_cfg->ste.b.cradle_eth_run;
-
-            if (app_cfg->ste.b.usbnet_ready || retval)
+            if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
             {
                 if(interval <= cmp_interval )
                 {   

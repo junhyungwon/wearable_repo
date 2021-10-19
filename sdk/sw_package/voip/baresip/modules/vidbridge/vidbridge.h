@@ -1,13 +1,11 @@
 /**
  * @file vidbridge.h Video bridge -- internal interface
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* inheritance (1st) */
-
 	struct le le;
 	struct vidisp_st *vidisp;
 	double fps;
@@ -18,8 +16,6 @@ struct vidsrc_st {
 
 
 struct vidisp_st {
-	const struct vidisp *vd;  /* inheritance (1st) */
-
 	struct le le;
 	struct vidsrc_st *vidsrc;
 	char *device;

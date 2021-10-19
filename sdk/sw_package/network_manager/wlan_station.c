@@ -30,9 +30,10 @@
 #define MAX_ESSID_LEN			32
 #define CMD_IWLIST				"/sbin/iwlist wlan0 scanning"
 #define CMD_IWLIST_BUFSZ		512
+#define MAX_AP_SCAN_LIST		64
 
 #define TIME_CLI_CYCLE			200		//# msec
-#define TIME_CONN_STAT_SEND    	5000   //# 10sec
+#define TIME_CONN_STAT_SEND    	5000   //# 5sec
 #define CNT_CONN_STAT_SEND      (TIME_CONN_STAT_SEND/TIME_CLI_CYCLE)
 
 #define TIME_CLI_ACTIVE    		10000   //# 10sec
@@ -44,7 +45,7 @@
 #define TIME_CLI_DHCP    		10000   //# 10sec
 #define CNT_CLI_DHCP        	(TIME_CLI_DHCP/TIME_CLI_CYCLE)
 
-#define TIME_CLI_GET_ESSID 		5000   //# 1sec
+#define TIME_CLI_GET_ESSID 		5000   //# 5sec
 #define CNT_CLI_GET_ESSID       (TIME_CLI_GET_ESSID/TIME_CLI_CYCLE)
 
 #define IWGETID_CMD				"/sbin/iwgetid wlan0" //#"/sbin/iwgetid wlan0 -r"
@@ -53,33 +54,38 @@
 #define SUPPLICANT_CONFIG		"/etc/wpa_supplicant.conf"
 #define SUPPLICANT_PID_PATH     "/var/run/wpa_supplicant.pid"
 
-#define __STAGE_CLI_MOD_LOAD		(0x0)
-#define __STAGE_CLI_MOD_WAIT		(0x1)
+#define CONNECTED_AP_LIST		"/media/nand/aplist.lst"
+
+#define __STAGE_CLI_WAIT_ACTIVE		(0x1)
 #define __STAGE_CLI_CHECK_ESSID		(0x2)
 #define __STAGE_CLI_AUTH_START		(0x3)
 #define __STAGE_CLI_WAIT_AUTH		(0x4)
 #define __STAGE_CLI_SET_IP			(0x5)
-#define __STAGE_CLI_WAIT_DHCP		(0x6)
 #define __STAGE_CLI_DHCP_VERIFY		(0x7)
 #define __STAGE_CLI_DHCP_NOTY		(0x8)
 #define __STAGE_CLI_CONNECT_STATS	(0x9)
 #define __STAGE_CLI_ERROR_STOP		(0xA)
 
 typedef struct {
-	app_thr_obj cObj; /* wlan client mode */
-	
 	char ssid[NETMGR_WLAN_SSID_MAX_SZ+1];      //32
 	char passwd[NETMGR_WLAN_PASSWD_MAX_SZ+1];  //64
+	
+	int en_key;
+	
+} __attribute__((packed)) iw_item_t;
+
+typedef struct {
+	app_thr_obj cObj; /* wlan client mode */
 	
 	char ip[NETMGR_NET_STR_MAX_SZ+1];
     char mask[NETMGR_NET_STR_MAX_SZ+1];
     char gw[NETMGR_NET_STR_MAX_SZ+1];
 	
 	int dhcp;
-	int en_key;
 	int stage;
-	int level;
 	int cli_timer;
+	
+	iw_item_t item;
 	
 } netmgr_wlan_cli_t;
 
@@ -90,6 +96,12 @@ static const char *cli_dev_name = "wlan0";
 
 static netmgr_wlan_cli_t t_cli;
 static netmgr_wlan_cli_t *i_cli = &t_cli;
+
+//# 사용자 요청 AP 목록
+static iw_item_t userList[NETMGR_WLAN_CONN_MAX_CNT];
+
+//# 검색된 AP 목록
+static iw_item_t scanList[MAX_AP_SCAN_LIST];
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -226,6 +238,8 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 	fprintf(config, "ctrl_interface=/var/run/wpa_supplicant\n");
 	fprintf(config, "#ap_scan=1\n");
 	fprintf(config, "network={\n");
+	//#Array of allowed frequencies 5G: Ch36, Ch44 2.4G: Ch1~Ch11, Ch12, 13->not used */
+	//fprintf(config, "\tfreq_list=5180 5220 2412 2417 2422 2427 2432 2437 2442 2447 2452 2457 2462\n") ;
 	/* update ssid */
 	fprintf(config, "\tssid=\"%s\"\n", ssid);
 
@@ -238,6 +252,7 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 		 *   NONE = WPA is not used
 		 *   OPEN = Open System authentication (required for WPA/WPA2)
 		 *   SHARED = Shared Key authentication (requires static WEP keys)
+		 *   FT-PSK ==>802.11r fast roaming
 		 */
 		fprintf(config, "\tkey_mgmt=WPA-PSK\n");
 		/*
@@ -269,7 +284,6 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
          */
          fprintf(config, "\tpsk=%s\n", phrase);
          fprintf(config, "\tpriority=2\n");
-
 		 fprintf(config, "\tbgscan=\"simple:5:-60:6300\"\n") ;
 	} else {
 		/*
@@ -283,11 +297,40 @@ static int __create_supplicant_conf(const char *ssid, const char *password, int 
 	}
 
 	fprintf(config, "}\n");
-
 	fflush(config);
 	fclose(config);
-
+	sync(); //# /etc/wpa_supplicant.conf
+		
 	return 0;
+}
+
+/*****************************************************************************
+* @brief    network proc function!
+* @section  DESC Description
+*   - desc
+*****************************************************************************/
+/*
+ * 이 함수는 ifconfig wlan0 up을 해야 값을 읽을 수 있다.
+ */
+static int __is_cli_active(const char *devname)
+{
+	FILE *f = NULL;
+    char buf[128]={0,};
+	int data=0;
+	
+    snprintf(buf, sizeof(buf), "/sys/class/net/%s/flags", devname);
+	f = fopen(buf, "r") ;
+    if (f != NULL) {
+		fscanf(f, "%x", &data);
+		fclose(f);
+		
+		//dprintf("wlan0 flags %x\n", data);
+		if (data == 0x1003) {
+			return 1;
+        }
+    }
+	
+    return 0;
 }
 
 static int __cli_start(const char *ssid, const char *password, int encrypt)
@@ -302,10 +345,9 @@ static int __cli_start(const char *ssid, const char *password, int encrypt)
 		/* Failed to wi-fi start */
 		return r;
 	}
-	sync(); //# /etc/wpa_supplicant.conf
+	
 	/* chmod is needed because open() didn't set permisions properly */
 	chmod(SUPPLICANT_CONFIG, 0660);
-
 	snprintf(buf, sizeof(buf), "/usr/sbin/wpa_supplicant -Dwext "
 					"-iwlan0 -c %s -P %s -B", SUPPLICANT_CONFIG, SUPPLICANT_PID_PATH);
 	f = popen(buf, "w");
@@ -313,9 +355,6 @@ static int __cli_start(const char *ssid, const char *password, int encrypt)
 		return -1;
 
 	pclose(f);
-
-//	THR_waitmsecs(500);
-//	sleep(1); //# wait for connection.
 
 	return 0;
 }
@@ -371,56 +410,48 @@ static void __cli_stop(const char *ifce)
 static int __cli_get_auth_status(const char *essid)
 {
 	FILE *f = NULL;
-	char lbuf[128 + 1];
+	char lbuf[128 + 1]={0,};
 	char id[MAX_ESSID_LEN + 1];
+	int i;
 
-	int r = 0, i;
-
-	/*
-	 * iwgetid
-	 * wlan0 ESSID:"UD-DMZ"
-	 */
+	/* iwgetid wlan0 ESSID:"UD-DMZ" */
 	f = popen(IWGETID_CMD, "r");
-	if (f == NULL) {
-		eprintf("Not supported %s\n", IWGETID_CMD);
-		return r;
-	}
-
-	memset(lbuf, 0, sizeof(lbuf));
-	while (fgets(lbuf, sizeof(lbuf), f) != NULL)
+	if (f != NULL) 
 	{
-		char data_buf[128]={0,};
-		char *s;
-
-		/* find ESSID: */
-		if ((s = strstr(lbuf, "ESSID:\"")) != NULL)
+		while (fgets(lbuf, sizeof(lbuf), f) != NULL) 
 		{
-			s += 7; /* --> ESSID:" */
-			if (utf8_unescape(data_buf, s) < 0) {
-				id[0] = '\0';
-			} 
-			else {
-				for (i = 0; i < MAX_ESSID_LEN; i++) {
-					/* To fine next token: '"' */
-					if (data_buf[i] == '\0' || data_buf[i] == '"') {
-						break;
+			char data_buf[128]={0,};
+			char *s;
+
+			/* find ESSID: */
+			if ((s = strstr(lbuf, "ESSID:\"")) != NULL)
+			{
+				s += 7; /* --> ESSID:" */
+				if (utf8_unescape(data_buf, s) < 0) {
+					id[0] = '\0';
+				} else {
+					for (i = 0; i < MAX_ESSID_LEN; i++) {
+						/* To fine next token: '"' */
+						if (data_buf[i] == '\0' || data_buf[i] == '"') {
+							break;
+						}
+						id[i] = data_buf[i];
 					}
-					id[i] = data_buf[i];
-				}
-				id[i] = '\0';
-				
-				//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
-				if (strcmp(id, essid) == 0) {
-					/* connection ok */
-					r = 1;
-					break;
+					
+					id[i] = '\0';
+					if (!strcmp(id, essid)) {
+						/* connection ok */
+						//dprintf("iwgetid retured essid-> %s, required-> %s\n", id, essid);
+						pclose(f);
+						return 0;
+					}
 				}
 			}
 		}
+		pclose(f);
 	}
-
-	pclose(f);
-	return r;
+	
+	return -1;
 }
 
 /*
@@ -518,8 +549,12 @@ static int __cli_get_link_status(const char *essid, int *level)
 	return -1;
 }
 
+/*
+ * 검색된 AP 리스트와 사용자 요구 SSID 리스트를 비교해서 일치하는 항복이 
+ * 존재하는 지 확인하는 과정. 연결된 항목은 dst에 전달.
+ */
 static char listbuf[CMD_IWLIST_BUFSZ];
-static int __cli_check_essid(const char *src_essid)
+static int __cli_check_essid(iw_item_t *dst)
 {
 	FILE *f;
 	
@@ -528,8 +563,10 @@ static int __cli_check_essid(const char *src_essid)
 	char mac[18];
 		
 	int wep, inCell, valid;
-	int master, index, level, i;
-
+	int master, level, i, j;
+	int cnt=0;
+	
+	float freq=0.0;
 	/* wlan0     Scan completed :
      *           Cell 01 - Address: 00:25:A6:B5:6F:D3
      *              ESSID:"ollehWiFi"
@@ -554,11 +591,11 @@ static int __cli_check_essid(const char *src_essid)
 	/* initialize parser helper */
 	mac[0] = '\0'; ssid[0] = '\0';
 
-	index = 0; 	inCell = 0; valid = 0;
 	level = -1; wep = -1; master = -1;
-
+	inCell = 0; valid = 0;
+	
 	memset(listbuf, 0, sizeof(listbuf));
-
+	
 	f = popen(CMD_IWLIST, "r");
 	if (f != NULL)
 	{
@@ -650,40 +687,58 @@ static int __cli_check_essid(const char *src_essid)
 				} else {
 					wep = 0;
 				}
+			} else if (inCell && (start = strstr(listbuf, "Frequency:"))) {
+				char *ptr;
+				
+				start += 10; /* Frequency: */
+				/* value is X.XXX GHz, 공백으로 분리됨 */
+				ptr = strtok(start, " ");
+				if (ptr != NULL) {
+					sscanf(ptr, "%f", &freq);
+				}
 			}
 
-			if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0')
+			if ((ssid[0] != '\0') && (level != -1) && (wep != -1) &&
+				(master != -1) && (mac[0] != '\0') && (freq != 0.0))
 			{
-				#if 0
-				printf("founded cell[%d] mac address %s\n", (index+1), mac);
-				printf("founded cell[%d] ssid %s\n", (index+1), ssid);
-				printf("founded cell[%d] signal level %d\n", (index+1), level);
-				printf("founded cell[%d] mode %s\n", (index+1), master?"master":"station");
-				printf("founded cell[%d] encrypt wpa %s\n", (index+1), wep?"on":"open");
-				#endif
-				
-				//printf("founded cell[%d] ssid %s(src = %s)\n", (index+1), ssid, src_essid);
-				if (strcmp(ssid, src_essid) == 0) {
-					/* founded valid essid return 0 */
-					pclose(f);
-					return 0;
-				}
-				/* save current incell information */
-				//piwscan_list->info[index].level = level;
-				//piwscan_list->info[index].en_key = wep;
-				//strcpy(piwscan_list->info[index].ssid, ssid);
-				//index++;
-
+				/* save current sincell information */
+				scanList[cnt].en_key = wep;
+				strcpy(scanList[cnt].ssid, ssid);
+				cnt++;
 				/* initialize parser helper */
 				memset(listbuf, 0, sizeof(listbuf));
 				mac[0] = '\0'; ssid[0] = '\0';
 
-				inCell = 0; level = -1; wep = -1; master = -1;
+				inCell = 0; level = -1; wep = -1; 
+				master = -1; freq = 0.0;
 				
+				//# next loop..
+				delay_msecs(5);
 			} /* if (ssid[0] != '\0' && level != -1 && wep != -1 && master != -1 && mac[0] != '\0') */
 		} /* while (fgets(listBuf, sizeof(listBuf), f) != NULL) */
-	} 
-	else {
+		
+		/* 사용자 요청 List와 비교해서 연결 */
+		for (i = 0; i < NETMGR_WLAN_CONN_MAX_CNT; i++) 
+		{
+			for (j = 0; j < cnt; j++) 
+			{
+				//dprintf("ssid compare %s %s\n", userList[i].ssid, scanList2G[j].ssid);
+				if (strcmp(userList[i].ssid, scanList[j].ssid) == 0) {
+					/* founded valid essid return 0 */
+					memcpy(dst->ssid, userList[i].ssid, NETMGR_WLAN_SSID_MAX_SZ);
+					memcpy(dst->passwd, userList[i].passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
+					dst->en_key = userList[i].en_key;
+					dprintf("wifi connect to AP (ssid %s, passwd %s, encypt (%d)\n", dst->ssid, 
+							dst->passwd, dst->en_key);
+					
+					pclose(f);
+					return 0;
+				}	
+			}
+			delay_msecs(5);
+		}
+		//dprintf("not matching ap list!!\n");		
+	} else {
 		dprintf("could not open %s\n", CMD_IWLIST);
 	}
 	
@@ -701,10 +756,12 @@ static int __cli_check_essid(const char *src_essid)
 static void *THR_wlan_cli_main(void *prm)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
+	
 	int exit = 0;
 	int quit = 0;
 	
 	tObj->active = 1;
+	dprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -715,6 +772,7 @@ static void *THR_wlan_cli_main(void *prm)
 			continue;
 		}
 		
+		dprintf("__cli starting!!!!\n");
 		/* for loop */ 
 		quit = 0;
 		while (!quit)
@@ -733,21 +791,30 @@ static void *THR_wlan_cli_main(void *prm)
 			st = i_cli->stage;
 			switch (st) {
 			case __STAGE_CLI_CONNECT_STATS:
-				if (i_cli->cli_timer >= CNT_CONN_STAT_SEND) {
+				if (i_cli->cli_timer >= CNT_CONN_STAT_SEND) 
+				{
+					int level=0;
+					
 					i_cli->cli_timer = 0;
-					__cli_get_link_status(i_cli->ssid, &i_cli->level);
-					if (i_cli->level < 0) {
+					__cli_get_link_status(i_cli->item.ssid, &level);
+					if (level < 0) {
 						/* AP와 연결이 끊어진 상태를 나타냄 (AP가 다시 활성화 될 때까지 waiting... */
 						__cli_stop(cli_dev_name);
+						/* 
+						 * 종료 후 SSID가 갱신될 때까지 약간의 시간이 필요함. 바로 검색할 경우 
+						 * SSID가 갱신되지 않아서 검색이 된다. 이러한 상황에서는 DHCP 동작을 안 함.
+						 */
+						sleep(2);
 						/* For LED RED */
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
+						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_SUSPEND);
 						i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 					} else {
-						netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, i_cli->level);
+						netmgr_event_hub_rssi_status(NETMGR_DEV_TYPE_WIFI, level);
 						i_cli->stage = __STAGE_CLI_CONNECT_STATS;
 					}
-				} else 
+				} else {
 					i_cli->cli_timer++;
+				}
 				break;
 			
 			case __STAGE_CLI_DHCP_NOTY:
@@ -757,33 +824,15 @@ static void *THR_wlan_cli_main(void *prm)
 				break;
 			
 			case __STAGE_CLI_DHCP_VERIFY:
-				res = netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
-				if (res < 0) {
+				netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
+				if (!strcmp(i_cli->ip, "0.0.0.0")) {
+					/* dhcp로부터 IP 할당이 안된 경우 */
+					sysprint("couln't get ip from %s!\n", i_cli->item.ssid);
 					i_cli->stage = __STAGE_CLI_ERROR_STOP;
 				} else {
-					if (!strcmp(i_cli->ip, "0.0.0.0")) {
-						/* dhcp로부터 IP 할당이 안된 경우 */
-						dprintf("couln't get dhcp ip address!\n");
-						i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					} else {
-						dprintf("wlan client ip is %s\n", i_cli->ip);
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
-						i_cli->stage = __STAGE_CLI_DHCP_NOTY;
-					}
-				}
-				break;
-					
-			case __STAGE_CLI_WAIT_DHCP:
-				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(cli_dev_name)) {
-					i_cli->cli_timer = 0;
-					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
-				} else {
-					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
-					i_cli->cli_timer++;
-					if (i_cli->cli_timer >= CNT_CLI_DHCP) {
-						i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					} 
+					sysprint("ip address of %s is %s\n", i_cli->item.ssid, i_cli->ip);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
+					i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 				}
 				break;
 					
@@ -792,15 +841,15 @@ static void *THR_wlan_cli_main(void *prm)
 					netmgr_set_ip_static(cli_dev_name, i_cli->ip, i_cli->mask, i_cli->gw);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_CONNECT_STATS;
-				} else {
-					netmgr_set_ip_dhcp(cli_dev_name);
-					i_cli->stage = __STAGE_CLI_WAIT_DHCP;
+				} else { 
+					netmgr_udhcpc_start(cli_dev_name);
+					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
 				}
 				break;
 					
 			case __STAGE_CLI_WAIT_AUTH:
-				if (__cli_get_auth_status(i_cli->ssid)) {
-					/* auth succeed! */
+				if (__cli_get_auth_status(i_cli->item.ssid) == 0) {
+					/* IP 설정 Stage */
 					i_cli->stage = __STAGE_CLI_SET_IP;
 					i_cli->cli_timer = 0;
 				} else {
@@ -814,53 +863,35 @@ static void *THR_wlan_cli_main(void *prm)
 				
 			case __STAGE_CLI_AUTH_START:
 				/* create wpa_supplicant.conf and execute wpa_supplicant */
-				__cli_start(i_cli->ssid, i_cli->passwd, i_cli->en_key);
+				__cli_start(i_cli->item.ssid, i_cli->item.passwd, i_cli->item.en_key);
 				i_cli->stage = __STAGE_CLI_WAIT_AUTH;
 				i_cli->cli_timer = 0;
 				break;
 			
 			case __STAGE_CLI_CHECK_ESSID:
-				i_cli->cli_timer++;
-				if (i_cli->cli_timer >= CNT_CLI_GET_ESSID) {
-					res = __cli_check_essid(i_cli->ssid);
-					if (res >= 0)
-						i_cli->stage = __STAGE_CLI_AUTH_START;
-					else
-						i_cli->stage = __STAGE_CLI_CHECK_ESSID;
+				/* 4초정도 소요됨 */
+				res = __cli_check_essid(&i_cli->item);
+				if (res >= 0)
+					i_cli->stage = __STAGE_CLI_AUTH_START;
+				else {
+					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
+				}
+				break;
+			
+			case __STAGE_CLI_WAIT_ACTIVE:
+				res = __is_cli_active(cli_dev_name);
+				if (res) {
+					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 					i_cli->cli_timer = 0;	
 				}
 				break;
-				
-			case __STAGE_CLI_MOD_WAIT:
-				if (netmgr_wlan_wait_mod_active() == 0) {
-					res = netmgr_net_link_detect(cli_dev_name);
-					if (!res) {
-						/* Link up */
-						netmgr_net_link_up(cli_dev_name);
-						sleep(1); /* wait 1sec */
-					}
-					i_cli->cli_timer = 0;
-					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
-				} else {
-					/* timeout 계산 */
-					i_cli->cli_timer++;
-					if (i_cli->cli_timer >= CNT_CLI_ACTIVE) {
-						i_cli->stage = __STAGE_CLI_ERROR_STOP;
-					} 
-				}
-				break;
-			
-			case __STAGE_CLI_MOD_LOAD:
-				netmgr_wlan_load_kermod(app_cfg->wlan_vid, app_cfg->wlan_pid);
-				i_cli->stage = __STAGE_CLI_MOD_WAIT;
-				break;
-			
+					
 			case __STAGE_CLI_ERROR_STOP:
-				/* fail */
 				/* error 상태를 mainapp에 알려줘야 함 */
 				quit = 1;
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ERROR);
 				__cli_stop(cli_dev_name);
+				dprintf("__cli stopping!!!!\n");
 				break;
 			}
 			
@@ -869,6 +900,7 @@ static void *THR_wlan_cli_main(void *prm)
 	}
 	
 	tObj->active = 0;
+	dprintf("...exit!\n");
 	
 	return NULL;
 }
@@ -917,22 +949,30 @@ int netmgr_wlan_cli_exit(void)
 int netmgr_wlan_cli_start(void)
 {
 	app_thr_obj *tObj = &i_cli->cObj;
+	netmgr_iw_supplicant_req_info_t *info;
+	
 	char *databuf;
-	netmgr_shm_request_info_t *info;
+	int i, key=0;
 	
-	/* shared memory로부터 ssid / password / channel등의 정보를 읽어온다 */
+	/* shared memory로부터 5개의 ssid / password / channel등의 정보를 읽어온다 */
 	databuf = (char *)(app_cfg->shm_buf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_iw_supplicant_req_info_t *)databuf;
 	
-	memcpy(i_cli->ssid, info->ssid, NETMGR_WLAN_SSID_MAX_SZ);
-	memcpy(i_cli->passwd, info->passwd, NETMGR_WLAN_PASSWD_MAX_SZ);
-	i_cli->en_key = info->en_key;
-	
-	dprintf("wlan station mode start(ssid %s, passwd %s, encypt (%d)\n", i_cli->ssid, 
-			i_cli->passwd, i_cli->en_key);
-	
+	for (i = 0; i < NETMGR_WLAN_CONN_MAX_CNT; i++) {
+		/* null 문자 미리 확인된 상태임 */
+		strcpy(userList[i].ssid, info->iw_data[i].ssid);
+		key = info->iw_data[i].en_key;
+		if (key) {
+			/* password copy */
+			strcpy(userList[i].passwd, info->iw_data[i].passwd);
+		} else { 
+			memset(userList[i].passwd, 0, NETMGR_WLAN_PASSWD_MAX_SZ);
+		}
+		userList[i].en_key = key;
+	}
+			
 	/* set default to idle */
-	i_cli->stage = __STAGE_CLI_MOD_LOAD;
+	i_cli->stage = __STAGE_CLI_WAIT_ACTIVE;
 	i_cli->cli_timer = 0;
 	i_cli->dhcp = info->dhcp;
 	
@@ -944,13 +984,12 @@ int netmgr_wlan_cli_start(void)
 		strcpy(i_cli->ip, info->ip_address);
 		strcpy(i_cli->mask, info->mask_address);
 		strcpy(i_cli->gw, info->gw_address);
-		dprintf("Wi-Fi client set ip static!\n");
+		sysprint("Wi-Fi client ip address set static!\n");
 	} else {
-		dprintf("Wi-Fi client set ip dhcp!\n");
+		sysprint("Wi-Fi client ip address set dhcp!\n");
 	}
 	
-	//# insmod 후에 wlan0가 생성됨.	
-	//netmgr_net_link_up(cli_dev_name); 
+//	netmgr_net_link_up(cli_dev_name);
 	/* delete usb scan object */
    	event_send(tObj, APP_CMD_START, 0, 0);
 	

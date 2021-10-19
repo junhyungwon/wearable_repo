@@ -41,6 +41,11 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define REC_KEY				GPIO_N(0, 6)	//# record switch
+#ifdef NEXXB
+#define SOS_KEY				GPIO_N(1, 14)	//# sos switch
+#endif
+
 #define TIME_DEV_CYCLE		100		//# msec
 #define DEV_CYCLE_TIME      500     //# temp
 
@@ -66,11 +71,17 @@ static app_dev_t *idev=&t_dev;
 static void dev_gpio_init(void)
 {
 	gpio_input_init(REC_KEY);
+#ifdef NEXXB
+	gpio_input_init(SOS_KEY);
+#endif
 }
 
 static void dev_gpio_exit(void)
 {
 	gpio_exit(REC_KEY);
+#ifdef NEXXB	
+	gpio_exit(SOS_KEY);
+#endif	
 }
 
 /*----------------------------------------------------------------------------
@@ -180,6 +191,44 @@ static int chk_rec_key(void)
 	return ste_key;
 }
 
+#ifdef NEXXB
+static int cnt_sos_key=0, ste_sos_key=KEY_NONE;
+static int chk_sos_key(void)
+{
+	int key = dev_ste_key(SOS_KEY);
+
+	if(ste_sos_key != KEY_NONE) {
+		if(key == 1) {
+			ste_sos_key = KEY_NONE;
+		}
+		return KEY_NONE;
+	}
+
+	if(cnt_sos_key)
+	{
+		if(key == 0) {	//# press
+			cnt_sos_key--;
+			if(cnt_sos_key == 0) {
+				ste_sos_key = KEY_LONG;
+			}
+		}
+		else {
+			cnt_sos_key = 0;
+			ste_sos_key = KEY_SHORT;
+		}
+	}
+	else {
+		if(ste_sos_key == KEY_NONE) {
+			if(key == 0) {
+				cnt_sos_key = 20;		//# 1sec
+			}
+		}
+	}
+
+	return ste_sos_key;
+}
+#endif
+
 /*****************************************************************************
 * @brief    dev thread function
 * @section  [desc]
@@ -188,8 +237,9 @@ static void *THR_dev(void *prm)
 {
     app_thr_obj *tObj = &idev->devObj;
 	int exit=0;
-	int mmc, rkey, cmd;
-
+	int mmc, cmd, value = 0;
+	int rkey, rkey2;
+	
 	aprintf("enter...\n");
 	tObj->active = 1;
 
@@ -204,9 +254,8 @@ static void *THR_dev(void *prm)
 		mmc = dev_ste_mmc();
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
-			//dprintf("SD Card %s\n", mmc?"insert":"remove");
-			aprintf("done! will restart!\n");
-			app_rec_stop(0);
+			aprintf("SD Card removed.. system will restart!\n");
+			app_rec_stop(OFF);
 			app_mcu_pwr_off(OFF_RESET);
 		}
 		
@@ -222,10 +271,10 @@ static void *THR_dev(void *prm)
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
 		#if SYS_CONFIG_VOIP
-			app_voip_set_play_volume();
+			app_rec_evt(OFF) ;  // event
 		#endif
 		}
-#elif defined(NEXX360W)
+#elif defined(NEXX360W) || defined(NEXX360W_MUX)
 		#if SYS_CONFIG_VOIP
 		/* record key --> call function */
 		rkey = chk_rec_key();
@@ -235,7 +284,7 @@ static void *THR_dev(void *prm)
 			app_voip_event_noty();
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
-			app_voip_set_play_volume();
+			app_rec_evt(OFF) ;
 		}
 		#else
 		if (!app_cfg->ste.b.ftp_run)
@@ -243,19 +292,12 @@ static void *THR_dev(void *prm)
 			rkey = chk_rec_key();
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-				/* record stop */
-				if (app_rec_state()) {
-					app_rec_stop(1);
-					sleep(1); /* for file close */
-				}
-				//# ¾÷µ¥ÀÌÆ® ÆÄÀÏ¸íÀÌ ºñÁ¤»óÀûÀÎ °æ¿ì¸¦ Á¦¿ÜÇÏ°í´Â 
-				//# ¹«Á¶°Ç Reboot¸¦ ÇÏ±â À§ÇØ¼­ À§Ä¡¸¦ ÀÌ°÷À¸·Î º¯°æÇÔ.
-				ctrl_auto_update(); 
+			    app_rec_evt(OFF) ;
 			}
 		}
 		#endif /* #if SYS_CONFIG_VOIP */
@@ -266,19 +308,12 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					    app_rec_stop(ON);
 				} else {
-					app_rec_start();
+					    app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-				/* record stop */
-				if (app_rec_state()) {
-					app_rec_stop(1);
-					sleep(1); /* for file close */
-				}
-				//# ¾÷µ¥ÀÌÆ® ÆÄÀÏ¸íÀÌ ºñÁ¤»óÀûÀÎ °æ¿ì¸¦ Á¦¿ÜÇÏ°í´Â 
-				//# ¹«Á¶°Ç Reboot¸¦ ÇÏ±â À§ÇØ¼­ À§Ä¡¸¦ ÀÌ°÷À¸·Î º¯°æÇÔ.
-				ctrl_auto_update(); 
+			    app_rec_evt(OFF) ;
 			}
 		}
 #elif defined(NEXX360H)
@@ -288,22 +323,56 @@ static void *THR_dev(void *prm)
 			/* NEXX360, Fitt360 */
 			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
-					app_rec_stop(1);
+					  app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
-				/* record stop */
-				if (app_rec_state()) {
-					app_rec_stop(1);
-					sleep(1); /* for file close */
-				}
-				//# ¾÷µ¥ÀÌÆ® ÆÄÀÏ¸íÀÌ ºñÁ¤»óÀûÀÎ °æ¿ì¸¦ Á¦¿ÜÇÏ°í´Â 
-				//# ¹«Á¶°Ç Reboot¸¦ ÇÏ±â À§ÇØ¼­ À§Ä¡¸¦ ÀÌ°÷À¸·Î º¯°æÇÔ.
-				ctrl_auto_update(); 
+			    app_rec_evt(OFF) ;
 			}
 		}
-#endif
+#elif defined(NEXXB)
+		/* record key --> call function */
+		rkey = chk_rec_key();
+		//# For button enable, when camera didn't connected 
+		if (rkey == KEY_SHORT) {		
+			/* Short KEY */
+			app_voip_event_noty();
+			sysprint("[APP_VOIP] Voip Key Pressed !! \n") ;	
+		} 
+		else if (rkey == KEY_LONG) {	 // Normal Rec ( ì˜ì—… ìš”ì²­ìœ¼ë¡œ Event recì—ì„œ normalë¡œ ë³€ê²½) 
+			if(!app_cfg->ste.b.ftp_run) {
+				if (app_rec_state()) {
+					  app_rec_stop(ON);
+				} else {
+					app_rec_start();
+				}
+			}
+		}
+		
+		if(!app_cfg->ste.b.ftp_run) {
+			rkey2 = chk_sos_key();
+			if (rkey2 == KEY_SHORT) {  // SOS REC ON/OFF toggle 
+				value = app_rec_state() ;
+
+				if (value < 2)  //  Rec off or normal/event rec -> SOS ON
+				{
+					app_rec_stop(OFF) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+					app_rec_evt(ON) ;  // SOS REC
+					sysprint("[APP_SOS] Occurs SOS Event !! \n") ;	
+				}
+				else if(value == 2) // value 2, SOS Rec  , Value 1 Normal/Event REc
+                {
+					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+					sysprint("[APP_SOS] End SOS Event !! \n") ;	
+				}
+				dprintf("SOS Short Key Pressed!\n");
+			} 
+			else if (rkey2 == KEY_LONG) {	
+				dprintf("SOS Long Key Pressed!\n");
+			}
+		}
+#endif		
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
@@ -335,7 +404,7 @@ int app_dev_init(void)
 		return EFAIL;
     }
 
-	aprintf("... done!\n");
+	aprintf("....done!\n");
 
 	return SOK;
 }

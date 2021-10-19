@@ -237,12 +237,12 @@ int stream_end(void)
  */
 void ShowInfo(STREAM_PARM *pParm, int id)
 {
-	dprintf("ID = %d \n",id);
-	dprintf("pParm->ImageHeight = %d \n",pParm->ImageHeight[id]);
-	dprintf("pParm->ImageWidth = %d \n",pParm->ImageWidth[id]);
-	dprintf("pParm->JpgQuality = %d \n",pParm->JpgQuality);
-	dprintf("pParm->Mpeg4Quality = %d \n",pParm->Mpeg4Quality[id]);
-	dprintf("pParm->qid = %d \n",pParm->qid);
+	dprintf_rt("ID = %d \n",id);
+	dprintf_rt("pParm->ImageHeight = %d \n",pParm->ImageHeight[id]);
+	dprintf_rt("pParm->ImageWidth = %d \n",pParm->ImageWidth[id]);
+	dprintf_rt("pParm->JpgQuality = %d \n",pParm->JpgQuality);
+	dprintf_rt("pParm->Mpeg4Quality = %d \n",pParm->Mpeg4Quality[id]);
+	dprintf_rt("pParm->qid = %d \n",pParm->qid);
 }
 
 /**
@@ -272,7 +272,7 @@ void *Msg_CTRL(void *args)
 		//# receive message from wis-streamer -----
 		msg_size = msgrcv(qid, &msgbuf, sizeof(msgbuf)-sizeof(long), MSG_TYPE_MSG1, 0);
 		if( msg_size <= 0 ) {
-			dprintf("Receive msg fail \n");
+			dprintf_rt("Receive msg fail \n");
 			continue;
 		}
 
@@ -841,7 +841,7 @@ static int Init_Msg_Func(STREAM_PARM *pParm)
 	    eprintf_rt("Failed to setschedparam thread attrs!!\n");
 		return STREAM_FAILURE;
 	}
-	//dprintf(" Init_Msg_Func \n" );
+	//dprintf_rt(" Init_Msg_Func \n" );
 
 	pthread_create(&(pParm->threadControl), &attr, Msg_CTRL, (void *)pParm);
 
@@ -1167,7 +1167,7 @@ void stream_feature_setup( int nFeature, void *pParm )
 			break;
 		}
 		default:
-			dprintf("unknow feature setup num = %d\n", nFeature);
+			dprintf_rt("unknow feature setup num = %d\n", nFeature);
 		break;
 	}
 */

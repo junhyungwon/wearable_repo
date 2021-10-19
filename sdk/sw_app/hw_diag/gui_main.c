@@ -18,6 +18,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+//# include mcfw_linux
+#include "ti_vsys.h"
+
 #include "app_comm.h"
 #include "app_main.h"
 #include "app_cap.h"
@@ -106,9 +109,6 @@ static char *TZfiles[][2] = {
     {"Etc/GMT-13", "Etc/GMT-13"},
     {"Etc/GMT-14", "Etc/GMT-14"}
 };
-
-
-
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -427,8 +427,6 @@ static char menu_main[] = {
 };
 */
 
-
-
 int update_m3_time()
 {
     time_t now;
@@ -473,8 +471,6 @@ char *get_timezone (int timezone, int daylightsaving)
     return buffer ;
 }
 
-
-
 int set_time_zone()
 {
     FILE *Fp ;
@@ -505,7 +501,6 @@ int set_time_zone()
     return 1 ;
 }
 
-
 int set_time_via_ntp()
 {
 	char buff[128], server_addr[32], addr[32];
@@ -524,10 +519,9 @@ int set_time_via_ntp()
 
 	sleep(3) ;
 	update_m3_time() ;
-
+	
+	return 1;
 }
-
-
 
 static int gui_test_main(void *thr)
 {

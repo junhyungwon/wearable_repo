@@ -1,7 +1,7 @@
 /**
  * @file account/account.c  Load SIP accounts from file
  *
- * Copyright (C) 2010 - 2015 Creytiv.com
+ * Copyright (C) 2010 - 2015 Alfred E. Heggestad
  */
 #include <re.h>
 #include <baresip.h>
@@ -30,7 +30,6 @@
 static int account_write_template(const char *file)
 {
 	FILE *f = NULL;
-	const char *login, *pass, *domain;
 	int r, err = 0;
 
 	info("account: creating accounts template %s\n", file);
@@ -38,17 +37,6 @@ static int account_write_template(const char *file)
 	f = fopen(file, "w");
 	if (!f)
 		return errno;
-
-	login = sys_username();
-	if (!login) {
-		login = "user";
-	}
-
-	pass = "PASSWORD";
-
-	domain = net_domain(baresip_network());
-	if (!domain)
-		domain = "domain";
 
 	r = re_fprintf(f,
 			 "#\n"
@@ -77,6 +65,7 @@ static int account_write_template(const char *file)
 			 "#    ;outbound2=sip:secondary.example.com\n"
 			 "#    ;ptime={10,20,30,40,...}\n"
 			 "#    ;regint=3600\n"
+			 "#    ;prio={0,1,2,3,...}\n"
 			 "#    ;pubint=0 (publishing off)\n"
 			 "#    ;regq=0.5\n"
 			 "#    ;sipnat={outbound}\n"
@@ -95,7 +84,8 @@ static int account_write_template(const char *file)
 			 "[2001:df8:0:16:216:6fff:fe91:614c]:5070"
 			 ";transport=tcp>;auth_pass=secret\n"
 			 "#\n"
-		       "#<sip:%s@%s>;auth_pass=%s\n", login, domain, pass);
+		       "\n"
+		       "#<sip:user@domain>;auth_pass=PASSWORD\n");
 	if (r < 0)
 		err = ENOMEM;
 
@@ -134,10 +124,14 @@ static int line_handler(const struct pl *addr, void *arg)
 		return ENOENT;
 	}
 
-	if (account_regint(acc) != 0) {
+	if (account_regint(acc)) {
 		int e;
 
-		e = ua_register(ua);
+		if (!account_prio(acc))
+			e = ua_register(ua);
+		else
+			e = ua_fallback(ua);
+
 		if (e) {
 			warning("account: failed to register ua"
 				" '%s' (%m)\n", account_aor(acc), e);

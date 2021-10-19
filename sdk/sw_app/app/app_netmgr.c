@@ -46,7 +46,6 @@ typedef struct {
 	int device;
 	int insert;
 	int link_status;
-	int wlan_5G_enable;
 	int rssi_level;
 	int cur_usb_net;
 	
@@ -65,6 +64,16 @@ static app_netmgr_t *inetmgr=&netmgr_obj;
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 static void *THR_netmgr_send_msg(void *prm);
+static const char *netdev_str(int device)
+{
+	switch (device) {
+	case NETMGR_DEV_TYPE_WIFI:          return "WIFI";
+	case NETMGR_DEV_TYPE_USB2ETHER:     return "USB2ETH";
+	case NETMGR_DEV_TYPE_RNDIS:       	return "RNDIS";
+	case NETMGR_DEV_TYPE_CRADLE:   		return "CRADLE";
+	default: return "?";
+	}
+}
 
 static int send_msg(int cmd)
 {
@@ -89,7 +98,6 @@ static int recv_msg(void)
 	if (msg.cmd == NETMGR_CMD_DEV_DETECT) {
 		inetmgr->device = msg.device;
 		inetmgr->insert = msg.status;
-		inetmgr->wlan_5G_enable = msg.wlan_5G_enable;
 	} 
 	else if (msg.cmd == NETMGR_CMD_DEV_LINK_STATUS) {
 		inetmgr->device      = msg.device;
@@ -114,73 +122,98 @@ static void __netmgr_hotplug_noty(void)
 
 static void __netmgr_wlan_event_handler(int ste, int mode)
 {
-	netmgr_shm_request_info_t *info;
 	char *databuf;
+	int i;
 	
-	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
+	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.(+2048)
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
-	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 					
 	if (ste) {
 		/* Wi-Fi 장치가 연결되었을 때 필요한 루틴을 수행 */
-		app_cfg->ste.b.usbnet_ready = 1;
-		
-		dprintf("Wi-Fi %s start.........\n", mode?"AP":"CLIENT");
 		if (mode)
 		{
-		    /* AP MODE */
-			int enable = inetmgr->wlan_5G_enable;
-			
-			/* Wi-Fi AP Mode */
-			/* shared memory에 접속에 필요한 정보를 기록한다. */
+			netmgr_iw_hostapd_req_info_t *info = 
+							(netmgr_iw_hostapd_req_info_t *)databuf;
+			/* AP 모드는 외부망 연결이 안되므로 ready를 0으로 설정 */
+			app_cfg->ste.b.usbnet_ready = 0;
+			/* sharded memory 이므로 NULL 검사 안 해도 됨 */
+		    /* AP MODE (fixed 2.4G) */
 			snprintf(info->ssid, NETMGR_WLAN_SSID_MAX_SZ, "%s", app_set->sys_info.deviceId);
 			strcpy(info->passwd, NETMGR_WLAN_AP_PASSWD);
 			strcpy(info->ip_address, NETMGR_WLAN_AP_IPADDR);
 			strcpy(info->mask_address, NETMGR_WLAN_AP_MASKADDR);
 			strcpy(info->gw_address, NETMGR_WLAN_AP_GWADDR);
+			/* 일본향과 구분이 안 됨 -->2.4G로 고정 */
+			info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
+			info->freq = 0;
 			info->stealth = 0;
-			info->freq = enable;
-			info->dhcp = 0;
 			
-			if (enable) {
-				/* 5GHz Wi-Fi */
-				info->channel = NETMGR_WLAN_AP_5G_CHANNEL; //44
-			} else {
-				info->channel = NETMGR_WLAN_AP_2G_CHANNEL;
-			}
-			
+			dprintf("Wi-Fi SOFTAP start (NAME=%s).........\n", info->ssid);
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);
         } else {
-			/* client mode */
-			/* Wi-Fi Client Mode */
-			info->en_key = app_set->wifiap.en_key;
-			strcpy(info->ssid, app_set->wifiap.ssid);
-
-			if (strlen(app_set->wifiap.pwd) == 0) {
-				info->en_key = 0;
+			/* Wi-Fi Client Mode */    
+			netmgr_iw_supplicant_req_info_t *info = 
+							(netmgr_iw_supplicant_req_info_t *)databuf;
+			
+			app_cfg->ste.b.usbnet_ready = 1;
+			/* 이전 CFG와 호환성을 위해서 */
+			strcpy(info->iw_data[0].ssid, app_set->wifiap.ssid);
+			if (strcmp(app_set->wifiap.pwd, "")==0) {
+				info->iw_data[0].en_key = 0;
 			} else {
-				strcpy(info->passwd, app_set->wifiap.pwd);
+				info->iw_data[0].en_key = 1;
+				strcpy(info->iw_data[0].passwd, app_set->wifiap.pwd);
 			}
 			
-			if (app_set->net_info.wtype == NET_TYPE_STATIC) 
+			/* 신규로 추가된 총 4개의 접속 정보를 저장 
+			 * info->iw_data[0]가 wifiap 구조체 값을 저장하기 때문에
+			 * info->iw_data[1]부터 저장해야 함.
+			 */
+            for (i = 0; i < WIFIAP_CNT; i++) 
 			{
-				info->dhcp = 0;
-				strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
-				strcpy(info->mask_address, app_set->net_info.wlan_netmask);
-				strcpy(info->gw_address, app_set->net_info.wlan_gateway);
-			} else {
-				info->dhcp = 1;
+				/* NULL 문자 체크 */
+				if (strcmp(app_set->wifilist[i].ssid, "") != 0)
+			    	strcpy(info->iw_data[i+1].ssid, app_set->wifilist[i].ssid);
+			    if (strcmp(app_set->wifilist[i].pwd, "")!=0) {
+				    strcpy(info->iw_data[i+1].passwd, app_set->wifilist[i].pwd);
+					info->iw_data[i+1].en_key = 1;
+			    } else {
+				    info->iw_data[i+1].en_key = 0;
+			    }
 			}
-			send_msg(NETMGR_CMD_WLAN_CLIENT_START);
+			
+			 // using multi ap 
+			if (app_set->multi_ap.ON_OFF) {
+				info->dhcp = 1 ;
+			} else {
+				if (app_set->net_info.wtype == NET_TYPE_STATIC) {
+					info->dhcp = 0;
+					strcpy(info->ip_address, app_set->net_info.wlan_ipaddr);
+					strcpy(info->mask_address, app_set->net_info.wlan_netmask);
+					strcpy(info->gw_address, app_set->net_info.wlan_gateway);
+				} else {
+					info->dhcp = 1;
+				}
+			}
+
+			for (i = 0; i <= WIFIAP_CNT; i++) {
+				if (((strcmp(info->iw_data[i].ssid, "") == 0) && (strcmp(info->iw_data[i].passwd, "") == 0)) ||
+				    ((strcmp(info->iw_data[i].ssid, "AP_SSID") == 0) && (strcmp(info->iw_data[i].passwd, "AP_PASSWORD") == 0))
+				   ) {
+					/* 기본값이면 Wi-Fi 실행 안 함 : Notice 할 방법은 없다...... */
+				} else {
+					dprintf("Wi-Fi STATION start.........\n");
+					send_msg(NETMGR_CMD_WLAN_CLIENT_START);
+					break;
+				}
+			}
 		}
 		
 	} else {
-		app_cfg->ste.b.usbnet_ready = 0;
-		
 		dprintf("Wi-Fi %s STOP.........\n", mode?"AP":"CLIENT");
+		app_cfg->ste.b.usbnet_ready = 0;
 		/* Wi-Fi 장치가 제거되었을 때 필요한 루틴을 수행 */
 		if (mode) {
 			/* AP mode stop */
@@ -193,21 +226,13 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 
 static void __netmgr_rndis_event_handler(int ste)
 {
-	netmgr_shm_request_info_t *info;
-	char *databuf;
-	
-	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
-	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
-	
-	/* memory clear */
-	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
-	
+	/*
+	 * DHCP로 고정되기 때문에 전달해야 할 정보가 필요없다.
+	 */
 	if (ste) {
 		/* rndis 장치가 연결되었을 때 필요한 루틴을 수행 */
-		app_cfg->ste.b.usbnet_ready = 1;
-		info->dhcp = 1;
 		send_msg(NETMGR_CMD_RNDIS_START);
+		app_cfg->ste.b.usbnet_ready = 1;
 	} else {
 		/* rndis 장치가 제거되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 0;
@@ -217,17 +242,17 @@ static void __netmgr_rndis_event_handler(int ste)
 
 static void __netmgr_usb2eth_event_handler(int ste)
 {
-	netmgr_shm_request_info_t *info;
 	char *databuf;
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
-	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
+		netmgr_usb2eth_req_info_t *info = 
+						(netmgr_usb2eth_req_info_t *)databuf;
+		
 		/* usb2eth 장치가 연결되었을 때 필요한 루틴을 수행 */
 		app_cfg->ste.b.usbnet_ready = 1;
 		if (app_set->net_info.wtype == NET_TYPE_STATIC) {
@@ -248,18 +273,18 @@ static void __netmgr_usb2eth_event_handler(int ste)
 
 static void __netmgr_cradle_eth_event_handler(int ste)
 {
-	netmgr_shm_request_info_t *info;
+	netmgr_cradle_eth_req_info_t *info;
 	char *databuf;
 	
 	//# Memory Offset을 더할 때 바이트 단위로 더하기 위해서 임시 포인터 사용.
 	databuf = (char *)(inetmgr->sbuf + NETMGR_SHM_REQUEST_INFO_OFFSET);
-	info = (netmgr_shm_request_info_t *)databuf;
+	info = (netmgr_cradle_eth_req_info_t *)databuf;
 	
 	/* memory clear */
 	memset(databuf, 0, NETMGR_SHM_REQUEST_INFO_SZ);
 	
 	if (ste) {
-		app_cfg->ste.b.cradle_eth_ready = 1;
+		app_cfg->ste.b.cradle_net_ready = 1;
 		/* cradle 장치가 연결되었을 때 필요한 루틴을 수행 */
 		if (app_set->net_info.type == NET_TYPE_STATIC) {
 			info->dhcp = 0;
@@ -271,8 +296,8 @@ static void __netmgr_cradle_eth_event_handler(int ste)
 		}
 		send_msg(NETMGR_CMD_CRADLE_ETH_START);
 	} else {
-		app_cfg->ste.b.cradle_eth_ready = 0;
 		/* cradle 장치가 제거되었을 때 필요한 루틴을 수행 */
+		app_cfg->ste.b.cradle_net_ready = 0;
 		send_msg(NETMGR_CMD_CRADLE_ETH_STOP);
 	}
 }
@@ -283,42 +308,58 @@ static void __netmgr_dev_link_status_handler(void)
 	int link   = inetmgr->link_status;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		eprintf("invalid netdevice --> %x\n", device);
+		eprintf("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
 	if (device == NETMGR_DEV_TYPE_CRADLE) {
 		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.cradle_eth_run = 1;
-			app_cfg->ftp_enable = ON;
-		} 
-		else if (link == NETMGR_DEV_ERROR)  {
-			app_cfg->ste.b.cradle_eth_run = 0;
-			app_cfg->ftp_enable = OFF;
-		}
-		else {
-			app_cfg->ste.b.cradle_eth_run = 0;
-			app_cfg->ftp_enable = OFF;
+			app_cfg->ste.b.cradle_net_run = 1;
+		} else {
+			app_cfg->ste.b.cradle_net_run = 0;
 		}
 	} else {
 		if (link == NETMGR_DEV_ACTIVE) {
-			app_cfg->ste.b.usbnet_run = 1;
+			/* 
+			 * WiFi AP 모드는 WAN 연결이 안되므로
+			 * usbnet_run을 0으로 설정해서 FTP / VOIP / Time sync 등이 
+			 * 동작 안하도록 변경.
+			 */
+			if (app_cfg->ste.b.usbnet_ready)
+				app_cfg->ste.b.usbnet_run = 1;
+			else 
+				app_cfg->ste.b.usbnet_run = 0;
 			/* 현재 연결된 USB 장치를 저장 */
 			inetmgr->cur_usb_net = device;
 			app_leds_rf_ctrl(LED_RF_OK);
 		} 
-		else if (link == NETMGR_DEV_ERROR)  {
-			app_cfg->ste.b.usbnet_run = 0;
-			app_leds_rf_ctrl(LED_RF_FAIL);
-		} 
 		else {
 			app_cfg->ste.b.usbnet_run = 0;
-			app_leds_rf_ctrl(LED_RF_OFF);
+			if (link == NETMGR_DEV_SUSPEND)  {
+				/* error 상태는 아님 / client 모드에서 AP와 접속이 일시적으로 끊어진 상태 */
+				app_leds_rf_ctrl(LED_RF_FAIL);
+			} else if (link == NETMGR_DEV_ERROR)  {
+				/*
+				* DHCP 서버에서 IP를 수신하지 못하는 경우이다. USB Reset 수행해봄.
+				*/
+				app_leds_rf_ctrl(LED_RF_FAIL);
+			} else {
+				/* inactive state */
+				app_leds_rf_ctrl(LED_RF_OFF);
+			}
 		} 
 	}
 	
-	//dprintf("current dev 0x%x link status %d\n", device, link);
+#if (FTP_CUR_DEV == FTP_DEV_ETH0)
+	if (app_cfg->ste.b.cradle_net_run)  app_cfg->ftp_enable = ON;
+	else								app_cfg->ftp_enable = OFF;
+#elif (FTP_CUR_DEV == FTP_DEV_ETH1)
+	if (app_cfg->ste.b.usbnet_run)  	app_cfg->ftp_enable = ON;
+	else								app_cfg->ftp_enable = OFF;
+#else
+#error "invalid ftp device"
+#endif	
 }
 
 static void __netmgr_dev_ip_status_handler(void)
@@ -328,7 +369,7 @@ static void __netmgr_dev_ip_status_handler(void)
 	int device = inetmgr->device;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		eprintf("invalid netdevice --> %x\n", device);
+		eprintf("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -338,9 +379,9 @@ static void __netmgr_dev_ip_status_handler(void)
 
 #if 0	
 	//# for debugging
-	dprintf("[Dev %x] Get dhcp ip address is %s\n", device, info->ip_address);
-	dprintf("[Dev %x] Get dhcp mask address is %s\n", device, info->mask_address);
-	dprintf("[Dev %x] Get dhcp gateway address is %s\n", device, info->gw_address);
+	dprintf("[Dev %s] Get dhcp ip address is %s\n", netdev_str(device), info->ip_address);
+	dprintf("[Dev %s] Get dhcp mask address is %s\n", netdev_str(device), info->mask_address);
+	dprintf("[Dev %s] Get dhcp gateway address is %s\n", netdev_str(device), info->gw_address);
 #endif
 	
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
@@ -369,13 +410,8 @@ static void __netmgr_dev_ip_status_handler(void)
 
 static void __netmgr_rssi_status_handler(int level)
 {
-	int device = inetmgr->device;
-	char msg[128]={0,};
-	
 	if (level < 0) {
-		snprintf(msg, sizeof(msg), "Wi-Fi RSSI is minus, connection closed...");
-		dprintf("%s\n", msg);
-		app_log_write(MSG_LOG_WRITE, msg);					
+		sysprint("Wi-Fi RSSI is minus, connection closed...\n");
 	} else {					
 		//dprintf("current rssi level is (%d/100)\n", level);	
 		/* level 값을 확인 후 추가적인 작업이 필요할 경우를 위해서....*/
@@ -481,7 +517,6 @@ static void *THR_netmgr_send_msg(void *prm)
 *****************************************************************************/
 static void *THR_netmgr_recv_msg(void *prm)
 {
-	char msg[128]={0,};
 	int exit = 0, cmd;
 	
 	aprintf("enter...\n");
@@ -496,38 +531,27 @@ static void *THR_netmgr_recv_msg(void *prm)
 			continue;
 		}
 		
-		/* log buffer clear */
-		memset(msg, 0, sizeof(msg));
 		switch (cmd) {
 		case NETMGR_CMD_READY:
 			__netmgr_start();
-			snprintf(msg, sizeof(msg), "app: netmgr ready!");
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			dprintf("netmgr starting....!\n");
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
 			__netmgr_hotplug_noty();
-			snprintf(msg, sizeof(msg), "app: netdevice type %x, state %s", 
-						inetmgr->device, inetmgr->insert?"insert":"remove");
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] netdevice type %s, state %s\n", 
+						netdev_str(inetmgr->device), inetmgr->insert?"insert":"remove");
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
 			__netmgr_dev_link_status_handler();
-			snprintf(msg, sizeof(msg), "app: device type %x, link status %x", 
-						inetmgr->device, inetmgr->link_status);
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] device type %s, link status 0x%x\n", 
+						netdev_str(inetmgr->device), inetmgr->link_status);
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
 			__netmgr_dev_ip_status_handler();
-			snprintf(msg, sizeof(msg), "app: get device type %x, ip status!", 
-						inetmgr->device);
-			dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
@@ -537,9 +561,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
-			snprintf(msg, sizeof(msg), "app: netmgr exit!");
-			//dprintf("%s\n", msg);
-			app_log_write(MSG_LOG_WRITE, msg);
+			sysprint("[APP_NET] netmgr exit!\n");
 			break;
 		default:
 			break;	
@@ -635,7 +657,7 @@ int app_netmgr_init(void)
 		return EFAIL;
 	}
 	
-	aprintf("... done!\n");
+	aprintf("... exit!\n");
 
 	return SOK;
 }
@@ -667,7 +689,7 @@ int app_netmgr_exit(void)
 //	tObj = &inetmgr->rObj;
 //	thread_delete(tObj);
 	
-	aprintf("done!...\n");
+	aprintf("...exit!\n");
 
 	return SOK;
 }

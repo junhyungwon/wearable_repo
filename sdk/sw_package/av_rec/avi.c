@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include <cmem.h>
 
 #include "main.h"
@@ -96,7 +97,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	memset(&aviInfo, 0, sizeof(AVI_SYSTEM_PARAM));
 	
-	aviInfo.nVidCh	= MODEL_CH_NUM;
+	aviInfo.nVidCh	= REC_CH_NUM;
 	aviInfo.bEnMeta	= TRUE; //# FALSE
 	aviInfo.uVideoType	= ENCODING_H264;
 	
@@ -104,7 +105,11 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 		aviInfo.nVidWi[i] = ifr->frm_wi;
 		aviInfo.nVidHe[i] = ifr->frm_he;
 	}
-	aviInfo.fFrameRate	= (double)(ifr->frm_rate*1000./1001.);
+	/*
+	 * 정수를 소수로 변환하는 과정에서 1->0.9xxx로 되면 재생할 때 문제가 발생함.
+	 * 따라서 반올림 후 소수를 버림.(floor)
+	 */
+	aviInfo.fFrameRate	= floor((ifr->frm_rate*1000./1001.)+0.5L);
 
 	if (snd_on) {
 		aviInfo.bEnAudio 			= TRUE;
@@ -118,7 +123,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	favi = LIBAVI_createAvi(filename, &aviInfo);
 	if (favi == NULL) {
-        log_write(" !!! file open failed !!!");
+        avrec_log(" !!! file open failed !!!");
 		eprintf("avi save handle is NULL!\n");
 	}
 
@@ -127,7 +132,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 
 void avi_file_close(FILE *favi, char *fname)
 {
-	if (favi) {
+	if (favi != NULL) {
 		LIBAVI_closeAvi(favi);
 	}
 	favi = NULL;
@@ -141,15 +146,25 @@ int avi_file_write(FILE *favi, stream_info_t *ifr)
 	int enc_size=0, sz;
 	char *tmp=NULL;
 	
-	if (favi)
+	if (favi != NULL)
 	{
 		if (ifr->d_type == DATA_TYPE_VIDEO) 
 		{
 			frame.buf			= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
 			frame.size			= ifr->b_size;
 			frame.data_type		= ifr->d_type;
-			frame.channel 		= ifr->ch;
-			frame.iskey_frame 	= ifr->is_key;
+			frame.iskey_frame 	= ifr->is_key;			
+#if defined(NEXXB) && (REC_CH_NUM == 3)
+			if (ifr->ch == 1) {
+				/* invalid channel */
+				return;
+			} else if (ifr->ch >= 2) {
+				frame.channel = ifr->ch - 1;
+			} else 
+				frame.channel = ifr->ch;
+#else
+			frame.channel = ifr->ch;
+#endif
 		}
 		else if(ifr->d_type == DATA_TYPE_AUDIO) 
 		{

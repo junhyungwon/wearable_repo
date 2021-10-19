@@ -1458,7 +1458,7 @@ Int32 DisplayLink_drvDelete(DisplayLink_Obj * pObj)
     FVID2_FrameList frameList;
     Int32 status;
 
-#ifdef SYSTEM_DEBUG_DEI
+#ifdef SYSTEM_DEBUG_DISPLAY
     Vps_printf(" %d: DISPLAY: Frames = %d (fps = %d) !!!\n",
                Utils_getCurTimeInMsec(),
                pObj->dequeCount,

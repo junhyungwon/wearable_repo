@@ -40,8 +40,6 @@
 #define MB	(KB*KB)
 #endif
 
-#define __SYSLOGD_ENABLE__
-
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 /*----------------------------------------------------------------------------
  Declares variables
@@ -53,14 +51,12 @@
 #define app_msleep(ms)		OSA_waitMsecs(ms)
 #define app_get_time()		OSA_getCurTimeInMsec()
 
-#define aprintf(x, ...)	printf(" [app ] \033[32m%s: \033[0m" x, __func__, ##__VA_ARGS__);
+/* ANSI Color Green print 32m */
+#define aprintf(x,...)	printf(" [app ] \033[32m%s: \033[0m" x, __func__, ##__VA_ARGS__);
 #define eprintf(x...) do { printf(" [app !err] %s: ", __func__); printf(x); } while(0)
-
-//# mcfw/build/build_config.mk
-#ifdef SYS_DEBUG
 #define dprintf(x...) do { printf(" [app ] %s: ", __func__); printf(x); } while(0)
-#else
-#define dprintf(x...)
-#endif
+/* ANSI Color RED */
+#define notice(x,...)	printf(" [app ] \033[31m%s: \033[0m" x, __func__, ##__VA_ARGS__);
 
+#define sysprint(x...) do { printf(" [app LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
 #endif	/* _APP_COMM_H_ */

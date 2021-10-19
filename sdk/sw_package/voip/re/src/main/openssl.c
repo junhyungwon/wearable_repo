@@ -114,8 +114,9 @@ static void sigpipe_handler(int x)
 
 int openssl_init(void)
 {
+	int err;
 #if defined (HAVE_PTHREAD) && (OPENSSL_VERSION_NUMBER < 0x10100000L)
-	int err, i;
+	int i;
 
 	lockv = mem_zalloc(sizeof(pthread_mutex_t) * CRYPTO_num_locks(), NULL);
 	if (!lockv)
@@ -149,8 +150,14 @@ int openssl_init(void)
 	(void)signal(SIGPIPE, sigpipe_handler);
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	err = OPENSSL_init_ssl(OPENSSL_INIT_SSL_DEFAULT, NULL);
+	if (!err)
+		return !err;
+#else
 	SSL_library_init();
 	SSL_load_error_strings();
+#endif
 
 	return 0;
 }
@@ -158,7 +165,9 @@ int openssl_init(void)
 
 void openssl_close(void)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	ERR_free_strings();
+#endif
 #if defined (HAVE_PTHREAD) && (OPENSSL_VERSION_NUMBER < 0x10100000L)
 	lockv = mem_deref(lockv);
 #endif

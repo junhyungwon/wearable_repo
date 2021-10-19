@@ -28,7 +28,7 @@
 #include "stream.h"
 #include "app_rtsptx.h"
 #include "app_snd.h"
-
+#include "app_decrypt.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -140,18 +140,22 @@ int app_rtsptx_start(void)
 	{	
 #if defined(NEXXONE)
 		sprintf(dev_model, "%s", "NEXXONE") ;
-#else
+#elif defined(NEXX360W)
 		sprintf(dev_model, "%s", "NEXX360") ;
+#elif defined(NEXXB)
+		sprintf(dev_model, "%s", "NEXX-B") ;
+#elif defined(NEXX360W_MUX)
+		sprintf(dev_model, "%s", "NEXX360W_MUX") ;
 #endif
 		if(app_set->account_info.enctype)
         {
 			decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32) ;
             decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_passwd, 32) ;
-	        sprintf(rtsp_cmd, "%s %d %s %s %d %d %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, APP_SND_SRATE, app_set->account_info.enctype, dev_model ) ;
+	        sprintf(rtsp_cmd, "%s %d \"%s\" \"%s\" %d %d %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, rtsp_user, rtsp_passwd, APP_SND_SRATE, app_set->account_info.enctype, dev_model ) ;
 		}
 		else
 		{
-	        sprintf(rtsp_cmd, "%s %d %s %s %d %d %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, APP_SND_SRATE, app_set->account_info.enctype, dev_model ) ;
+	        sprintf(rtsp_cmd, "%s %d \"%s\" \"%s\" %d %d %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, APP_SND_SRATE, app_set->account_info.enctype, dev_model ) ;
 
 		}
 	}
@@ -189,10 +193,11 @@ int app_rtsptx_stop(void)
 int app_rtsptx_stop_start()
 {
     FILE *fd = NULL;
+#if 0	
 	char rtsp_user[32] = {0} ;
 	char rtsp_passwd[32] = {0} ;
     char rtsp_cmd[MAX_CHAR_64] = {0, } ;
-
+#endif
      if(app_set->ch[MODEL_CH_NUM].resol == RESOL_1080P)
          msg_resol(RESOL_1080P) ;
      if(app_set->ch[MODEL_CH_NUM].resol == RESOL_720P)

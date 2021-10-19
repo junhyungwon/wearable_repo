@@ -28,6 +28,7 @@
 #define MAX_GOV						MAX_FPS
 #define DEFAULT_FPS					MAX_FPS
 #define DEFAULT_GOV					DEFAULT_FPS
+#define WIFIAP_CNT                  4
 
 #define MIN_FPS 					1
 #define MAX_BITRATE 				8000 // Kbps
@@ -130,7 +131,8 @@ typedef struct{
     char id[MAX_CHAR_16];
     char pwd[MAX_CHAR_16];
     short ON_OFF ;
-	char reserved[126];
+	short file_type ;           // 0 : all, 1 : event
+	char reserved[124];
 
 } app_network_ftp_t;
 
@@ -254,6 +256,10 @@ typedef struct {
     char reserved[121] ;
 } app_account_t ; // size:320
 
+typedef struct {
+    short ON_OFF ;
+} app_multi_ap_t; // 66
+
 #if SYS_CONFIG_VOIP
 #pragma pack(1)
 typedef struct {
@@ -277,6 +283,7 @@ typedef struct {
 	app_network_srv_t		srv_info;	//# server network information for connection.
 	app_network_ftp_t		ftp_info;	//# ftp server information
 	app_network_wifiap_t	wifiap;		//# wifi ap information for client-mode
+	app_network_wifiap_t	wifilist[WIFIAP_CNT];		//# wifi ap list information for client-mode
 
 	app_system_t	   		sys_info;
 	app_rec_cfg_t			rec_info;
@@ -284,12 +291,13 @@ typedef struct {
     app_timecfg_t           time_info;
     
     app_account_t           account_info;
+	app_multi_ap_t          multi_ap;
 
 #if SYS_CONFIG_VOIP
     app_voip_t              voip; //  => 72 + 40
-	char reserved[362];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40)
+	char reserved[360];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40)
 #else
-	char reserved[474];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
+	char reserved[472];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
 #endif
 	
 } app_set_t;

@@ -27,7 +27,6 @@
 	   
 #include "gnss_ipc_cmd_defs.h"
 #include "main.h"
-#include "fifo.h"
 #include "gps_proc.h"
 
 /*----------------------------------------------------------------------------
@@ -63,7 +62,6 @@ int send_msg(int cmd)
 int recv_msg(void)
 {
 	to_gnss_msg_t msg;
-	int size;
 	
 	//# blocking
 	if (Msg_Rsv(app_cfg->qid, GNSS_MSG_TYPE_TO_GPS, (void *)&msg, sizeof(to_gnss_msg_t)) < 0) {
@@ -115,8 +113,6 @@ static void app_main(void)
 {
 	int exit = 0, cmd;
 
-	aprintf("enter...\n");
-	
 	app_cfg->qid = Msg_Init(GNSS_MSG_KEY);
 	send_msg(GNSS_CMD_GPS_READY);
 	
@@ -152,8 +148,6 @@ static void app_main(void)
 	}
 	
 	Msg_Kill(app_cfg->qid);
-
-	aprintf("exit...\n");
 }
 
 /*****************************************************************************
@@ -162,7 +156,7 @@ static void app_main(void)
 *****************************************************************************/
 int main(int argc, char **argv)
 {
-	int rc = 0, offset;
+	int rc = 0;
 
 //	dprintf(" [GPS process] start...\n");
 	

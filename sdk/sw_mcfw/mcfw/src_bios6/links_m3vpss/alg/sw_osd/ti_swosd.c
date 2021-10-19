@@ -75,7 +75,6 @@ int idxHndl[AVSERVER_MAX_STREAMS];
 /* Global SWOSD config structure */
 SWOSD_config_t gSWOSD_config;
 
-
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
@@ -167,16 +166,6 @@ void DM81XX_SWOSD_setVolt(int streamId, int value)
     }
 }
 
-void DM81XX_SWOSD_setTemp(int streamId, int value)
-{
-    if (streamId < gSWOSD_config.numCaptureStream)
-    {
-		gSWOSD_config.userInfo.temp = value;
-		gSWOSD_config.swosdConfig[streamId].update_temp = OSD_YES;
-		gSWOSD_config.swosdConfig[streamId].update = OSD_YES;
-    }
-}
-
 void DM81XX_SWOSD_setSpeed(int streamId, int value)
 {
     if (streamId < gSWOSD_config.numCaptureStream)
@@ -229,16 +218,6 @@ static void SWOSD_getVoltString(int streamId, char *str)
 {
     if (streamId < gSWOSD_config.numCaptureStream) {
         sprintf(str, "%2d.%01dV", gSWOSD_config.userInfo.voltage/10, gSWOSD_config.userInfo.voltage%10);
-    }
-    else {
-        sprintf(str, "0");
-    }
-}
-
-static void SWOSD_getTempString(int streamId, char *str)
-{
-    if (streamId < gSWOSD_config.numCaptureStream) {
-        sprintf(str, "%3d.%01d'c", gSWOSD_config.userInfo.temp/10, gSWOSD_config.userInfo.temp%10);
     }
     else {
         sprintf(str, "0");
@@ -351,7 +330,7 @@ static int DM81XX_SWOSD_setWinParam(SWOSD_Hndl *osdHndl, int idx, int height, in
     }
     char_w = fontInfo->charWidth;
 	char_h = fontInfo->charHeight;
-
+	Vps_printf("char_w =%d char_h = %d\n",char_w, char_h) ;
 	/*
 	bmpWinPrm.userTransparancy = SWOSD_RBOOLTRUE;
 	bmpWinPrm.enable = SWOSD_RBOOLTRUE;
@@ -420,13 +399,18 @@ static int DM81XX_SWOSD_setWinParam(SWOSD_Hndl *osdHndl, int idx, int height, in
 	strbuf_UV = (char *)(strbuf_Y[idx][win] + (1 * char_w * char_h));
 	SWOSD_setBmpWinAddr(osdHndl, strbuf_Y[idx][win], strbuf_UV, win);
 
-	//# win5 position, voltage
+	//# win5 position, call status "C"
 	win = OSDWIN_5;
 	bmpWinPrm.startX = xoffset;
 	bmpWinPrm.startY = yoffset + char_h + STR_SPACE_LENGTH;
+//	bmpWinPrm.transperencyEnable = SWOSD_BMPTRANSENABLE;
 	SWOSD_setBmpWinPrm(osdHndl, win, &bmpWinPrm);
-
-	//# win6 position, temp
+	
+	SWOSD_MakeOsdwinstring(fontInfo, "C", strbuf_Y[idx][win], &osdHndl->bmpWinPrm[win], 1);
+	strbuf_UV = (char *)(strbuf_Y[idx][win] + (1 * char_w * char_h));
+	SWOSD_setBmpWinAddr(osdHndl, strbuf_Y[idx][win], strbuf_UV, win);
+	
+	//# win6 position, voltage
 	win = OSDWIN_6;
 	bmpWinPrm.startX += SWOSD_align((STR_VOLT_MAX_LEN * char_w), 4) + STR_SPACE_LENGTH;
 	SWOSD_setBmpWinPrm(osdHndl, win, &bmpWinPrm);
@@ -443,11 +427,11 @@ static int DM81XX_SWOSD_setWinParam(SWOSD_Hndl *osdHndl, int idx, int height, in
 	//bmpWinPrm.transperencyEnable = SWOSD_BMPTRANSENABLE;
 	SWOSD_setBmpWinPrm(osdHndl, win, &bmpWinPrm);
 
-	//# win9 position
+	//# win9 position, S/W Version
 	win = OSDWIN_9;
 	bmpWinPrm.startX = xoffset;
 	bmpWinPrm.startY = height - (char_h*2);
-	bmpWinPrm.transperencyEnable = SWOSD_BMPTRANSDISABLE;
+	//bmpWinPrm.transperencyEnable = SWOSD_BMPTRANSDISABLE;
 	SWOSD_setBmpWinPrm(osdHndl, win, &bmpWinPrm);
 
     return SWOSD_SOK;
@@ -486,30 +470,17 @@ static int DM81XX_SWOSD_makeWinString(int idx, SWOSD_Hndl * osdHndl)
 		gSWOSD_config.swosdConfig[idx].update_datetime = OSD_NO;
     }
 
-    if (gSWOSD_config.swosdConfig[idx].en_win[OSDWIN_5]
+    if (gSWOSD_config.swosdConfig[idx].en_win[OSDWIN_6]
     		&& gSWOSD_config.swosdConfig[idx].update_volt == OSD_YES)
     {
 		SWOSD_getVoltString(idx, str);
-
-		win = OSDWIN_5;
-		SWOSD_MakeOsdwinstring(fontInfo, str, strbuf_Y[idx][win], &osdHndl->bmpWinPrm[win], strlen(str));
-		strbuf_UV = (char *) (strbuf_Y[idx][win] + (strlen(str) * char_w * char_h));
-		SWOSD_setBmpWinAddr(osdHndl, strbuf_Y[idx][win], strbuf_UV, win);
-
-		gSWOSD_config.swosdConfig[idx].update_volt = OSD_NO;
-    }
-
-    if (gSWOSD_config.swosdConfig[idx].en_win[OSDWIN_6]
-    		&& gSWOSD_config.swosdConfig[idx].update_temp == OSD_YES)
-    {
-		SWOSD_getTempString(idx, str);
 
 		win = OSDWIN_6;
 		SWOSD_MakeOsdwinstring(fontInfo, str, strbuf_Y[idx][win], &osdHndl->bmpWinPrm[win], strlen(str));
 		strbuf_UV = (char *) (strbuf_Y[idx][win] + (strlen(str) * char_w * char_h));
 		SWOSD_setBmpWinAddr(osdHndl, strbuf_Y[idx][win], strbuf_UV, win);
 
-		gSWOSD_config.swosdConfig[idx].update_temp = OSD_NO;
+		gSWOSD_config.swosdConfig[idx].update_volt = OSD_NO;
     }
 
     if (gSWOSD_config.swosdConfig[idx].en_win[OSDWIN_7]
@@ -645,7 +616,8 @@ int DM81XX_SWOSD_create(SWOSD_config_t * pSwOsdPrm)
         }
         else
         {
-            SWOSD_setNumWindows(osdHndl, SWOSD_WINMAX);
+			
+            SWOSD_setNumWindows(osdHndl, SWOSD_WINMAX); 
             DM81XX_SWOSD_setWinParam(osdHndl, i,
                                      gSWOSD_config.swosdConfig[i].cropHeight,
                                      gSWOSD_config.swosdConfig[i].cropWidth);

@@ -240,6 +240,24 @@ void ProcessSocket(int m_ListenSock )
     }
 }
 
+void Sock_Init(void)
+{
+    int i = 0 ;
+
+    for(i = 1; i < MAXUSER ; i++)
+    {
+        if(SystemInfo.Channel[i] != 0)
+        {
+            close(SystemInfo.Channel[i]) ;
+            SystemInfo.Channel[i] = 0 ;
+            SystemInfo.Qposition[i] = 0 ;
+			SystemInfo.gps_req[i] = 0 ;
+			SystemInfo.event_req[i] = 0 ;
+            memset(SystemInfo.QBUFF[i],0,BUFFSIZE) ;
+        }
+    }
+}
+
 void CloseAllChannel(void)
 {
     int i = 0 ;
@@ -251,6 +269,8 @@ void CloseAllChannel(void)
             close(SystemInfo.Channel[i]) ;
             SystemInfo.Channel[i] = 0 ;
             SystemInfo.Qposition[i] = 0 ;
+			SystemInfo.gps_req[i] = 0 ;
+			SystemInfo.event_req[i] = 0 ;
             memset(SystemInfo.QBUFF[i],0,BUFFSIZE) ;
         }
     }
@@ -263,6 +283,8 @@ void CloseNowChannel(int m_NowChno )
         close (SystemInfo.Channel[m_NowChno]);
         SystemInfo.Channel[m_NowChno] = 0 ;
         SystemInfo.Qposition[m_NowChno] = 0 ;
+		SystemInfo.gps_req[m_NowChno] = 0 ;
+		SystemInfo.event_req[m_NowChno] = 0 ;
         memset(SystemInfo.QBUFF[m_NowChno],0, BUFFSIZE) ;
     }
 }

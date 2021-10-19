@@ -27,7 +27,6 @@
 #include "app_main.h"
 #include "app_voip.h"
 #include "app_leds.h"
-#include "app_log.h"
 #include "app_ctrl.h"
 
 /*----------------------------------------------------------------------------
@@ -77,10 +76,12 @@ typedef enum {
 static app_voip_t t_voip;
 static app_voip_t *ivoip = &t_voip;
 
+#if 0
 /* aic3x audio codec output volume percentage */
 static int __aic3x_output_level[3] = {
 	60, 80, 100 	
 };
+#endif
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -199,86 +200,19 @@ static void __set_default_account(const char *login, const char *domain, const c
 }
 #endif
 
-static int __get_voip_play_volume(int *level)
-{
-	FILE *f = NULL;
-	int res = 0;
-	char buf[256 + 1] = {0,};
-	char tbuf[2];
-	
-	res = access(SIP_VOLUME_CONF, R_OK|W_OK);
-    if ((res == 0) || (errno == EACCES)) 
-	{
-		f = fopen(SIP_VOLUME_CONF, "r");
-		if (f != NULL) 
-		{
-			while (fgets(buf, sizeof(buf), f) != NULL)
-			{
-				char *s;
-				int val;
-
-				s = strstr(buf, "level=");
-				if (s != NULL) {
-					s += 6; /* level=X */
-					tbuf[0] = s[0];
-					tbuf[1] = '\0';
-					
-					val = atoi(tbuf); /* ex) 1 */
-					fclose(f);
-					*level = val;
-					
-					//dprintf("level = %d\n", *level);
-					return 0;
-				}
-			}
-		}
-    }
-	
-	eprintf("couldn't open %s\n", SIP_VOLUME_CONF);
-	return -1;	
-}
-
-static void __set_voip_play_volume(int level)
-{
-	int res = 0;
-	FILE *f = NULL;
-	
-	res = access(SIP_VOLUME_CONF, R_OK|W_OK);
-    if ((res == 0) || (errno == EACCES)) {
-		/* delete file */
-      	unlink(SIP_VOLUME_CONF); 
-    }
-	
-	f = fopen(SIP_VOLUME_CONF, "wb");
-	if (f != NULL) {
-		fprintf(f, "level=%d\n", level);
-		fflush(f);
-		fclose(f);
-		chmod(SIP_VOLUME_CONF, 0660);
-	} 
-	else {
-		eprintf("couldn't create %s config file\n", SIP_VOLUME_CONF);
-	}
-}
-
 static void __call_register_handler(void)
 {
-	char msg[256] = {0, };
-	
 	/* create ua and register */
 	send_ua_msg(SIPC_CMD_SIP_REGISTER_UA, ivoip->net_type, ivoip->enable_stun, ivoip->svr_port, 
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
-		snprintf(msg, sizeof(msg), "STUN URL %s@%s:%d (pw: %s) ", ivoip->dev_num, ivoip->stun_svr, 
+		sysprint("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
 				ivoip->svr_port, ivoip->passwd);
 	} else {
-		snprintf(msg, sizeof(msg), "URL %s@%s:%d (pw: %s)", ivoip->dev_num, ivoip->server, 
+		sysprint("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
 				ivoip->svr_port, ivoip->passwd);
 	}
-    app_log_write(MSG_LOG_WRITE, msg);
-	
-	dprintf("voip start register--->%s\n", msg);
 }
 
 static void __call_unregister_handler(void)
@@ -290,7 +224,6 @@ static void __call_unregister_handler(void)
 
 static void __call_event_handler(void)
 {
-	char msg[128] = {0,};
 	int action = ivoip->st.call_ste;
 	
 	if (!ivoip->st.call_reg) {
@@ -298,10 +231,7 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-	snprintf(msg, sizeof(msg), "baresip state is %s, send btn...", __action_str(action));
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
-	
+	sysprint("baresip state is %s, send btn...\n", __action_str(action));
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
 		/* 전화를 건다 */
@@ -350,28 +280,14 @@ static void __call_event_handler(void)
 /*****************************************************************************
 * @brief    
 *   - desc
-*       : baresip로 earphone volume level을 변경하는 메시지 전달.
-*****************************************************************************/
-static void __call_snd_volume_handler(void)
-{
-	send_msg(SIPC_CMD_SIP_SET_SOUND, NULL);
-}
-
-/*****************************************************************************
-* @brief    
-*   - desc
 *       : __call_event_handler() 에 대한 응답이 baresip로부터 수신.
 *****************************************************************************/
 static void __call_status_handler(void)
 {
-	char msg[128] = {0,};
 	int is_reg = ivoip->st.call_reg;
-	int errcode = ivoip->st.call_err;
 	int action = ivoip->st.call_ste;
 	
-	snprintf(msg, sizeof(msg), "baresip response is %s", __action_str(action));
-	app_log_write(MSG_LOG_WRITE, msg);
-	dprintf("%s\n", msg);
+	sysprint("baresip response is %s\n", __action_str(action));
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
 	{
@@ -379,7 +295,7 @@ static void __call_status_handler(void)
 		case SIPC_STATE_CALL_ESTABLISHED:
 			/* 단말이 PBX에 등록된 상태 Camera 3 LED ON(Green) */
 			app_leds_voip_ctrl(DEV_LED_BLINK);
-			ctrl_swosd_userstr("C", 1);
+			ctrl_swosd_callstatus(0, 1); //# ch0 fixed
 			if (app_cfg->ste.b.voip_buzz)
 				app_cfg->ste.b.voip_buzz = 0;
 			break;
@@ -397,7 +313,7 @@ static void __call_status_handler(void)
 			
 		default:
 			app_leds_voip_ctrl(DEV_LED_ON);
-			ctrl_swosd_userstr("C", 0);
+			ctrl_swosd_callstatus(0, 0);
 			if (app_cfg->ste.b.voip_buzz)
 				app_cfg->ste.b.voip_buzz = 0;
 			break;	
@@ -405,7 +321,7 @@ static void __call_status_handler(void)
 	} 
 	else {
 		app_leds_voip_ctrl(DEV_LED_OFF);
-		ctrl_swosd_userstr("C", 0);
+		ctrl_swosd_callstatus(0, 0);
 	}
 }
 
@@ -442,9 +358,7 @@ static void *THR_voip_main(void *prm)
 			__call_event_handler();
 		} else if (cmd == APP_CMD_STOP) {
 			__call_unregister_handler();
-		} else if (cmd == APP_CMD_PAUSE) {
-			__call_snd_volume_handler();
-		}
+		} 
 	}
 	
 	tObj->active = 0;
@@ -513,22 +427,15 @@ int app_voip_init(void)
 {
 	app_thr_obj *tObj;
 	struct stat sb;
-	int percent, lv;
-	int status;
+	int lv,status;
 	
 	memset(ivoip, 0, sizeof(app_voip_t));
 	
 	/* alsa volume */
 //	amixer cset numid=17 50% # DAC_L1 to HPLOUT Volume Control
 //	amixer cset numid=1 90%  # Left / Right DAC Digital Volume
-	status = __get_voip_play_volume(&lv);
-	if (status < 0) {
-		/* set default level */
-		ivoip->snd_level = SND_LEVEL_HIGH;
-	} else {
-		ivoip->snd_level = lv;
-	}
-	
+	/* set default level */
+	ivoip->snd_level = SND_LEVEL_HIGH;
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
 		eprintf("can't access baresip execute file!\n");
@@ -633,42 +540,6 @@ void app_voip_event_noty(void)
 		return;
 	}
 	__call_send_cmd(APP_CMD_NOTY);
-}
-
-/*****************************************************************************
-* @brief    voip playback volume control
-*   - desc
-*****************************************************************************/
-void app_voip_set_play_volume(void)
-{
-	int level = ivoip->snd_level;
-	
-	if (!ivoip->st.call_reg) {
-		aprintf("Not registered!\n");
-		return;
-	}
-	
-	level++;
-	/* round */
-	if (level > SND_LEVEL_HIGH)
-		level = SND_LEVEL_LOW;
-	else if (level < SND_LEVEL_LOW) /* ??? */
-		level = SND_LEVEL_LOW;
-	
-	ivoip->snd_level = level;
-	
-	__call_send_cmd(APP_CMD_PAUSE);
-}
-
-/*****************************************************************************
-* @brief    save to storage playback volume 
-*   - desc
-*****************************************************************************/
-void app_voip_save_config(void)
-{
-	int level = ivoip->snd_level;
-	__set_voip_play_volume(level);
-	dprintf("last sound level %d saved!\n", level);
 }
 
 /*****************************************************************************

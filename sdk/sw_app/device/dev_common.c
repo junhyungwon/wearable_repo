@@ -1214,8 +1214,6 @@ int dev_board_serial_init(void)
 	char tmpbuf[16];
 	char strbuf[16];
 	
-	int ret;
-	
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
 	memset(tmpbuf, 0, 16);
 	memset(strbuf, 0, 16);
@@ -1288,7 +1286,7 @@ int dev_board_serial_write(const char *data, int length)
 		int i;
 		
 		for (i = 0; i < MTD_PAGESIZE; i += PRETTY_ROW_SIZE) {
-			pretty_dump_to_buffer(tmpbuf + i, PRETTY_ROW_SIZE,
+			pretty_dump_to_buffer((const unsigned char *)tmpbuf + i, PRETTY_ROW_SIZE,
 					pretty_buf, PRETTY_BUF_LEN, true, true, i);
 			write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
 		}
@@ -1308,8 +1306,6 @@ int dev_board_uid_init(void)
 {
 	char tmpbuf[16];
 	char strbuf[16];
-	
-	int ret;
 	
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
 	memset(tmpbuf, 0, 16);
@@ -1383,7 +1379,7 @@ int dev_board_uid_write(const char *data, int length)
 		int i;
 		
 		for (i = 0; i < MTD_PAGESIZE; i += PRETTY_ROW_SIZE) {
-			pretty_dump_to_buffer(tmpbuf + i, PRETTY_ROW_SIZE,
+			pretty_dump_to_buffer((const unsigned char *)tmpbuf + i, PRETTY_ROW_SIZE,
 					pretty_buf, PRETTY_BUF_LEN, true, true, i);
 			write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
 		}

@@ -1,7 +1,7 @@
 /**
  * @file avcodec/sdp.c  Video codecs using libavcodec -- SDP functions
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 
 #include <re.h>
@@ -34,7 +34,7 @@ int avcodec_h264_fmtp_enc(struct mbuf *mb, const struct sdp_format *fmt,
 {
 	struct vidcodec *vc = arg;
 	const uint8_t profile_idc = 0x42; /* baseline profile */
-	const uint8_t profile_iop = 0x80;
+	const uint8_t profile_iop = 0xe0;
 	(void)offer;
 
 	if (!mb || !fmt || !vc)

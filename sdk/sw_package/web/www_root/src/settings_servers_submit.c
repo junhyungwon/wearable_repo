@@ -29,17 +29,22 @@ static int submit_settings_qcgi()
         t.voip.port = 6060;
 
 		int  bs_enable=-1;
+		int  bs_upload_files=-1;
 		int  ms_enable=-1;
 		int  ddns_enable=-1;
 		int  ntp_enable=-1;
 		int  daylight_saving=-1;
 		int  enable_onvif=-1;
 		int  time_zone=-99;
-		int  enable_p2p=-1;
+		int  enable_p2p=1; // 무조건 1...
 
         char *str= req->getstr(req, "bs_enable", false);
         if (str != NULL) {
             bs_enable = atoi(str);
+        }
+        str= req->getstr(req, "bs_upload_files", false);
+        if (str != NULL) {
+            bs_upload_files = atoi(str);
         }
         str= req->getstr(req, "txt_bs_ip", false);
         if (str != NULL) {
@@ -131,7 +136,7 @@ static int submit_settings_qcgi()
             sprintf(t.onvif.pw, "%s", str);
         }
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
         str= req->getstr(req, "voip_use_stun", false);
         if (str != NULL) {
             t.voip.use_stun = atoi(str);
@@ -185,7 +190,7 @@ static int submit_settings_qcgi()
 		}
 #endif
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
 		if(enable_p2p == -1){
 			CGI_DBG("Invalid Parameter:enable_p2p\n");
 			return ERR_INVALID_PARAM;
@@ -196,6 +201,7 @@ static int submit_settings_qcgi()
 		CGI_DBG("dns_server2:%s\n", t.dns.server2);
 
 		t.bs.enable = bs_enable;
+        t.bs.upload_files = bs_upload_files;
 		t.ms.enable = ms_enable;
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;
@@ -203,7 +209,7 @@ static int submit_settings_qcgi()
 		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
 		t.time_zone = time_zone;      // A value of +12 is only device.
 		t.onvif.enable = enable_onvif;
-		t.p2p.enable = enable_p2p;
+		t.p2p.enable = enable_p2p; // FIXED 1.. 사용자 편의성을 위해서, 나중에 다시 풀라고 할지도 모름..-_-;;;
 
         ret = sysctl_message(UDS_SET_SERVERS_CONFIG, (void*)&t, sizeof t );
         CGI_DBG("ret:%d\n", ret);

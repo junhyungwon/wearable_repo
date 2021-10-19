@@ -39,13 +39,18 @@ extern "C" {
 
 /* record command */
 #define AV_CMD_REC_START				(0x600)
-#define AV_CMD_REC_STOP					(0x601)
-#define AV_CMD_REC_EXIT					(0x602)
-#define AV_CMD_REC_CANCEL				(0x603)
-#define AV_CMD_REC_DONE					(0x604)
-#define AV_CMD_REC_READY				(0x605)
-#define AV_CMD_REC_FLIST				(0x606)
-#define AV_CMD_REC_ERR					(0x607)
+#define AV_CMD_REC_EVT	    			(0x601)
+#define AV_CMD_REC_EVT_END              (0x602)
+#define AV_CMD_REC_SOS					(0x603)
+#define AV_CMD_REC_RESTART				(0x604)
+#define AV_CMD_REC_STOP					(0x605)
+#define AV_CMD_REC_EXIT					(0x606)
+#define AV_CMD_REC_CANCEL				(0x607)
+#define AV_CMD_REC_DONE					(0x608)
+#define AV_CMD_REC_READY				(0x609)
+#define AV_CMD_REC_FLIST				(0x60A)
+#define AV_CMD_REC_ERR					(0x60B)
+#define AV_CMD_REC_GSTOP				(0x60C)
 
 typedef struct {
 	long type;
@@ -69,7 +74,6 @@ typedef struct {
 	int cmd;
 
 	//# file list
-	int du;
 	char fname[256];
 } to_main_msg_t;
 

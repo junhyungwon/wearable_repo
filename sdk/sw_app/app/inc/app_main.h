@@ -15,7 +15,6 @@
 -----------------------------------------------------------------------------*/
 #include "board_config.h"
 #include "app_msg.h"
-#include "app_log.h"
 #include "app_leds.h"
 
 /*----------------------------------------------------------------------------
@@ -45,9 +44,11 @@
 #define OFF                      0
 
 #define SD_MOUNT_PATH   		"/mmc"
+#define EMERGENCY_UPDATE_DIR  	"/mmc/firmware"
 #define NAND_PATH               "/opt"
 #define NAND_ROOT               "/media/nand"
 #define AVI_EXT					"*.avi"
+#define NORMAL_FILE             "/mmc/DCIM/R_"
 
 #define JPEG_QUALITY            80      //# 1~100       100 is max.
 #define JPEG_FPS                1      //# default fps of jpeg.
@@ -89,6 +90,15 @@
 #define EPARAM                  (-2)
 #define EINVALID                (-3)
 #define EMEM                    (-4)
+
+#define FTP_DEV_ETH0			1
+#define FTP_DEV_ETH1			2
+
+#if defined(NEXXB) 
+#define FTP_CUR_DEV				FTP_DEV_ETH1 //#FTP_DEV_ETH1 /* TODO */
+#else
+#define FTP_CUR_DEV				FTP_DEV_ETH0
+#endif
 
 typedef enum {
 	STE_GPS = 0,
@@ -156,7 +166,7 @@ typedef union {
 		unsigned int busy				: 1;	//# system busy (format, update)
 		unsigned int evt				: 1;    //# event recording
 		unsigned int usbnet_ready		: 1;    //# usb device detect (Wi-Fi, LTE, USB2Ether)
-		unsigned int usbnet_run			: 1;    //# usb device run (Wi-Fi, LTE, USB2Ether) ip allocation succeed
+		unsigned int usbnet_run			: 1;    //# usb device active (WiFi AP/ Client / LTE, USB2Ether), connect to wan
 		unsigned int rtsptx 			: 1;
 	    unsigned int log        		: 1;
 	    unsigned int sock       		: 1;
@@ -165,8 +175,8 @@ typedef union {
         unsigned int pwr_off			: 1;	// check power off
         unsigned int ftp_run    		: 1;    // under running ftp
         unsigned int onvifserver 		: 1;
-		unsigned int cradle_eth_ready  	: 1;    // status of attached or detached cradle
-		unsigned int cradle_eth_run   	: 1;    // cradle network(eth0) running   
+		unsigned int cradle_net_ready  	: 1;    // status of attached or detached cradle wired network
+		unsigned int cradle_net_run   	: 1;    // cradle wired network running   
 		unsigned int web_server 		: 1;    // web_server
 		unsigned int prerec_state  		: 1; 	// record state before using FTP
 		unsigned int nokey  	   		: 1; 	// prevent key

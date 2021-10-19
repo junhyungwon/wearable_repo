@@ -234,15 +234,17 @@ static void *THR_gui(void *prm)
 					pre_wd = 1;
 				}
 				
-				if (wd_detect == WD_LOG_CNT)
-					app_log_write(MSG_LOG_SHUTDOWN, msg);
+				if (wd_detect == WD_LOG_CNT) {
+					sysprint("%s\n", msg);
+					sync();
+				}
 			}
 		}
 		//# ------------------ End of watchdog ----------------------------------------------------
 #ifdef OSD_SWVERSION
         if(!app_set->ch[MODEL_CH_NUM].resol)
         {
-            if(app_cfg->ste.b.cradle_eth_ready)
+            if(app_cfg->ste.b.cradle_net_ready)
             {
                 if(!igui->start)
                 {
@@ -295,12 +297,15 @@ static void *THR_gui(void *prm)
 				} else {
 					network = SIPC_NET_TYPE_RNDIS;
 				}
-
-				/* voip register start */
-				app_cfg->ste.b.voip = 1;
-				igui->voip_tmr = 0;
-				app_voip_start(network, app_set->voip.use_stun, app_set->voip.port, app_set->voip.userid, 
-							app_set->voip.ipaddr, app_set->voip.passwd, app_set->voip.peerid, VOIP_STUN_PATH);	
+				
+				/* 기본값 651xxxx인 경우 무시 */
+				if (strstr(app_set->voip.userid, "xxxx") == NULL) {
+					/* voip register start */
+					app_cfg->ste.b.voip = 1;
+					igui->voip_tmr = 0;
+					app_voip_start(network, app_set->voip.use_stun, app_set->voip.port, app_set->voip.userid, 
+								app_set->voip.ipaddr, app_set->voip.passwd, app_set->voip.peerid, VOIP_STUN_PATH);
+				}
 			}
 		} else {
 			/* checking voip registration */

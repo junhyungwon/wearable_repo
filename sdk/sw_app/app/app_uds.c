@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#define __USE_GNU
 #include <pthread.h>
 
 #include <sys/socket.h>
@@ -34,7 +35,6 @@
 #include "dev_common.h"
 #include "app_comm.h"
 #include "app_main.h"
-#include "app_log.h"
 #include "app_rec.h"
 #include "app_dev.h"
 #include "app_set.h"
@@ -381,6 +381,9 @@ static int SetOnvifUser(T_ONVIF_USER *pUser, int cs)
 		int nCS = cs;
 		static pthread_t tid_restart_onvif; // restart onvif
 		int status = pthread_create(&tid_restart_onvif, NULL, thdRestartOnvifServer, (void *)&nCS);
+		if (status < 0) {
+			; /* TODO */
+		}
 		pthread_setname_np(tid_restart_onvif, __FILENAME__);
 
 		return 0;
@@ -465,6 +468,102 @@ int setNetworkProtocols(onvif_NetworkProtocol* np){
 	return 0;
 }
 
+static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
+{
+	int isChanged=0, i;
+
+	if(t->wifi_ap_multi != app_set->multi_ap.ON_OFF) {
+		app_set->multi_ap.ON_OFF = (short)t->wifi_ap_multi;
+		DBG_UDS("app_set->multi_ap.ON_OFF=%d\n", app_set->multi_ap.ON_OFF);
+		isChanged++;
+	}
+
+	// wireless
+	if(t->wireless.addr_type != app_set->net_info.wtype) {
+		app_set->net_info.wtype = t->wireless.addr_type;
+		DBG_UDS("app_set->net_info.wtype=%d\n", app_set->net_info.wtype);
+		isChanged++;
+	}
+
+	if(t->wireless.addr_type == NET_TYPE_STATIC){
+
+		if(0!=strcmp(t->wireless.ipv4, app_set->net_info.wlan_ipaddr)){
+			strcpy(app_set->net_info.wlan_ipaddr, t->wireless.ipv4);
+			DBG_UDS("app_set->net_info.wlan_ipaddr=%s\n", app_set->net_info.wlan_ipaddr);
+			isChanged++;
+		}
+		if(0!=strcmp(t->wireless.gw, app_set->net_info.wlan_gateway)){
+			strcpy(app_set->net_info.wlan_gateway, t->wireless.gw);
+			DBG_UDS("app_set->net_info.wlan_gateway=%s\n", app_set->net_info.wlan_gateway);
+			isChanged++;
+		}
+		if(0!=strcmp(t->wireless.mask, app_set->net_info.wlan_netmask)){
+			strcpy(app_set->net_info.wlan_netmask, t->wireless.mask);
+			DBG_UDS("app_set->net_info.wlan_netmask=%s\n", app_set->net_info.wlan_netmask);
+			isChanged++;
+		}
+	}
+
+	// cradle
+	if(t->cradle.addr_type != app_set->net_info.type) {
+		app_set->net_info.type = t->cradle.addr_type;
+		DBG_UDS("app_set->net_info.type=%d\n", app_set->net_info.type);
+		isChanged++;
+	}
+
+	if(t->cradle.addr_type == NET_TYPE_STATIC){
+
+		if(0!=strcmp(t->cradle.ipv4, app_set->net_info.eth_ipaddr)){
+			strcpy(app_set->net_info.eth_ipaddr, t->cradle.ipv4);
+			DBG_UDS("app_set->net_info.eth_ipaddr=%s\n", app_set->net_info.eth_ipaddr);
+			isChanged++;
+		}
+		if(0!=strcmp(t->cradle.gw, app_set->net_info.eth_gateway)){
+			strcpy(app_set->net_info.eth_gateway, t->cradle.gw);
+			DBG_UDS("app_set->net_info.eth_gateway=%s\n", app_set->net_info.eth_gateway);
+			isChanged++;
+		}
+		if(0!=strcmp(t->cradle.mask, app_set->net_info.eth_netmask)){
+			strcpy(app_set->net_info.eth_netmask, t->cradle.mask);
+			DBG_UDS("app_set->net_info.eth_netmask=%s\n", app_set->net_info.eth_netmask);
+			isChanged++;
+		}
+	}
+// under working .. needs remove wifiap.ssid part 
+
+	// wifi ap info, NOT NULL
+	if(0!=strcmp(t->wifi_ap.id, app_set->wifiap.ssid)){
+		strcpy(app_set->wifiap.ssid, t->wifi_ap.id);
+		DBG_UDS("app_set->wifiap.ssid=%s\n", app_set->wifiap.ssid);
+		isChanged++;
+	}
+	if(0!=strcmp(t->wifi_ap.pw, app_set->wifiap.pwd)){
+		strcpy(app_set->wifiap.pwd, t->wifi_ap.pw);
+		DBG_UDS("app_set->wifiap.pwd=%s\n", app_set->wifiap.pwd);
+		isChanged++;
+	}
+	
+	for(i = 0; i < 4; i++)
+	{
+	    if(0!=strcmp(t->wifi_ap_list[i].id, app_set->wifilist[i].ssid)){
+		    strcpy(app_set->wifilist[i].ssid, t->wifi_ap_list[i].id);
+		    DBG_UDS("app_set->wifilist[%d].ssid=%s\n", i, app_set->wifilist[i].ssid);
+		    isChanged++;
+	    }
+ 	    if(0!=strcmp(t->wifi_ap_list[i].pw, app_set->wifilist[i].pwd)){
+		    strcpy(app_set->wifilist[i].pwd, t->wifi_ap_list[i].pw);
+		    DBG_UDS("app_set->wifilist[%d].pwd=%s\n", i, app_set->wifilist[i].pwd);
+		    isChanged++;
+	    }
+	}
+
+	if(isChanged>0) {
+		DBG_UDS("isChanged:%d\n", isChanged);
+	}
+
+	return isChanged;
+}
+
 static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 {
 	int isChanged=0;
@@ -520,6 +619,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 			isChanged++;
 		}
 	}
+// under working .. needs remove wifiap.ssid part 
 
 	// wifi ap info, NOT NULL
 	if(0!=strcmp(t->wifi_ap.id, app_set->wifiap.ssid)){
@@ -532,6 +632,25 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 		DBG_UDS("app_set->wifiap.pwd=%s\n", app_set->wifiap.pwd);
 		isChanged++;
 	}
+	
+	/* todo
+	for(i = 0; i < 4; i++)
+	{
+	     
+	    if(0!=strcmp(t->wifilist[i].id, app_set->wifilist[i].ssid)){
+		    strcpy(app_set->wifilist[i].ssid, t->wifi_list[i].id);
+		    DBG_UDS("app_set->wifilist.ssid=%s\n", i, app_set->wifilist[i].ssid);
+		    isChanged++;
+	    }
+ 	    if(0!=strcmp(t->wifi_list[i].pw, app_set->wifilist[i].pwd)){
+		    strcpy(app_set->wifilist[i].pwd, t->wifi_list[i].pw);
+		    DBG_UDS("app_set->wifilist[%d].pwd=%s\n", i, app_set->wifilist[i].pwd);
+		    isChanged++;
+	    }
+	}
+	
+	
+	*/
 
 #if 0
 	if(t->live_stream_account_enable != app_set->account_info.ON_OFF) {
@@ -598,14 +717,12 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 
 #if 0   // save and reboot; The system restart is changed by User Manually.
 		// restart 후에 적용됨. 2019년 8월 26일, 웹에서 apply,누르면 restart는 하는걸로...
-		char log[255] ;
-		sprintf(log, "[APP] --- The network settings are changed and the System restarts ---");
-		app_log_write( MSG_LOG_SHUTDOWN, log );
+		sysprint("[APP] --- The network settings are changed and the System restarts ---\n");
 
 		if(app_rec_state())
 		{
 			sleep(1) ;
-			app_rec_stop(1);
+			app_rec_stop(ON);
 		}
 
 		app_set_write();
@@ -713,6 +830,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 {
 	// backup server(ftp)
 	t->bs.enable = app_set->ftp_info.ON_OFF;
+	t->bs.upload_files = app_set->ftp_info.file_type; // 1: event, 0:all
 	t->bs.port   = app_set->ftp_info.port;
 	strcpy(t->bs.serveraddr, app_set->ftp_info.ipaddr);
 	strcpy(t->bs.id, app_set->ftp_info.id);
@@ -768,6 +886,11 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	// backup server(ftp)
 	if(app_set->ftp_info.ON_OFF != t->bs.enable){
 		app_set->ftp_info.ON_OFF = t->bs.enable;
+		isChanged++;
+	}
+	if(app_set->ftp_info.file_type != t->bs.upload_files){
+		// 0:all, 1:event
+		app_set->ftp_info.file_type = t->bs.upload_files;
 		isChanged++;
 	}
 	if(app_set->ftp_info.ON_OFF){
@@ -881,10 +1004,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	}
 #endif
 
+#if 0 // 항상 Enable로 변경됨
 	if(app_set->sys_info.P2P_ON_OFF != t->p2p.enable){
 		app_set->sys_info.P2P_ON_OFF = t->p2p.enable;
 		isChanged++;
 	}
+#endif
 
 #if SYS_CONFIG_VOIP
 	// voip config
@@ -1141,11 +1266,13 @@ static int getKbps(int ch)
 	return br;
 }
 
+#if 0
 static int getKbpsIdx(int ch)
 {
 	int idx = app_set->ch[ch].quality;
 	return idx;
 }
+#endif
 
 // The parameter "ch" means  Recording or Streaming
 // if ch is 4, it will return streaming information, 
@@ -1165,11 +1292,13 @@ static int getFps(int ch)
 	return fps ;
 }
 
+#if 0
 static int getFpsIdx(int ch)
 {
     int idx = app_set->ch[ch].framerate;
 	return idx;
 }
+#endif
 
 // The parameter "ch" means  Recording or Streaming
 // if ch is 4, it will return streaming information, 
@@ -1218,7 +1347,7 @@ static int setDisplayDateTime(int display_datetime)
 
 	return 0;
 }
-
+#if 0
 static int setP2PServer(int p2p_enable, char *username, char *password)
 {
 	if(app_set->sys_info.P2P_ON_OFF != p2p_enable
@@ -1242,7 +1371,7 @@ static int setP2PServer(int p2p_enable, char *username, char *password)
 
 	return 0;
 }
-
+#endif
 static int setDynamicVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
               int stm_res, int stm_fps, int stm_bps, int stm_gop, int stm_rc)
 {
@@ -1402,8 +1531,7 @@ void *myFunc(void *arg)
 			//}
 		}
 		else if (strcmp(rbuf, "ControlTelnetd") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- ControlTelnetd ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- ControlTelnetd ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -1429,8 +1557,7 @@ void *myFunc(void *arg)
 		}
 #ifdef USE_RTMP
 		else if (strcmp(rbuf, "ControlRtmp") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- ControlRtmp ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- ControlRtmp ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -1462,9 +1589,7 @@ void *myFunc(void *arg)
 #endif
 		else if (strcmp(rbuf, "GetSystemDateAndTime") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- GetSystemDateAndTime---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
-
+			//sysprint("[APP_UDS] --- GetSystemDateAndTime---\n");
 			char str[128] = {0};
 			int timezone = app_set->time_info.time_zone - 12;
 			sprintf(str, "TZ=%d,DS=%d,ST=%d", timezone,
@@ -1481,8 +1606,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkInterface") == 0){
-			//sprintf(wbuf, "[APP_UDS] --- GetNetworkInterfaces ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- GetNetworkInterfaces ---\n");
 
 			// read interface name, interface의 이름을 확인합니다.
 			char iface[128]={0};
@@ -1530,8 +1654,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkProtocols") == 0){
-			//sprintf(wbuf, "[APP_UDS] --- GetNetworkProtocols ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- GetNetworkProtocols ---\n");
 
 			// http, https, rtsp 의 순으로 보냅니다.
 			// 구조체 형식으로 보내지 않으면, 데이터 크기, 개수 변경시 뒈짐
@@ -1557,8 +1680,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetNTP") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- GetNTP ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- GetNTP ---\n");
 
 			char strNTP[128] = {0};
 			//TODO, sprintf(strNTP, "%s", app_set->time_info.time_server);
@@ -1575,8 +1697,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetDNS") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- GetDNS ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- GetDNS ---\n");
 
 			char strDNS[128] = {0};
 			//TODO, sprintf(strDNS, "%s", app_set->net_info.dns_server1[0]);
@@ -1592,8 +1713,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetHostname") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- Get Hostname ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- Get Hostname ---\n");
 
 			char hname[100]={0};
 			char sz[128] = {0}; // write buffer with 128 bytes
@@ -1616,8 +1736,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetOnvifUser") == 0){
-			sprintf(wbuf, "[APP_UDS] --- SetOnvifUser ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetOnvifUser ---\n");
 
 			T_ONVIF_USER st;
 			memset(&st, 0, sizeof st);
@@ -1632,9 +1751,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetNetworkInterfaces") == 0){ //subnet -> prefixlen
-
-			sprintf(wbuf, "[APP_UDS] --- SetNetworkInterfaces ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetNetworkInterfaces ---\n");
 
 			T_ONVIF_NETWORK_INTERFACE st;
 			memset(&st, 0, sizeof st);
@@ -1661,8 +1778,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetNetworkDefaultGateway") == 0){
 			char gw[32]={0};
-			sprintf(wbuf, "[APP_UDS] --- SetNetworkDefaultGateway ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetNetworkDefaultGateway ---\n");
 
 			ret = read(cs_uds, gw, sizeof gw);
 			if(ret > 0){
@@ -1679,8 +1795,7 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "SetNetworkProtocols") == 0)
 		{
 			onvif_NetworkProtocol np;
-			sprintf(wbuf, "[APP_UDS] --- SetNetworkProtocols ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetNetworkProtocols ---\n");
 
 			memset(&np, 0, sizeof np);
 			ret = read(cs_uds, &np, sizeof np);
@@ -1701,8 +1816,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetZeroConfiguration") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- SetZeroConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetZeroConfiguration ---\n");
 
 			int  Enabled;
 			memset(rbuf, 0, sizeof rbuf);
@@ -1719,8 +1833,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetNTP") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- Set NTP ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- Set NTP ---\n");
 
 			int  FromDHCP;    // 0:no, 1:dhcp
 			char ntp[100]=""; // ntp server 
@@ -1740,8 +1853,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetDNS") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- Set DNS ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- Set DNS ---\n");
 
 			int  FromDHCP;    // 0:no, 1:dhcp
 			char dns[100]=""; // dns server
@@ -1761,8 +1873,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetHostname") == 0)
 		{// ONVIF
-			sprintf(wbuf, "[APP_UDS] --- Set Hostname ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- Set Hostname ---\n");
 
 			int fromDHCP=0; // 0:no, 1:dhcp
 			char str[100]={0}; // hostname's size of onvifserver module
@@ -1787,8 +1898,7 @@ void *myFunc(void *arg)
 		////// maintenance 
 		else if (strcmp(rbuf, "SystemFactoryDefault") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- System Factory Default ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- System Factory Default ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -1819,8 +1929,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetSystemDateAndTime") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- System Date and Time ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- System Date and Time ---\n");
 
 			int ST=TIMESYNC_NTP; // Sync Type 0:Computer(Manual), 1:NTP
 			int DS=0;            // Daylight Savings 0:disable, 1:enable
@@ -1861,8 +1970,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "FWUPDATE") == 0)
 		{
-			sprintf(wbuf, "[APP_CGI] --- FWUPDATE ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_CGI] --- FWUPDATE ---\n");
 
 			if (app_cfg->ste.b.ftp_run)
 			{
@@ -1924,15 +2032,13 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SystemRestore") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- System Restore ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- System Restore ---\n");
 			//app_restore(); //TODO
 		}
 		else if (strcmp(rbuf, "SystemReboot") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- System Reboot ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
-			ctrl_sys_reboot() ;
+			sysprint("[APP_UDS] --- System Reboot ---\n");
+			ctrl_sys_halt(0); /* reboot */
 			sleep(10); // client에 응답을 주지 않는다. Restarting....메시지 표시 때문에...
 		}
 		else if (strcmp(rbuf, "reload_config") == 0)
@@ -1940,8 +2046,7 @@ void *myFunc(void *arg)
 		}
 		#if SYS_CONFIG_VOIP		
 		else if (strcmp(rbuf, "GetVoipConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- GetVoipConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- GetVoipConfiguration ---\n");
 
 			T_CGI_VOIP_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getVoipConfiguration(&t)){
@@ -1958,8 +2063,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetVoipConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- SetVoipConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetVoipConfiguration ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -1991,8 +2095,7 @@ void *myFunc(void *arg)
 		}
 		#endif
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- GetServersConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- GetServersConfiguration ---\n");
 
 			T_CGI_SERVERS_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getServersConfiguration(&t)){
@@ -2009,8 +2112,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetServersConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- SetServersConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetServersConfiguration ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2041,8 +2143,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetUserConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- GetUserconfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- GetUserconfiguration ---\n");
 
 			T_CGI_USER_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getUserConfiguration(&t)){
@@ -2058,8 +2159,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetUserConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- SetUserConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetUserConfiguration ---\n");
 
 			sprintf(wbuf, "READY");
 			ret = write(cs_uds, wbuf, sizeof wbuf);
@@ -2102,8 +2202,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetSystemConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- GetSystemconfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- GetSystemconfiguration ---\n");
 
 			T_CGI_SYSTEM_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getSystemConfiguration(&t)){
@@ -2118,8 +2217,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetSystemConfiguration") == 0) {
-			sprintf(wbuf, "[APP_UDS] --- SetSystemConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetSystemConfiguration ---\n");
 
 			sprintf(wbuf, "READY");
 			ret = write(cs_uds, wbuf, sizeof wbuf);
@@ -2147,9 +2245,135 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
+		else if (strcmp(rbuf, "GetNetworkConfiguration2") == 0)
+		{
+			//sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration2 ---");
+			{
+				int i;
+				/* start init */
+				T_CGI_NETWORK_CONFIG2 t;
+				memset(&t, 0, sizeof t);
+				T_NETWORK_INFO wireless, cradle;
+				char rtsp_user[32] = {0};
+				char rtsp_pass[32] = {0};
+
+				wireless.dhcp = NET_TYPE_STATIC;
+				sprintf(wireless.ipaddr, "192.168.0.252");
+				sprintf(wireless.gateway, "192.168.0.1");
+				sprintf(wireless.netmask, "255.255.0.0");
+				cradle.dhcp = NET_TYPE_STATIC;
+				sprintf(cradle.ipaddr, "192.168.1.252");
+				sprintf(cradle.gateway, "192.168.1.1");
+				sprintf(cradle.netmask, "255.255.0.0");
+				/* end init */
+
+				wireless.dhcp = app_set->net_info.wtype;
+				if (wireless.dhcp)
+				{
+					getNetworkInfo("wlan0", &wireless);
+				}
+				else
+				{
+					strcpy(wireless.ipaddr, app_set->net_info.wlan_ipaddr);
+					strcpy(wireless.gateway, app_set->net_info.wlan_gateway);
+					strcpy(wireless.netmask, app_set->net_info.wlan_netmask);
+				}
+
+				cradle.dhcp = app_set->net_info.type;
+				if (cradle.dhcp)
+				{
+					getNetworkInfo("eth0", &cradle);
+				}
+				else
+				{
+					strcpy(cradle.ipaddr, app_set->net_info.eth_ipaddr);
+					strcpy(cradle.gateway, app_set->net_info.eth_gateway);
+					strcpy(cradle.netmask, app_set->net_info.eth_netmask);
+				}
+
+				if (app_set->account_info.enctype) // if AES
+				{
+					decrypt_aes(app_set->account_info.rtsp_userid, rtsp_user, 32);
+					decrypt_aes(app_set->account_info.rtsp_passwd, rtsp_pass, 32);
+				}
+				else
+				{
+					strcpy(rtsp_user, app_set->account_info.rtsp_userid);
+					strcpy(rtsp_pass, app_set->account_info.rtsp_passwd);
+				}
+				DBG_UDS("rtsp_user=%s\n", rtsp_user);
+				DBG_UDS("rtsp_pass=%s\n", rtsp_pass);
+
+				t.wifi_ap_multi = app_set->multi_ap.ON_OFF;
+				t.wireless.addr_type = wireless.dhcp;
+				strcpy(t.wireless.ipv4, wireless.ipaddr);
+				strcpy(t.wireless.gw, wireless.gateway);
+				strcpy(t.wireless.mask, wireless.netmask);
+				t.cradle.addr_type = cradle.dhcp;
+				strcpy(t.cradle.ipv4, cradle.ipaddr);
+				strcpy(t.cradle.gw, cradle.gateway);
+				strcpy(t.cradle.mask, cradle.netmask);
+
+				// needs modify
+				strcpy(t.wifi_ap.id, app_set->wifiap.ssid);
+				strcpy(t.wifi_ap.pw, app_set->wifiap.pwd);
+
+				for(i = 0 ; i < 4 ; i++)
+				{
+				    strcpy(t.wifi_ap_list[i].id, app_set->wifilist[i].ssid);
+				    strcpy(t.wifi_ap_list[i].pw, app_set->wifilist[i].pwd);
+				}
+
+				t.live_stream_account_enable = app_set->account_info.ON_OFF;
+				t.live_stream_account_enctype = app_set->account_info.enctype;
+				strcpy(t.live_stream_account.id, rtsp_user);
+				strcpy(t.live_stream_account.pw, rtsp_pass);
+
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+
+				if (ret > 0)
+				{
+
+					// TODO something...
+				}
+				else
+				{
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed write: ");
+				}
+			}
+		}
+		else if (strcmp(rbuf, "SetNetworkConfiguration2") == 0 ) {
+			sysprint("[APP_UDS] --- SetNetworkConfiguration2 ---\n");
+
+			// 1. send READY
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+
+			if(ret > 0){
+				T_CGI_NETWORK_CONFIG2 t;
+				memset(&t, 0, sizeof t);
+				ret = read(cs_uds, &t, sizeof t);
+				DBG_UDS("Read, size=%d\n", ret);
+				if(ret > 0){
+					ret = setNetworkConfiguration2(&t);
+
+					char strOptions[128] = "OK";
+					if(ret == 0)
+						sprintf(strOptions, "%s", "NO CHANGE");
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, ", ret);
+					perror("failed read: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
 		else if (strcmp(rbuf, "GetNetworkConfiguration") == 0) {
-			//sprintf(wbuf, "[APP_UDS] --- GetNetworkConfiguration ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- GetNetworkConfiguration ---\n");
 			{
 				/* start init */
 				T_CGI_NETWORK_CONFIG t;
@@ -2207,8 +2431,19 @@ void *myFunc(void *arg)
 				strcpy(t.cradle.ipv4, cradle.ipaddr);
 				strcpy(t.cradle.gw,   cradle.gateway);
 				strcpy(t.cradle.mask, cradle.netmask);
+				
+				// needs modify
 				strcpy(t.wifi_ap.id, app_set->wifiap.ssid);
 				strcpy(t.wifi_ap.pw, app_set->wifiap.pwd);
+				/*
+				needs modify 
+				for(i = 0 ; i < 5 ; i++)
+				{
+				    strcpy(t.wifi_list[i].id, app_set->wifilist[i].ssid);
+				    strcpy(t.wifi_list[i].pw, app_set->wifilist[i].pwd);
+				}
+				*/
+				
 				t.live_stream_account_enable  = app_set->account_info.ON_OFF;
 				t.live_stream_account_enctype = app_set->account_info.enctype;
 				strcpy(t.live_stream_account.id, rtsp_user);
@@ -2227,8 +2462,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetNetworkConfiguration") == 0 ) {
-			sprintf(wbuf, "[APP_UDS] --- SetNetworkConfiguration ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- SetNetworkConfiguration ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2256,8 +2490,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetVideoQuality") == 0){
-			sprintf(wbuf, "[APP_UDS] --- GetVideoQuality ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- GetVideoQuality ---\n");
 
 			T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
 
@@ -2286,8 +2519,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetVideoQuality") == 0){
-			sprintf(wbuf, "[APP_UDS] --- SetVideoQuality ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- SetVideoQuality ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2313,8 +2545,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetDynVideoQuality") == 0){
-			sprintf(wbuf, "[APP_UDS] --- SetDynVideoQuality ---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- SetDynVideoQuality ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2341,8 +2572,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetVideoEncoderConfiguration") == 0){
 			// Onvifserver uses this command
-			//sprintf(wbuf, "[APP_UDS] --- GetVideoEncoderConfiguration---");
-			//app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- GetVideoEncoderConfiguration---\n");
 
 			// Read Encoding Type
 			ret = read(cs_uds, rbuf, sizeof rbuf);
@@ -2376,8 +2606,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetOperationConfiguration") == 0){
-			sprintf(wbuf, "[APP_UDS] --- GetOperationConfiguration---");
-			//					app_log_write(MSG_LOG_WRITE, wbuf);
+			//sysprint("[APP_UDS] --- GetOperationConfiguration---\n");
 
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
@@ -2400,8 +2629,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetOperationConfiguration") == 0){
-			sprintf(wbuf, "[APP_UDS] --- SetOperationConfig ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			//sprintf("[APP_UDS] --- SetOperationConfig ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2522,8 +2750,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "UpdateOnvifUser") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- UpdateOnvifUser ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- UpdateOnvifUser ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2558,8 +2785,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "ChangePassword") == 0)
 		{
-			sprintf(wbuf, "[APP_UDS] --- ChangePassword ---");
-			app_log_write(MSG_LOG_WRITE, wbuf);
+			sysprint("[APP_UDS] --- ChangePassword ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");

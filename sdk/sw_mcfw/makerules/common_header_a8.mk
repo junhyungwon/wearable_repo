@@ -46,6 +46,14 @@ ifeq ($(USE_RTMP), YES)
 DEFINE += -DUSE_RTMP
 endif
 
+ifeq ($(USE_KCMVP), YES)
+DEFINE += -DUSE_KCMVP
+endif
+
+ifeq ($(EXTERNAL_BATTERY_ONLY), YES)
+DEFINE += -DEXT_BATT_ONLY
+endif
+
 FILES=$(subst ./, , $(foreach dir,.,$(wildcard $(dir)/*.c)) )
 
 vpath %.a $(LIB_DIR)

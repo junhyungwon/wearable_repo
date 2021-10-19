@@ -23,17 +23,10 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-/* for debugging macro */
-#define __APP_DEBUG__
-
-#define aprintf(x...) do { printf(" [GNSS ] %s: ", __func__); printf(x); } while(0)
 #define eprintf(x...) do { printf(" [GNSS ERR!] %s: ", __func__); printf(x); } while(0)
-
-#ifdef __APP_DEBUG__
 #define dprintf(x...) do { printf(" [GNSS ] %s: ", __func__); printf(x); } while(0)
-#else
-#define dprintf(x...)
-#endif
+
+#define sysprint(x...) do { printf(" [GNSS LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
 
 #ifndef TRUE
 #define TRUE 		1

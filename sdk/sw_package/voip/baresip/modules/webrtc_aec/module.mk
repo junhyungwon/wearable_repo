@@ -1,7 +1,7 @@
 #
 # module.mk
 #
-# Copyright (C) 2010 Creytiv.com
+# Copyright (C) 2010 Alfred E. Heggestad
 #
 
 
@@ -16,8 +16,8 @@ $(MOD)_SRCS	+= decode.cpp
 
 CPPFLAGS	+= -isystem $(WEBRTC_PATH)/include
 
-LIBS	+= \
-	-L$(WEBRTC_PATH)/lib/Debug \
+$(MOD)_LFLAGS	+= \
+	-L$(WEBRTC_PATH)/lib/x64/Debug \
 	-lwebrtc_full \
 	-lstdc++
 

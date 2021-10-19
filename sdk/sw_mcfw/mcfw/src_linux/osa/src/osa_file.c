@@ -130,8 +130,7 @@ int OSA_fileWriteFile(char *fileName, Uint8 *addr, Uint32 size)
 
 	//fflush(hndlFile);
 
-	fsync(hndlFile);
-
+	fsync(fileno(hndlFile));
 	fclose(hndlFile);
 
 exit:

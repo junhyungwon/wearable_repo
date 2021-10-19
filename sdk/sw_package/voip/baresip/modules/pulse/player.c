@@ -1,7 +1,7 @@
 /**
  * @file pulse/player.c  Pulseaudio sound driver - player
  *
- * Copyright (C) 2010 - 2016 Creytiv.com
+ * Copyright (C) 2010 - 2016 Alfred E. Heggestad
  */
 #include <pulse/pulseaudio.h>
 #include <pulse/simple.h>
@@ -13,14 +13,13 @@
 
 
 struct auplay_st {
-	const struct auplay *ap;      /* inheritance */
-
 	pa_simple *s;
 	pthread_t thread;
 	bool run;
 	void *sampv;
 	size_t sampc;
 	size_t sampsz;
+	enum aufmt fmt;
 	auplay_write_h *wh;
 	void *arg;
 };
@@ -29,6 +28,8 @@ struct auplay_st {
 static void auplay_destructor(void *arg)
 {
 	struct auplay_st *st = arg;
+	int pa_error = 0;
+	int pa_ret;
 
 	/* Wait for termination of other thread */
 	if (st->run) {
@@ -37,8 +38,14 @@ static void auplay_destructor(void *arg)
 		(void)pthread_join(st->thread, NULL);
 	}
 
-	if (st->s)
+	if (st->s) {
+		pa_ret = pa_simple_drain(st->s, &pa_error);
+		if (pa_ret < 0)
+			warning("pulse: pa_simple_drain error (%s)\n",
+				 pa_strerror(pa_error));
+
 		pa_simple_free(st->s);
+	}
 
 	mem_deref(st->sampv);
 }
@@ -47,12 +54,15 @@ static void auplay_destructor(void *arg)
 static void *write_thread(void *arg)
 {
 	struct auplay_st *st = arg;
+	struct auframe af;
 	const size_t num_bytes = st->sampc * st->sampsz;
 	int ret, pa_error = 0;
 
+	auframe_init(&af, st->fmt, st->sampv, st->sampc);
+
 	while (st->run) {
 
-		st->wh(st->sampv, st->sampc, st->arg);
+		st->wh(&af, st->arg);
 
 		ret = pa_simple_write(st->s, st->sampv, num_bytes, &pa_error);
 		if (ret < 0) {
@@ -95,9 +105,9 @@ int pulse_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!st)
 		return ENOMEM;
 
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
+	st->fmt = prm->fmt;
 
 	st->sampc = prm->srate * prm->ch * prm->ptime / 1000;
 	st->sampsz = aufmt_sample_size(prm->fmt);

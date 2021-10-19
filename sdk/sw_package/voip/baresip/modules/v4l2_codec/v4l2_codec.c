@@ -1,7 +1,7 @@
 /**
  * @file v4l2_codec.c  Video4Linux2 video-source and video-codec
  *
- * Copyright (C) 2010 - 2015 Creytiv.com
+ * Copyright (C) 2010 - 2015 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #include <unistd.h>
@@ -36,8 +36,6 @@
 
 
 struct vidsrc_st {
-	const struct vidsrc *vs;  /* inheritance */
-
 	uint8_t *buffer;
 	size_t buffer_len;
 	int fd;
@@ -316,14 +314,14 @@ static void read_frame(struct vidsrc_st *st)
 
 	{
 		struct mbuf mb = {0,0,0,0};
-		struct h264_hdr hdr;
+		struct h264_nal_header hdr;
 
 		mb.buf = st->buffer;
 		mb.pos = 4;
 		mb.end = buf.bytesused - 4;
 		mb.size = buf.bytesused;
 
-		err = h264_hdr_decode(&hdr, &mb);
+		err = h264_nal_header_decode(&hdr, &mb);
 		if (err) {
 			warning("could not decode H.264 header\n");
 		}
@@ -544,6 +542,7 @@ static int src_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	struct vidsrc_st *st;
 	int err = 0;
 
+	(void)vs;
 	(void)ctx;
 	(void)prm;
 	(void)fmt;
@@ -561,8 +560,6 @@ static int src_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
 	st = mem_zalloc(sizeof(*st), src_destructor);
 	if (!st)
 		return ENOMEM;
-
-	st->vs = vs;
 
 	err = open_encoder(st, dev, size->w, size->h);
 	if (err)

@@ -3,6 +3,12 @@
  *
  * Copyright (C) 2010 Creytiv.com
  */
+#if defined(FREEBSD) || defined(OPENBSD) || defined(DARWIN)
+#define _DEFAULT_SOURCE 1
+#else
+#define _POSIX_C_SOURCE 199309L
+#endif
+
 #include <string.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -16,6 +22,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #endif
+#include <unistd.h>
+#include <time.h>
 #include <re_types.h>
 #include <re_list.h>
 #include <re_fmt.h>
@@ -28,13 +36,9 @@
 #include <re_dbg.h>
 
 
-#if !defined (RELEASE) && !defined (TMR_DEBUG)
-#define TMR_DEBUG 1  /**< Timer debugging (0 or 1) */
-#endif
-
 /** Timer values */
 enum {
-	MAX_BLOCKING = 100   /**< Maximum time spent in handler [ms] */
+	MAX_BLOCKING = 500   /**< Maximum time spent in handler [ms] */
 };
 
 extern struct list *tmrl_get(void);
@@ -70,8 +74,8 @@ static void call_handler(tmr_h *th, void *arg)
 	diff = (uint32_t)(tmr_jiffies() - tick);
 
 	if (diff > MAX_BLOCKING) {
-	//	DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
-	//		      diff, MAX_BLOCKING, th, arg);
+		DEBUG_WARNING("long async blocking: %u>%u ms (h=%p arg=%p)\n",
+			      diff, MAX_BLOCKING, th, arg);
 	}
 }
 #endif
@@ -113,6 +117,47 @@ void tmr_poll(struct list *tmrl)
 		th(th_arg);
 #endif
 	}
+}
+
+
+/**
+ * Get the timer jiffies in microseconds
+ *
+ * @return Jiffies in [us]
+ */
+uint64_t tmr_jiffies_usec(void)
+{
+	uint64_t jfs;
+
+#if defined(WIN32)
+	LARGE_INTEGER li;
+	static LARGE_INTEGER freq;
+
+	if (!freq.QuadPart)
+		QueryPerformanceFrequency(&freq);
+
+	QueryPerformanceCounter(&li);
+	li.QuadPart *= 1000000;
+	li.QuadPart /= freq.QuadPart;
+
+	jfs = li.QuadPart;
+#else
+	struct timespec now;
+
+#if defined(FREEBSD) || defined(OPENBSD)
+	if (0 != clock_gettime(CLOCK_MONOTONIC, &now)) {
+#else
+	if (0 != clock_gettime(CLOCK_MONOTONIC_RAW, &now)) {
+#endif
+		DEBUG_WARNING("jiffies: clock_gettime() failed (%m)\n", errno);
+		return 0;
+	}
+
+	jfs  = (long)now.tv_sec * (uint64_t)1000000;
+	jfs += now.tv_nsec/1000;
+#endif
+
+	return jfs;
 }
 
 

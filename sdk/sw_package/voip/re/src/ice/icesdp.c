@@ -205,7 +205,7 @@ static int cand_decode(struct icem *icem, const char *val)
 		return err;
 
 	if (ICE_TRANSP_NONE == transp_resolve(&transp)) {
-		DEBUG_NOTICE("<%s> ignoring candidate with"
+		DEBUG_INFO("<%s> ignoring candidate with"
 			     " unknown transport=%r (%r:%r)\n",
 			     icem->name, &transp, &cand_type, &addr);
 		return 0;
@@ -265,10 +265,6 @@ int ice_sdp_decode(struct icem *icem, const char *name, const char *value)
 		return EINVAL;
 
 	if (0 == str_casecmp(name, ice_attr_lite)) {
-		if (ICE_MODE_LITE == icem->lmode) {
-			DEBUG_WARNING("we are lite, peer is also lite!\n");
-			return EPROTO;
-		}
 		icem->rmode = ICE_MODE_LITE;
 		icem->lrole = ICE_ROLE_CONTROLLING;
 	}

@@ -1,7 +1,7 @@
 /**
  * @file aufile.c WAV Audio Source
  *
- * Copyright (C) 2015 Creytiv.com
+ * Copyright (C) 2015 Alfred E. Heggestad
  */
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
@@ -9,6 +9,7 @@
 #include <re.h>
 #include <rem.h>
 #include <baresip.h>
+#include "aufile.h"
 
 
 /**
@@ -25,11 +26,11 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;  /* base class */
-
 	struct tmr tmr;
 	struct aufile *aufile;
 	struct aubuf *aubuf;
+	enum aufmt fmt;                 /**< Wav file sample format          */
+	struct ausrc_prm *prm;          /**< Audio src parameter             */
 	uint32_t ptime;
 	size_t sampc;
 	bool run;
@@ -41,6 +42,7 @@ struct ausrc_st {
 
 
 static struct ausrc *ausrc;
+static struct auplay *auplay;
 
 
 static void destructor(void *arg)
@@ -64,6 +66,10 @@ static void *play_thread(void *arg)
 	uint64_t now, ts = tmr_jiffies();
 	struct ausrc_st *st = arg;
 	int16_t *sampv;
+	uint32_t ms = 4;
+
+	if (!st->ptime)
+		ms = 0;
 
 	sampv = mem_alloc(st->sampc * sizeof(int16_t), NULL);
 	if (!sampv)
@@ -78,7 +84,7 @@ static void *play_thread(void *arg)
 			.timestamp = ts * 1000
 		};
 
-		sys_msleep(4);
+		sys_msleep(ms);
 
 		now = tmr_jiffies();
 
@@ -90,6 +96,9 @@ static void *play_thread(void *arg)
 		st->rh(&af, st->arg);
 
 		ts += st->ptime;
+
+		if (aubuf_cur_size(st->aubuf) == 0)
+			st->run = false;
 	}
 
 	mem_deref(sampv);
@@ -101,11 +110,11 @@ static void *play_thread(void *arg)
 static void timeout(void *arg)
 {
 	struct ausrc_st *st = arg;
-
-	tmr_start(&st->tmr, 1000, timeout, st);
+	tmr_start(&st->tmr, st->ptime ? st->ptime : 40, timeout, st);
 
 	/* check if audio buffer is empty */
-	if (aubuf_cur_size(st->aubuf) < (sizeof(int16_t) * st->sampc)) {
+	if (!st->run) {
+		tmr_cancel(&st->tmr);
 
 		info("aufile: end of file\n");
 
@@ -118,13 +127,17 @@ static void timeout(void *arg)
 
 static int read_file(struct ausrc_st *st)
 {
-	struct mbuf *mb;
+	struct mbuf *mb = NULL;
 	int err;
+	size_t n;
+	struct mbuf *mb2 = NULL;
 
 	for (;;) {
 		uint16_t *sampv;
+		uint8_t *p;
 		size_t i;
 
+		mem_deref(mb);
 		mb = mbuf_alloc(4096);
 		if (!mb)
 			return ENOMEM;
@@ -136,23 +149,48 @@ static int read_file(struct ausrc_st *st)
 			break;
 
 		if (mb->end == 0) {
-			info("aufile: end of file\n");
+			info("aufile: read end of file\n");
 			break;
 		}
 
 		/* convert from Little-Endian to Native-Endian */
+		n = mb->end;
 		sampv = (void *)mb->buf;
-		for (i=0; i<mb->end/sizeof(int16_t); i++) {
-			sampv[i] = sys_ltohs(sampv[i]);
+		p     = (void *)mb->buf;
+
+		switch (st->fmt) {
+		case AUFMT_S16LE:
+			/* convert from Little-Endian to Native-Endian */
+			for (i = 0; i < n/2; i++)
+				sampv[i] = sys_ltohs(sampv[i]);
+
+			aubuf_append(st->aubuf, mb);
+			break;
+		case AUFMT_PCMA:
+		case AUFMT_PCMU:
+			mb2 = mbuf_alloc(2 * n);
+			for (i = 0; i < n; i++) {
+				err |= mbuf_write_u16(mb2,
+					   st->fmt == AUFMT_PCMA ?
+					   (uint16_t) g711_alaw2pcm(p[i]) :
+					   (uint16_t) g711_ulaw2pcm(p[i]) );
+			}
+
+			mbuf_set_pos(mb2, 0);
+			aubuf_append(st->aubuf, mb2);
+			mem_deref(mb2);
+			break;
+
+		default:
+			err = ENOSYS;
+			break;
 		}
 
-		aubuf_append(st->aubuf, mb);
-
-		mb = mem_deref(mb);
+		if (err)
+			break;
 	}
 
 	info("aufile: loaded %zu bytes\n", aubuf_cur_size(st->aubuf));
-
 	mem_deref(mb);
 	return err;
 }
@@ -165,6 +203,7 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 {
 	struct ausrc_st *st;
 	struct aufile_prm fprm;
+	uint32_t   ptime;
 	int err;
 	(void)ctx;
 
@@ -183,10 +222,15 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 	if (!st)
 		return ENOMEM;
 
-	st->as   = as;
-	st->rh   = rh;
-	st->errh = errh;
-	st->arg  = arg;
+	st->rh    = rh;
+	st->errh  = errh;
+	st->arg   = arg;
+	st->prm   = prm;
+	st->ptime = prm->ptime;
+
+	ptime = st->ptime;
+	if (!ptime)
+		ptime = 40;
 
 	err = aufile_open(&st->aufile, &fprm, dev, AUFILE_READ);
 	if (err) {
@@ -194,33 +238,17 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 		goto out;
 	}
 
-	info("aufile: %s: %u Hz, %d channels\n",
-	     dev, fprm.srate, fprm.channels);
+	info("aufile: %s: %u Hz, %d channels, %s\n",
+	     dev, fprm.srate, fprm.channels, aufmt_name(fprm.fmt));
 
-	if (fprm.srate != prm->srate) {
-		warning("aufile: input file (%s) must have sample-rate"
-			" %u Hz\n", dev, prm->srate);
-		err = ENODEV;
-		goto out;
-	}
-	if (fprm.channels != prm->ch) {
-		warning("aufile: input file (%s) must have channels = %d\n",
-			dev, prm->ch);
-		err = ENODEV;
-		goto out;
-	}
-	if (fprm.fmt != AUFMT_S16LE) {
-		warning("aufile: input file must have format S16LE\n");
-		err = ENODEV;
-		goto out;
-	}
+	/* return wav format to caller */
+	prm->srate = fprm.srate;
+	prm->ch    = fprm.channels;
 
-	st->sampc = prm->srate * prm->ch * prm->ptime / 1000;
+	st->fmt    = fprm.fmt;
+	st->sampc  = prm->srate * prm->ch * ptime / 1000;
 
-	st->ptime = prm->ptime;
-
-	info("aufile: audio ptime=%u sampc=%zu\n",
-	     st->ptime, st->sampc);
+	info("aufile: audio ptime=%u sampc=%zu\n", st->ptime, st->sampc);
 
 	/* 1 - inf seconds of audio */
 	err = aubuf_alloc(&st->aubuf,
@@ -233,7 +261,7 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 	if (err)
 		goto out;
 
-	tmr_start(&st->tmr, 1000, timeout, st);
+	tmr_start(&st->tmr, ptime, timeout, st);
 
 	st->run = true;
 	err = pthread_create(&st->thread, NULL, play_thread, st);
@@ -254,14 +282,19 @@ static int alloc_handler(struct ausrc_st **stp, const struct ausrc *as,
 
 static int module_init(void)
 {
-	return ausrc_register(&ausrc, baresip_ausrcl(),
+	int err;
+	err  = ausrc_register(&ausrc, baresip_ausrcl(),
 			      "aufile", alloc_handler);
+	err |= auplay_register(&auplay, baresip_auplayl(),
+			       "aufile", play_alloc);
+	return err;
 }
 
 
 static int module_close(void)
 {
 	ausrc = mem_deref(ausrc);
+	auplay = mem_deref(auplay);
 
 	return 0;
 }

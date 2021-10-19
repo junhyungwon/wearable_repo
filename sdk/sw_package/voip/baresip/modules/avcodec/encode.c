@@ -1,7 +1,7 @@
 /**
  * @file avcodec/encode.c  Video codecs using libavcodec -- encoder
  *
- * Copyright (C) 2010 - 2013 Creytiv.com
+ * Copyright (C) 2010 - 2013 Alfred E. Heggestad
  */
 #include <re.h>
 #include <rem.h>
@@ -292,8 +292,9 @@ static int open_encoder(struct videnc_state *st,
 
 		/* set hw_frames_ctx for encoder's AVCodecContext */
 
-		if ((err = set_hwframe_ctx(st->ctx, avcodec_hw_device_ctx,
-					   size->w, size->h)) < 0) {
+		err = set_hwframe_ctx(st->ctx, avcodec_hw_device_ctx,
+				      size->w, size->h);
+		if (err < 0) {
 
 			warning("avcodec: encode: Failed to set"
 				" hwframe context.\n");
@@ -320,7 +321,7 @@ static int open_encoder(struct videnc_state *st,
 
 
 static int decode_sdpparam_h264(struct videnc_state *st, const struct pl *name,
-			 const struct pl *val)
+				const struct pl *val)
 {
 	if (0 == pl_strcasecmp(name, "packetization-mode")) {
 		st->u.h264.packetization_mode = pl_u32(val);
@@ -365,30 +366,6 @@ static void param_handler(const struct pl *name, const struct pl *val,
 		(void)decode_sdpparam_h263(st, name, val);
 	else if (st->codec_id == AV_CODEC_ID_H264)
 		(void)decode_sdpparam_h264(st, name, val);
-}
-
-
-static int general_packetize(uint64_t rtp_ts, struct mbuf *mb, size_t pktsize,
-			     videnc_packet_h *pkth, void *arg)
-{
-	int err = 0;
-
-	/* Assemble frame into smaller packets */
-	while (!err) {
-		size_t sz, left = mbuf_get_left(mb);
-		bool last = (left < pktsize);
-		if (!left)
-			break;
-
-		sz = last ? left : pktsize;
-
-		err = pkth(last, rtp_ts, NULL, 0, mbuf_buf(mb), sz,
-			   arg);
-
-		mbuf_advance(mb, sz);
-	}
-
-	return err;
 }
 
 
@@ -658,11 +635,6 @@ int avcodec_encode(struct videnc_state *st, bool update,
 		err = h264_packetize(ts, pkt->data, pkt->size,
 				     st->encprm.pktsize,
 				     st->pkth, st->arg);
-		break;
-
-	case AV_CODEC_ID_MPEG4:
-		err = general_packetize(ts, &mb, st->encprm.pktsize,
-					st->pkth, st->arg);
 		break;
 
 #ifdef AV_CODEC_ID_H265

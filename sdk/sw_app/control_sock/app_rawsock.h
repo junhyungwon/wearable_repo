@@ -39,6 +39,8 @@ typedef struct TAG_SYSTEM_INFO
         unsigned long Privatekey[MAXUSER] ;
         unsigned long Publickey[MAXUSER] ;
         unsigned long Modnumber[MAXUSER] ;
+		int gps_req[MAXUSER] ;
+		int event_req[MAXUSER] ;
         int mutex ;
 } SYSTEM_INFO;
 #pragma pack()
@@ -50,7 +52,7 @@ typedef struct TAG_SYSTEM_INFO
 /*----------------------------------------------------------------------------
  Declares a     function prototype
 -----------------------------------------------------------------------------*/
-
+void Sock_Init() ;
 int MainSocketListen(void) ;
 void ProcessSocket(int) ;
 void ChangeNonblock(int) ;

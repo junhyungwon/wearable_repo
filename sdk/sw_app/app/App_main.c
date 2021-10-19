@@ -61,6 +61,11 @@
 #include "app_voip.h"
 #endif
 
+#ifdef USE_KCMVP
+#include "mcapi.h"
+#include "mcapi_type.h"
+#endif
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -99,6 +104,35 @@ static void main_thread_exit(void)
 	thread_delete(tObj);
 }
 
+#ifdef USE_KCMVP
+
+#define MC_STAT_NONE				0x00000000
+#define MC_STAT_INITIALIZED			0x10000000
+#define MC_STAT_FATAL				0x20000000
+
+void getStatus()
+{
+	MC_RV rv = 0;
+	MC_UINT flag = 0;
+	rv = MC_GetStatus(&flag);
+
+	printf("\n MC_GetStatus rv = 0x%04x (%s), flag = 0x%08x \n", rv, MC_GetErrorString(rv), flag);
+
+	if (flag & MC_STAT_INITIALIZED) {
+		printf(" MC status is normal. (%s) \n", MC_GetErrorString(rv));
+
+	} else if (flag & MC_STAT_FATAL) {
+	    printf(" MC status is fatal error ! (%s) \n", MC_GetErrorString(rv));
+		exit(0);
+	}else { /* (flag & MC_STAT_NONE)*/
+		printf(" MC status is not initialized. (%s) \n", MC_GetErrorString(rv));
+	} 
+
+	printf("\n");
+}
+
+#endif 
+
 static void app_setdns(void)
 {
    	FILE *fp = NULL ;
@@ -111,41 +145,58 @@ static void app_setdns(void)
 	{
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server1) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		app_log_write(MSG_LOG_WRITE, buffer);
+		sysprint(buffer);
 		
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server2) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		app_log_write(MSG_LOG_WRITE, buffer);
+		sysprint(buffer);
 		
+		sprintf(buffer, "options timeout:1 retry:1\n") ;
+		fwrite(buffer, strlen(buffer), 1, fp);
+
 		fclose(fp);
 	}
 }
 
 static int __mmc_prepare(void)
 {
-	DIR *logdir = NULL;
-	struct statvfs stat_buf;
-	int res=0;
+	DIR *logdir=NULL;
+	FILE *f=NULL;
+	
+	char buf[256 + 1]={0,};
+	char mntd[64]={0,};
 	
 	/* mmc mount 확인 */
 	app_cfg->ste.b.mmc = 0; //# default 0
-	res = dev_disk_check_mount("/mmc");
-	if (!res) {
-		/* mmc mount fail!! (system shutdown) */
-		eprintf("mount failed!\n");
-		return -1;
-	}
-	
 	/* SD 카드 속성확인 (read only file system) */
-	if (statvfs("/mmc", &stat_buf) != 0) {
-		eprintf("/mmc directory fault!\n");
+	f = fopen("/proc/mounts", "r");
+	if (f == NULL) {
 		return -1;
 	}
 	
-	if (stat_buf.f_flag & ST_RDONLY) {
-		eprintf("mounted readonly filesystem!!\n");
-		return -1;
+	/* 
+	 * normal fs       -> /dev/mmcblk0p1 /mmc vfat rw,noatime,nodiratime,fmask=0000,
+	 * if read-only fs -> /dev/mmcblk0p1 /mmc vfat ro,noatime,......
+	 */
+	while (fgets(buf, 256, f) != NULL) 
+	{
+		char *tmp, *tmp2;
+		/* %*s->discard input */
+		sscanf(buf, "%*s%s", mntd);
+		if (strcmp(mntd, "/mmc") == 0) {
+			tmp = strtok(buf, ",");
+			if (tmp != NULL) {
+				/* */
+				tmp2 = strstr(tmp, "ro");
+				if (tmp2 != NULL) {
+					fprintf(stderr, "sd card read-only filesystem!!\n");
+					fclose(f);
+					return -1;
+				}
+			}
+		}
 	}
+	fclose(f);
 	
 	/* log 디렉토리 생성 */
 	logdir = opendir("/mmc/log") ;
@@ -179,8 +230,8 @@ static void __syslogd_enable(int en)
 *****************************************************************************/
 int app_main(void)
 {
-    char msg[128] = {0, };
     char micom_ver[128] = {0, } ;
+	char sw_ver[128] = {0, } ;
 
 	app_thr_obj *tObj = &app_cfg->mObj;
 	#if !USE_CONSOLE_MENU
@@ -191,12 +242,11 @@ int app_main(void)
 	tObj->active = 1;
 
 	app_mcu_start();
-    sprintf(msg, ">>>>> %s_SYSTEM STARTED!! <<<<<", FITT360_SW_VER);
-    app_log_write(MSG_LOG_WRITE, msg);
+    sysprint("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<\n", FITT360_SW_VER);
 
     ctrl_get_mcu_version( micom_ver ) ;
-    sprintf(msg, "SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s",FITT360_SW_VER, FITT360_HW_VER, micom_ver);
-    app_log_write(MSG_LOG_WRITE, msg);
+    sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
+					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
     app_libuv_start();
 #ifdef USE_RTMP
@@ -215,7 +265,11 @@ int app_main(void)
 	
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable 
-
+	
+	//# swosd version set.
+	snprintf(sw_ver, sizeof(sw_ver), "%s", FITT360_SW_VER);
+	ctrl_swosd_userstr(sw_ver, 1);
+	
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
@@ -250,6 +304,42 @@ int app_main(void)
 #endif	
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
+#ifdef USE_KCMVP
+    struct tm ts ;
+	time_t tm1 ;
+	
+	putenv("LD_LIBRARY_PATH=/usr/lib/");
+	time(&tm1) ;
+	localtime_r(&tm1, &ts) ;
+
+    printf("%d-%d-%d-%d%d%d\n",	ts.tm_year + 1900, ts.tm_mon + 1, ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec) ;
+
+    MC_RV rv = MC_OK ;
+    MC_VERSION mcVer;
+    MC_HSESSION hSession = 0 ;
+
+    rv = MC_Initialize(NULL) ;
+	if(rv != MC_OK) 
+		printf("%s\n", MC_GetErrorString(rv));
+
+    MC_GetVersion((MC_VERSION*)&mcVer);
+	printf("===============================================================================\n");
+	printf("          Dreamsecurity %s API Ver.%d.%d.%d Tester \n", mcVer.name, mcVer.major, mcVer.minor, mcVer.release);
+	printf("===============================================================================\n\n");
+
+	rv = MC_OpenSession(&hSession);
+	if(rv != MC_OK) 
+		printf("%s\n", MC_GetErrorString(rv));
+
+    rv = MC_Selftest(); printf("\n");	
+	if (rv !=0) {
+		printf("%s\n", MC_GetErrorString(rv));
+	}
+		printf("%s\n", MC_GetErrorString(rv));
+
+	getStatus();
+#endif
+
 	while(!exit)
 	{
 		//# wait cmd
@@ -259,6 +349,13 @@ int app_main(void)
 		}
 	}
     CSock_exit() ;
+
+#ifdef USE_KCMVP
+	rv = MC_Finalize();
+	if(rv != MC_OK) printf("%s\n", MC_GetErrorString(rv));
+
+	getStatus();
+#endif
 
 	//if(app_set->net_info.enable_onvif==1)
 	{
@@ -274,8 +371,7 @@ int app_main(void)
         app_p2p_exit() ;
         app_p2p_stop() ;
     }
-
-    app_rec_stop(0);
+    app_rec_stop(OFF);
     app_snd_stop(); 
     app_cap_stop();
 
@@ -295,9 +391,7 @@ int app_main(void)
 
 	app_leds_init(); /* set leds off state */
 
-	app_log_write(MSG_LOG_WRITE, "[APP_FITT360] app_main() EXIT....");
-
-	aprintf("exit\n");
+	sysprint("[APP_FITT360] app_main() EXIT....\n");
 
 	return SOK;
 }
@@ -367,14 +461,14 @@ int main(int argc, char **argv)
 	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-#if defined(NEXXONE) || defined(NEXX360W)
-	#if SYS_CONFIG_VOIP
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
+//	#if SYS_CONFIG_VOIP
 			/* copy app_fitt.out or full update */
-			ctrl_auto_update();
+			ctrl_firmware_update();
 			/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
 			if (app_cfg->ste.b.pwr_off)
 				return 0;
-	#endif
+//	#endif
 #endif
 		/* remove update files */
 		ctrl_reset_nand_update();
@@ -397,18 +491,15 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	
-	aprintf("app_set->ch[%d].resol = %d\n", MODEL_CH_NUM, app_set->ch[MODEL_CH_NUM].resol) ;
+	dprintf("app_set->ch[%d].resol = %d\n", MODEL_CH_NUM, app_set->ch[MODEL_CH_NUM].resol) ;
 	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol) ; 
 	g_mem_init();
 
 	//# start log system
     app_ipins_init();
 	
-#ifdef __SYSLOGD_ENABLE__
 	__syslogd_enable(1);
-#else
-	app_log_init();
-#endif	
+	
 	app_gui_init();
 	app_dev_init();
     app_tsync_init() ;
@@ -430,11 +521,7 @@ int main(int argc, char **argv)
 	app_rec_exit();
 	app_file_exit();
 	
-#ifdef __SYSLOGD_ENABLE__
 	__syslogd_enable(0);
-#else
-	app_log_exit();
-#endif	
 	app_mcu_exit();		//# will power off after 200mS
 	app_dev_exit();
 	app_gui_exit();

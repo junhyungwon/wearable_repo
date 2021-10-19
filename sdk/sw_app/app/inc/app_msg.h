@@ -47,6 +47,7 @@ typedef enum {
 	APP_CMD_PAUSE,
 	APP_CMD_NOTY,
 	APP_CMD_EXIT,
+	APP_CMD_GSTOP,  // graceful stop 
 
 	//# event
 	APP_EVT_PWROFF = 0x10,
@@ -54,6 +55,7 @@ typedef enum {
 
 	//# for rec proc
 	APP_REC_START = 0x20,
+	APP_REC_EVT,
 	APP_REC_STOP,
 
 	//# ctrl

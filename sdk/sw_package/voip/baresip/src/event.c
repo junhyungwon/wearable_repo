@@ -1,12 +1,30 @@
 /**
  * @file src/event.c  Baresip event handling
  *
- * Copyright (C) 2017 Creytiv.com
+ * Copyright (C) 2017 Alfred E. Heggestad
  */
 
 #include <re.h>
 #include <baresip.h>
 #include "core.h"
+
+
+struct ua_eh {
+	struct le le;
+	ua_event_h *h;
+	void *arg;
+};
+
+
+static struct list ehl;               /**< Event handlers (struct ua_eh)   */
+
+
+static void eh_destructor(void *arg)
+{
+	struct ua_eh *eh = arg;
+
+	list_unlink(&eh->le);
+}
 
 
 static const char *event_class_name(enum ua_event ev)
@@ -17,6 +35,8 @@ static const char *event_class_name(enum ua_event ev)
 	case UA_EVENT_REGISTER_OK:
 	case UA_EVENT_REGISTER_FAIL:
 	case UA_EVENT_UNREGISTERING:
+	case UA_EVENT_FALLBACK_OK:
+	case UA_EVENT_FALLBACK_FAIL:
 		return "register";
 
 	case UA_EVENT_MWI_NOTIFY:
@@ -29,6 +49,7 @@ static const char *event_class_name(enum ua_event ev)
 	case UA_EVENT_CALL_INCOMING:
 	case UA_EVENT_CALL_RINGING:
 	case UA_EVENT_CALL_PROGRESS:
+	case UA_EVENT_CALL_ANSWERED:
 	case UA_EVENT_CALL_ESTABLISHED:
 	case UA_EVENT_CALL_CLOSED:
 	case UA_EVENT_CALL_TRANSFER:
@@ -109,6 +130,7 @@ int event_encode_dict(struct odict *od, struct ua *ua, enum ua_event ev,
 		      struct call *call, const char *prm)
 {
 	const char *event_str = uag_event_str(ev);
+	enum sdp_dir ardir;
 	int err = 0;
 
 	if (!od)
@@ -120,7 +142,8 @@ int event_encode_dict(struct odict *od, struct ua *ua, enum ua_event ev,
 
 	if (ua) {
 		err |= odict_entry_add(od, "accountaor",
-				       ODICT_STRING, ua_aor(ua));
+				       ODICT_STRING,
+				       account_aor(ua_account(ua)));
 	}
 
 	if (err)
@@ -147,6 +170,11 @@ int event_encode_dict(struct odict *od, struct ua *ua, enum ua_event ev,
 			err |= odict_entry_add(od, "id", ODICT_STRING,
 						   call_identifier);
 		}
+
+		ardir = sdp_media_rdir(
+				stream_sdpmedia(audio_strm(call_audio(call))));
+		err |= odict_entry_add(od, "remoteaudiodir", ODICT_STRING,
+				sdp_dir_name(ardir));
 
 		if (err)
 			goto out;
@@ -195,6 +223,131 @@ int event_add_au_jb_stat(struct odict *od_parent, const struct call *call)
 
 
 /**
+ * Register a User-Agent event handler
+ *
+ * @param h   Event handler
+ * @param arg Handler argument
+ *
+ * @return 0 if success, otherwise errorcode
+ */
+int uag_event_register(ua_event_h *h, void *arg)
+{
+	struct ua_eh *eh;
+
+	if (!h)
+		return EINVAL;
+
+	uag_event_unregister(h);
+
+	eh = mem_zalloc(sizeof(*eh), eh_destructor);
+	if (!eh)
+		return ENOMEM;
+
+	eh->h = h;
+	eh->arg = arg;
+
+	list_append(&ehl, &eh->le, eh);
+
+	return 0;
+}
+
+
+/**
+ * Unregister a User-Agent event handler
+ *
+ * @param h   Event handler
+ */
+void uag_event_unregister(ua_event_h *h)
+{
+	struct le *le;
+
+	for (le = ehl.head; le; le = le->next) {
+
+		struct ua_eh *eh = le->data;
+
+		if (eh->h == h) {
+			mem_deref(eh);
+			break;
+		}
+	}
+}
+
+
+/**
+ * Send a User-Agent event to all UA event handlers
+ *
+ * @param ua   User-Agent object (optional)
+ * @param ev   User-agent event
+ * @param call Call object (optional)
+ * @param fmt  Formatted arguments
+ * @param ...  Variable arguments
+ */
+void ua_event(struct ua *ua, enum ua_event ev, struct call *call,
+	      const char *fmt, ...)
+{
+	struct le *le;
+	char buf[256];
+	va_list ap;
+
+	va_start(ap, fmt);
+	(void)re_vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+
+	/* send event to all clients */
+	le = ehl.head;
+	while (le) {
+		struct ua_eh *eh = le->data;
+		le = le->next;
+
+		eh->h(ua, ev, call, buf, eh->arg);
+	}
+}
+
+
+/**
+ * Send a UA_EVENT_MODULE event with a general format for modules
+ *
+ * @param module Module name
+ * @param event  Event name
+ * @param ua     User-Agent object (optional)
+ * @param call   Call object (optional)
+ * @param fmt    Formatted arguments
+ * @param ...    Variable arguments
+ */
+void module_event(const char *module, const char *event, struct ua *ua,
+		struct call *call, const char *fmt, ...)
+{
+	struct le *le;
+	char buf[256];
+	char *p;
+	size_t len = sizeof(buf);
+	va_list ap;
+
+	if (!module || !event)
+		return;
+
+	if (-1 == re_snprintf(buf, len, "%s,%s,", module, event))
+		return;
+
+	p = buf + str_len(buf);
+	len -= str_len(buf);
+
+	va_start(ap, fmt);
+	(void)re_vsnprintf(p, len, fmt, ap);
+	va_end(ap);
+
+	/* send event to all clients */
+	le = ehl.head;
+	while (le) {
+		struct ua_eh *eh = le->data;
+		le = le->next;
+
+		eh->h(ua, UA_EVENT_MODULE, call, buf, eh->arg);
+	}
+}
+
+
+/**
  * Get the name of the User-Agent event
  *
  * @param ev User-Agent event
@@ -208,6 +361,8 @@ const char *uag_event_str(enum ua_event ev)
 	case UA_EVENT_REGISTERING:          return "REGISTERING";
 	case UA_EVENT_REGISTER_OK:          return "REGISTER_OK";
 	case UA_EVENT_REGISTER_FAIL:        return "REGISTER_FAIL";
+	case UA_EVENT_FALLBACK_OK:          return "FALLBACK_OK";
+	case UA_EVENT_FALLBACK_FAIL:        return "FALLBACK_FAIL";
 	case UA_EVENT_UNREGISTERING:        return "UNREGISTERING";
 	case UA_EVENT_MWI_NOTIFY:           return "MWI_NOTIFY";
 	case UA_EVENT_SHUTDOWN:             return "SHUTDOWN";
@@ -215,6 +370,7 @@ const char *uag_event_str(enum ua_event ev)
 	case UA_EVENT_CALL_INCOMING:        return "CALL_INCOMING";
 	case UA_EVENT_CALL_RINGING:         return "CALL_RINGING";
 	case UA_EVENT_CALL_PROGRESS:        return "CALL_PROGRESS";
+	case UA_EVENT_CALL_ANSWERED:        return "CALL_ANSWERED";
 	case UA_EVENT_CALL_ESTABLISHED:     return "CALL_ESTABLISHED";
 	case UA_EVENT_CALL_CLOSED:          return "CALL_CLOSED";
 	case UA_EVENT_CALL_TRANSFER:        return "TRANSFER";
@@ -229,6 +385,8 @@ const char *uag_event_str(enum ua_event ev)
 	case UA_EVENT_AUDIO_ERROR:          return "AUDIO_ERROR";
 	case UA_EVENT_CALL_LOCAL_SDP:       return "CALL_LOCAL_SDP";
 	case UA_EVENT_CALL_REMOTE_SDP:      return "CALL_REMOTE_SDP";
+	case UA_EVENT_MODULE:               return "MODULE";
+	case UA_EVENT_CUSTOM:               return "CUSTOM";
 	default: return "?";
 	}
 }

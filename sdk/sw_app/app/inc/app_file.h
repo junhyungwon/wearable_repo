@@ -40,13 +40,14 @@ int app_file_init(void);
 void app_file_exit(void);
 unsigned long app_file_get_free_size(void);
 void app_file_update_disk_usage(void);
-int app_file_add_list(const char *pathname, int size);
+int app_file_add_list(const char *pathname);
 int get_ftp_send_file(char *path);
 int restore_ftp_file(char *path);
 int delete_ftp_send_file(char *path);
 int get_recorded_file_count(void);
+int get_recorded_efile_count(void);
 int get_write_status(void);
 int app_file_check_disk_free_space(void);
-int app_file_save_flist(void);
+void save_filelist(void) ;
 
 #endif	/* _APP_FILE_H_ */

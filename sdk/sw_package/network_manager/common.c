@@ -27,16 +27,6 @@
 #include "event_hub.h"
 #include "common.h"
 
-/* Wi-Fi Module Path */
-#define RTL_8821A_PATH			"/lib/modules/8821au.ko"
-#define RTL_8812A_PATH			"/lib/modules/8812au.ko"
-
-/* Wi-Fi Module name */
-#define RTL_8821A_NAME			"8821au"
-#define RTL_8812A_NAME			"8812au"
-
-#define PROC_MODULE_FNAME		"/proc/modules"
-
 #define ARCH_NR_GPIOs		(256)
 #define SZ_BUF				64
 
@@ -80,17 +70,6 @@ static const char flagchars[] =
 struct gpio_desc_t {
 	int fd;         /* file descriptor for /gpio/valude */
 	int dir;		/* direction of gpio */
-};
-
-typedef struct {
-	int d_vid;
-	int d_pid;
-	
-} usb_dev_id_t;
-
-static usb_dev_id_t usb_wlan_list[NETMGR_USB_MAX_NUM] = {
-	{ .d_vid = RTL_8821A_VID, .d_pid = RTL_8821A_PID, },
-	{ .d_vid = RTL_8812A_VID, .d_pid = RTL_8812A_PID, }
 };
 
 static struct gpio_desc_t desc[ARCH_NR_GPIOs];
@@ -334,92 +313,20 @@ static int __set_static_ip(const char *ifce, const char *ip_str, const char *mas
 	return ret;
 }
 
-static int __wlan_get_module(const char *name)
+void netmgr_net_link_up(const char *ifce)
 {
-    FILE *proc;
-    char line[256] = {};
-
-	if (name == NULL)
-		return 0;
-
-    if ((proc = fopen(PROC_MODULE_FNAME, "r")) == NULL) {
-        eprintf("Could not open /proc/modules!!\n");
-        return 0;
-    }
-
-    while ((fgets(line, sizeof(line), proc)) != NULL) {
-        if (strncmp(line, name, strlen(name)) == 0) {
-            fclose(proc);
-            return 1;
-        }
-    }
-    fclose(proc);
-
-    return 0;
-}
-
-static void __wlan_insmod(const char *module_path)
-{
-	char buf[256];
-	FILE *f = NULL;
-
-	/* load driver */
-	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sbin/insmod %s", module_path);
-
-	f = popen(buf, "r");
-	if (f != NULL)
-		pclose(f);
-}
-
-int netmgr_net_link_detect(const char *ifce)
-{
-	struct ifreq ifreq;
-	int skfd, r;
-
-	memset(&ifreq, 0, sizeof(struct ifreq));
-	skfd = socket(AF_INET, SOCK_DGRAM, 0);
-  	if (skfd < 0) {
-  		eprintf("Socket creation failed, this is a fatal error!\n");
-  		return 0;
-  	}
-
-  	/* I want to get an IPv4 IP address */
-  	ifreq.ifr_addr.sa_family = AF_INET;
-	strncpy(ifreq.ifr_name, ifce, sizeof(ifreq.ifr_name));
-	r = ioctl(skfd, SIOCGIFFLAGS, &ifreq);
-	close(skfd);
-
-	if ((r < 0) || !(ifreq.ifr_flags & IFF_UP))
-		return 0;
-
-	return 1;
-}
-
-int netmgr_net_link_up(const char *ifce)
-{
-	char cmd[128];
-	FILE *f;
+	char cmd[128]={0,};
 	
-	memset(cmd, 0, sizeof(cmd));
 	snprintf(cmd, sizeof(cmd), "/sbin/ifconfig %s up", ifce);
-	f = popen(cmd, "r");
-	if (f != NULL)
-		pclose(f);
-
-	return 0;
+	system(cmd);
 }
 
 void netmgr_net_link_down(const char *ifce)
 {
-	char cmd[128];
-	FILE *f;
+	char cmd[128]={0,};
 	
-	memset(cmd, 0, sizeof(cmd));
 	snprintf(cmd, sizeof(cmd), "/sbin/ifconfig %s 0.0.0.0 down", ifce);
-	f = popen(cmd, "r");
-	if (f != NULL)
-		pclose(f);
+	system(cmd);
 }
 
 int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask, char *gw)
@@ -480,18 +387,10 @@ int netmgr_get_net_info(const char *ifce, char *hw_buf, char *ip_buf, char *mask
  * *******************************************************************************/
 int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mask, const char *gateway) 
 {
-    int state;
 	char tmp_hw[32+1];
 	char tmp_ip[NETMGR_NET_STR_MAX_SZ+1];
     char tmp_mask[NETMGR_NET_STR_MAX_SZ+1];
     char tmp_gw[NETMGR_NET_STR_MAX_SZ+1];
-	
-	state = netmgr_net_link_detect(ifname);
-	if (!state) {
-		/* Link up */
-		netmgr_net_link_up(ifname);
-		sleep(1); /* wait 1sec */
-	}
 	
 	netmgr_get_net_info(ifname, &tmp_hw[0], &tmp_ip[0], &tmp_mask[0], &tmp_gw[0]);
 	if ((strcmp(tmp_ip, "0.0.0.0") == 0) || (strcmp(tmp_ip, ip) != 0)) 
@@ -516,19 +415,11 @@ int netmgr_set_ip_static(const char *ifname, const char *ip, const char *net_mas
 }
 
 //	#define UDHCPC_PID_PATH			"/var/run/udhcpc.wlan0.pid"
-int netmgr_set_ip_dhcp(const char *ifname) 
+void netmgr_udhcpc_start(const char *ifname) 
 {
-    FILE *f = NULL;
-    char command[128]={0,};
+    char command[256]={0,};
 	char path[128]={0,};
-	int state;
-	
-	state = netmgr_net_link_detect(ifname);
-	if (!state) {
-		/* Link up */
-		netmgr_net_link_up(ifname);
-		sleep(1); /* wait 1sec */
-	}
+	int res;
 	
 	/* make pid path */
 	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
@@ -541,45 +432,15 @@ int netmgr_set_ip_dhcp(const char *ifname)
 	 * -n; error exit. if lease cannot be immediately negotiated.
 	 */
 	memset(command, 0, sizeof(command));
-	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 1 -t 5 -n -b -p %s", ifname, path);
-	f = popen(command, "w");
-	if (f != NULL) {
-		pclose(f);
+	snprintf(command, sizeof(command), "/sbin/udhcpc -i %s -A 3 -T 3 -t 5 -n -b -p %s", ifname, path);
+	res = system(command);
+	/*
+	 * returning non-zero, child process is normally exited.
+	 * WIFSIGNALED() -->signal checking..
+	 */
+	if (!WIFEXITED(res)) {
+		eprintf("Chiled exited with the error code %d\n", WEXITSTATUS(res));
 	}
-	
-	return 0;
-}
-
-int netmgr_udhcpc_is_run(const char *ifname)
-{
-	struct stat st;
-	char buf[256]={0,};
-	char path[128]={0,};
-	FILE *f;
-	int r = 0, pid;
-	
-	/* get udhcpc */
-	memset(&st, 0, sizeof(st));
-	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
-	f = fopen(path, "r");
-	if (f == NULL) {
-		/*  terminated or process done!! */
-		return 0;
-	}
-
-	fscanf(f, "%d", &pid); //# get pid.
-	fclose(f);
-
-	snprintf(buf, sizeof(buf), "/proc/%d/cmdline", pid);
-	r = stat(buf, &st);
-	if (r == -1 && errno == ENOENT) {
-		/* process not exist */
-		r = 0;
-	} else
-		/* process exist */
-		r = 1;
-	
-	return r;
 }
 
 void netmgr_udhcpc_stop(const char *ifname)
@@ -599,6 +460,40 @@ void netmgr_udhcpc_stop(const char *ifname)
 	    waitpid(pid, NULL, 0);
 	} else
 		eprintf("couldn't stop udhcpc(%s)\n", path);
+}
+
+int netmgr_udhcpc_is_run(const char *ifname)
+{
+	struct stat st;
+	char buf[256]={0,};
+	char path[128]={0,};
+	FILE *f;
+	int r = 0, pid;
+	
+	/* get udhcpc */
+	memset(&st, 0, sizeof(st));
+	snprintf(path, sizeof(path), "/var/run/udhcpc.%s.pid", ifname);
+	f = fopen(path, "r");
+	if (f == NULL) {
+		/*  terminated or process done!! */
+		eprintf("couldn't open file %s\n", path);
+		return 0;
+	}
+
+	fscanf(f, "%d", &pid); //# get pid.
+	fclose(f);
+
+	snprintf(buf, sizeof(buf), "/proc/%d/cmdline", pid);
+	r = stat(buf, &st);
+	if (r == -1 && errno == ENOENT) {
+		/* process not exist */
+		r = 0;
+		eprintf("%s process isn't exist!\n", buf);
+	} else
+		/* process exist */
+		r = 1;
+	
+	return r;
 }
 
 /*
@@ -858,119 +753,6 @@ int gpio_get_value(int num, int *val)
 	return 0;
 }
 
-/*****************************************************************************
-* @brief Wi-Fi ??? ???? ??? ??? ?? ??? ???? ???
-*****************************************************************************/
-int netmgr_usb_is_exist(int usb_v, int usb_p)
-{
-	FILE *lsusbfs;
-
-	char cmd[128] = {0,};
-	char buffer[256] = {0,};
-	char vendor[5];
-	char product[5];
-	char *save_ptr;
-
-	vendor[4] = 0;
-	snprintf(vendor, sizeof(vendor), "%04x", usb_v);
-
-	product[4] = 0;
-	snprintf(product, sizeof(product), "%04x", usb_p);
-
-	snprintf(cmd, sizeof(cmd), USB_LS_CMD_STR);
-	lsusbfs = popen(cmd, "r");
-	if (lsusbfs == NULL) {
-		eprintf("couldn't access %s\n", cmd);
-		return 0;
-	}
-
-	while (fgets(buffer, 255, lsusbfs) != NULL) {
-		char *v, *p;
-		/* %*s->discard input */
-		memset(cmd, 0, sizeof(cmd));
-		sscanf(buffer, "%*s%*s%*s%*s%*s%s", cmd);
-		/* splite ":" */
-		if (cmd != NULL) {
-			v = strtok_r(cmd, ":", &save_ptr);
-			p = strtok_r(NULL, ":", &save_ptr);
-
-			if ((strncmp(v, vendor, 4) == 0) &&
-				(strncmp(p, product, 4) == 0))
-			{
-				pclose(lsusbfs);
-				return 1; //# founded usb
-			}
-		}
-	}
-	pclose(lsusbfs);
-
-	return 0;
-}
-
-/*****************************************************************************
- * * @section  DESC Description
- * *   - desc
- * cradle ipaddress eth0, usbtoEthernet cable eth1, wifi client ->wlan0
- * *******************************************************************************/
-int netmgr_wlan_is_exist(int *dst_vid, int *dst_pid)
-{
-	usb_dev_id_t *pusb = usb_wlan_list;
-	int i, ret;
-
-	*dst_vid = 0; *dst_pid = 0;
-	for (i = 0; i < ARRAY_SIZE(usb_wlan_list); i++, pusb++) 
-	{
-		ret = netmgr_usb_is_exist(pusb->d_vid, pusb->d_pid);
-		if (ret) {
-			dprintf("founded device [%x, %x]\n", pusb->d_vid, pusb->d_pid);
-			*dst_vid = pusb->d_vid;  *dst_pid = pusb->d_pid;
-			return 0;
-		}
-	}
-
-	return (-1); //# error
-}
-
-int netmgr_wlan_load_kermod(int vid, int pid)
-{
-	char path[128] = {0,};
-	char name[128] = {0,};
-	
-	/* kernel module 파일명을 확인 */
-	if ((vid == RTL_8821A_VID) && (pid == RTL_8821A_PID)) {
-		strcpy(path, RTL_8821A_PATH);
-		strcpy(name, RTL_8821A_NAME);
-	} else if ((vid == RTL_8812A_VID) && (pid == RTL_8812A_PID)) {
-		strcpy(path, RTL_8812A_PATH);
-		strcpy(name, RTL_8812A_NAME);
-	} else {
-		/* invalid wifi usb module */
-		eprintf("Not Supported WiFi USB Module!!(%x, %x)\n", vid, pid);
-		return -1;
-	}
-				
-	/* 이미 모듈이 loading된 상태이면 insmod 수행 안 함 */
-	if (__wlan_get_module(name) == 0) {
-		__wlan_insmod(path);
-	} else {
-		/* unload driver TODO */
-		//snprintf(buf, sizeof(buf), "/sbin/rmmod %s", module_name);
-	}
-	
-	return 0;
-}
-
-int netmgr_wlan_wait_mod_active(void)
-{
-	int ret;
-	
-	ret = access("/sys/class/net/wlan0/operstate", R_OK);
-	if ((ret == 0) || (errno == EACCES)) {
-		return 0;
-	} 
-	return -1;
-}
-
 //#----------------------------------------------------------------------------------------------
 //# ------------------------- String Function ---------------------------------------------------
 static int hex2num(char c)
@@ -1031,7 +813,7 @@ int hextobin(unsigned char c)
 /* referenced from echo.c */
 int utf8_unescape(const char *dst, char *src)
 {
-	char *data_buf = dst;
+	char *data_buf = (char *)dst;
 	char const *s = src;
 	unsigned char c;
 	int xfred = 0;

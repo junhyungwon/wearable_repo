@@ -1,7 +1,7 @@
 /**
  * @file b2bua.c Back-to-Back User-Agent (B2BUA) module
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <re.h>
 #include <baresip.h>
@@ -62,7 +62,8 @@ static void call_event_handler(struct call *call, enum call_event ev,
 	case CALL_EVENT_ESTABLISHED:
 		debug("b2bua: CALL_ESTABLISHED: peer_uri=%s\n",
 		      call_peeruri(call));
-		call_answer(call2, 200);
+		call_answer(call2, 200,
+			    call_has_video(call) ? VIDMODE_ON : VIDMODE_OFF);
 		break;
 
 	case CALL_EVENT_CLOSED:
@@ -164,8 +165,10 @@ static int b2bua_status(struct re_printf *pf, void *arg)
 	(void)arg;
 
 	err |= re_hprintf(pf, "B2BUA status:\n");
-	err |= re_hprintf(pf, "  inbound:  %s\n", ua_aor(ua_in));
-	err |= re_hprintf(pf, "  outbound: %s\n", ua_aor(ua_out));
+	err |= re_hprintf(pf, "  inbound:  %s\n",
+			  account_aor(ua_account(ua_in)));
+	err |= re_hprintf(pf, "  outbound: %s\n",
+			  account_aor(ua_account(ua_out)));
 
 	err |= re_hprintf(pf, "sessions:\n");
 

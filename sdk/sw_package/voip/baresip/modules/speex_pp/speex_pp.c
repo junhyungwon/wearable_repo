@@ -1,7 +1,7 @@
 /**
  * @file speex_pp.c  Speex Pre-processor
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <string.h>
 #include <stdlib.h>
@@ -123,6 +123,9 @@ static int encode(struct aufilt_enc_st *st, struct auframe *af)
 
 	if (!st || !af)
 		return EINVAL;
+
+	if (af->fmt != AUFMT_S16LE)
+		return ENOTSUP;
 
 	if (!af->sampc)
 		return 0;

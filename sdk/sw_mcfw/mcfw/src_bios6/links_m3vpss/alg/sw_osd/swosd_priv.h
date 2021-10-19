@@ -42,8 +42,8 @@ extern "C" {
 #define OSDWIN_2				2	//# P:parking
 #define OSDWIN_3				3	//# E:event
 #define OSDWIN_4				4	//# M:motion
-#define OSDWIN_5				5	//# voltage
-#define OSDWIN_6				6	//# temperature
+#define OSDWIN_5				5	//# C:call
+#define OSDWIN_6				6	//# voltage
 #define OSDWIN_7				7	//# speed
 #define OSDWIN_8				8	//# g-sensor
 #define OSDWIN_9				9	//#	User String
@@ -157,7 +157,6 @@ typedef struct {
 	Bool update;
 	Bool update_datetime;
 	Bool update_volt;
-	Bool update_temp;
 	Bool update_speed;
 	Bool update_gsens;
 	Bool update_userstr;
@@ -202,7 +201,6 @@ void DM81XX_SWOSD_setWindowEnable(int streamId, int win, int enable);
 
 void DM81XX_SWOSD_setDateTime(int streamId, DATE_TIME_INFO iDateTime);
 void DM81XX_SWOSD_setVolt(int streamId, int value);
-void DM81XX_SWOSD_setTemp(int streamId, int value);
 void DM81XX_SWOSD_setSpeed(int streamId, int value);
 void DM81XX_SWOSD_setGsens(int streamId, int x, int y, int z);
 void DM81XX_SWOSD_setUserString(int streamId, char *usrString);

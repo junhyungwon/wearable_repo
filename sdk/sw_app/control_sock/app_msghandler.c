@@ -63,6 +63,8 @@ void msginit (void)
     }
 
     MSG_MAP (CMD_GPSDATA_REQ, gpsdatareq)
+    MSG_MAP (CMD_EVENTDATA_REQ, eventdatareq)
+    MSG_MAP (CMD_USERAUTH_REQ, userauthreq)
 }
 
 

@@ -4,15 +4,16 @@
 # Copyright (C) 2010 Creytiv.com
 #
 
-# Master version number
-VER_MAJOR := 0
-VER_MINOR := 6
+# Main version number
+VER_MAJOR := 1
+VER_MINOR := 0
 VER_PATCH := 0
 
 PROJECT   := rem
 VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
 OPT_SPEED := 1
 
+ifndef LIBRE_MK
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
 	echo "../re/mk/re.mk")
 ifeq ($(LIBRE_MK),)
@@ -23,6 +24,7 @@ ifeq ($(LIBRE_MK),)
 LIBRE_MK  := $(shell [ -f /usr/local/share/re/re.mk ] && \
 	echo "/usr/local/share/re/re.mk")
 endif
+endif
 
 include $(LIBRE_MK)
 
@@ -30,14 +32,16 @@ include $(LIBRE_MK)
 MODULES += fir goertzel
 MODULES += g711
 MODULES += aubuf aufile auresamp autone dtmf
-MODULES += au auconv
+MODULES += au auconv aulevel
 
 ifneq ($(HAVE_LIBPTHREAD),)
 MODULES += aumix vidmix
 endif
 
 MODULES += vid vidconv
+MODULES += aac
 MODULES += avc
+MODULES += h264
 
 LIBS    += -lm
 
@@ -52,8 +56,7 @@ LIBDIR  := $(PREFIX)/lib
 endif
 INCDIR  := $(PREFIX)/include/rem
 CFLAGS	+= -I$(LIBRE_INC) -Iinclude
-# added for zlib (rupy)
-CFLAGS	+= -I../../common/include
+
 
 # XXX
 ifneq ($(HAVE_ARMV6),)

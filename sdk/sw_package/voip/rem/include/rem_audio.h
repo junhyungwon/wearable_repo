@@ -9,6 +9,7 @@
 #include "rem_aubuf.h"
 #include "rem_auconv.h"
 #include "rem_aufile.h"
+#include "rem_aulevel.h"
 #include "rem_autone.h"
 #include "rem_aumix.h"
 #include "rem_dtmf.h"
@@ -16,3 +17,4 @@
 #include "rem_goertzel.h"
 #include "rem_auresamp.h"
 #include "rem_g711.h"
+#include "rem_aac.h"

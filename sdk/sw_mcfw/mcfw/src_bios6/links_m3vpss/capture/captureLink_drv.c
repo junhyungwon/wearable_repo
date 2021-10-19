@@ -691,6 +691,7 @@ Int32 CaptureLink_drvCreateInst(CaptureLink_Obj * pObj, UInt16 instId)
 #else	
 //	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0x24924924);		//# 30fps->20fps
 	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0x2AAAAAAA);		//# 19fps->15fps
+//	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0);				//# nexxone 30fps
 #endif
     pInst->videoDecoderHandle = NULL;
 

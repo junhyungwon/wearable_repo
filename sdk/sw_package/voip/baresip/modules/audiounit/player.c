@@ -1,7 +1,7 @@
 /**
  * @file audiounit/player.c  AudioUnit output player
  *
- * Copyright (C) 2010 Creytiv.com
+ * Copyright (C) 2010 Alfred E. Heggestad
  */
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
@@ -13,8 +13,8 @@
 
 
 struct auplay_st {
-	const struct auplay *ap;      /* inheritance */
 	struct audiosess_st *sess;
+	struct auplay_prm prm;
 	AudioUnit au;
 	pthread_mutex_t mutex;
 	uint32_t sampsz;
@@ -69,8 +69,17 @@ static OSStatus output_callback(void *inRefCon,
 	for (i = 0; i < ioData->mNumberBuffers; ++i) {
 
 		AudioBuffer *ab = &ioData->mBuffers[i];
+		struct auframe af;
+		uint64_t ts;
 
-		wh(ab->mData, ab->mDataByteSize/st->sampsz, arg);
+		auframe_init(&af, st->prm.fmt,
+			     ab->mData, ab->mDataByteSize/st->sampsz);
+
+		ts = AUDIO_TIMEBASE * inTimeStamp->mSampleTime / st->prm.srate;
+
+		af.timestamp = ts;
+
+		wh(&af, arg);
 	}
 
 	return 0;
@@ -111,9 +120,10 @@ int audiounit_player_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if (!st)
 		return ENOMEM;
 
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
+
+	st->prm = *prm;
 
 	st->sampsz = (uint32_t)aufmt_sample_size(prm->fmt);
 	if (!st->sampsz) {

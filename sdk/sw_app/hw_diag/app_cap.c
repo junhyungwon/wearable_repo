@@ -140,9 +140,9 @@ static void proc_vid_cap(void)
             if(1)
             {
                 #if defined(NEXXONE) || defined(NEXX360H)
-				if (pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 2))
+				if (pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 2))
 				#else
-				if (pFullBuf->codecType == IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 5))
+				if (pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 5))
 				#endif
                 {
 					FILE *jpeg_f = NULL;

@@ -38,8 +38,7 @@
 #define TIME_RNDIS_WAIT_DHCP		10000   //# 10sec
 #define CNT_RNDIS_WAIT_DHCP  		(TIME_RNDIS_WAIT_DHCP/TIME_RNDIS_CYCLE)
 
-#define __STAGE_RNDIS_WAIT_ACTIVE	(0x00)
-#define __STAGE_RNDIS_WAIT_DHCP		(0x01)
+#define __STAGE_RNDIS_WAIT_ACTIVE	(0x01)
 #define __STAGE_RNDIS_DHCP_VERIFY	(0x02)
 #define __STAGE_RNDIS_DHCP_NOTY		(0x03)
 #define __STAGE_RNDIS_GET_STATUS	(0x04)
@@ -48,6 +47,8 @@
 #define RNDIS_DEVNAME(a)			((a==1)?"usb0":"eth1")
 #define RNDIS_DEV_NAME_USB	  		1
 #define RNDIS_DEV_NAME_ETH	  		2
+
+#define RNDIS_OPER_PATH		  		"/sys/class/net/usb0/operstate"
 
 typedef struct {
 	app_thr_obj rObj; /* rndis mode */
@@ -84,14 +85,14 @@ static int __wait_for_active(void)
     FILE *f = NULL;
 	char devname[16];
 	char path[128]={0,};
-	int ret = -1, r;
+	int ret = -1;
 	
 	memset(devname, 0, sizeof(devname));
 	
 	if (0 == access(RNDIS_OPER_PATH, R_OK)) {
 		strcpy(devname, "usb0");
 		ret = RNDIS_DEV_NAME_USB;
-	} else if (0 == access(USBETHER_OPER_PATH, R_OK)) {
+	} else if (0 == access("/sys/class/net/eth1/operstate", R_OK)) {
 		strcpy(devname, "eth1");
 		ret = RNDIS_DEV_NAME_ETH;
 	} else {
@@ -164,6 +165,7 @@ static void *THR_rndis_main(void *prm)
 	int quit = 0;
 	
 	tObj->active = 1;
+	dprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -209,36 +211,18 @@ static void *THR_rndis_main(void *prm)
 			
 			case __STAGE_RNDIS_DHCP_VERIFY:
 				/* 현재 sema_wait이 1로 구현되어 있어서 event_send를 동시에 진행할 수 업다. 따라서 별도의 상태로 구분함..*/
-				res = netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
-				if (res < 0) {
+				netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
+				if (!strcmp(irndis->ip, "0.0.0.0")) {
+					/* dhcp로부터 IP 할당이 안된 경우 */
+					dprintf("couln't get dhcp ip address!\n");	
 					irndis->stage = __STAGE_RNDIS_ERROR_STOP;
 				} else {
-					if (!strcmp(irndis->ip, "0.0.0.0")) {
-						/* dhcp로부터 IP 할당이 안된 경우 */
-						dprintf("couln't get dhcp ip address!\n");	
-						irndis->stage = __STAGE_RNDIS_ERROR_STOP;
-					} else {
-						dprintf("rndis ip is %s\n", irndis->ip);
-						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
-						irndis->stage = __STAGE_RNDIS_DHCP_NOTY;	
-					}
+					dprintf("rndis ip is %s\n", irndis->ip);
+					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
+					irndis->stage = __STAGE_RNDIS_DHCP_NOTY;	
 				}
 				break;
 					
-			case __STAGE_RNDIS_WAIT_DHCP:
-				//# check done pipe(udhcpc...)
-				if (netmgr_udhcpc_is_run(RNDIS_DEVNAME(irndis->iftype))) {
-					irndis->stage = __STAGE_RNDIS_DHCP_VERIFY;
-					irndis->rndis_timer = 0;
-				} else {
-					irndis->rndis_timer++;
-					if (irndis->rndis_timer >= CNT_RNDIS_WAIT_DHCP) {
-						dprintf("rndis can't alloc ip address..stopping...\n");
-						irndis->stage = __STAGE_RNDIS_ERROR_STOP;
-					} 
-				}
-				break;
-				
 			case __STAGE_RNDIS_WAIT_ACTIVE:
 				res = __wait_for_active();
 				if (res > 0) {
@@ -247,8 +231,8 @@ static void *THR_rndis_main(void *prm)
 						irndis->first = 1;
 					}
 					//dprintf("active rndis %d(%s)\n", irndis->iftype, RNDIS_DEVNAME(irndis->iftype));
-					netmgr_set_ip_dhcp(RNDIS_DEVNAME(irndis->iftype));
-					irndis->stage = __STAGE_RNDIS_WAIT_DHCP;
+					netmgr_udhcpc_start(RNDIS_DEVNAME(irndis->iftype));
+					irndis->stage = __STAGE_RNDIS_DHCP_VERIFY;
 					irndis->rndis_timer = 0;
 				} else {
 					irndis->rndis_timer++;
@@ -274,6 +258,7 @@ static void *THR_rndis_main(void *prm)
 	}
 	
 	tObj->active = 0;
+	dprintf("...exit!\n");
 	
 	return NULL;
 }

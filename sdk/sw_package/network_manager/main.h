@@ -24,22 +24,16 @@
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
+#include <syslog.h>
 #include "msg.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-/* for debugging macro */
-#define __APP_DEBUG__
+#define dprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x);} while(0)
+#define eprintf(x...) do { printf(" [NETMGR ERR!] %s: ", __func__); printf(x);} while(0)
 
-#define aprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x);} while(0)
-#define eprintf(x...) do { printf(" [NETMGR ERR!] %s: ", __func__); printf(x); } while(0)
-
-#ifdef __APP_DEBUG__
-#define dprintf(x...) do { printf(" [NETMGR ] %s: ", __func__); printf(x); } while(0)
-#else
-#define dprintf(x...)
-#endif
+#define sysprint(x...) do { printf(" [NETMGR LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
 
 #ifndef TRUE
 #define TRUE 		1
@@ -75,10 +69,6 @@ typedef struct {
 	
 	int shmid;
 	unsigned char *shm_buf;
-	
-	/* usb wi-fi vid, pid를 저장한다.*/
-	int wlan_vid;
-	int wlan_pid;
 	
 } app_netmgr_cfg_t;
 

@@ -1,7 +1,7 @@
 /**
  * @file sndio.c  SndIO sound driver
  *
- * Copyright (C) 2014 Creytiv.com
+ * Copyright (C) 2014 Alfred E. Heggestad
  */
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +20,6 @@
 
 
 struct ausrc_st {
-	const struct ausrc *as;  /* pointer to base-class */
 	struct sio_hdl *hdl;
 	pthread_t thread;
 	int16_t *sampv;
@@ -31,7 +30,6 @@ struct ausrc_st {
 };
 
 struct auplay_st {
-	const struct auplay *ap;  /* pointer to base-class */
 	struct sio_hdl *hdl;
 	pthread_t thread;
 	int16_t *sampv;
@@ -96,14 +94,18 @@ static void *read_thread(void *arg)
 static void *write_thread(void *arg)
 {
 	struct auplay_st *st = arg;
+	struct auframe af;
 
 	if (!sio_start(st->hdl)) {
 		warning("sndio: could not start playback\n");
 		goto out;
 	}
 
+	auframe_init(&af, AUFMT_S16LE, st->sampv, st->sampc);
+
 	while (st->run) {
-		st->wh(st->sampv, st->sampc, st->arg);
+		st->wh(&af, st->arg);
+
 		sio_write(st->hdl, st->sampv, st->sampc*2);
 	}
 
@@ -171,7 +173,6 @@ static int src_alloc(struct ausrc_st **stp, const struct ausrc *as,
 	if ((st = mem_zalloc(sizeof(*st), ausrc_destructor)) == NULL)
 		return ENOMEM;
 
-	st->as  = as;
 	st->rh  = rh;
 	st->arg = arg;
 	st->hdl = sio_open(name, SIO_REC, 0);
@@ -245,7 +246,6 @@ static int play_alloc(struct auplay_st **stp, const struct auplay *ap,
 	if ((st = mem_zalloc(sizeof(*st), auplay_destructor)) == NULL)
 		return ENOMEM;
 
-	st->ap  = ap;
 	st->wh  = wh;
 	st->arg = arg;
 	st->hdl = sio_open(name, SIO_PLAY, 0);

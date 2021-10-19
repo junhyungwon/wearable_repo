@@ -26,6 +26,8 @@
 #define TIME_USBNET_POLL_CYCLE			200		//# msec
 #define BLACKLIST_USB_VID				0x1076   //# PID9082 or 9003
 
+#define USBETHER_OPER_PATH	  			"/sys/class/net/eth1/operstate"
+
 typedef struct {
 	app_thr_obj pObj; /* device detect */
 	
@@ -64,7 +66,7 @@ static int __check_blacklist(int usb_v)
 
 	while (fgets(buffer, 255, f) != NULL) 
 	{
-		char *v, *p;
+		char *v;
 		/* %*s->discard input */
 		memset(cmd, 0, sizeof(cmd));
 		sscanf(buffer, "%*s%*s%*s%*s%*s%s", cmd);
@@ -117,8 +119,6 @@ static int __is_rndis_connect(void)
 static int __is_usb2eth_connnect(void)
 {
 	FILE *f = NULL;
-	struct stat sb;
-	char path[1024 + 1]={0,};
 	int ret = 0, res;
 	
 	if (0 == access(USBETHER_OPER_PATH, R_OK)) {
@@ -147,9 +147,10 @@ static void *THR_usbnet_poll(void *prm)
 {
 	app_thr_obj *tObj = &iudev->pObj;
 	int exit = 0, cmd;
-	int ret, is_rndis = 0;
+	int ret;
 	
 	tObj->active = 1;
+	dprintf("enter...!\n");
 	
 	while (!exit)
 	{
@@ -163,7 +164,7 @@ static void *THR_usbnet_poll(void *prm)
 		if (ret > 0) {
 			/* set rndis attach event */
 			if (app_cfg->ste.bit.rndis == 0) {
-				dprintf("detected rndis_host device!!\n");
+				dprintf("attected rndis_host device!!\n");
 				app_cfg->ste.bit.rndis = 1;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_RNDIS, 1);
 			}
@@ -201,6 +202,7 @@ static void *THR_usbnet_poll(void *prm)
 	} 
 	
 	tObj->active = 0;
+	dprintf("...exit!\n");
 	
 	return NULL;
 }

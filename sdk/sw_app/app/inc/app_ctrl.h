@@ -59,6 +59,7 @@ int ctrl_mmc_check_fsck(void);
 int ctrl_mmc_run_fsck(void);
 
 void ctrl_swosd_enable(int idx, int ch, int draw);
+void ctrl_swosd_callstatus(int ch, int draw);
 void ctrl_swosd_userstr(char *str, int draw);
 int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec);
 
@@ -68,9 +69,7 @@ int ctrl_get_resolution(void) ;
 
 int ctrl_update_firmware_by_cgi(char *path);
 int ctrl_is_live_process(const char *process_name);
-void ctrl_auto_update(void);
-
-void ctrl_sys_reboot(void);
-void ctrl_sys_shutdown(void);
+void ctrl_firmware_update(void);
+void ctrl_sys_halt(int shutdown);
 
 #endif	/* _APP_CTRL_H_ */
