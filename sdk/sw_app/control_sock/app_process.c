@@ -250,7 +250,7 @@ void sosdata_send(void)
 
 void userauthreq(int channel, char *data, int len) 
 {
-	int sendlen = 0, result = 0, i = 0 ;
+	int sendlen = 0, result = 0;
     char rtsp_userid[32] = {0, } ;
 	char rtsp_passwd[32] = {0, } ;
 
@@ -304,15 +304,12 @@ DEBUG_PRI("Userauth req result = %d\n",result) ;
 
 	memcpy(m_SendBuffer, &Userauthres, USERAUTHRES_SIZE) ;
 
-	for(i = 0 ; i < MAXUSER; i++)
+	if(SystemInfo.Channel[channel] != 0)
 	{
-		if(SystemInfo.Channel[i] != 0)
-		{
-            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, USERAUTHRES_SIZE, 0) ;
+        sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, USERAUTHRES_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("Userauthres packet sendlen = %d, channel = %d\n",sendlen, i) ;
+    DEBUG_PRI("Userauthres packet sendlen = %d, channel = %d\n",sendlen, channel) ;
 #endif
-		}
 	}
 
 }
