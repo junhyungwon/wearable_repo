@@ -2346,13 +2346,16 @@ Int32 SwMsLink_DrvProcessFrames(SwMsLink_Obj * pObj)
     curTime = Utils_getCurTimeInMsec() - curTime;
     pObj->totalTime += curTime;
 
-
     return status;
 }
 
 Int32 SwMsLink_drvDoScaling(SwMsLink_Obj * pObj)
 {
-    FVID2_Frame *pOutFrame;
+#if 0	
+	static UInt32 prevTime = 0;
+    UInt32 elaspedTime=0;
+#endif	
+	FVID2_Frame *pOutFrame;
     Int32 status;
     UInt32 curTime = Utils_getCurTimeInMsec();
 	
@@ -2420,7 +2423,18 @@ Int32 SwMsLink_drvDoScaling(SwMsLink_Obj * pObj)
         SwMsLink_drvDoDma(pObj,pOutFrame);
     }
 
-    status = Utils_bufPutFullFrame(&pObj->bufOutQue, pOutFrame);
+#if 0
+    elaspedTime = Utils_getCurTimeInMsec() - pObj->statsStartTime; // in msecs
+    if ((elaspedTime-prevTime) > 60 * 1000) {
+        Vps_printf(" SWMS: Elapsed (%d)sec Frames = %d (fps = %d) !!!\n",
+                elaspedTime/1000, 
+				pObj->frameCount, 
+				pObj->frameCount * 100 / (pObj->totalTime / 10));
+		prevTime = elaspedTime;
+    }
+#endif
+    
+	status = Utils_bufPutFullFrame(&pObj->bufOutQue, pOutFrame);
     if (status != FVID2_SOK)
     {
         pObj->framesOutRejectCount++;
@@ -2434,15 +2448,14 @@ Int32 SwMsLink_drvDoScaling(SwMsLink_Obj * pObj)
     }
 
     System_sendLinkCmd(pObj->createArgs.outQueParams.nextLink, SYSTEM_CMD_NEW_DATA);
-
+	
 	//Vps_printf("--- %s done\n", __func__);
-
+			   
     return status;
 }
 
 Int32 SwMsLink_drvDeleteDrv(SwMsLink_Obj * pObj, SwMsLink_DrvObj *pDrvObj)
 {
-
     if (pDrvObj->isDeiDrv && pDrvObj->bypassDei == FALSE)
     {
         SwMsLink_drvFreeCtxMem(pDrvObj);
@@ -2459,7 +2472,7 @@ Int32 SwMsLink_drvDelete(SwMsLink_Obj * pObj)
     UInt32 winId,i,maxChnl;
     System_MemoryType memType;
     Int32 status;
-
+	
 #ifdef SYSTEM_DEBUG_SWMS
     Vps_printf(" %d: SWMS: Frames = %d (fps = %d) !!!\n",
                Utils_getCurTimeInMsec(),
@@ -2472,7 +2485,6 @@ Int32 SwMsLink_drvDelete(SwMsLink_Obj * pObj)
 #endif
 
     memType = (System_MemoryType)pObj->inQueInfo.chInfo[0].memType;
-
 
     for (i = 0; i < pObj->createArgs.numSwMsInst; i++)
     {
@@ -2621,4 +2633,3 @@ Int32 SwMsLink_printBufferStatus (SwMsLink_Obj * pObj)
     Utils_bufPrintStatus(str, &pObj->bufOutQue);
     return 0;
 }
-

@@ -155,13 +155,13 @@ int mic_send_msg(char cmd, char param, short data)
 {
 	int ret;
 	hst_msg_t tx_msg;
-
+	
 	tx_msg.cmd = cmd;
 	tx_msg.param = param;
 	tx_msg.data = data;
 
 	ret = uart_send((char *)&tx_msg, sizeof(hst_msg_t));
-
+	
 	return ret;
 }
 

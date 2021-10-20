@@ -34,10 +34,10 @@
 #define DIS			0	//# disable
 
 #ifndef KB
-#define KB	1024
+#define KB			1024
 #endif
 #ifndef MB
-#define MB	(KB*KB)
+#define MB			(KB*KB)
 #endif
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)

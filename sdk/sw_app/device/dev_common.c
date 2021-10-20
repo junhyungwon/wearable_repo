@@ -855,7 +855,7 @@ int dev_rtc_set_time(struct tm set_tm)
 
 	ret = ioctl(fd, RTC_SET_TIME, &set_tm);
 	if (ret < 0) {
-		dev_err("Failed to ioctl (RTC_SET_TIME)!\n");
+		//dev_err("Failed to ioctl (RTC_SET_TIME)!\n");
 	}
 	close(fd);
 

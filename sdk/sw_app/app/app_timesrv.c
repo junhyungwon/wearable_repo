@@ -99,24 +99,66 @@ typedef struct {
 static app_tsync_t t_tsync;
 static app_tsync_t *itsync=&t_tsync;
 
+static const unsigned char rtc_days_in_month[] = {
+	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+};
+
+static int is_leap_year(unsigned int year)
+{
+	return (!(year % 4) && (year % 100)) || !(year % 400);
+}
+
+static int __rtc_month_days(unsigned int month, unsigned int year)
+{
+	return rtc_days_in_month[month] + (is_leap_year(year) && month == 1);
+}
+
+static int __rtc_valid_tm(struct tm *ptm)
+{
+	/* 2000년도 아래이거나 간헐적으로 2066년이 출력되는 경우 RTC가 Reset된 경우임 */
+	if (ptm->tm_year < 100
+		|| ptm->tm_year > 165
+		|| ((unsigned)ptm->tm_mon) >= 12
+		|| ptm->tm_mday < 1
+		|| ptm->tm_mday > __rtc_month_days(ptm->tm_mon, ptm->tm_year + 1900)
+		|| ((unsigned)ptm->tm_hour) >= 24
+		|| ((unsigned)ptm->tm_min) >= 60
+		|| ((unsigned)ptm->tm_sec) >= 60) {
+		
+		eprintf("Invalid tm: --- %d-%d-%d %02d:%02d:%02d\n",
+				ptm->tm_year, ptm->tm_mon, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
+		return -1;
+	}
+
+	return 0;
+}
+
 static int update_m3_time()
 {
 	time_t now;
 	struct tm *pgm;
-	int    retval = FALSE;
+	int retval = FALSE;
 
 //	dprintf("--- update m3 time ---\n");
 
 	// time(), gmtime(), it represents the number of seconds elapsed since the Epoch, 1970-01-01 00:00:00 (UTC)
 	time(&now);
-   	pgm = gmtime(&now); 
-
-	if (dev_rtc_set_time(*pgm) < 0)
-	{
-		eprintf("Failed to set system time to rtc\n!!!");
+   	pgm = gmtime(&now);
+	if (__rtc_valid_tm(pgm) < 0) {
+		/* invalid rtc time --> set 2020/01/01 00-00-00 */
+		pgm->tm_year = 120; /* 1900+120=2020*/
+		pgm->tm_mon  = 0;
+		pgm->tm_mday = 1;
+		pgm->tm_hour = 0;
+		pgm->tm_min  = 0;
+		pgm->tm_sec  = 0;
 	}
-	else
-	{
+	
+	dprintf("m3 time: %d-%d-%d %d:%d:%d\n", pgm->tm_year + 1900, pgm->tm_mon + 1,
+				pgm->tm_mday, pgm->tm_hour, pgm->tm_min, pgm->tm_sec);
+	if (dev_rtc_set_time(*pgm) < 0) {
+		eprintf("Failed to set system time to rtc\n!!!");
+	} else {
 		char buff[MAX_CHAR_128]={0};
 		sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
 		system(buff) ;
@@ -144,7 +186,6 @@ char *get_timezone (int timezone, int daylightsaving)
     memset (&buffer, 0, sizeof(buffer));
 
     sprintf (buffer, "%s", TZfiles[tz_idx][daylightsaving]);
-
     return buffer ;
 }
 
@@ -156,23 +197,23 @@ int set_time_zone()
 
 	int timezone = app_set->time_info.time_zone - 12; 
     int daylight  = app_set->time_info.daylight_saving;  //# 0:false, 1:automatically for daylight saving time changes.
-    sprintf(buf,"rm -f /etc/adjtime;rm -f %s; ln -s %s/%s %s",
+    
+	sprintf(buf,"rm -f /etc/adjtime;rm -f %s; ln -s %s/%s %s",
 			PATH_LOCALTIME,
 			PATH_ZONE_INFO,
 			get_timezone(timezone, daylight),
 			PATH_LOCALTIME) ;
     Fp = popen(buf, "w") ;
-
-    if(Fp == NULL)
-    {
-        printf("ERROR setting Timezone \n") ;
-        pclose(Fp) ;
+    if(Fp != NULL)
+		pclose(Fp) ;
+    else {
+		dprintf("ERROR setting Timezone \n") ;
         return retval ;
-    }
-    pclose(Fp) ;
+	}
 
 	// No guaranteed completion PIPE???
 	update_m3_time();
+	dprintf("....done!!\n");
 
 	return 1 ;
 }
@@ -184,7 +225,6 @@ int set_time_manual(int year, int month, int day, int hour, int minute, int seco
 	time_t set;
 
 	dprintf("--- changed time by manual ---\n");
-
 	stm.tm_year = year  - 1900; 
 	stm.tm_mon  = month - 1;
 	stm.tm_mday = day ;
@@ -265,10 +305,15 @@ int set_time_by_ntp()
 
 		strncpy(server_addr, inet_ntoa(*((struct in_addr *)hp->h_addr_list[0])), strlen(inet_ntoa(*((struct in_addr *)hp->h_addr_list[0]))));
 	}
-
-    sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
-    system(buff) ;
-
+	
+	/* SD 카드에 error 발생 시 readonly로 변경됨. ntp.txt 저장 안 됨.*/
+	if (ctrl_mmc_check_writable() > 0) {
+    	sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
+    	system(buff) ;
+	} else {
+		return FALSE;
+	}
+	
     while(1)
     {
         if(access("/mmc/ntp.txt", F_OK) != 0)
@@ -329,9 +374,14 @@ int gettime_from_ntp(char *server_addr)
 			// -1 로 리턴하면 시간이 2020년으로 설정됨.
 			return FALSE; // 0
 		}
-        sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
-
-        system(buff) ;
+		
+		/* SD 카드에 error 발생 시 readonly로 변경됨. ntp.txt 저장 안 됨.*/
+		if (ctrl_mmc_check_writable() > 0) {
+        	sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
+			system(buff) ;
+		} else {
+			return FALSE;
+		}
     }
 
     while(1)
@@ -385,22 +435,14 @@ static int time_sync(void)
     time_t timeval, time_val, set ;
     struct tm tp, tv;
     struct hostent *hp;
-
-    ret = app_cfg->ste.b.cradle_net_run || app_cfg->ste.b.usbnet_run;
-    if(!ret) {
-        set_time_zone() ;  
-        return FALSE  ;
-    }
-
-    if(check_ipaddress(app_set->time_info.time_server))
-	{
+	
+	//dprintf("Enter time sync!...\n");
+    if(check_ipaddress(app_set->time_info.time_server)) {
 		strncpy(timesrv_addr, app_set->time_info.time_server, strlen(app_set->time_info.time_server));
 	}
-	else
-	{
+	else {
         hp = gethostbyname(app_set->time_info.time_server);
-        if (!hp)
-        {
+        if (!hp) {
 		    perror("gethostbyname:");
             return FALSE;
         }
@@ -409,50 +451,50 @@ static int time_sync(void)
 
     if(gettime_from_ntp(timesrv_addr) == TRUE)
     {
-        if(app_rec_state())
-		{
+        if(app_rec_state()) {
 			app_rec_stop(ON);
             app_cfg->ste.b.prerec_state = 1 ;
 		}
-
+		/* wait for record stop..*/
         app_msleep(100);
         Vsys_datetime_init2(app_set->time_info.daylight_saving);   //# m3 Date/Time init
 
         time(&timeval) ;
 		//localtime_r(&timeval, &tp);
 		gmtime_r(&timeval, &tp);
-        printf("--- %d-%d-%d %02d:%02d:%02d\n",
-				tp.tm_year + 1900, tp.tm_mon + 1, tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
-
-        app_msleep(100);
-        if (dev_rtc_set_time(tp) < 0)
-        {
+		dprintf("ntp time: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
+				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
+		if (dev_rtc_set_time(tp) < 0) {
             eprintf("Failed to set system time to rtc\n!!!");
-        }
-        else
-        {
+        } else {
             dprintf("--- changed time from Time server ---\n");
             sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
             system(buff) ;
             retval = TRUE;
         }
 
-    }
-    else if(gettime_from_ntp(timesrv_addr) == FALSE)  // TIME SYNC 사용 안할때 , 더이상 시도 하지 않도록 
+    } else if(gettime_from_ntp(timesrv_addr) == FALSE) {  // TIME SYNC 사용 안할때 , 더이상 시도 하지 않도록 
 		retval = TRUE ;
-
+	}
     else if(gettime_from_ntp(timesrv_addr) == -1)  // TIME SYNC 실패시 
     {
+		//dprintf("%s, %d\n", __func__, __LINE__);
         time(&time_val) ;
         localtime_r(&time_val, &tv);
-
-        if(tv.tm_year + 1900 < 2020)
-        {
-            tv.tm_year = 2020 ;
-
-            set = mktime(&tv);
+		if (__rtc_valid_tm(&tv) < 0) {
+			/* invalid rtc time --> set 2020/01/01 00-00-00 */
+			tv.tm_year = 120; /* 1900+120=2020*/
+			tv.tm_mon  = 0;
+			tv.tm_mday = 1;
+			tv.tm_hour = 0;
+			tv.tm_min  = 0;
+			tv.tm_sec  = 0;
+			
+			dprintf("Failed sync: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
+				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
+					
+			set = mktime(&tv);
             stime(&set) ;
-
             Vsys_datetime_init();   //# m3 Date/Time init
             app_msleep(100);
             if (dev_rtc_set_time(tv) < 0) {
@@ -460,7 +502,7 @@ static int time_sync(void)
             }
             else
                 dprintf("--- changed time default 2000 ---\n");
-        }
+		}
 		retval = FALSE ;
     }
 
@@ -495,13 +537,15 @@ static void *THR_tsync(void *prm)
         if (cmd == APP_CMD_STOP)  {
             break;
         }
-		if(app_cfg->ste.b.cradle_net_ready || app_cfg->ste.b.usbnet_run) 
+		
+		if(app_cfg->ste.b.cradle_net_run || app_cfg->ste.b.usbnet_run) 
 		{
             if (itsync->tsync_status == TIMESYNC_READY)
 			{ 
                 retval = time_sync() ;
 			}
         } 
+		
 		if(!app_cfg->ste.b.cradle_net_ready && !app_cfg->ste.b.usbnet_ready)
 		{
             itsync->tsync_status = TIMESYNC_READY ;

@@ -69,8 +69,7 @@
 #define WD_ENC					(1<<0)
 #define WD_DEV					(1<<1)
 #define WD_MICOM            	(1<<2)
-#define WD_FILE					(1<<3)
-#define WD_TOT					(WD_ENC+WD_DEV+WD_MICOM+WD_FILE)
+#define WD_TOT					(WD_ENC+WD_DEV+WD_MICOM)
 
 #define TVO_REC                 (1<<0)
 #define TVO_TEMP                (1<<1)
