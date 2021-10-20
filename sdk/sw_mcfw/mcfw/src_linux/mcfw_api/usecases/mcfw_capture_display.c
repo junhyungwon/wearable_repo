@@ -493,7 +493,6 @@ void mcfw_capture_display_init(int mode)
 	dupPrm0.notifyNextLink				= TRUE;
 #endif
 
-
 	if(gVsysModuleContext.vsysConfig.enableHDMI)
 	{
 #if defined(LF_SYS_NEXX360W_MUX)

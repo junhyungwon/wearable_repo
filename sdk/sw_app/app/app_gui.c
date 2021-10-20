@@ -93,8 +93,6 @@ static void get_wd_name(char *name)
 		strcat(name, WD_DEV_NAME);
 	if ((app_cfg->wd_tot & WD_MICOM) && ((app_cfg->wd_flags & WD_MICOM)==0))
 		strcat(name, WD_MICOM_NAME);
-	if ((app_cfg->wd_tot & WD_FILE) && ((app_cfg->wd_flags & WD_FILE)==0))
-		strcat(name, WD_FILE_NAME);
 }
 
 #define TVO_GAP_X   40
@@ -451,4 +449,3 @@ void app_gui_exit(void)
 
 	aprintf("... done!\n");
 }
-

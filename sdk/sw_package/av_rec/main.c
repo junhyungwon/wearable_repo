@@ -492,6 +492,7 @@ static void *THR_rec_evt(void *prm)
 	stream_info_t *ifr;
 	char msg[256]={0,};
 	char *s = NULL; 
+	int err_exit=0;
 	
 	dprintf("enter...\n");
 	
@@ -508,7 +509,6 @@ static void *THR_rec_evt(void *prm)
 		
 		do {
 			int print_limit = 1;
-			
 			/*
 			 * Time Sync에 의해서 Record stop/start 시 Pre Record가 활성화되면 부팅 후 15초 이상 
 			 * 녹화데이터가 없어서 항상 같은 시간의 파일이 생성됨. 이를 방지하기 위해서 
@@ -564,48 +564,35 @@ static void *THR_rec_evt(void *prm)
 				continue;
 			}
 
-			if(tObj->cmd == APP_CMD_EVT)
-			{
-				if(irec->fevt == NULL)   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
-				{
+			if (tObj->cmd == APP_CMD_EVT) {
+				if (irec->fevt == NULL) {   // event record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
 			        irec->rec_evt_cnt = 2;
-				}
-                else
-				{
-                    s =strstr(irec->fname, "/mmc/DCIM/R_") ;
-                    if(s != NULL)
-					{
+				} else {
+                    s = strstr(irec->fname, "/mmc/DCIM/R_") ;
+                    if (s != NULL) {
 			            irec->rec_evt_cnt = 2;  // normal record 중에 event 발생시 1분 이상 녹화를 위한 부분 
-					}
-					else
+					} else
 			            irec->rec_evt_cnt += 1;  // event recording 중 추가 이벤트 발생 
                 }
 				cmd = APP_CMD_EVT ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
             } /* if(tObj->cmd == APP_CMD_EVT) */
 
-			if(tObj->cmd == APP_CMD_SOS)
-			{
-				if(irec->fevt == NULL)   // SOS record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
-				{
+			if (tObj->cmd == APP_CMD_SOS) {
+				if(irec->fevt == NULL) {   // SOS record가 처음 실행 되는 경우 1분 녹화 이상 되도록 
 			        irec->rec_evt_cnt = 2;
-				}
-                else
-				{
-                    s =strstr(irec->fname, "/mmc/DCIM/S_") ;
-                    if(s == NULL)
-					{
+				} else {
+                    s = strstr(irec->fname, "/mmc/DCIM/S_") ;
+                    if(s == NULL) {
 			            irec->rec_evt_cnt = 2;  // normal/event record 중에 SOS 발생시 1분 이상 녹화를 위한 부분 
 					}
                     // SOS 추가 이벤트 처리 없음 
-
                 }
 				cmd = APP_CMD_SOS ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
 			} /* if(tObj->cmd == APP_CMD_SOS) */
 
-			if(tObj->cmd == APP_CMD_START)
-			{
+			if(tObj->cmd == APP_CMD_START) {
 				cmd = APP_CMD_START ;
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
 			}
@@ -617,13 +604,10 @@ static void *THR_rec_evt(void *prm)
 				if ((ifr->d_type==DATA_TYPE_VIDEO) && (ifr->ch==0) && ifr->is_key) {
 				    ret = evt_file_open(ifr, cmd);
 					if (ret < 0) {
+						/* SD 카드에 문제가 발생한 상황이므로 syslog에 기록하면 안 됨.*/
 						send_msg(AV_CMD_REC_ERR, NULL);
-						memset(msg, 0, sizeof(msg));
-						sprintf(msg, "2.Failed to open AVI (%s)!", irec->fname);
-						avrec_log(msg);
-						eprintf("%s\n", msg);
-						/* loop exit */
-						cmd = 0x00 ;
+						err_exit = 1;
+						eprintf("2.Failed to open AVI (%s)!\n", irec->fname);
 						break; 
 					}
 				}
@@ -635,12 +619,10 @@ static void *THR_rec_evt(void *prm)
 					if (ifr->ch < 1) {
 						ret = evt_file_write(ifr, irec->en_snd);
 						if (ret < 0) {
+							/* SD 카드에 문제가 발생한 상황이므로 syslog에 기록하면 안 됨.*/
 							send_msg(AV_CMD_REC_ERR, NULL);
-							memset(msg, 0, sizeof(msg));
-							sprintf(msg, "avi write failed!");
-							avrec_log(msg);
-							eprintf("%s\n", msg);
-							/* loop exit */
+							eprintf("1.avi write failed!\n");
+							err_exit = 1;
 							break;
 						}
 					}
@@ -685,12 +667,10 @@ static void *THR_rec_evt(void *prm)
 					
 				        ret = evt_file_write(ifr, irec->en_snd);
 				        if (ret < 0) {
-						    send_msg(AV_CMD_REC_ERR, NULL);
-						 	memset(msg, 0, sizeof(msg));
-						    sprintf(msg, "avi write failed!");
-						    avrec_log(msg);
-						    eprintf("%s\n", msg);
-						    /* loop exit */
+						    /* SD 카드에 문제가 발생한 상황이므로 syslog에 기록하면 안 됨.*/
+							send_msg(AV_CMD_REC_ERR, NULL);
+						    eprintf("1.avi write failed!");
+							err_exit = 1;
 						    break;
 				        }
 				    }
@@ -700,20 +680,24 @@ static void *THR_rec_evt(void *prm)
 				if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
 					break;
 				}
+			} /* for (i = 0; i < frame_num; i++) */
+			
+			if (err_exit) {
+				eprintf("file system error!!.. exit loop.\n");
+				break;
 			}
 		} /* while (1) */
 		
-		s =strstr(irec->fname, "/mmc/DCIM/R_") ;
-		if(s == NULL && irec->pre_type == 1) // event or SOS
-        {
-		    evt_file_close();
-		    send_msg(AV_CMD_REC_RESTART, NULL);
-		}
-		else // Normal file
-		{
-		    //# record done
-		    evt_file_close();
-		    dprintf("record done!\n");
+		if (!err_exit) {
+			s = strstr(irec->fname, "/mmc/DCIM/R_") ;
+			if(s == NULL && irec->pre_type == 1) { // event or SOS
+				evt_file_close();
+				send_msg(AV_CMD_REC_RESTART, NULL);
+			} else { // Normal file
+				//# record done
+				evt_file_close();
+				dprintf("record done!\n");
+			}
 		}
 	} /* while (!exit) */
 

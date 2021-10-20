@@ -32,39 +32,37 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
  -----------------------------------------------------------------------------*/
-#define FILE_LIST_CYCLE         	(100)
+#define FILE_LED_CYCLE         		(500)
 #define FILE_STATE_CHECK_BEEP		(1000)		//1sec
-#define FILE_STATE_CHECK_TIME		(60*1000)	//60sec
 #define FILE_STATE_FULL_BEEP_TIME	(5*1000)	//5SEC
-#define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_STATE_CHECK_BEEP)
+
+#define CNT_BEEP_CHECK 				(FILE_STATE_CHECK_BEEP/FILE_LED_CYCLE)
+#define CNT_BEEP_FULL 				(FILE_STATE_FULL_BEEP_TIME/FILE_LED_CYCLE)
 
 #if FREC_TEST
 	#define MIN_THRESHOLD_SIZE 	    (100*MB)/KB		//# 100MB
-	#define FILE_LIST_CHECK_TIME    (10*1000)   	//10 SEC
 #else
 	#define MIN_THRESHOLD_SIZE 	    (1024*MB)/KB	//# 1GB
-	#define FILE_LIST_CHECK_TIME    (60*1000)   	//1min	
 #endif
 
 #define VIDEO_LIST_NAME				"video.lst"
 
 typedef struct {
 	char name[FILE_MAX_PATH_LEN];
-	Uint32 padding;  /* for align */
+	int type;
+} linked_info_t;
 
-} list_info_t;
-
-/* file_entry_t? ??? */
 struct disk_list {
 	struct list_head queue;
-	char fullname[FILE_MAX_PATH_LEN];
+	linked_info_t node;
 };
 
 typedef struct {
 	OSA_MutexHndl mutex_file ;
 	app_thr_obj fObj;
+	app_thr_obj lObj; /* LED */
 	
-	size_t file_count;  /* total files for ftp send */
+	size_t file_count;   /* total files for ftp send */
 	size_t efile_count;  /* event files for ftp send */
 	int	file_state;
 	
@@ -82,7 +80,7 @@ typedef struct {
 static app_file_t t_file;
 static app_file_t *ifile = &t_file;
 
-static LIST_HEAD(ilist);
+static LIST_HEAD(storageList);
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -123,18 +121,21 @@ static void _check_threshold_size(app_file_t *pInfo)
 //	dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
 }
 
-static Uint32 _check_file_size(const char *fname)
+static int _check_file_size(const char *fname, Uint32 *sz)
 {
 	struct stat st;
 	Uint32 len=0;
 	
 	if (fname != NULL) {
-		stat(fname, &st);
-		len = (st.st_size / KB); /* byte -> KB */
-		dprintf("file size checking %s(%dKB)\n", fname, len);
+		if (stat(fname, &st) == 0) {
+			len = (st.st_size / KB); /* byte -> KB */
+			dprintf("check file size %s(%dKB)\n", fname, len);
+			*sz = len;
+			return 0;
+		}
 	} 
 		
-	return len;
+	return -1;
 }
 
 /*****************************************************************************
@@ -193,34 +194,14 @@ static Uint32 get_file_count(const char *dpath)
 }
 
 /*****************************************************************************
- * @brief	 delete file.
- * @section  DESC Description
- *	 - desc
- *****************************************************************************/
-static int delete_file(const char *pathname)
-{
-	int ret=0;
-	
-	if (pathname != NULL) {
-		ret = remove(pathname);
-		if (ret < 0) {
-			eprintf("can't remove %s(%d)\n", pathname, errno);
-			return -1;
-		}
-	}
-	
-	return 0;
-}
-
-/*****************************************************************************
  * @brief	 compare file name
  * @section  DESC Description
  *	 - desc
  *****************************************************************************/
 static int _cmpold(const void *a, const void *b)
 {
-	list_info_t *a_name = (list_info_t *)a;
-	list_info_t *b_name = (list_info_t *)b;
+	linked_info_t *a_name = (linked_info_t *)a;
+	linked_info_t *b_name = (linked_info_t *)b;
 
 	return (strcmp(&a_name->name[13], &b_name->name[13]));  // /mmc/DCIM/R_ sorting for event file 
 }
@@ -234,51 +215,87 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 {
 	struct disk_list *ptr = NULL;
 	Uint32 sz = 0;
-
+	int ret=0;
+	
+	if (del_sz == NULL)
+		return -1;
+	
+	*del_sz = 0; /* default */	
 	ptr = list_last_entry(head, struct disk_list, queue);
 	if (ptr != NULL) {
-		if (delete_file(ptr->fullname) < 0) {
-			*del_sz = 0;
-			return -1;
+		ret = _check_file_size((const char *)ptr->node.name, &sz);
+		if (!ret) {
+			/* delete file */
+			if (remove(ptr->node.name) == 0) {
+				OSA_waitMsecs(5);
+				dprintf("DELETE FILE : %s (%d KB)\n", ptr->node.name, sz);
+				list_del(&ptr->queue);
+				ifile->file_count--;
+				if(!strstr(ptr->node.name, NORMAL_FILE))
+					ifile->efile_count-- ;
+				free(ptr);
+				*del_sz = sz;
+				return 0; /* success */
+			}
 		}
-			
-		sz = _check_file_size((const char *)ptr->fullname); /* return file size */
-		dprintf("DELETE FILE : %s (%d KB)\n", ptr->fullname, sz);
-		list_del(&ptr->queue);
-		ifile->file_count--;
-	    if(!strstr(ptr->fullname, NORMAL_FILE))
-		    ifile->efile_count-- ;
-		free(ptr);
 	}
 	
-	*del_sz = sz;
-	return 0;
+	eprintf("Failed to delete files for overwriting!\n");
+	return -1; /* failure */
 }
 
 /*****************************************************************************
- * @brief	 get header of linked-list
+ * @brief	 add file name to tail of linked-list (normal file list)
  * @section  DESC Description
- *	 - desc : return the full path of file
+ *	 - desc : file name is full path
  *****************************************************************************/
-static int _get_rec_file_head(struct list_head *head, char *path)
+static int add_node_tail(const char *path, struct list_head *head)
 {
 	struct disk_list *ptr = NULL;
-	Uint32 sz = 0;
-	
-	ptr = list_last_entry(head, struct disk_list, queue);
-	if (ptr != NULL) {
-		sprintf(path, "%s", ptr->fullname);
-		 /* return file size */
-		sz = _check_file_size((const char *)ptr->fullname);
-//		dprintf("Get List Head FILE : %s\n", ptr->fullname);
-		list_del(&ptr->queue);
-		ifile->file_count--;
-	    if(!strstr(ptr->fullname, NORMAL_FILE))
-		    ifile->efile_count-- ;
-		free(ptr);
+
+	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
+	if (ptr == NULL) {
+		eprintf("can't allocate list\n");
+		return -1;
 	}
 
-	return ((sz == 0)?-1:0);
+	snprintf(ptr->node.name, sizeof(ptr->node.name), "%s", path);
+//	dprintf(" Add List name: %s\n", path);
+	INIT_LIST_HEAD(&ptr->queue);
+	list_add(&ptr->queue, head);
+	ifile->file_count++;
+	
+	if(strstr(ptr->node.name, NORMAL_FILE) == NULL)
+		ifile->efile_count++ ;
+
+	return OSA_SOK;
+}
+
+/*****************************************************************************
+ * @brief	 add file name to head of linked-list (for ftp)
+ * @section  DESC Description
+ *	 - desc : file name is full path
+ *****************************************************************************/
+static int add_node_head(const char *path, struct list_head *head)
+{
+	struct disk_list *ptr = NULL;
+
+	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
+	if (ptr == NULL) {
+		eprintf("can't allocate list\n");
+		return -1;
+	}
+
+	snprintf(ptr->node.name, sizeof(ptr->node.name), "%s", path);
+//	dprintf(" Add List name: %s\n", ptr->node.name);
+	INIT_LIST_HEAD(&ptr->queue);
+	list_add_tail(&ptr->queue, head);
+	ifile->file_count++;
+	
+	if(strstr(ptr->node.name, NORMAL_FILE) == NULL)
+	    ifile->efile_count++ ;
+	
+	return OSA_SOK;
 }
 
 /*****************************************************************************
@@ -308,62 +325,10 @@ static void display_node(struct list_head *head)
 
 	__list_for_each(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
-		dprintf("name %s \n", ptr->fullname);
+		dprintf("name %s \n", ptr->node.name);
 	}
 }
 #endif
-
-/*****************************************************************************
- * @brief	 add file name to tail of linked-list (normal file list)
- * @section  DESC Description
- *	 - desc : file name is full path
- *****************************************************************************/
-static int add_node_tail(const char *path, struct list_head *head)
-{
-	struct disk_list *ptr = NULL;
-
-	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
-	if (ptr == NULL) {
-		eprintf("can't allocate list\n");
-		return -1;
-	}
-
-	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
-//	dprintf(" Add List name: %s\n", path);
-	INIT_LIST_HEAD(&ptr->queue);
-	list_add(&ptr->queue, head);
-	ifile->file_count++;
-	if(!strstr(ptr->fullname, NORMAL_FILE))
-		ifile->efile_count++ ;
-
-	return OSA_SOK;
-}
-
-/*****************************************************************************
- * @brief	 add file name to head of linked-list (for ftp)
- * @section  DESC Description
- *	 - desc : file name is full path
- *****************************************************************************/
-static int add_node_head(const char *path, struct list_head *head)
-{
-	struct disk_list *ptr = NULL;
-
-	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
-	if (ptr == NULL) {
-		eprintf("can't allocate list\n");
-		return -1;
-	}
-
-	snprintf(ptr->fullname, sizeof(ptr->fullname), "%s", path);
-//	dprintf(" Add List name: %s\n", path);
-	INIT_LIST_HEAD(&ptr->queue);
-	list_add_tail(&ptr->queue, head);
-	ifile->file_count++;
-	if(!strstr(ptr->fullname, NORMAL_FILE))
-	    ifile->efile_count++ ;
-	
-	return OSA_SOK;
-}
 
 /*****************************************************************************
  * @brief	 delete files
@@ -372,24 +337,26 @@ static int add_node_head(const char *path, struct list_head *head)
  *****************************************************************************/
 static int _delete_files(unsigned long del_sz)
 {
-	struct list_head *head = &ilist;
+	struct list_head *head = &storageList;
 	unsigned long tmp = 0;
-						
+					
+//	dprintf("Required space %ld(KB)\n", del_sz);					
 	if (del_sz > 0) 
 	{
 		/* delete the oldest file (list) */
 		while (!list_empty(head))
 		{
-			Uint32 fsize;
+			Uint32 fsize=0;
 			
 			if (find_first_and_delete(head, &fsize) < 0) {
 				/* file is empty */
 				return -1;
 			}
 			
-			if (tmp >= del_sz)
-				break; /* done!! */
-			
+			if (tmp >= del_sz) {
+				//sync();
+				break;
+			}
 			tmp += fsize;
 			OSA_waitMsecs(5);
 		}
@@ -413,8 +380,8 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	size_t index=0, len;
 	int i;
 
-	list_info_t *list=NULL;
-	list_info_t *tmp=NULL;
+	linked_info_t *list=NULL;
+	linked_info_t *tmp=NULL;
 	
 	/* add slash */
 	len = strlen(search_path); //# /mmc/DCIM
@@ -428,7 +395,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 		return -1;
 	}
 
-	list = (list_info_t *)malloc(sizeof(list_info_t)*bcnt);
+	list = (linked_info_t *)malloc(sizeof(linked_info_t)*bcnt);
 	if (list == NULL) {
 		closedir(dp);
 		return -1;
@@ -454,7 +421,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	}
 	//dprintf("directory scanning done!!\n");
 	closedir(dp);
-	qsort(list, index, sizeof(list_info_t), _cmpold);
+	qsort(list, index, sizeof(linked_info_t), _cmpold);
 	/* add linked list */
 	tmp = list;
 	if (index) {
@@ -474,7 +441,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 static int __load_file_list(const char *path, struct list_head *head, size_t bcnt)
 {
 	char msg[MAX_CHAR_128]={0,};
-	list_info_t *list, *tmp;
+	linked_info_t *list, *tmp;
 	FILE *f = NULL;
 	size_t lcnt;
 	int i;
@@ -497,15 +464,15 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	}
 	
 	//# memory alloc
-	list = (list_info_t *)malloc(sizeof(list_info_t)*lcnt);
+	list = (linked_info_t *)malloc(sizeof(linked_info_t)*lcnt);
 	if (list == NULL) {
 		eprintf("failed to allocate memory with file list!\n");
 		fclose(f);
 		return -1;
 	}
 	
-	fread(list, sizeof(list_info_t)*lcnt, 1, f);
-	qsort(list, lcnt, sizeof(list_info_t), _cmpold);
+	fread(list, sizeof(linked_info_t)*lcnt, 1, f);
+	qsort(list, lcnt, sizeof(linked_info_t), _cmpold);
 	/* add linked list */
 	tmp = list;
 	for (i = 0; i < lcnt; i++, tmp++) {
@@ -523,10 +490,10 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 /* avi list save to /usr/share/video.lst */
 static int __save_file_list(void)
 {
-	struct list_head *head = &ilist;
+	struct list_head *head = &storageList;
 	struct list_head *iter;
 	struct disk_list *ptr;
-	list_info_t info;
+	linked_info_t info;
 	char path[256]={0,};
 	
 	FILE *f = NULL;
@@ -552,68 +519,15 @@ static int __save_file_list(void)
 	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
 		if (ptr != NULL) {
-			strcpy(info.name, ptr->fullname);
+			strcpy(info.name, ptr->node.name);
 			//dprintf("saved name %s, in video list!\n", ptr->fullname);
-			fwrite(&info, sizeof(list_info_t), 1, f);	
+			fwrite(&info, sizeof(linked_info_t), 1, f);	
 		}
 	}
 	fflush(f);
 	fclose(f);
 	
 	return 0;
-}
-
-/*****************************************************************************
- * @brief	 check the overwrite recording.
- * @section  DESC Description
- *	 - desc : 
- *****************************************************************************/
-static int full_interval = 0, once_over_beep = 0, once_normal_led = 0;
-static void _check_overwite_full_led(int file_state)
-{
-	int ste = file_state;
-	
-	switch (ste) {
-	case FILE_STATE_OVERWRITE:
-		if (!once_over_beep) {
-			if (app_rec_state()) {
-				printf("@@@@@@@@@@@@@@@@@@FILE_STATE_OVERWRITE@@@@@@@@@@@@@@@@@@@\n");				
-				app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
-				app_buzz_ctrl(80, 1);
-				once_over_beep = 1;
-			}
-		} else {
-			if (!app_rec_state()) {
-				app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-				once_over_beep = 0 ;
-			}
-		}
-		break;
-	case FILE_STATE_FULL:
-		full_interval++;
-		if ((full_interval % CNT_BEEP_FULL) == 0) {
-			printf("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");				
-			app_buzz_ctrl(80, 1);
-			full_interval = 0;
-		}
-		
-		if (app_cfg->ste.b.disk_full == OFF) {
-			app_leds_mmc_ctrl(LED_MMC_RED_ON);
-			app_cfg->ste.b.disk_full = ON;
-		}
-		break;
-	default:	//# normal state
-		if (!once_normal_led) {
-			printf("@@@@@@@@@@@@@@@@@@FILE_STATE_NORMAL@@@@@@@@@@@@@@@@@@@\n");								
-			app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-			once_normal_led = 1;
-		}
-		if (app_cfg->ste.b.disk_full == ON) {
-			app_cfg->ste.b.disk_full = OFF;
-			app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-		}
-		break;
-	}
 }
 
 /*****************************************************************************
@@ -626,8 +540,6 @@ static void *THR_file_mng(void *prm)
 	app_thr_obj *tObj = &ifile->fObj;
 
 	int cmd, exit=0;
-	unsigned int f_cycle=FILE_LIST_CHECK_TIME;
-	unsigned int b_cycle=FILE_STATE_CHECK_BEEP;
 	int r = 0;
 	
 	aprintf("enter...\n");
@@ -635,75 +547,140 @@ static void *THR_file_mng(void *prm)
 	
 	while (!exit)
 	{
-		if (!app_cfg->ste.b.mmc_err)
-			app_cfg->wd_flags |= WD_FILE;
-				
-		cmd = tObj->cmd;
-		if (cmd == APP_CMD_EXIT) {
-			/* watchdog disable */
-			app_cfg->wd_flags &= ~WD_FILE;
-			app_cfg->wd_tot &= ~WD_FILE; 
-			exit = 1;
+		cmd = event_wait(tObj);
+		if(cmd == APP_CMD_EXIT) {
+			dprintf("file manager exit!\n");
 			break;
 		}
-		
-		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap) 
+				
+		if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap && !app_cfg->ste.b.mmc_err) 
 		{
-			//# file size check and delete -- per 1 min
-			if ((f_cycle % FILE_STATE_CHECK_TIME) == 0) 
-			{
-				int capacity_full = 0;
+			//# file size check and delete -- per 1 min, Don't delete file during ftp sending..
+			int capacity_full = 0;
 
-				//# Get Disk MAX Size.
-				_check_threshold_size(ifile);
-				app_file_update_disk_usage();
-				capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
+			//# Get Disk MAX Size.
+			_check_threshold_size(ifile);
+			app_file_update_disk_usage();
+			capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
 
-				if (app_set->rec_info.overwrite) {
-					if (capacity_full) {
-						ifile->file_state = FILE_STATE_OVERWRITE;
-						OSA_mutexLock(&ifile->mutex_file);
-						//1GB - available size = delete size
-						r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
-						OSA_mutexUnlock(&ifile->mutex_file);
-						if (r == EFAIL) {
-							eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
-							if (app_rec_state() > 0) {
-								app_rec_stop(ON); 
-								app_msleep(500); /* wait for record done!! */
-							}
-							app_buzz_ctrl(80, 2); //# Power Off Buzzer
-							app_mcu_pwr_off(OFF_RESET);
-							continue;
+			if (app_set->rec_info.overwrite) {
+				if (capacity_full) {
+					ifile->file_state = FILE_STATE_OVERWRITE;
+					OSA_mutexLock(&ifile->mutex_file);
+					//# 1GB - available size = delete size
+					r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
+					OSA_mutexUnlock(&ifile->mutex_file);
+					if (r == EFAIL) {
+						eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
+						if (app_rec_state() > 0) {
+							app_rec_stop(ON); 
+							app_msleep(500); /* wait for record done!! */
 						}
+						app_buzz_ctrl(80, 2); //# Power Off Buzzer
+						app_mcu_pwr_off(OFF_RESET);
+						continue;
 					}
-				} else {
-					if (capacity_full) {
-						app_rec_stop(OFF); /* buzzer off */
-						ifile->file_state = FILE_STATE_FULL;
-					} else {
-						ifile->file_state = FILE_STATE_NORMAL;
-					}					 
 				}
-				f_cycle = 0;
+			} else {
+				if (capacity_full) {
+					app_rec_stop(OFF); /* buzzer off */
+					ifile->file_state = FILE_STATE_FULL;
+				} else {
+					ifile->file_state = FILE_STATE_NORMAL;
+				}
 			}
-			
-			//# file state check for beep -- per 1 sec
-			if ((b_cycle % FILE_STATE_CHECK_BEEP) == 0) 
-			{
-				_check_overwite_full_led(ifile->file_state);
-				b_cycle = 0;
-			}
-		} /* if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap)  */
-		
-		OSA_waitMsecs(FILE_LIST_CYCLE);
-		f_cycle += FILE_LIST_CYCLE;
-		b_cycle += FILE_LIST_CYCLE;
+		} /* if (app_cfg->ste.b.mmc && app_cfg->ste.b.cap && !app_cfg->ste.b.mmc_err)  */
 	}
 	
 	tObj->active = 0;
 	aprintf("...exit\n");
 	sync();
+
+	return NULL;
+}
+
+/*****************************************************************************
+* @brief    file capacity led manager thread function
+*****************************************************************************/
+static void *THR_file_led_mng(void *prm)
+{
+	app_thr_obj *tObj = &ifile->lObj;
+
+	int cmd, exit=0;
+	
+	int once_over_beep = 0;
+	int once_normal_led = 0;
+	
+	unsigned long b_cycle=0;
+	unsigned long f_cycle=0;
+	
+	aprintf("enter...\n");
+	tObj->active = 1;
+	
+	while (!exit)
+	{
+		int state;
+		
+		cmd = tObj->cmd;
+		if (cmd == APP_CMD_EXIT) {
+			break;
+		}
+		
+		//##### SD Capacity LED Update ###########################
+		//# file state check for beep -- per 1 sec
+		if (b_cycle >= CNT_BEEP_CHECK) 
+		{
+			state = get_write_status();
+			if (state == FILE_STATE_OVERWRITE) {
+				f_cycle = 0;
+				if (!once_over_beep) {
+					if (app_rec_state()) {
+						printf("@@@@@@@@@@@@@@@@@@FILE_STATE_OVERWRITE@@@@@@@@@@@@@@@@@@@\n");				
+						app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
+						app_buzz_ctrl(80, 1);
+						once_over_beep = 1;
+					}
+				} else {
+					if (!app_rec_state()) {
+						app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+						once_over_beep = 0;
+					}
+				}
+			} else if (state == FILE_STATE_FULL) {
+				if (f_cycle >= CNT_BEEP_FULL) {
+					printf("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");
+					f_cycle = 0;
+					app_buzz_ctrl(80, 1);
+				} else 
+					f_cycle++;
+				
+				if (app_cfg->ste.b.disk_full == OFF) {
+					app_leds_mmc_ctrl(LED_MMC_RED_ON);
+					app_cfg->ste.b.disk_full = ON;
+				}
+			} else {
+				//# normal record state.
+				f_cycle = 0;
+				if (!once_normal_led) {
+					printf("@@@@@@@@@@@@@@@@@@FILE_STATE_NORMAL@@@@@@@@@@@@@@@@@@@\n");								
+					app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+					once_normal_led = 1;
+				}
+				
+				if (app_cfg->ste.b.disk_full == ON) {
+					app_cfg->ste.b.disk_full = OFF;
+					app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+				}
+			}
+			b_cycle = 0;
+		} else {
+			b_cycle++;
+		}
+		app_msleep(FILE_LED_CYCLE);
+	}
+	
+	tObj->active = 0;
+	aprintf("...exit\n");
 
 	return NULL;
 }
@@ -729,33 +706,12 @@ int app_file_init(void)
 	num_of_files = get_file_count((const char *)ifile->rec_root);
 	/* set file list path */
 	sprintf(flist_path, "%s/%s", ifile->rec_root, VIDEO_LIST_NAME);
-	res = __load_file_list((const char *)flist_path, &ilist, num_of_files);
+	res = __load_file_list((const char *)flist_path, &storageList, num_of_files);
 	if (res < 0) {
-		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &ilist, num_of_files);
+		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &storageList, num_of_files);
 		if (status == EFAIL) 	{
 			sysprint("Failed to make file list!!\n");
 			return status;
-		}
-	}
-	
-	/* To check mmc threshold size */
-	_check_threshold_size(ifile);
-	app_file_update_disk_usage();
-	if (app_file_check_disk_free_space() < 0) {
-		/* 최소 공간 보다 작을 경우, overwrite 모드 */
-		if (app_set->rec_info.overwrite) {
-			ifile->file_state = FILE_STATE_OVERWRITE;
-			//# 1GB - available size = delete size
-			res = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
-			if (res < 0)
-			{
-				eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
-				app_buzz_ctrl(80, 2); //# Power Off Buzzer
-				app_mcu_pwr_off(OFF_RESET);
-				return res;
-			}
-		} else {
-			ifile->file_state = FILE_STATE_FULL;
 		}
 	}
 	
@@ -767,11 +723,14 @@ int app_file_init(void)
 		eprintf("create thread\n");
 		return -1;
 	}
-
-	/* watchdog file enable */
-	app_cfg->wd_tot |= WD_FILE;
-	aprintf("... done!\n");
 	
+	/* Create File LED Thread */
+	if (thread_create(&ifile->lObj, THR_file_led_mng, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
+		eprintf("create thread\n");
+		return -1;
+	}
+
+	aprintf("... done!\n");
 	return 0;
 }
 
@@ -781,14 +740,22 @@ int app_file_init(void)
 *****************************************************************************/
 void app_file_exit(void)
 {
-	app_thr_obj *tObj = &ifile->fObj;
+	app_thr_obj *tObj;
 	int status;
 	
+	/* delete LED Thread */
+	tObj = &ifile->lObj;
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while (tObj->active)
 		OSA_waitMsecs(20);
-
 	thread_delete(tObj);
+	
+	tObj = &ifile->fObj;	
+	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while (tObj->active)
+		OSA_waitMsecs(20);
+	thread_delete(tObj);
+	
 	/* overwrite 모드일 때 file thread가 종료되지 않으면 리스트 갱신 후 delete 되는 파일로 
 	 * 인해서 실제 파일 저장 갯수와 리스트의 갯수가 일치되지 않음.
 	 * 여기로 변경.
@@ -799,6 +766,14 @@ void app_file_exit(void)
 	ifile = NULL;
 
     aprintf("... done!\n");
+}
+/*****************************************************************************
+* @brief    file manager callback function
+* @section  [desc]
+*****************************************************************************/
+void app_file_fxn(void)
+{
+	event_send(&ifile->fObj, APP_CMD_NOTY, 0, 0);
 }
 
 /*****************************************************************************
@@ -846,7 +821,7 @@ unsigned long app_file_get_free_size(void)
 int app_file_add_list(const char *pathname)
 {
 	OSA_mutexLock(&ifile->mutex_file);	
-	add_node_tail(pathname, &ilist);
+	add_node_tail(pathname, &storageList);
 //	dprintf("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
 	OSA_mutexUnlock(&ifile->mutex_file);
 
@@ -859,16 +834,36 @@ int app_file_add_list(const char *pathname)
   - desc :  - if success, return the file size(KB), the other 0.
   			- path argument is full path.
 *****************************************************************************/
-int get_ftp_send_file(char *path)
+int get_ftp_send_file(int index, char *path)
 {
-	int ret;
+	struct list_head *head = &storageList;
+	struct list_head *iter;
+	struct disk_list *ptr;
+	int count=0;
 	
-	//# get file name and remove list
-	ret = _get_rec_file_head(&ilist, path);
-	if (ret < 0)
-		return 0;
-		
-	return (1);
+	if (path == NULL) {
+		eprintf("path is null!\n");
+		return -1;
+	}
+	
+	/* To get nth index file */
+	list_for_each_prev(iter, head) {
+		ptr = list_entry(iter, struct disk_list, queue);
+		if (ptr != NULL) {
+			if (count == index) {
+				/* file name copy */
+				strcpy(path, ptr->node.name);
+				dprintf("index %d file name is %s\n", count, path);
+				return 0;
+			} else {
+				count++;
+			}
+		} else {
+			dprintf("index %d not founded file\n", count);
+		}
+	}
+	
+	return -1;
 }
 
 void save_filelist(void)
@@ -884,12 +879,13 @@ void save_filelist(void)
 *****************************************************************************/
 int restore_ftp_file(char *pathname)
 {
+	struct list_head *head = &storageList;
 	struct stat sb;
 	size_t len = 0;
 	
     lstat(pathname, &sb);
 	len = (sb.st_size / KB);
-	add_node_head(pathname, &ilist);
+	add_node_head(pathname, head);
 	
 	return 0;
 }
@@ -899,9 +895,35 @@ int restore_ftp_file(char *pathname)
 * @section  
   - desc :  - if success return 0, the other -1.
 *****************************************************************************/
-int delete_ftp_send_file(char *path)
+void delete_ftp_send_file(const char *path)
 {
-	return delete_file((const char *)path);
+	struct list_head *head = &storageList;
+	struct list_head *iter;
+	struct disk_list *ptr;
+	
+	if (path == NULL)
+		return;
+	
+	/* iterate over a list */	
+	__list_for_each(iter, head) {
+		ptr = list_entry(iter, struct disk_list, queue);
+		if (ptr != NULL) {
+			if (strcmp(path, ptr->node.name) == 0) {
+				/* valid check (access() ) ??? */
+				dprintf("delete fname ==> %s\n", path);
+				remove(path); //# or unlink
+				ifile->file_count--;
+				if (strstr(path, NORMAL_FILE) == NULL) {
+					/* event file */
+					ifile->efile_count--;
+				}
+				/* list delete */
+				list_del(&ptr->queue);
+				free(ptr);
+				return;
+			}
+		}
+	}
 }
 
 /*****************************************************************************

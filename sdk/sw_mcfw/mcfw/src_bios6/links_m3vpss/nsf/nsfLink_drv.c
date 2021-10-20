@@ -9,7 +9,6 @@
 #include <mcfw/interfaces/link_api/system_tiler.h>
 #include "nsfLink_priv.h"
 
-
 Int32 NsfLink_resetStatistics(NsfLink_Obj * pObj)
 {
     UInt32 chId;
@@ -315,6 +314,10 @@ Int32 NsfLink_drvProcessData(NsfLink_Obj * pObj)
 
 Int32 NsfLink_drvDoNsfFilter(NsfLink_Obj * pObj)
 {
+#if 0	
+	static UInt32 prevTime = 0;
+	UInt32 elaspedTime;
+#endif	
     FVID2_FrameList inFrameList[2], outFrameList;
     FVID2_ProcessList processList;
     FVID2_Frame *pFullFrame;
@@ -528,6 +531,15 @@ Int32 NsfLink_drvDoNsfFilter(NsfLink_Obj * pObj)
         System_putLinksEmptyFrames(pObj->createArgs.inQueParams.prevLinkId,
                                    pObj->createArgs.inQueParams.prevLinkQueId,
                                    &inFrameList[0]);
+		
+		#if 0
+		elaspedTime = Utils_getCurTimeInMsec() - pObj->statsStartTime; // in msecs
+		//    	elaspedTime /= 1000; // convert to secs
+		if ((elaspedTime-prevTime) > 60 * 1000) {
+			NsfLink_drvPrintStatistics(pObj, TRUE);
+			prevTime = elaspedTime;
+		}
+		#endif						   
         status = FVID2_SOK;
     }
     else

@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <glob.h>
+#include <fcntl.h>
 
 #include "ti_vsys.h"
 #include "ti_vcap.h"
@@ -24,6 +25,7 @@
 #include <errno.h>
 #define __USE_GNU
 #include <pthread.h>
+#include <sys/ioctl.h>
 
 #include "dev_common.h"
 #include "dev_micom.h"
@@ -1155,6 +1157,50 @@ int ctrl_mmc_run_fsck(void)
 	char *cmd = "/sbin/fsck.fat -a -w /dev/mmcblk0p1";
 
 	return dev_execlp(cmd);
+}
+
+/*****************************************************************************
+ * @brief    int ctrl_mmc_check_writable(void)
+ * @section  DESC Description
+ *   - desc
+ *****************************************************************************/
+int ctrl_mmc_check_writable(void)
+{
+	FILE *f=NULL;
+	char buf[256 + 1]={0,};
+	char mntd[64]={0,};
+	
+	/* SD 카드 속성확인 (read only file system) */
+	f = fopen("/proc/mounts", "r");
+	if (f == NULL) {
+		/* assume readonly fs */
+		return 0;
+	}
+	
+	/* 
+	 * normal fs       -> /dev/mmcblk0p1 /mmc vfat rw,noatime,nodiratime,fmask=0000,
+	 * if read-only fs -> /dev/mmcblk0p1 /mmc vfat ro,noatime,......
+	 */
+	while (fgets(buf, 256, f) != NULL) 
+	{
+		char *tmp, *tmp2;
+		/* %*s->discard input */
+		sscanf(buf, "%*s%s", mntd);
+		if (strcmp(mntd, "/mmc") == 0) {
+			tmp = strtok(buf, ",");
+			if (tmp != NULL) {
+				tmp2 = strstr(tmp, "rw");
+				if (tmp2 != NULL) {
+					fclose(f);
+					return 1;
+				}
+			}
+		}
+	}
+	
+	dprintf("sd card read-only filesystem!!\n");
+	fclose(f);
+	return 0;
 }
 
 /*****************************************************************************

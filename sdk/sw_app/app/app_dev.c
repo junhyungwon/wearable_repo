@@ -41,13 +41,12 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define REC_KEY				GPIO_N(0, 6)	//# record switch
+#define REC_KEY						GPIO_N(0, 6)	//# record switch
 #ifdef NEXXB
-#define SOS_KEY				GPIO_N(1, 14)	//# sos switch
+#define SOS_KEY						GPIO_N(1, 14)	//# sos switch
 #endif
 
-#define TIME_DEV_CYCLE		100		//# msec
-#define DEV_CYCLE_TIME      500     //# temp
+#define TIME_DEV_CYCLE				(100)		//# msec
 
 typedef struct {
 	app_thr_obj devObj;		//# dev thread
@@ -238,7 +237,10 @@ static void *THR_dev(void *prm)
     app_thr_obj *tObj = &idev->devObj;
 	int exit=0;
 	int mmc, cmd, value = 0;
-	int rkey, rkey2;
+	int rkey;
+#if defined(NEXXB)	
+	int rkey2;
+#endif	
 	
 	aprintf("enter...\n");
 	tObj->active = 1;

@@ -96,7 +96,7 @@ static void delay_3sec_exit(void)
 			/* timesync 에 의해서 gettimeofday 값이 변경되면 무한 루프에 빠진다 */
 			gettimeofday(&t1, NULL);
 		}
-		OSA_waitMsecs(1);
+		OSA_waitMsecs(5);
 	}
 	gettimeofday(&t2, NULL);
 

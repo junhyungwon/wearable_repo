@@ -294,7 +294,7 @@ static int ftp_transfer_file(int sd, char *filename)
                 break ;
             }
 		}
-        OSA_waitMsecs(1) ;
+        OSA_waitMsecs(5) ;
 	}
 	fclose(in);
 
@@ -849,27 +849,28 @@ static void ftp_send(void)
         app_leds_backup_state_ctrl(LED_FTP_ON);
         app_leds_eth_status_ctrl(LED_FTP_ON);
 
-
 		for (i = 0; i < iftp->file_cnt; i++)   // 전체 파일 리스트(event + normal)
         {
-            if(get_ftp_send_file(FileName) == 0)   // get all file list 
-               continue ;
+            if (get_ftp_send_file(i, FileName) < 0) {  // -1 -> error
+			   /* 파일 목록이 많은 경우 keep alive 신호를 못 보냄 */
+			   //eprintf("FTP File not found!!\n");
+			   OSA_waitMsecs(5);
+			   continue ;
+			}
 
 			 // ethX off in ftp running
-            if(!get_netdev_link_status()) {
+            if (!get_netdev_link_status()) {
 				iftp->ftp_state = FTP_STATE_NONE;
                 break;
 			}
 
-			if(app_set->ftp_info.file_type) // ftp send event file
-			{
-			    if(strstr(FileName, "/mmc/DCIM/R_"))
-                {
-//                    restore_ftp_file(FileName) ;
+			if (app_set->ftp_info.file_type) { // ftp send event file
+			    if (strstr(FileName, "/mmc/DCIM/R_") != NULL) {
+					OSA_waitMsecs(5);
 					continue ;
 				}
 			}
-
+			
             strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /20190823/DeviceID
 		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
 		    {
@@ -894,8 +895,10 @@ static void ftp_send(void)
                         {
 							if (access(FileName, 0) == -1) 
 								ftp_dbg(" \n[ftp] Do not exist file name - %s \n", FileName);
-							else
-								restore_ftp_file(FileName) ;
+							/* delete를 해야 List에서 삭제하도록 변경함 */
+							/* 따라서 전송에 실패할 경우 restore 필요없다*/
+							//else
+							//	restore_ftp_file(FileName) ;
 
 				            ftp_dbg(" \n[ftp] Send Fail image -- %s \n", FileName);
                             break;
@@ -956,8 +959,8 @@ void app_ftp_state_reset(void)
 static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
-	int cmd, exit = 0, cradle_status = 0 ;
-
+	int cmd, exit = 0, cradle_status = 0;
+	
 	aprintf("enter...\n");
 	tObj->active = 1;
 
@@ -984,9 +987,10 @@ static void *THR_ftp(void *prm)
 				if (app_rec_state())  // rec status
 				{
 					app_rec_stop(ON);
+					OSA_waitMsecs(200); /* wait for file close */
 					app_cfg->ste.b.prerec_state = 1 ;
 				}
-
+				
 				if(app_set->ftp_info.file_type) // ftp send event file
 				{
 					if(get_recorded_efile_count() > 0)
@@ -1040,16 +1044,15 @@ static void *THR_ftp(void *prm)
         else
         {
 			/* cradle에서 분리 되었을 경우 처리*/
-			if(cradle_status == ON)
-			{
+			if(cradle_status == ON) {
 				save_filelist();
 				cradle_status = OFF ;
             }
+			
             iftp->ftp_state = FTP_STATE_NONE ;
             app_cfg->ste.b.ftp_run = 0 ;
 
-            if (app_cfg->ste.b.prerec_state && app_cfg->en_rec)
-			{
+            if (app_cfg->ste.b.prerec_state && app_cfg->en_rec) {
 				if(!app_rec_state())
 				{
                     app_rec_start() ;  // rec start after ftp send
@@ -1057,10 +1060,9 @@ static void *THR_ftp(void *prm)
 				}
 			}
         }
-   
+		
         OSA_waitMsecs(1000) ;
 	}
-
 
     tObj->active = 0;
     aprintf("...exit\n");

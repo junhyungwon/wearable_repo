@@ -140,7 +140,6 @@ static void *THR_rec_recv_msg(void *prm)
 		    irec->rec_state = 0;
 			app_buzz_ctrl(100, 2);
 		    app_leds_rec_ctrl(LED_REC_OFF);
-			
 			break;
 
 		case AV_CMD_REC_RESTART:
@@ -151,15 +150,20 @@ static void *THR_rec_recv_msg(void *prm)
 			irec->rec_state = 1;
 			app_buzz_ctrl(100, 1);
 			app_leds_rec_ctrl(LED_REC_ON);
-			
 			break ;
+			
+		case AV_CMD_REC_FLIST:
+			dprintf("received rec flist!\n");
+			app_file_fxn();
+			break;
+			
 		case AV_CMD_REC_ERR:
 			dprintf("received rec error!\n");
 			irec->rec_state = 0; /* record stop...*/
 			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);
 			break;
-
+	
 		default:
 			break;	
 		}
@@ -267,7 +271,8 @@ static void *THR_evt_buzzer(void *prm)
 		}  
 		else if (cmd == APP_CMD_STOP) {
             continue ;
-		} 
+		}
+		
 		while(1) 
 		{
             if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
@@ -324,7 +329,6 @@ static void *THR_evt_buzzer(void *prm)
 	
 	return NULL;
 }
-
 
 static int _is_enable_rec_start(int rec_type)
 {	
