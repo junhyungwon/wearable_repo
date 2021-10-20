@@ -44,6 +44,7 @@
 #include "app_file.h"
 #include "app_mcu.h"
 #include "app_buzz.h"
+#include "app_watchdog.h"
 
 #if SYS_CONFIG_VOIP
 #include "app_voip.h"
@@ -1334,6 +1335,11 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 void ctrl_sys_halt(int shutdown)
 {
     int ste = 0;
+	
+	/* watchdog keep alive disable */
+	/* 종료 시 특정 쓰레드에서 루프에 빠지는 경우 */
+	/* alive가 실행되어 Watchdog이 안되는 문제 수정 */
+	app_watchdog_exit();
 	
 	ste = app_rec_state();
 	if (shutdown) {

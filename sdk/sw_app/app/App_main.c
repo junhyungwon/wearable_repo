@@ -52,6 +52,7 @@
 #include "app_ipinstall.h"
 #include "app_buzz.h"
 #include "app_libuv.h"
+#include "app_watchdog.h"
 
 #ifdef USE_RTMP
 #include "app_rtmp.h"
@@ -481,12 +482,16 @@ int main(int argc, char **argv)
 	
 #if SYS_CONFIG_GPS	
 	app_gps_init();
-#endif	
+#endif
+	/* watchdog alive */
+	app_watchdog_init();
+		
 	//#--- app main ----------
 	app_main();
 	//#-----------------------
 
 	//#--- system de-init
+	app_watchdog_exit();
 	app_rec_exit();
 	app_file_exit();
 	
