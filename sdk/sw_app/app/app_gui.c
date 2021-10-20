@@ -34,24 +34,11 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define UI_CYCLE_TIME			500	//# ms
-#define UI_WATCHDOG_TIME		(UI_CYCLE_TIME*3)
-
 #define UI_STREAMER_TIME		(2000)
 #define CNT_STREAMER_CHECK		(UI_STREAMER_TIME/UI_CYCLE_TIME)
 
-/* (60s - 10)*1000 */
-#define WD_LOG_TIMEOUT			((TIME_WATCHDOG-10)*1000) //# watcho dog log wrtite time out (ms)
-/* 50000 / 1500 = 33 */
-#define WD_LOG_CNT				(WD_LOG_TIMEOUT / UI_WATCHDOG_TIME)
-
 #define UI_VOIP_REG_TIME		(60000) //1min
 #define CNT_VOIP_REG_CHECK		(UI_VOIP_REG_TIME/UI_CYCLE_TIME)
-
-#define WD_ENC_NAME				"ENCODER "
-#define WD_TMR_NAME				"TIMMER "
-#define WD_DEV_NAME				"GPS "
-#define WD_FILE_NAME			"FILE_MGR "
-#define WD_MICOM_NAME			"MICOM "
 
 #define UI_TVO_WI               720
 #define UI_TVO_HE               480
@@ -84,17 +71,6 @@ static app_gui_t *igui = &t_gui;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-
-static void get_wd_name(char *name)
-{
-	if ((app_cfg->wd_tot & WD_ENC) && ((app_cfg->wd_flags & WD_ENC)==0))
-		strcat(name, WD_ENC_NAME);
-	if ((app_cfg->wd_tot & WD_DEV) && ((app_cfg->wd_flags & WD_DEV)==0))
-		strcat(name, WD_DEV_NAME);
-	if ((app_cfg->wd_tot & WD_MICOM) && ((app_cfg->wd_flags & WD_MICOM)==0))
-		strcat(name, WD_MICOM_NAME);
-}
-
 #define TVO_GAP_X   40
 #define TVO_GAP_Y   25
 
@@ -188,8 +164,7 @@ static void *THR_gui(void *prm)
 {
 	app_thr_obj *tObj = &igui->uObj;
 	int cmd, res, exit=0;
-	int wd_cycle = 0, wd_detect=0, pre_wd = 0;
-	char wd_name[MAX_CHAR_64], msg[MAX_CHAR_128];
+	char msg[MAX_CHAR_128];
 
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -202,43 +177,6 @@ static void *THR_gui(void *prm)
             break;
         }
 
-		//# ------------------- watchdog handler --------------------------------------
-		if ((wd_cycle != 0) && (wd_cycle % UI_WATCHDOG_TIME == 0))
-		{
-			//if (app_cfg->wd_flags == WD_TOT)
-			if (app_cfg->wd_flags == app_cfg->wd_tot)
-			{
-				app_mcu_wd_keep_alive();
-				app_cfg->wd_flags = 0;
-				wd_detect = 0;
-				if(pre_wd)
-				{	
-				    app_leds_sys_normal_ctrl();
-					pre_wd = 0 ;
-				    sprintf(msg, " !!! GetOut of WATCHDOG !!!");
-				    dprintf("%s\n", msg);
-				}
-			}
-			else {
-				wd_detect++;
-				memset(wd_name, 0, sizeof(wd_name));
-				get_wd_name(wd_name);
-				sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
-								app_cfg->wd_tot, wd_name);
-				dprintf("%s\n", msg);
-				if ((wd_detect > 10) && (pre_wd == 0)) {
-					/* LED blink */
-					app_leds_sys_error_ctrl();
-					pre_wd = 1;
-				}
-				
-				if (wd_detect == WD_LOG_CNT) {
-					sysprint("%s\n", msg);
-					sync();
-				}
-			}
-		}
-		//# ------------------ End of watchdog ----------------------------------------------------
 #ifdef OSD_SWVERSION
         if(!app_set->ch[MODEL_CH_NUM].resol)
         {
@@ -334,7 +272,6 @@ static void *THR_gui(void *prm)
 		#endif
 		//# -------------- End of VOIP ----------------------------------------------------------------
 		tObj->cmd = 0;
-		wd_cycle += UI_CYCLE_TIME;
 		app_msleep(UI_CYCLE_TIME);
 	}
 
@@ -410,8 +347,7 @@ int app_gui_init(void)
 	app_thr_obj *tObj;
 
 	//#--- create thread
-    igui->tmr_cnt = 0;
-	igui->voip_tmr = 0;
+    igui->tmr_cnt = 0; igui->voip_tmr = 0;
 	tObj = &igui->uObj;
     if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create gui thread\n");
