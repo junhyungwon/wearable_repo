@@ -1,3 +1,4 @@
+.vscode
 sdk/sw_package/live555/BasicUsageEnvironment/*.o
 sdk/sw_package/live555/BasicUsageEnvironment/libBasicUsageEnvironment.a
 sdk/sw_package/live555/UsageEnvironment/*.o
