@@ -732,7 +732,6 @@ void SSL_Create()
 	// Initiate SSL handshake
 	if(SSL_connect(iftp->lsslHandle) != 1)
 	{
-printf("555555555555555555555555555\n") ;
 		ERR_print_errors_fp(stderr);
 	}
 	else
