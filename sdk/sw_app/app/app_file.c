@@ -129,7 +129,7 @@ static int _check_file_size(const char *fname, Uint32 *sz)
 	if (fname != NULL) {
 		if (stat(fname, &st) == 0) {
 			len = (st.st_size / KB); /* byte -> KB */
-			dprintf("check file size %s(%dKB)\n", fname, len);
+			//dprintf("check file size %s(%dKB)\n", fname, len);
 			*sz = len;
 			return 0;
 		}
@@ -228,7 +228,7 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 			/* delete file */
 			if (remove(ptr->node.name) == 0) {
 				OSA_waitMsecs(5);
-				dprintf("DELETE FILE : %s (%d KB)\n", ptr->node.name, sz);
+				//dprintf("DELETE FILE : %s (%d KB)\n", ptr->node.name, sz);
 				list_del(&ptr->queue);
 				ifile->file_count--;
 				if(!strstr(ptr->node.name, NORMAL_FILE))
@@ -853,13 +853,13 @@ int get_ftp_send_file(int index, char *path)
 			if (count == index) {
 				/* file name copy */
 				strcpy(path, ptr->node.name);
-				dprintf("index %d file name is %s\n", count, path);
+				//dprintf("index %d file name is %s\n", count, path);
 				return 0;
 			} else {
 				count++;
 			}
 		} else {
-			dprintf("index %d not founded file\n", count);
+			//dprintf("index %d not founded file\n", count);
 		}
 	}
 	
@@ -910,7 +910,7 @@ void delete_ftp_send_file(const char *path)
 		if (ptr != NULL) {
 			if (strcmp(path, ptr->node.name) == 0) {
 				/* valid check (access() ) ??? */
-				dprintf("delete fname ==> %s\n", path);
+				//dprintf("delete fname ==> %s\n", path);
 				remove(path); //# or unlink
 				ifile->file_count--;
 				if (strstr(path, NORMAL_FILE) == NULL) {
