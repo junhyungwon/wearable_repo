@@ -21,14 +21,19 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define NVP2440H_I2C_ID		2
+#define NVP2440H_I2C_BUS_NUM				2
 
-//# for partron 0x66, afo 0x7F
+//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
+#define NVP2440H_MIRRO_OFF					0
+#define NVP2440H_MIRRO_H					1
+#define NVP2440H_MIRRO_V					2
+#define NVP2440H_MIRRO_HV					3 /* rotate */
+
 #if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
-//#define NVP2440H_I2C_ADDR	0x66 //# 0xcc
-#define NVP2440H_I2C_ADDR	0x7F //# ���ī�޶� I2C �ּ�
+#define NVP2440H_I2C_ADDR_CC	0x66 //# 1-bit shift => 0xCC
+#define NVP2440H_I2C_ADDR_FE	0x7F //# 1-bit shift => 0xFE
 #else
-#define NVP2440H_I2C_ADDR	0x7F //# 0xFE
+#define NVP2440H_I2C_ADDR		0x7F //# 0xFE
 #endif
 
 /* NVP2440H Command List */
@@ -49,7 +54,7 @@
 #define DEV_PWR_OFF			0x10
 #define DEV_R_STATE			0x20
 
-#define WRITE_RETRY_CNT		10//5
+#define WRITE_RETRY_CNT		10
 #define PLL_DELAY			200		//# ms
 
 #define SZ_720				0
@@ -232,15 +237,15 @@ static Int32 max9272_init(int idx)
 	Int32 ret=FVID2_SOK;
 	unsigned char addr;
 
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR, 0x15, 0x0E);  //# hidden register (pulse amp 150mV)
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR, 0x07, 0x80);
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR, 0x02, 0x5F);	//# 2% spread
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR, 0x05, 0x37);	//# 8.2dB equalizer default
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR, 0x15, 0x0E);  //# hidden register (pulse amp 150mV)
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR, 0x07, 0x80);
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR, 0x02, 0x5F);	//# 2% spread
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR, 0x05, 0x37);	//# 8.2dB equalizer default
 
 	if(FVID2_SOK == ret) {
 		if(idx > 0) {	//# change i2c address when multi-connected
 			addr = (MAX9272_I2C_ADDR + idx) << 1;
-			ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR, 0x01, addr);
+			ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR, 0x01, addr);
 		}
 	}
 	if(FVID2_SOK != ret) {
@@ -276,13 +281,13 @@ static Int32 max9271_init(int idx)
 	}
 
 	//# set max9272 equalizer
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR+idx, 0x05, eq);
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR+idx, 0x05, eq);
 	Task_sleep(10);
 
 	//# init max9271
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9271_I2C_ADDR, 0x07, 0x80);
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9271_I2C_ADDR, 0x02, 0x3F); //# 0.5% spread
-	ret |= dev_i2c_write8(NVP2440H_I2C_ID, MAX9271_I2C_ADDR, 0x06, pe);	  //# preemphasis
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9271_I2C_ADDR, 0x07, 0x80);
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9271_I2C_ADDR, 0x02, 0x3F); //# 0.5% spread
+	ret |= dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9271_I2C_ADDR, 0x06, pe);	  //# preemphasis
 	if(FVID2_SOK != ret) {
 		eprintf("%s: #%d\n", __func__, idx);
 	}
@@ -302,9 +307,9 @@ static int max927x_select(int idx)
 	for(i=0; i<MAX_DEV_NUM; i++)
 	{
 		if(i == idx) {		//# FWDCCEN/REVCCEN enable
-			dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR+i, 0x04, 0x07);
+			dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR+i, 0x04, 0x07);
 		} else {			//# FWDCCEN/REVCCEN disable
-			dev_i2c_write8(NVP2440H_I2C_ID, MAX9272_I2C_ADDR+i, 0x04, 0x04);
+			dev_i2c_write8(NVP2440H_I2C_BUS_NUM, MAX9272_I2C_ADDR+i, 0x04, 0x04);
 		}
 	}
 	Task_sleep(10);
@@ -344,12 +349,58 @@ static int nvp2440h_check_sensor(int idx)
 	return locked;
 }
 
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+static int __rotate_sensor(UInt8 devi2c, int rotate_type)
+{
+	UInt16 regAddr[2] = {0x82e1, 0x0183};
+	UInt8 regVal1=0, regVal2=0;
+	Int32 count=0, ret;
+	int res = -1;
+		
+	switch (rotate_type) {
+	case NVP2440H_MIRRO_HV:
+		regVal1 = 0x03; regVal2 = 0xC2; 
+		break;
+			
+	case NVP2440H_MIRRO_V:
+		regVal1 = 0x02; regVal2 = 0xAA;
+		break;
+		
+	case NVP2440H_MIRRO_H:
+		regVal1 = 0x01; regVal2 = 0xC2;
+		break;
+		
+	case NVP2440H_MIRRO_OFF:
+	default:
+		regVal1 = 0x00; regVal2 = 0xAA;  
+		break;
+	}
+	
+	do {
+		/* i2c hardware address --> 0x7F */
+		ret = dev_nicp_write_reg(NVP2440H_I2C_BUS_NUM, devi2c, regAddr[0], regVal1);
+		Task_sleep(30);
+		
+		/* Hiddel Register */
+		ret |= dev_nicp_write_reg(NVP2440H_I2C_BUS_NUM, devi2c, regAddr[1], regVal2);
+		if (ret == FVID2_SOK) {
+			res = 0; /* i2c write success */
+			dprintf("Sensor(0x%x) i2c write succeed!!\n", devi2c);
+			break;
+		} else {
+			eprintf("Sensor(0x%x) i2c write failed!(cnt %d)\n", devi2c, count);
+			Task_sleep(50); /* wait for isp initialize */
+		}
+	} while (count++ < WRITE_RETRY_CNT);
+	
+	return res;
+}
+
 static int nvp2440h_sensor_init(int idx)
 {
 	Int32 ret, recnt;
-	Uint8 val;
 	int locked=0;
-
+	
 	//# serializer init
 	max927x_select(idx);
 	ret = max9271_init(idx);
@@ -358,7 +409,7 @@ static int nvp2440h_sensor_init(int idx)
 	}
 
 	/* deserializer lock check */
-	recnt = 10;
+	recnt = WRITE_RETRY_CNT;
 	while (recnt--) {
 		locked = max927x_check_lock(idx);
 		if (locked) {
@@ -371,69 +422,15 @@ static int nvp2440h_sensor_init(int idx)
 	if (recnt <= 0)
 		return FVID2_EFAIL;
 
-	//# mirror 0:VH, 1:V, 2:H, 3:off (for 3100k)
 	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
-	#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
-	val = 0x03; //0x01
-	#else
-	if(idx == 0) {
-		val = 0x00;
-	} else if(idx == 1) {
-		val = 0x00;
-	} else if(idx == 2) {
-		val = 0x00;//0x01; //0x01;
-	} else if(idx == 3) {
-		val = 0x00;//0x01; //0x01;
+	//# NEXX ONE은 개발 제품과 양산 제품의 I2C 주소가 서로 다르다
+	//# 이를 소프트웨어로 해결하기 위해서 먼저 AFO 센서로 가정하고 초기화를 수행.
+	ret = __rotate_sensor((Uint8)NVP2440H_I2C_ADDR_FE, NVP2440H_MIRRO_HV);
+	if (ret != FVID2_SOK) {
+		/* partron 센서로 변경 */
+		__rotate_sensor((Uint8)NVP2440H_I2C_ADDR_CC, NVP2440H_MIRRO_HV);
 	}
-	#endif
 	
-	if ((val == 0x03) || (val == 0x01)) 
-	{
-		recnt = WRITE_RETRY_CNT;
-		while (recnt--) {
-			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, val);
-			if (FVID2_SOK == ret) {
-				break;
-			} else {
-				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
-				Task_sleep(50);
-			}
-		}
-		
-		recnt = WRITE_RETRY_CNT;
-		while (recnt--) {
-			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x0183, 0xc2);
-			if (FVID2_SOK == ret) {
-				break;
-			} else {
-				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
-				Task_sleep(50);
-			}
-		}
-	} else {
-		recnt = WRITE_RETRY_CNT;
-		while (recnt--) {
-			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, val);
-			if (FVID2_SOK == ret) {
-				break;
-			} else {
-				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
-				Task_sleep(50);
-			}
-		}
-		
-		recnt = WRITE_RETRY_CNT;
-		while (recnt--) {
-			ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x0183, 0xAA);
-			if (FVID2_SOK == ret) {
-				break;
-			} else {
-				eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
-				Task_sleep(50);
-			}
-		}
-	}
-
 	/* deserializer lock check */
 	locked = max927x_check_lock(idx);
 	if(locked) {
@@ -446,6 +443,74 @@ static int nvp2440h_sensor_init(int idx)
 
 	return FVID2_EFAIL;
 }
+#else
+
+static int nvp2440h_sensor_init(int idx)
+{
+	UInt16 regAddr[2] = {0x82e1, 0x0183};
+	UInt8 regVal1=0, regVal2=0;
+	Int32 ret, recnt;
+	int locked=0;
+	
+	//# serializer init
+	max927x_select(idx);
+	ret = max9271_init(idx);
+	if (FVID2_SOK != ret) {
+		return FVID2_EFAIL;
+	}
+
+	/* deserializer lock check */
+	recnt = WRITE_RETRY_CNT;
+	while (recnt--) {
+		locked = max927x_check_lock(idx);
+		if (locked) {
+			break;
+		}
+		/* wait for isp firmware download */
+		Task_sleep(100);
+	}
+
+	if (recnt <= 0)
+		return FVID2_EFAIL;
+
+	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
+	if(idx == 0) {
+		regVal1 = 0x00;  regVal2 = 0xAA;  //# or 0xC2
+	} else if(idx == 1) {
+		regVal1 = 0x00;  regVal2 = 0xAA;  //# or 0xC2
+	} else if(idx == 2) {
+		regVal1 = 0x00;  regVal2 = 0xAA;  //# or reg2->0xC2 //# reg1->0x01 
+	} else if(idx == 3) {
+		regVal1 = 0x00;  regVal2 = 0xAA;  //# or reg2->0xC2 //# reg1->0x01
+	}
+	
+	recnt = WRITE_RETRY_CNT;
+	while (recnt--) {
+		ret = dev_nicp_write_reg(NVP2440H_I2C_BUS_NUM, NVP2440H_I2C_ADDR, regAddr[0], regVal1);
+		Task_sleep(30);
+		
+		ret |= dev_nicp_write_reg(NVP2440H_I2C_BUS_NUM, NVP2440H_I2C_ADDR, regAddr[1], regVal2);
+		if (FVID2_SOK == ret) {
+			dprintf("cam %d: i2c write succeed!\n", idx);
+			break;
+		} else {
+			eprintf("cam %d: i2c write failed!(cnt %d)\n", idx, recnt);
+			Task_sleep(50);
+		}
+	}
+		
+	/* deserializer lock check */
+	locked = max927x_check_lock(idx);
+	if(locked) {
+		s_size[idx] = SZ_720;
+		ctrl_status_led(idx, VPS_ON);
+		return FVID2_SOK;
+	}
+
+	ctrl_status_led(idx, VPS_OFF);
+	return FVID2_EFAIL;
+}
+#endif
 
 /*****************************************************************************
 * @brief	Deserializer init/deinit function
@@ -552,7 +617,6 @@ Int32 Vps_nvp2440hRegWriteIoctl(Vps_nvp2440hHandleObj *pObj,
 							   Vps_VideoDecoderRegRdWrParams *pPrm)
 {
 	Int32 ret = FVID2_SOK;
-	Int32 recnt;
 
 	/* Check for errors */
 	if (NULL == pPrm) {
@@ -572,17 +636,8 @@ Int32 Vps_nvp2440hRegWriteIoctl(Vps_nvp2440hHandleObj *pObj,
 	}
 
 	max927x_select(pPrm->deviceNum);
-	recnt = WRITE_RETRY_CNT;
-	while (recnt--) {
-		ret = dev_nicp_write_reg(NVP2440H_I2C_ID, NVP2440H_I2C_ADDR, 0x82e1, pPrm->regValue);
-		if (FVID2_SOK == ret) {
-			break;
-		} else {
-			eprintf("cam %d: i2c write failed!(cnt %d)\n", pPrm->deviceNum, recnt);
-			Task_sleep(30);
-		}
-	}
-
+	
+	/* PH3100 을 지원하기 위한 기능. 현재는 지원 안 함 */
 	return (ret);
 }
 
