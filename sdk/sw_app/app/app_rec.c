@@ -133,7 +133,7 @@ static void *THR_rec_recv_msg(void *prm)
 			break;
 		
 		case AV_CMD_REC_EVT_END:
-			dprintf("received Event record done!\n");
+			//dprintf("received Event record done!\n");
 		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
             send_msg(AV_CMD_REC_STOP);
 
@@ -143,7 +143,7 @@ static void *THR_rec_recv_msg(void *prm)
 			break;
 
 		case AV_CMD_REC_RESTART:
-			dprintf("received Event record Restart!\n");
+			//dprintf("received Event record Restart!\n");
 		    event_send(&irec->bObj, APP_CMD_STOP, 0, 0);  // for stop buzzer
  
             send_msg(AV_CMD_REC_START);
@@ -153,12 +153,12 @@ static void *THR_rec_recv_msg(void *prm)
 			break ;
 			
 		case AV_CMD_REC_FLIST:
-			dprintf("received rec flist!\n");
+			//dprintf("received rec flist!\n");
 			app_file_fxn();
 			break;
 			
 		case AV_CMD_REC_ERR:
-			dprintf("received rec error!\n");
+			//dprintf("received rec error!\n");
 			irec->rec_state = 0; /* record stop...*/
 			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);
