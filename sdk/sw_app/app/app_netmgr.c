@@ -479,7 +479,6 @@ static void *THR_netmgr_send_msg(void *prm)
 						/* USB remove */
 						__netmgr_wlan_event_handler(0, 0);
 					} else {
-						/* insert 이벤트는 AP 모드 진입 여부를 확인하기 위해서 2초 정도 여유를 둔다 */	
 						event_send(&inetmgr->wObj, APP_CMD_NOTY, status, 0);
 					}
 					#endif
@@ -582,40 +581,42 @@ static void *THR_netmgr_wlan_thr(void *prm)
 {
 	app_thr_obj *tObj = &inetmgr->wObj;
 	int exit = 0, cmd;
+	int poll_time;
+	int wait_poll = 0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
 	{
-		int done, count;
-		
 		cmd = event_wait(tObj);
 		if (cmd == APP_CMD_EXIT) {
 			break;
 		}
 		
-		//# noty
-		count = 10; //# 200ms * 10 = 2sec..
-		done = 0;
-		while (!done)
+		//# 카메라 초기화가 늦게 되는 경우 AP 모드에 진입함.
+		//# 따라서 10초로 변경. 그 전에 카메라가 감지되면 Client 모드 시작.
+		poll_time = 0; /* 시간 초기화 */
+		while (!wait_poll)
 		{
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+				dprintf("....exit!!\n");
 				break;
 			}
 			
-			if (count <= 0) {
-				if (app_cfg->vid_count == 0) {
-					__netmgr_wlan_event_handler(1, 1); /* AP mode */
-				} else {
-					__netmgr_wlan_event_handler(1, 0); /* station mode */
-				}
-				/* exit wlan processing */
-				done = 1;
-			} else {
-				count--;
+			/* 카메라가 감지되면 station mode */
+			if ((app_cfg->vid_count > 0) && (poll_time < 10)) {
+				__netmgr_wlan_event_handler(1, 0); /* station mode */
+				dprintf("wi-fi station mode start!\n");
+				break;
+			} 
+			else if ((app_cfg->vid_count == 0) && (poll_time >= 10)) {
+				__netmgr_wlan_event_handler(1, 1); /* AP mode */
+				dprintf("wi-fi AP mode start!\n");
+				break;
 			}
-			app_msleep(200);
+			poll_time++;
+			app_msleep(1000);
 		}
 	}
 	
