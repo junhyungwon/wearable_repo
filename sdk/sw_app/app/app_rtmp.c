@@ -10,7 +10,8 @@
 
 // wowza. fixme : need a config file
 // $ ffplay rtmp://3.36.1.29:1935/live2/myStream/key
-char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
+//char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
+char rtmp_endpoint[256] = "rtmp://54.180.141.121:1935/live_jay/myStream/key";
 
 static uv_async_t *async_rtmp_connect;
 static uv_async_t *async_rtmp_disconnect;
@@ -84,6 +85,7 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
     // fprintf(stderr, "[RTMP] rtmp_publish_async_cb fired.\n");
     struct stream_s* stream;
 
+    u_int32_t dts = 0, pts = 0, timestamp = 0;
     while(1) {
         uv_mutex_lock(&mutex);
         bool empty = QUEUE_EMPTY(&queue);
@@ -121,13 +123,9 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
             auto size = ifr->b_size;
             int nb_start_code = 0;
 
-            u_int32_t fps = DEFAULT_FPS;
-            u_int32_t dts = 1000/fps;
-            u_int32_t pts = dts;
-
-            // u_int32_t timestamp = ifr->t_sec * 1000 + ifr->t_msec;
-            // dts = timestamp;
-            // pts = timestamp;
+             timestamp = ifr->t_sec * 1000 + ifr->t_msec;
+             dts = timestamp;
+             pts = timestamp;
 
             // send out the h264 packet over RTMP
             int ret = srs_h264_write_raw_frames(rtmp, data, size, dts, pts);

@@ -471,7 +471,7 @@ static int ftp_send_file(int sd, char *filename)
 					{
 				        if (strncmp(buf, "226", 3) == 0) 
 					    {
-					        printf("%s transfer completed.\n", dest_fname);
+					        printf("%s transfer completed.\n", source_fname);
 
 							if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
 								return -1 ;
@@ -490,7 +490,16 @@ static int ftp_send_file(int sd, char *filename)
 											printf("Rename from %s to %s \n",source_fname, dest_fname) ;
 										    return 0 ;
 										}
-										 else
+										else if(strncmp(buf, "553", 3) == 0)
+										{
+											ftp_dbg("destination file exist !!\n") ;
+											if(ftpNewCmd(sd,buf,"DELE", source_fname) == 0)
+                                            {
+												ftp_dbg("delete file on FTP Server\n") ;  //one time try delete file on FTP SERVER 
+											}
+											return 1 ;
+										}
+										else
 											return -1 ;
 									}
 								}
@@ -769,7 +778,7 @@ printf("555555555555555555555555555\n") ;
 static void ftp_send(void)
 {
 	int i=0;
-	int ret = 0, retry_cnt = 0, file_cnt = 0;
+	int ret = 0, retry_cnt = 0, file_cnt = 0, retval = 0;
     char FileName[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
 
@@ -886,12 +895,16 @@ static void ftp_send(void)
                     }
 					else
 					{
-                        if(ftp_send_file(iftp->lsdFtp, FileName) == 0)
+                        retval = ftp_send_file(iftp->lsdFtp, FileName) ;
+						if(retval >= 0)
                         {
-					        ftp_dbg(" \n[ftp] Send image -- %s \n", FileName);
-                            delete_ftp_send_file(FileName) ;
-			            }   
-                        else
+							delete_ftp_send_file(FileName) ;
+							if(!retval)
+								ftp_dbg(" \n[ftp] Send image -- %s \n", FileName);
+							else
+								ftp_dbg(" \n[ftp] Destination File exist -- %s \n", FileName) ;
+						}
+						else
                         {
 							if (access(FileName, 0) == -1) 
 								ftp_dbg(" \n[ftp] Do not exist file name - %s \n", FileName);

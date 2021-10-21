@@ -509,6 +509,7 @@ static int time_sync(void)
 	if(app_cfg->ste.b.prerec_state && !app_rec_state() && !app_cfg->ste.b.ftp_run)
 	{
 		app_rec_start() ;
+		app_cfg->ste.b.prerec_state = 0 ;
 	}
 
     return retval;

@@ -160,12 +160,7 @@ static void proc_vid_cap(void)
 	VCODEC_BITSBUF_S *pFullBuf;
     int i, idx ;
 	
-#if defined(NEXX360W_MUX)
 	struct timeval ltime ;
-	int pre_msec = -1;
-	Uint64 pre_captime = -1 ;
-	int timezone = 0 ;
-#endif
 
 	Uint64 captime;
 	stream_info_t *ifr;
@@ -202,15 +197,8 @@ static void proc_vid_cap(void)
 			ifr->frm_rate = app_cfg->ich[ifr->ch].fr;
 			ifr->is_key = (pFullBuf->frameType == VCODEC_FRAME_TYPE_I_FRAME) ? 1:0;
 			captime = (Uint64)((Uint64)pFullBuf->upperTimeStamp<<32|pFullBuf->lowerTimeStamp);
-#if 0 //defined(NEXX360W_MUX)
-	        timezone = app_set->time_info.time_zone - 12 ; 
-			gettimeofday(&ltime, NULL) ;
- 			ifr->t_sec = ltime.tv_sec + timezone*3600 ;
-			ifr->t_msec = ltime.tv_usec % 1000 ;
-#else			
 			ifr->t_sec = (Uint32)(captime/1000);
 			ifr->t_msec = (Uint32)(captime%1000);
-#endif			
 
 			app_memcpy(ifr->addr, (char*)pFullBuf->bufVirtAddr, ifr->b_size);
 			
@@ -219,8 +207,11 @@ static void proc_vid_cap(void)
 				/* ch == 1 --> streaming */
                 if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == STREAM_CH_NUM)
                 {
-					captime += 8 ;
-
+#if defined(NEXX360W) || defined(NEXXB) || defined(NEXXONE)
+					gettimeofday(&ltime, NULL) ;
+					ifr->t_sec = ltime.tv_sec ;
+					ifr->t_msec = ltime.tv_usec / 1000 ;
+#endif					
 //                    printf("ifr->t_sec = %d ifr->t_msec = %ld \n",ifr->t_sec, ifr->t_msec) ;
 #if H264_DUMP
                     if(first == 0 && ifr->is_key)
