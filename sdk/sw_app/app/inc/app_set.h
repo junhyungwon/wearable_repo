@@ -31,8 +31,10 @@
 #define WIFIAP_CNT                  4
 
 #define MIN_FPS 					1
-#define MAX_BITRATE 				8000 // Kbps
-#define MIN_BITRATE 				128  // Kbps
+#define MIN_STM_BITRATE 			128  // Kbps
+#define MAX_STM_BITRATE 			8000 // Kbps
+#define MIN_REC_BITRATE 			512  // Kbps
+#define MAX_REC_BITRATE 			8000 // Kbps
 
 #define FTP_HOUR_MIN            	0
 #define FTP_HOUR_MAX            	24
@@ -46,9 +48,8 @@
 #define PARTIAL_RESET          		0
 #define FULL_RESET             		1
 
-#define MIN_BITRATE            		512
-#define MAX_BITRATE            		8000
-#define DEFAULT_QUALITY        		4000
+#define DEFAULT_STM_QUALITY        	1000    // default streaming kbps
+#define DEFAULT_REC_QUALITY    		4000    // default recording kbps
 
 #if SYS_CONFIG_VOIP
 #define PBX_SERVER_ADDR         	"52.78.124.88"

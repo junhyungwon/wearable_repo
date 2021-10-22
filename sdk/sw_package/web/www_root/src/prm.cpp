@@ -192,32 +192,38 @@ int put_json_all_config()
 		bpsIdx = 0;
 		kbps = p.stm.bps; // kbps
 		switch (kbps) {
-			case 512:
+			case 128:
 				bpsIdx = 0;
 				break;
-			case 1000:
+			case 256:
 				bpsIdx = 1;
 				break;
-			case 2000:
+			case 512:
 				bpsIdx = 2;
 				break;
-			case 3000:
+			case 1000:
 				bpsIdx = 3;
 				break;
-			case 4000:
+			case 2000:
 				bpsIdx = 4;
 				break;
-			case 5000:
+			case 3000:
 				bpsIdx = 5;
 				break;
-			case 6000:
+			case 4000:
 				bpsIdx = 6;
 				break;
-			case 7000:
+			case 5000:
 				bpsIdx = 7;
 				break;
-			case 8000:
+			case 6000:
 				bpsIdx = 8;
+				break;
+			case 7000:
+				bpsIdx = 9;
+				break;
+			case 8000:
+				bpsIdx = 10;
 				break;
 		}
 		json_object_object_add(streamobj, "fps", json_object_new_int(fpsIdx));
@@ -862,32 +868,38 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 	bpsIdx = 0;
 	kbps = p->stm.bps; // kbps
 	switch (kbps) {
-		case 512:
+		case 128:
 			bpsIdx = 0;
 			break;
-		case 1000:
+		case 256:
 			bpsIdx = 1;
 			break;
-		case 2000:
+		case 512:
 			bpsIdx = 2;
 			break;
-		case 3000:
+		case 1000:
 			bpsIdx = 3;
 			break;
-		case 4000:
+		case 2000:
 			bpsIdx = 4;
 			break;
-		case 5000:
+		case 3000:
 			bpsIdx = 5;
 			break;
-		case 6000:
+		case 4000:
 			bpsIdx = 6;
 			break;
-		case 7000:
+		case 5000:
 			bpsIdx = 7;
 			break;
-		case 8000:
+		case 6000:
 			bpsIdx = 8;
+			break;
+		case 7000:
+			bpsIdx = 9;
+			break;
+		case 8000:
+			bpsIdx = 10;
 			break;
 	}
 
