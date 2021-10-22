@@ -32,7 +32,7 @@
 
 #define MIN_FPS 					1
 #define MAX_BITRATE 				8000 // Kbps
-#define MIN_BITRATE 				512  // Kbps
+#define MIN_BITRATE 				128  // Kbps
 
 #define FTP_HOUR_MIN            	0
 #define FTP_HOUR_MAX            	24
@@ -307,8 +307,6 @@ typedef struct {
 -----------------------------------------------------------------------------*/
 int app_set_open(void);
 int app_set_write(void);
-int get_bitrate_val(int quality, int resol);
-int get_fps_val(app_frate_e idx);
 int get_frame_size(int resol, int *wi, int *he);
 int GetSvrMacAddress(char *MacAddr) ;
 int DefaultGetMac(char *MacAddr) ;

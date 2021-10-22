@@ -176,7 +176,9 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 			newRes = RESOL_480P;
 #endif
 		int newKbps = app_set->ch[STM_CH_NUM].quality;
-		if (kbps <= 750) newKbps = 512;
+		if (kbps <= 250) newKbps = 128;
+		else if (kbps <= 500) newKbps = 256;
+		else if (kbps <= 750) newKbps = 512;
 		else if (kbps <= 1500) newKbps = 1000;
 		else if (kbps <= 2500) newKbps = 2000;
 		else if (kbps <= 3500) newKbps = 3000;

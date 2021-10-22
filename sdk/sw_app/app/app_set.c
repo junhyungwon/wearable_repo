@@ -62,21 +62,10 @@ const char* const WEB_DEFAULT_PW    = "admin";
 const char* const ONVIF_DEFAULT_ID  = "admin";
 const char* const ONVIF_DEFAULT_PW  = "admin";
 
-static int qbr[MAX_RESOL][MAX_QUALITY] = {
-	{ 2000, 1000, 512},		//# 480p
-	{ 4000, 3000, 2000},	//# 720p
-	{ 8000, 6000, 4000}	    //# 1080p
-};
-
 /*
  * Nexx360/Fitt360 --> 15,10,5 Fps
  * Nexxone ----------> 30,15,5
  */
-#if defined(NEXXONE) || defined(NEXX360H)
-static int FPS_IDX[FPS_MAX]	= {30, 15, 5};
-#else
-static int FPS_IDX[FPS_MAX]	= {15, 10, 5};
-#endif
 static char *cfg_dir[CFG_MAX] = {CFG_DIR_NAND, CFG_DIR_MMC};
 static char cMacAddr[18]; // Server's MAC address
 
@@ -1323,22 +1312,6 @@ int app_set_write(void)
 	return 0;
 }
 
-int get_bitrate_val(int quality, int resol)
-{
-	return qbr[resol][quality];
-}
-
-int get_fps_val(app_frate_e idx)
-{
-	int fps;
-
-    if (idx >= FPS_MAX)
-        idx = FPS_MAX-1;
-
-	fps = FPS_IDX[idx];
-
-	return fps;
-}
 
 int get_frame_size(int resol, int *wi, int *he)
 {
