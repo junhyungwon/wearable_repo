@@ -484,16 +484,17 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		        pset->ch[ich].framerate	= DEFAULT_FPS;
         }
 
-		if(pset->ch[ich].quality < MIN_BITRATE || pset->ch[ich].quality	> MAX_BITRATE)
+		if(ich == MODEL_CH_NUM) // streaming channel 1Mbps
 		{
-
-			if(ich == MODEL_CH_NUM)
-			{
-		        pset->ch[ich].quality = DEFAULT_QUALITY/4; // 1Mbps for Live streaming
+			if (pset->ch[ich].quality < MIN_STM_BITRATE || pset->ch[ich].quality > MAX_STM_BITRATE) {
+				pset->ch[ich].quality = DEFAULT_STM_QUALITY;
 			}
-			else
-		        pset->ch[ich].quality = DEFAULT_QUALITY;  // 4Mbps for Recording
-
+		}
+		else // recording channels 4Mbps
+		{
+			if (pset->ch[ich].quality < MIN_REC_BITRATE || pset->ch[ich].quality > MAX_REC_BITRATE) {
+				pset->ch[ich].quality = DEFAULT_REC_QUALITY;
+			}
 		}
 		if(pset->ch[ich].rate_ctrl	!= RATE_CTRL_VBR && pset->ch[ich].rate_ctrl	!= RATE_CTRL_CBR)
 		    pset->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
@@ -951,19 +952,19 @@ static void app_set_default(int default_type)
 	{
 		app_set->ch[ich].resol		= RESOL_720P;
 
-		if(ich == MODEL_CH_NUM)
+		if(ich == MODEL_CH_NUM) // streaming channel
 		{
 #if defined(NEXXONE) || defined(NEXX360H)	
 		    app_set->ch[ich].framerate	= DEFAULT_FPS/2;  // 15fps
 #else
 		    app_set->ch[ich].framerate	= DEFAULT_FPS;    // 15fps
 #endif
-		    app_set->ch[ich].quality	= DEFAULT_QUALITY/4;  // 1Mbps for live streaming
+		    app_set->ch[ich].quality	= DEFAULT_STM_QUALITY;  // 1Mbps for live streaming
 		}
-        else
+        else // recording channels
 		{
 		    app_set->ch[ich].framerate	= DEFAULT_FPS;     // 15fps or 30fps
-		    app_set->ch[ich].quality	= DEFAULT_QUALITY; // 4Mbps for live streaming
+		    app_set->ch[ich].quality	= DEFAULT_REC_QUALITY; // 4Mbps for live streaming
 		}
 
 		app_set->ch[ich].rate_ctrl	= RATE_CTRL_VBR;
