@@ -710,7 +710,7 @@ int test_led(app_thr_obj *tObj)
 	return ret;
 }
 
-#if defined(NEXXONE) /* mic in + earphone out */
+#if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)/* mic in + earphone out */
 static void thr_snd_in_cleanup(void *prm)
 {
 	dev_snd_stop(&snd_in_data, SND_PCM_CAP);

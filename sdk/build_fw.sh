@@ -11,7 +11,8 @@ function fmenu()
  echo "2. NEXX360 Wireless                       "
  echo "3. NEXX ONE                               "
  echo "4. NEXXB                                  "
- echo "5. NEXX360 Wireless Mux                   "
+ echo "5. NEXXB_ONE                              "
+ echo "6. NEXX360 Wireless Mux                   "
  echo "=========================================="
 }
 
@@ -89,10 +90,15 @@ do
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
 			break;;
-		"5" )
+		"6" )
 			echo " "
 			echo "select NEXX360 Wireless MUX"
 			FW_PREFIX="NEXX360W_MUX"
+			break;;
+		"5" )
+			echo " "
+			echo "select NEXXB_ONE"
+			FW_PREFIX="NEXXB_ONE"
 			break;;
 		"4" )
 			echo " "

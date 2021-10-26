@@ -38,7 +38,7 @@
 #define	dprintf(x...) printf(" [mcfw_api] "	x);
 //#define dprintf(x...)
 
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
 #define VPS_FPS				30
 static int vid_port[] = {
 	SYSTEM_CAPTURE_INST_VIP1_PORTB,		//# (1)
@@ -53,7 +53,7 @@ static int vid_port[] = {
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
 static void	capture_link_params_init(CaptureLink_CreateParams *capturePrm, int num_ch)
 {
 	CaptureLink_VipInstParams	*pCaptureInstPrm;
@@ -439,7 +439,7 @@ static void display_link_delete(void)
 * @section	DESC Description
 *	- desc : HD 2ch, D1 8ch
 *****************************************************************************/
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
 void mcfw_capture_display_init(void)
 #else
 void mcfw_capture_display_init(int mode)
@@ -470,7 +470,7 @@ void mcfw_capture_display_init(int mode)
 	//# Capture link
 	//#-------------------------------------------
 	//#--- capture link params
-	#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+	#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
 	capture_link_params_init(&capturePrm, num_ch);
 	#else
 	capture_link_params_init(&capturePrm, num_ch, mode);

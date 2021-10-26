@@ -78,7 +78,7 @@ typedef enum {
 	MAX_QUALITY
 } app_quality_e;
 
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE)
 typedef enum {
     FPS_30=0,
     FPS_15,

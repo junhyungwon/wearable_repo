@@ -315,7 +315,7 @@ static void *THR_hdmi(void *prm)
 		}
         //# change resolution 720P <----> 480P <-----> 1080P  toggle.
 
-#if defined(NEXXONE)  // not support 1080P 
+#if defined(NEXXONE) || defined(NEXXB_ONE) // not support 1080P 
 		if(app_set->ch[MODEL_CH_NUM].resol == RESOL_480P)     
             ctrl_vid_resolution(RESOL_720P);
 		else    

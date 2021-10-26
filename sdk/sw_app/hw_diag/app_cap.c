@@ -57,7 +57,7 @@ void video_status(void)
 {
 	int i, temp, count;
 	
-#if defined(NEXXONE) || defined(NEXX360H)	
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)	
 	int vstatus[1] = {0,};
 	count = Vcap_get_video_status(1, &vstatus[0], &temp);
 #else
@@ -125,7 +125,7 @@ static void proc_vid_cap(void)
 			ifr->b_size = pFullBuf->filledBufSize;
 			ifr->frm_wi = pFullBuf->frameWidth;
 			ifr->frm_he = pFullBuf->frameHeight;
-			#if defined(NEXXONE) || defined(NEXX360H)
+			#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 			ifr->frm_rate = 30;
 			#else
 			ifr->frm_rate = 15;
@@ -139,7 +139,7 @@ static void proc_vid_cap(void)
 			
             if(1)
             {
-                #if defined(NEXXONE) || defined(NEXX360H)
+                #if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 				if (pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 2))
 				#else
 				if (pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || (ifr->ch == 5))
@@ -252,7 +252,7 @@ static int cap_enc_init(VENC_PARAMS_S *vencParams)
 	int i, channels=0;
 	int fr, br;
 	
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	channels = 1+1; /* 1 camera + 1 stream */
 	fr       = 30;
 	br       = 1000; //# 1Mbps
@@ -299,7 +299,7 @@ static void cap_enc_late_init(void)
 	int i, channels=0;
 	int fr;
 	
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	channels = 1+1; /* 1 camera + 1 stream */
 	fr       = 30;
 #else
@@ -368,7 +368,7 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 	
 	vsysParams.captMode = CAPT_MODE_720P;
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || #defined(NEXXB_ONE)
 	vsysParams.numChs = 1;
 #else
 	vsysParams.numChs = 4;
@@ -385,7 +385,7 @@ int app_cap_start(void)
 	vid_cap_start();
 	
 	//#--- start link
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	Vsys_create();
 #else	
 	Vsys_create(0);

@@ -144,6 +144,8 @@ int app_rtsptx_start(void)
 		sprintf(dev_model, "%s", "NEXX360") ;
 #elif defined(NEXXB)
 		sprintf(dev_model, "%s", "NEXX-B") ;
+#elif defined(NEXXB_ONE)
+		sprintf(dev_model, "%s", "NEXXB_ONE") ;
 #elif defined(NEXX360W_MUX)
 		sprintf(dev_model, "%s", "NEXX360W_MUX") ;
 #endif

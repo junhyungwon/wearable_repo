@@ -42,7 +42,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define REC_KEY						GPIO_N(0, 6)	//# record switch
-#ifdef NEXXB
+#if defined(NEXXB) || defined(NEXXB_ONE)
 #define SOS_KEY						GPIO_N(1, 14)	//# sos switch
 #endif
 
@@ -70,7 +70,7 @@ static app_dev_t *idev=&t_dev;
 static void dev_gpio_init(void)
 {
 	gpio_input_init(REC_KEY);
-#ifdef NEXXB
+#if defined(NEXXB) || defined(NEXXB_ONE)
 	gpio_input_init(SOS_KEY);
 #endif
 }
@@ -78,7 +78,7 @@ static void dev_gpio_init(void)
 static void dev_gpio_exit(void)
 {
 	gpio_exit(REC_KEY);
-#ifdef NEXXB	
+#if defined(NEXXB) || defined(NEXXB_ONE)	
 	gpio_exit(SOS_KEY);
 #endif	
 }
@@ -190,7 +190,7 @@ static int chk_rec_key(void)
 	return ste_key;
 }
 
-#ifdef NEXXB
+#if defined(NEXXB) || defined(NEXXB_ONE)
 static int cnt_sos_key=0, ste_sos_key=KEY_NONE;
 static int chk_sos_key(void)
 {
@@ -238,7 +238,7 @@ static void *THR_dev(void *prm)
 	int exit=0;
 	int mmc, cmd, value = 0;
 	int rkey;
-#if defined(NEXXB)	
+#if defined(NEXXB) || defined(NEXXB_ONE)	
 	int rkey2;
 #endif	
 	
@@ -333,7 +333,7 @@ static void *THR_dev(void *prm)
 			    app_rec_evt(OFF) ;
 			}
 		}
-#elif defined(NEXXB)
+#elif defined(NEXXB) || defined(NEXXB_ONE)
 		/* record key --> call function */
 		rkey = chk_rec_key();
 		//# For button enable, when camera didn't connected 

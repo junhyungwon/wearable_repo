@@ -27,6 +27,10 @@
 #	define NEXXB
 #	define REC_CH_NUM					3
 #	define MAX_FPS						15
+#elif defined(LF_SYS_NEXXB_ONE)
+#	define NEXXB_ONE
+#	define REC_CH_NUM					1
+#	define MAX_FPS						30
 #elif defined(LF_SYS_NEXX360B)
 #	define NEXX360B
 #	define REC_CH_NUM					4

@@ -55,7 +55,7 @@ static int submit_settings()
 			return ERR_INVALID_PARAM;
 		}
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX)
+#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
 		if( strlen(t.uid) < 1) {
 			CGI_DBG("UID Invalid Parameter\n");
 			return ERR_INVALID_PARAM;

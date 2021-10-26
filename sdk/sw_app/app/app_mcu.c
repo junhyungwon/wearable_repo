@@ -271,11 +271,11 @@ static void *THR_micom(void *prm)
 						dprintf("skip power switch event!!!\n");
 					}
 				} else {
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
 					#if SYS_CONFIG_VOIP 
 					if (!app_cfg->ste.b.ftp_run) 
 					{    
-#if defined(NEXXB)	
+#if defined(NEXXB) || defined(NEXXB_ONE)	
 				 		value = app_rec_state() ;
 			            if(value < 2) // REC Off or Event Rec or Normal Rec
 						{

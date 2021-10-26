@@ -253,7 +253,7 @@ int app_leds_cam_ctrl(int no, int ste)
 	/*
 	 * NEXXB CAM4 LED is voip led
 	 */
-#ifdef NEXXB
+#if defined(NEXXB) || defined(NEXXB_ONE)
 	switch (no) {
 	case 0:
 		index = LED_IDX_CAM1; 
@@ -307,7 +307,7 @@ int app_leds_voip_ctrl(int ste)
 		return 0;
 	}
 
-#ifdef NEXXB	
+#if defined(NEXXB) || defined(NEXXB_ONE)	
 	index = LED_IDX_CAM2;
 #else
 	index = LED_IDX_CAM4;

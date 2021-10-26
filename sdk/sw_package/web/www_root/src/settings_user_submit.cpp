@@ -155,7 +155,7 @@ static int submit_settings()
 				return ERR_INVALID_PARAM;
 			}
 		}
-#elif defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX)
+#elif defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE) 
 		live_stream_account_enable=1; // FIXED
 		if(live_stream_account_enctype  == -1) {
 			CGI_DBG("Not received RTSP Account Enctype\n");

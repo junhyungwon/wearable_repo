@@ -67,6 +67,18 @@
 #	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
 #	define SYS_MCU_VER					0x0010
+#elif defined(LF_SYS_NEXXB_ONE)
+#	define NEXXB_ONE						
+#	define MODEL_NAME					"NEXXB_ONE"
+#	define MODEL_CH_NUM					1
+#	define STREAM_CH_NUM				1
+#	define JPEG_CH_NUM					2
+#	define MAX_FPS						30	
+#	define SYS_CONFIG_VOIP				1
+#	define SYS_CONFIG_WLAN				1
+#	define SYS_CONFIG_GPS				1
+#	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0010
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
 #	define MODEL_NAME					"NEXXONE"

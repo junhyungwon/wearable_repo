@@ -83,7 +83,7 @@ void video_status(void)
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM + EXCHANNEL, &vstatus[0], &temp);
 	
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	app_leds_cam_ctrl(0, vstatus[0]);
 	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
@@ -100,7 +100,7 @@ void video_status(void)
 	sysprint("[APP_CAP] Camera Detected Count: %d\n", count);
 	
 	if (app_cfg->ste.b.cap == 0) {
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 		if (app_cfg->vid_count > 0) {
 			app_cfg->ste.b.cap = 1;
 			if (app_set->rec_info.auto_rec && !app_cfg->ste.b.rec && !app_cfg->ste.b.ftp_run) {
@@ -207,7 +207,7 @@ static void proc_vid_cap(void)
 				/* ch == 1 --> streaming */
                 if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == STREAM_CH_NUM)
                 {
-#if defined(NEXX360W) || defined(NEXXB) || defined(NEXXONE)
+#ifdef USE_RTMP
 					gettimeofday(&ltime, NULL) ;
 					ifr->t_sec = ltime.tv_sec ;
 					ifr->t_msec = ltime.tv_usec / 1000 ;
@@ -532,7 +532,7 @@ int app_cap_start(void)
 	vid_cap_start();
 
 	//#--- start component
-#if defined(NEXXONE) || defined(NEXX360H)	 
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)	 
 	Vsys_create();
 #else
 	Vsys_create(0);

@@ -20,7 +20,9 @@ endif
 #  NEXX360H:
 #    ====> STREAMING: OFF, CAM: 1CH, GPS: OFF, HDMI: ON, VOIP: OFF
 #  NEXXB:
-#    ====> STREAMING: OFF, CAM: 3CH, GPS: OFF, HDMI: ON, VOIP: ON
+#    ====> STREAMING: ON, CAM: 3CH, GPS: OFF, HDMI: ON, VOIP: ON
+#  NEXXB_ONE:
+#    ====> STREAMING: ON, CAM: 1CH, GPS: OFF, HDMI: ON, VOIP: ON
 #  NEXXONE_VOIP:
 #    ====> STREAMING: ON, CAM: 1CH, GPS: ON, HDMI: OFF, VOIP: ON
 #  NEXX360W_MUX:
@@ -31,7 +33,8 @@ endif
 #SYSTEM_PLATFORM := NEXX360W
 #SYSTEM_PLATFORM := NEXX360H
 #SYSTEM_PLATFORM := NEXXB
-SYSTEM_PLATFORM := NEXXONE_VOIP
+SYSTEM_PLATFORM := NEXXB_ONE
+#SYSTEM_PLATFORM := NEXXONE_VOIP
 #SYSTEM_PLATFORM := NEXX360W_MUX
 ######################################################################################
 
@@ -112,6 +115,16 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360H)
 	EXTERNAL_BATTERY_ONLY = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXB)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP = YES
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER  = AFO
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXXB_ONE)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)

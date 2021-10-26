@@ -206,7 +206,7 @@ static void *THR_rec_send_msg(void *prm)
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_REC_EVT) {
-#if defined(NEXXB)
+#if defined(NEXXB) || defined(NEXXB_ONE)
 			if(option)
 			{
 				irec->rec_state  = 2;// SOS
@@ -295,7 +295,7 @@ static void *THR_evt_buzzer(void *prm)
                 {
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
-#if defined(NEXXB)
+#if defined(NEXXB) || defined(NEXXB_ONE)
 						if(option) // SOS
 							sosdata_send() ;
 						else

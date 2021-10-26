@@ -474,7 +474,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		{
 			if(ich == MODEL_CH_NUM)
 			{
-#if defined(NEXXONE) || defined(NEXX360H)	
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 		        pset->ch[ich].framerate	= DEFAULT_FPS/2;
 #else
 		        pset->ch[ich].framerate	= DEFAULT_FPS;
@@ -502,7 +502,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         if(ich == MODEL_CH_NUM)
         {
 	     	//# streaming channel...
-#if defined(NEXXONE)
+#if defined(NEXXONE)|| defined(NEXXB_ONE)
             if(pset->ch[ich].resol < RESOL_480P || pset->ch[ich].resol >= RESOL_1080P)
 	            pset->ch[ich].resol= RESOL_720P;
 #else
@@ -706,7 +706,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif	
-#elif defined(NEXX360W) || defined(NEXXB)
+#elif defined(NEXX360W) || defined(NEXXB) || defined(NEXXB_ONE)
 	#if SYS_CONFIG_VOIP
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = ON ;
@@ -954,7 +954,7 @@ static void app_set_default(int default_type)
 
 		if(ich == MODEL_CH_NUM) // streaming channel
 		{
-#if defined(NEXXONE) || defined(NEXX360H)	
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)	
 		    app_set->ch[ich].framerate	= DEFAULT_FPS/2;  // 15fps
 #else
 		    app_set->ch[ich].framerate	= DEFAULT_FPS;    // 15fps
@@ -1073,7 +1073,7 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#elif defined(NEXX360W)	|| defined(NEXXB)
+#elif defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
     #if SYS_CONFIG_VOIP
 	app_set->rec_info.auto_rec      = ON ;
 	#else
