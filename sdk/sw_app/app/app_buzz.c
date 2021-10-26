@@ -28,6 +28,7 @@
 
 typedef struct {
 	OSA_MutexHndl b_lock; //# buzzer lock
+	int fd;
 	
 } app_buzz_t;
 
@@ -46,52 +47,13 @@ static app_buzz_t *ibuzz = &t_buzz;
 -----------------------------------------------------------------------------*/
 static void __buzzer_set__(int en)
 {
-	char buf[128] = {0,};
-	int brightness;
-	int fd, len;
-
-	if (en) brightness = 50;
-	else	brightness = 0;
-
-	/* initialize beep driver */
-	len = snprintf(buf, sizeof(buf), "%d", brightness);
-	if (len <= 0)
-		return;
-
-	if ((fd = open(BEEP_DRV_BASE_PATH, O_WRONLY)) < 0) {
-		eprintf("Error open %s\n", BEEP_DRV_BASE_PATH);
-		return;
-	}
-
-	write(fd, buf, len);
-	close(fd);
-}
-
-/*****************************************************************************
-* @brief    buzzer manager init/exit function
-* @section  [desc]
-*****************************************************************************/
-int app_buzz_init(void)
-{
-	int status;
+	int fd = ibuzz->fd;
 	
-    memset(ibuzz, 0, sizeof(app_buzz_t));
-	status = OSA_mutexCreate(&(ibuzz->b_lock));
-    OSA_assert(status == OSA_SOK);
-	
-	return 0;
-}
-
-/*****************************************************************************
-* @brief    buzzer manager init/exit function
-* @section  [desc]
-*****************************************************************************/
-void app_buzz_exit(void)
-{
-	int status;
-	
-	status = OSA_mutexDelete(&(ibuzz->b_lock));
-	OSA_assert(status == OSA_SOK);
+	if (en) {
+		write(fd, "50", 3);
+	} else {
+		write(fd, "0", 2);
+	}		
 }
 
 /*****************************************************************************
@@ -114,4 +76,40 @@ void app_buzz_ctrl(int time, int cnt)
 		app_msleep(time);
 	}
 	OSA_mutexUnlock(&ibuzz->b_lock);
+}
+
+/*****************************************************************************
+* @brief    buzzer manager init/exit function
+* @section  [desc]
+*****************************************************************************/
+int app_buzz_init(void)
+{
+	int status;
+	int res = -1;
+	
+    memset(ibuzz, 0, sizeof(app_buzz_t));
+	status = OSA_mutexCreate(&(ibuzz->b_lock));
+    OSA_assert(status == OSA_SOK);
+	
+	if ((res = open(BEEP_DRV_BASE_PATH, O_WRONLY)) < 0) {
+		eprintf("Error open %s\n", BEEP_DRV_BASE_PATH);
+		return -1;
+	}
+	
+	ibuzz->fd = res;
+	return 0;
+}
+
+/*****************************************************************************
+* @brief    buzzer manager init/exit function
+* @section  [desc]
+*****************************************************************************/
+void app_buzz_exit(void)
+{
+	int status;
+	
+	status = OSA_mutexDelete(&(ibuzz->b_lock));
+	OSA_assert(status == OSA_SOK);
+	
+	close(ibuzz->fd);
 }
