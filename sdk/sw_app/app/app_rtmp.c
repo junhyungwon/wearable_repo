@@ -11,8 +11,8 @@
 // wowza. fixme : need a config file
 // $ ffplay rtmp://3.36.1.29:1935/live2/myStream/key
 //char rtmp_endpoint[256] = "rtmp://3.36.1.29:1935/live2/myStream/key";
-char rtmp_endpoint[256] = "rtmp://54.180.141.121:1935/live_jay/myStream/key";
-
+//char rtmp_endpoint[256] = "rtmp://54.180.141.121:1935/live_jay/myStream/key";
+char rtmp_endpoint[256] = {0, } ;
 static uv_async_t *async_rtmp_connect;
 static uv_async_t *async_rtmp_disconnect;
 static uv_async_t *async_rtmp_publish;
@@ -32,6 +32,11 @@ struct stream_s {
     stream_info_t *ifr;
     QUEUE node;
 };
+
+void app_rtmp_get_endpoint()
+{
+	sprintf(rtmp_endpoint, "rtmp://54.180.141.121:1935/%s/myStream/key", app_set->sys_info.deviceId) ;
+}
 
 static void _init_queue() {
     QUEUE *q;
@@ -230,6 +235,7 @@ int app_rtmp_start(void)
     // stream queue.
     QUEUE_INIT(&queue);
 
+	app_rtmp_get_endpoint() ;
     async_rtmp_connect = malloc(sizeof(uv_async_t));
     r = uv_async_init(loop_video, async_rtmp_connect, rtmp_connect_async_cb);
 
@@ -317,9 +323,5 @@ void app_rtmp_set_endpoint(const char* endpoint)
 	strcpy(rtmp_endpoint, endpoint);
 }
 
-const char* app_rtmp_get_endpoint()
-{
-	return rtmp_endpoint;
-}
 
 #endif // USE_RTMP

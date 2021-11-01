@@ -43,5 +43,5 @@ void app_rtmp_publish_video(stream_info_t *ifr);
 void app_rtmp_enable(void);
 void app_rtmp_disable(void);
 void app_rtmp_set_endpoint(const char*);
-const char* app_rtmp_get_endpoint();
+void app_rtmp_get_endpoint();
 #endif // USE_RTMP
