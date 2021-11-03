@@ -34,22 +34,18 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define UI_CYCLE_TIME			500	//# ms
+
 #define UI_STREAMER_TIME		(2000)
 #define CNT_STREAMER_CHECK		(UI_STREAMER_TIME/UI_CYCLE_TIME)
 
 #define UI_VOIP_REG_TIME		(60000) //1min
 #define CNT_VOIP_REG_CHECK		(UI_VOIP_REG_TIME/UI_CYCLE_TIME)
 
-#define UI_TVO_WI               720
-#define UI_TVO_HE               480
+#define UI_SD_ERR_TIME			(2000)
+#define CNT_SD_ERR_CHECK		(UI_SD_ERR_TIME/UI_CYCLE_TIME)
 
-#define UI_LCD_WI               480
-#define UI_LCD_HE               800
-
-#define UI_DRAW         		1
-#define UI_CLEAR        		0
-
-#define UI_MENU         		0       //# 0: lcd, 1:tv-out
+#define UI_SYS_SHUTDOWN_TIME	(30000) //# 30s
+#define CNT_SYS_SHUTDOWN_CHECK	(UI_SYS_SHUTDOWN_TIME/UI_CYCLE_TIME)
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -57,12 +53,10 @@
 typedef struct {
 	app_thr_obj uObj;	//# ui thread
     app_thr_obj hObj;	//# change resolution thread
-#ifdef OSD_SWVERSION
-    app_gfx_t gfx_obj;
-#endif
     int start;
 	int tmr_cnt;
 	int voip_tmr;
+	int sd_err_tmr;
 } app_gui_t;
 
 static app_gui_t t_gui;
@@ -71,89 +65,6 @@ static app_gui_t *igui = &t_gui;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-#define TVO_GAP_X   40
-#define TVO_GAP_Y   25
-
-#define formREC     "NO REC"
-#define formGPS     "GPS OFF"
-#define formSSID    "000-00000"
-#define formTemp    "000`C"
-#define formVolt    "00.0V"
-#define formGlv     "S-0"
-#define formMlv     "M-0"
-#define formMIC     "MIC 0"
-#define formBUZZER  "BZ 0"
-#define SPACE_W     20
-
-#ifdef OSD_SWVERSION
-
-void ui_draw_clear(int dest)
-{
-    app_gfx_t *gfx = &igui->gfx_obj;
-
-    if(dest == DISP_TVO) {
-        draw_fill_color(gfx->tvo.buf, RGB_KEY);
-    }
-}
-
-void ui_draw_txt_tvo(void)
-{
-    char version[20];
-    char micom_ver[128] = {0, } ;
-    ui_pos_t st;
-    int str_w=0, str_h=0;
-
-//    ui_draw_clear(DISP_TVO);
-
-    str_h = draw_font_height(FITT360_SW_VER, FNT_SZ01);
-
-    if (app_cfg->ste.b.cap) {
-        //# ----------------- Top positon ------------------ //
-
-        st.x = 280;
-/*
-        if(app_cfg->ste.b.gps){
-            draw_text(igui->gfx_obj.tvo.buf, "GPS ON", FNT_SZ01, st.x, TVO_GAP_Y, RGB_WHITE, RGB_BLACK);
-        }
-        else{
-            draw_text(igui->gfx_obj.tvo.buf, "GPS OFF", FNT_SZ01, st.x, TVO_GAP_Y, RGB_WHITE, RGB_BLACK);
-        }
-*/
-
-        //# ----------------- Bottom positon ---------------- //
-        st.y    = UI_TVO_HE - ( str_h + TVO_GAP_Y );
-
-        //# Clear bottom info line
-
-        if(app_cfg->tvo_flag & TVO_VERSION){
-            //# Ver. info
-            str_w   = draw_string_len( FITT360_SW_VER, FNT_SZ01 );
-            str_w   = str_w + draw_string_len( TCX_MODEL, FNT_SZ01 );
-            st.x    = UI_TVO_WI - ( str_w + 60 );
-            str_w   = draw_string_len(micom_ver, FNT_SZ01);
-            st.x    = st.x - str_w;
-
-            sprintf(version, "%s_%s", TCX_MODEL, FITT360_SW_VER);
-            draw_text(igui->gfx_obj.tvo.buf, version, FNT_SZ01, st.x, st.y, RGB_WHITE, RGB_BLACK);
-        }
-    }
-}
-
-static void *gui_tvo_init(void)
-{
-    int buf;
-
-    dev_gfx_init(GFX2, &buf, 720, 480);
-
-    return (void *)buf;
-}
-
-static void gui_tvo_exit(void)
-{
-    dev_gfx_exit(GFX2);
-}
-
-#endif
 
 /*****************************************************************************
  * @brief    gui main function
@@ -177,31 +88,7 @@ static void *THR_gui(void *prm)
             break;
         }
 
-#ifdef OSD_SWVERSION
-        if(!app_set->ch[MODEL_CH_NUM].resol)
-        {
-            if(app_cfg->ste.b.cradle_net_ready)
-            {
-                if(!igui->start)
-                {
-                    igui->gfx_obj.tvo.buf = gui_tvo_init();
-                    igui->start = 1  ;
-                    ui_draw_clear(DISP_TVO);
-                }
-                ui_draw_txt_tvo();
-            }
-            else
-            {
-                if(igui->start)
-                    gui_tvo_exit() ;
-
-                igui->start = 0 ;
-
-            }
-        }
-#endif
 #if 1
-		//# wis-stream keep alive....
 		if (app_cfg->ste.b.rtsptx) 
 		{
 			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
@@ -214,10 +101,9 @@ static void *THR_gui(void *prm)
 				igui->tmr_cnt++;
 			}
 		}
-#endif
-		
-		//# ----------------- VOIP Handler -----------------------------------------------------
-		#if SYS_CONFIG_VOIP
+#endif		
+//# ----------------- VOIP Handler -----------------------------------------------------
+#if SYS_CONFIG_VOIP
 		if (!app_cfg->ste.b.voip) 
 		{
 			/* 유선망은 제외 USB 네트워크 */
@@ -269,16 +155,26 @@ static void *THR_gui(void *prm)
 		if (app_cfg->ste.b.voip_buzz) {
 			app_buzz_ctrl(100, 2);
 		}
-		#endif
-		//# -------------- End of VOIP ----------------------------------------------------------------
+#endif
+//# -------------- End of VOIP ----------------------------------------------------------------
+//# -------------- Damaged SD Card EVENT Handler-----------------------------------------------
+		if (app_cfg->ste.b.mmc_err) {
+			igui->sd_err_tmr++;
+			if ((igui->sd_err_tmr % CNT_SD_ERR_CHECK) == 0) {
+				app_buzz_ctrl(100, 1); /* 5초에 한 번씩 buzzer on */
+			} 
+			else if (igui->sd_err_tmr >= CNT_SYS_SHUTDOWN_CHECK) {
+				/* system off : 정해진 시나리오가 없다. */
+				app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
+				app_set_write();
+				app_mcu_pwr_off(OFF_NORMAL);
+			}
+		}
+
+//# -------------- End of Damaged SD Card EVENT Handler----------------------------------------
 		tObj->cmd = 0;
 		app_msleep(UI_CYCLE_TIME);
 	}
-
-#ifdef OSD_SWVERSION
-    if(igui->start)
-        gui_tvo_exit() ;
-#endif
 
 	tObj->active = 0;
 	aprintf("...exit\n");
@@ -347,7 +243,7 @@ int app_gui_init(void)
 	app_thr_obj *tObj;
 
 	//#--- create thread
-    igui->tmr_cnt = 0; igui->voip_tmr = 0;
+    igui->tmr_cnt=0; igui->voip_tmr=0; igui->sd_err_tmr=0;
 	tObj = &igui->uObj;
     if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
     	eprintf("create gui thread\n");

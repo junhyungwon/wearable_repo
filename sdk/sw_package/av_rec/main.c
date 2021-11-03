@@ -382,7 +382,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 	{
 		// TODO File Type check and then select close or not 
 //        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
-	    if ((irec->old_min != ts.tm_min && minute_change || irec->rec_evt_cnt > 0))
+	    if ((irec->old_min != ts.tm_min && minute_change) || (irec->rec_evt_cnt > 0))
 	    {
             if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
                 irec->old_min = 0 ; 
@@ -490,7 +490,6 @@ static void *THR_rec_evt(void *prm)
 	int cmd, exit=0, ret=0;
 	int i, frame_num, read_idx=0;
 	stream_info_t *ifr;
-	char msg[256]={0,};
 	char *s = NULL; 
 	int err_exit=0;
 	
@@ -523,10 +522,7 @@ static void *THR_rec_evt(void *prm)
 				break;
 			} else {
 				if (print_limit) {
-					memset(msg, 0, sizeof(msg));
-					sprintf(msg, "can't read frame! plz check capture dev.");
-					avrec_log(msg);
-					eprintf("%s\n", msg);
+					eprintf("can't read frame! plz check capture dev!\n");
 					print_limit = 0;
 				}
 				/* encoder에서 데이터가 늦게 출력되는 경우가 발생. */
@@ -543,24 +539,21 @@ static void *THR_rec_evt(void *prm)
 		    ret = evt_file_open(&imem->ifr[read_idx], cmd);
 			if (ret < 0) {
 				send_msg(AV_CMD_REC_ERR, NULL);
-				memset(msg, 0, sizeof(msg));
-				sprintf(msg, "1.Failed to open AVI (%s)!", irec->fname);
-				avrec_log(msg);
-				eprintf("%s\n", msg);
-				continue;
+				eprintf("1.Failed to open AVI (%s)\n", irec->fname);
+				continue; /* wait event로 변경됨 */
 			} 
 		}
 
 		while (1)
 		{
 			/* recv_msg() 에 의해서 tObj->cmd 값이 변경됨. */
-			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP)
 				break;
-			}
 
 			frame_num = get_valid_frame(read_idx);
 			if (frame_num < 10) {
 				app_msleep(10);
+				//dprintf("Get %d frames (minimum 10 encoded frame)\n", frame_num);
 				continue;
 			}
 
@@ -610,7 +603,7 @@ static void *THR_rec_evt(void *prm)
 						eprintf("2.Failed to open AVI (%s)!\n", irec->fname);
 						break; 
 					}
-				}
+				} 
 				
 				if (irec->fevt != NULL) 
 				{
@@ -675,7 +668,8 @@ static void *THR_rec_evt(void *prm)
 				        }
 				    }
 					#endif
-				}
+				}/* if (irec->fevt != NULL) */
+				
 				read_idx = idx_increase(read_idx);
 				if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
 					break;
@@ -683,11 +677,12 @@ static void *THR_rec_evt(void *prm)
 			} /* for (i = 0; i < frame_num; i++) */
 			
 			if (err_exit) {
-				eprintf("file system error!!.. exit loop.\n");
+				eprintf("file system error!!\n");
 				break;
 			}
 		} /* while (1) */
 		
+		dprintf("record loop exit!...\n");
 		if (!err_exit) {
 			s = strstr(irec->fname, "/mmc/DCIM/R_") ;
 			if(s == NULL && irec->pre_type == 1) { // event or SOS
@@ -698,6 +693,9 @@ static void *THR_rec_evt(void *prm)
 				evt_file_close();
 				dprintf("record done!\n");
 			}
+		} else {
+			/* Next Loop를 위한 초기화 */
+			err_exit = 0;
 		}
 	} /* while (!exit) */
 
@@ -774,19 +772,6 @@ static void app_main(void)
 	Msg_Kill(irec->qid);
 	
 	dprintf("exit...\n");
-}
-
-/*****************************************************************************
-* @brief    system log write
-* @section  [desc]
-*****************************************************************************/
-void avrec_log(char *msg)
-{
-	char tmpMsg[256] = {0,};
-	
-	memset(tmpMsg, 0, sizeof(tmpMsg));
-	snprintf(tmpMsg, sizeof(tmpMsg), "[av_rec] %s", msg);
-	syslog(LOG_ERR, "%s\n", tmpMsg);
 }
 
 /*****************************************************************************

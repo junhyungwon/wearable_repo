@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -20,6 +21,9 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 	// Alloc object
 	AVIFILE* pAVIFile;
 	pAVIFile = (AVIFILE*) malloc(sizeof(AVIFILE));
+	if (pAVIFile == NULL) {
+		return PROC_ERROR;
+	}
 	memset(pAVIFile, 0, sizeof(AVIFILE));
 
 	// Open file

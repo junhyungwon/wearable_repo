@@ -123,8 +123,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	favi = LIBAVI_createAvi(filename, &aviInfo);
 	if (favi == NULL) {
-        avrec_log(" !!! file open failed !!!");
-		eprintf("avi save handle is NULL!\n");
+		eprintf("LIBAVI_createAvi failed!\n");
 	}
 
 	return favi;

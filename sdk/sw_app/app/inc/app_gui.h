@@ -18,27 +18,9 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 
-//#define OSD_SWVERSION
-
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-#ifdef OSD_SWVERSION
-
-typedef struct {
-        int fd;
-        unsigned int w;
-        unsigned int h;
-        Upix *buf;
-        unsigned int size;
-} gfx_t;
-
-typedef struct {
-        gfx_t tvo;
-        gfx_t lcd;
-} app_gfx_t;
-
-#endif
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype
