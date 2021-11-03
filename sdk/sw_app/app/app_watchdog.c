@@ -18,7 +18,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define WD_CYCLE_TIME			500	//# ms
+#define WD_CYCLE_TIME			500	 //# ms
 #define WD_TIME					(WD_CYCLE_TIME*3)
 
 /* (60s - 10)*1000 */
@@ -55,8 +55,7 @@ static void get_wd_name(char *name)
 }
 
 /*****************************************************************************
- * @brief    gui main function
- * @section  DESC Description
+ * @brief    watchdog main function
  *   - desc
 *****************************************************************************/
 static void *THR_watchdog(void *prm)
@@ -65,7 +64,8 @@ static void *THR_watchdog(void *prm)
 	int cmd, res, exit=0;
 	int wd_cycle = 0, wd_detect=0, pre_wd = 0;
 	char wd_name[MAX_CHAR_64], msg[MAX_CHAR_128];
-
+	int sd_err_tmr = 0; 
+	
 	aprintf("enter...\n");
 	tObj->active = 1;
 
@@ -80,27 +80,17 @@ static void *THR_watchdog(void *prm)
 		//# ------------------- watchdog handler --------------------------------------
 		if ((wd_cycle != 0) && (wd_cycle % WD_TIME == 0))
 		{
-			//if (app_cfg->wd_flags == WD_TOT)
-			if (app_cfg->wd_flags == app_cfg->wd_tot)
-			{
+			if (app_cfg->wd_flags == app_cfg->wd_tot) {
 				app_mcu_wd_keep_alive();
 				app_cfg->wd_flags = 0;
 				wd_detect = 0;
-				if(pre_wd)
-				{	
-				    app_leds_sys_normal_ctrl();
-					pre_wd = 0 ;
-				    sprintf(msg, " !!! GetOut of WATCHDOG !!!");
-				    dprintf("%s\n", msg);
+				if (pre_wd) {	
+					app_leds_sys_normal_ctrl();
+					pre_wd = 0;
+					dprintf("!!! GetOut of WATCHDOG !!!\n");
 				}
-			}
-			else {
+			} else {
 				wd_detect++;
-				memset(wd_name, 0, sizeof(wd_name));
-				get_wd_name(wd_name);
-				sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
-								app_cfg->wd_tot, wd_name);
-				dprintf("%s\n", msg);
 				if ((wd_detect > 10) && (pre_wd == 0)) {
 					/* LED blink */
 					app_leds_sys_error_ctrl();
@@ -108,11 +98,15 @@ static void *THR_watchdog(void *prm)
 				}
 				
 				if (wd_detect == WD_LOG_CNT) {
+					memset(wd_name, 0, sizeof(wd_name));
+					get_wd_name(wd_name);
+					sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
+								app_cfg->wd_tot, wd_name);
 					sysprint("%s\n", msg);
 					sync();
 				}
 			}
-		}
+		} /* if ((wd_cycle != 0) && (wd_cycle % WD_TIME == 0)) */
 		
 		tObj->cmd = 0;
 		wd_cycle += WD_CYCLE_TIME;
@@ -126,7 +120,7 @@ static void *THR_watchdog(void *prm)
 }
 
 /*****************************************************************************
-* @brief    gui thread start/stop function
+* @brief    watchdog thread start/stop function
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
@@ -137,7 +131,7 @@ int app_watchdog_init(void)
 	//#--- create thread
 	tObj = &iwatch->wObj;
     if (thread_create(tObj, THR_watchdog, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create gui thread\n");
+    	eprintf("create watchdog thread\n");
 		return EFAIL;
     }
 	
@@ -149,7 +143,7 @@ void app_watchdog_exit(void)
 {
 	app_thr_obj *tObj;
 
-    tObj = &iwatch->wObj;
+	tObj = &iwatch->wObj;
     event_send(tObj, APP_CMD_STOP, 0, 0);
 
     while(tObj->active)

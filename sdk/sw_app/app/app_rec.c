@@ -338,11 +338,11 @@ static int _is_enable_rec_start(int rec_type)
 		return EFAIL;
 	}
 
-	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || !app_cfg->ste.b.mmc || 
+	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || app_cfg->ste.b.mmc_err || 
 		app_cfg->ste.b.busy || (app_cfg->vid_count == 0)) 
 	{
 		eprintf("can't record cuz %s %s %s %s %s\n",
-			app_cfg->ste.b.mmc?"":"no MMC!", app_cfg->ste.b.busy?"system busy":"",
+			app_cfg->ste.b.mmc_err?"Damaged MMC":"", app_cfg->ste.b.busy?"system busy":"",
 			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec",
 			(app_cfg->vid_count > 0)?"":"no video detect");
 		return EFAIL;
