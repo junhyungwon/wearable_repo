@@ -715,6 +715,10 @@ int app_file_init(void)
 		}
 	}
 	
+	//# default LED 상태와 용량을 체크 (overwrite 모드 해제하면 녹화 안됨)
+	_check_threshold_size(ifile);
+	app_file_update_disk_usage();
+	
     //#--- create normal record thread
 	status = OSA_mutexCreate(&(ifile->mutex_file));
     OSA_assert(status == OSA_SOK);
