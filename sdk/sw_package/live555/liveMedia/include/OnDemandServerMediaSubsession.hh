@@ -35,7 +35,24 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "RTCP.hh"
 #endif
 
+// 20140706 albert.liao modified start
+#ifndef _RTP_SOURCE_HH
+#include "RTPSource.hh"
+#endif
+#ifndef _BASIC_UDP_SOURCE_HH
+#include "BasicUDPSource.hh"
+#endif
+#ifndef _FILE_SINK_HH
+#include "FileSink.hh"
+#endif
+// 20140706 albert.liao modified end
+
 class OnDemandServerMediaSubsession: public ServerMediaSubsession {
+public:
+  // 20140706 albert.liao modified start
+  void setSubsessionAsBackChannel(bool bEnable=true);
+  // 20140706 albert.liao modified end
+    
 protected: // we're a virtual base class
   OnDemandServerMediaSubsession(UsageEnvironment& env, Boolean reuseFirstSource,
 				portNumBits initialPortNum = 6970,
@@ -44,6 +61,7 @@ protected: // we're a virtual base class
 
 protected: // redefined virtual functions
   virtual char const* sdpLines();
+  virtual char const* sdpLinesNew(Boolean bRequired);
   virtual void getStreamParameters(unsigned clientSessionId,
 				   netAddressBits clientAddress,
                                    Port const& clientRTPPort,
@@ -71,6 +89,11 @@ protected: // redefined virtual functions
 			      double streamEndTime, u_int64_t& numBytes);
   virtual void setStreamScale(unsigned clientSessionId, void* streamToken, float scale);
   virtual float getCurrentNPT(void* streamToken);
+
+// 20140706 albert.liao modified start
+  virtual FileSink* getStreamSink(void* streamToken);
+// 20140706 albert.liao modified end
+
   virtual FramedSource* getStreamSource(void* streamToken);
   virtual void getRTPSinkandRTCP(void* streamToken,
 				 RTPSink const*& rtpSink, RTCPInstance const*& rtcp);
@@ -79,6 +102,11 @@ protected: // redefined virtual functions
 protected: // new virtual functions, possibly redefined by subclasses
   virtual char const* getAuxSDPLine(RTPSink* rtpSink,
 				    FramedSource* inputSource);
+// 20140706 albert.liao modified start
+  virtual char const* getAuxSDPLineForBackChannel(FileSink* mediaSink,
+                                      RTPSource* rtpSource);
+// 20140706 albert.liao modified start
+    
   virtual void seekStreamSource(FramedSource* inputSource, double& seekNPT, double streamDuration, u_int64_t& numBytes);
     // This routine is used to seek by relative (i.e., NPT) time.
     // "streamDuration", if >0.0, specifies how much data to stream, past "seekNPT".  (If <=0.0, all remaining data is streamed.)
@@ -91,6 +119,10 @@ protected: // new virtual functions, possibly redefined by subclasses
   virtual void setStreamSourceScale(FramedSource* inputSource, float scale);
   virtual void setStreamSourceDuration(FramedSource* inputSource, double streamDuration, u_int64_t& numBytes);
   virtual void closeStreamSource(FramedSource* inputSource);
+  
+// 20140706 albert.liao modified start
+  virtual void closeStreamSink(MediaSink *outputSink);
+// 20140706 albert.liao modified end 
 
 protected: // new virtual functions, defined by all subclasses
   virtual FramedSource* createNewStreamSource(unsigned clientSessionId,
@@ -99,6 +131,16 @@ protected: // new virtual functions, defined by all subclasses
   virtual RTPSink* createNewRTPSink(Groupsock* rtpGroupsock,
 				    unsigned char rtpPayloadTypeIfDynamic,
 				    FramedSource* inputSource) = 0;
+
+// 20140706 albert.liao modified start
+  // use RTPSource to read data, and use FileSink to write data to file
+  virtual FileSink* createNewStreamDestination(unsigned clientSessionId,
+					      unsigned& estBitrate);
+      // "estBitrate" is the stream's estimated bitrate, in kbps
+  virtual RTPSource* createNewRTPSource(Groupsock* rtpGroupsock,
+				    unsigned char rtpPayloadTypeIfDynamic,
+				    FileSink* outputSink);				    
+// 20140706 albert.liao modified end
 
 protected: // new virtual functions, may be redefined by a subclass:
   virtual Groupsock* createGroupsock(struct in_addr const& addr, Port port);
@@ -128,6 +170,13 @@ public:
 private:
   void setSDPLinesFromRTPSink(RTPSink* rtpSink, FramedSource* inputSource,
 			      unsigned estBitrate);
+			      
+// 20140706 albert.liao modified start			      
+  void setSDPLinesFromMediaSink(RTPSource* rtpSource, FileSink* mediaSink,
+			      unsigned estBitrate);
+  char* getRtpMapLine(RTPSource* rtpSource) const;
+// 20140706 albert.liao modified end 
+
       // used to implement "sdpLines()"
 
 protected:
@@ -135,6 +184,10 @@ protected:
   HashTable* fDestinationsHashTable; // indexed by client session id
 
 private:
+// 20140706 albert.liao modified start
+  Boolean           fAreBackChannel;
+// 20140706 albert.liao modified end
+     
   Boolean fReuseFirstSource;
   portNumBits fInitialPortNum;
   Boolean fMultiplexRTCPWithRTP;
@@ -173,11 +226,22 @@ public:
 
 class StreamState {
 public:
+// 20140706 albert.liao modified start
+//  StreamState(OnDemandServerMediaSubsession& master,
+//              Port const& serverRTPPort, Port const& serverRTCPPort,
+//	      RTPSink* rtpSink, BasicUDPSink* udpSink,
+//	      unsigned totalBW, FramedSource* mediaSource,
+//	      Groupsock* rtpGS, Groupsock* rtcpGS);
   StreamState(OnDemandServerMediaSubsession& master,
-              Port const& serverRTPPort, Port const& serverRTCPPort,
-	      RTPSink* rtpSink, BasicUDPSink* udpSink,
-	      unsigned totalBW, FramedSource* mediaSource,
-	      Groupsock* rtpGS, Groupsock* rtcpGS);
+                           Port const& serverRTPPort, Port const& serverRTCPPort,
+  			 RTPSink* rtpSink, BasicUDPSink* udpSink,
+  			 unsigned totalBW, FramedSource* mediaSource,
+  			 Groupsock* rtpGS, Groupsock* rtcpGS,
+          RTPSource* rtpSource, BasicUDPSource* udpSource, FileSink* fFileSink); 
+          // may change to MediaSink
+// 20140706 albert.liao modified end    
+
+
   virtual ~StreamState();
 
   void startPlaying(Destinations* destinations, unsigned clientSessionId,
@@ -196,6 +260,12 @@ public:
   Port const& serverRTCPPort() const { return fServerRTCPPort; }
 
   RTPSink* rtpSink() const { return fRTPSink; }
+  
+// 20140706 albert.liao modified start
+  RTPSource* rtpSource() const { return fRTPSource; }
+  FileSink* mediaSink() const {return fFileSink;}  
+// 20140706 albert.liao modified end  
+  
   RTCPInstance* rtcpInstance() const { return fRTCPInstance; }
 
   float streamDuration() const { return fStreamDuration; }
@@ -222,6 +292,12 @@ private:
 
   Groupsock* fRTPgs;
   Groupsock* fRTCPgs;
+  
+// 20140706 albert.liao modified start
+  RTPSource*        fRTPSource;
+  BasicUDPSource*   fUDPSource;
+  FileSink*         fFileSink;
+// 20140706 albert.liao modified end  
 };
 
 #endif

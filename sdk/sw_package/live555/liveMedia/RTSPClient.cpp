@@ -356,7 +356,7 @@ unsigned RTSPClient::responseBufferSize = 20000; // default value; you can reass
 RTSPClient::RTSPClient(UsageEnvironment& env, char const* rtspURL,
 		       int verbosityLevel, char const* applicationName,
 		       portNumBits tunnelOverHTTPPortNum, int socketNumToServer)
-  : Medium(env),
+  : Medium(env), bRequireBackChannel(false),
     desiredMaxIncomingPacketSize(0), fVerbosityLevel(verbosityLevel), fCSeq(1),
     fAllowBasicAuthentication(True), fServerAddress(0),
     fTunnelOverHTTPPortNum(tunnelOverHTTPPortNum),
@@ -643,7 +643,13 @@ Boolean RTSPClient::setRequestFields(RequestRecord* request,
   // Set various fields that will appear in our outgoing request, depending upon the particular command that we are sending.
 
   if (strcmp(request->commandName(), "DESCRIBE") == 0) {
-    extraHeaders = (char*)"Accept: application/sdp\r\n";
+      
+    // 20140625 albert.liao modified start
+    //extraHeaders = (char*)"Accept: application/sdp\r\n";
+    // Enable below header to support ONVIF
+    extraHeaders = (char*)( bRequireBackChannel ? "Accept: application/sdp\r\nRequire: www.onvif.org/ver20/backchannel\r\n" : "Accept: application/sdp\r\n");
+    // 20140625 albert.liao modified end
+      
   } else if (strcmp(request->commandName(), "OPTIONS") == 0) {
     // If we're currently part of a session, create a "Session:" header (in case the server wants this to indicate
     // client 'liveness); this makes up our 'extra headers':

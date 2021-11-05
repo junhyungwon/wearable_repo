@@ -115,6 +115,7 @@ live555:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/UsageEnvironment
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/groupsock
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/liveMedia
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/BackChannel
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer/netra_interface
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer
 
@@ -123,6 +124,7 @@ live555_clean:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/liveMedia clean
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/UsageEnvironment clean
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/groupsock clean
+	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/BackChannel clean
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer/netra_interface clean
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/live555/netra_streamer clean
 

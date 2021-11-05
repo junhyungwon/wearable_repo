@@ -214,6 +214,10 @@ Boolean MediaSession::initializeWithSDP(char const* sdpDescription) {
       if (subsession->parseSDPAttribute_x_dimensions(sdpLine)) continue;
       if (subsession->parseSDPAttribute_framerate(sdpLine)) continue;
 
+      // 20140624 albert.liao modified start
+      if (subsession->parseSDPAttribute_flag(sdpLine)) continue;
+      // 20140624 albert.liao modified end
+
       // (Later, check for malformed lines, and other valid SDP lines#####)
     }
     if (sdpLine != NULL) subsession->fSavedSDPLines[sdpLine-mStart] = '\0';
@@ -812,31 +816,72 @@ Boolean MediaSubsession::initiate(int useSpecialRTPoffset) {
       fRTCPSocket->changeDestinationParameters(fSourceFilterAddr,0,~0);
     }
 
-    // Create "fRTPSource" and "fReadSource":
-    if (!createSourceObjects(useSpecialRTPoffset)) break;
+    // BKKIM -- start
+    if (fFlag == FLAG_RECVONLY)
+    {
+      // Create "fRTPSource" and "fReadSource":
+      if (!createSourceObjects(useSpecialRTPoffset)) break;
 
-    if (fReadSource == NULL) {
-      env().setResultMsg("Failed to create read source");
-      break;
-    }
+      if (fReadSource == NULL) {
+        env().setResultMsg("Failed to create read source");
+        break;
+      }
 
-    // Finally, create our RTCP instance. (It starts running automatically)
-    if (fRTPSource != NULL && fRTCPSocket != NULL) {
-      // If bandwidth is specified, use it and add 5% for RTCP overhead.
-      // Otherwise make a guess at 500 kbps.
-      unsigned totSessionBandwidth
-	= fBandwidth ? fBandwidth + fBandwidth / 20 : 500;
-      fRTCPInstance = RTCPInstance::createNew(env(), fRTCPSocket,
-					      totSessionBandwidth,
-					      (unsigned char const*)
-					      fParent.CNAME(),
-					      NULL /* we're a client */,
-					      fRTPSource);
-      if (fRTCPInstance == NULL) {
-	env().setResultMsg("Failed to create RTCP instance");
-	break;
+      // Finally, create our RTCP instance. (It starts running automatically)
+      if (fRTPSource != NULL && fRTCPSocket != NULL) {
+        // If bandwidth is specified, use it and add 5% for RTCP overhead.
+        // Otherwise make a guess at 500 kbps.
+        unsigned totSessionBandwidth
+		 = fBandwidth ? fBandwidth + fBandwidth / 20 : 500;
+        fRTCPInstance = RTCPInstance::createNew(env(), fRTCPSocket,
+                                                totSessionBandwidth,
+                                                (unsigned char const *)
+                                                    fParent.CNAME(),
+                                                NULL /* we're a client */,
+                                                fRTPSource);
+        if (fRTCPInstance == NULL) {
+          env().setResultMsg("Failed to create RTCP instance");
+          break;
+        }
       }
     }
+    else if (fFlag == FLAG_SENDONLY) {
+
+      // Create "fRTPSink" and "fReadSource":
+      if (!createSinkObjects(useSpecialRTPoffset))
+        break;
+
+      if (fRTPSink == NULL)
+      {
+        env().setResultMsg("Failed to create rtp sink");
+        break;
+      }
+
+      // Finally, create our RTCP instance. (It starts running automatically)
+      if (fRTPSink != NULL && fRTCPSocket != NULL)
+      {
+        // If bandwidth is specified, use it and add 5% for RTCP overhead.
+        // Otherwise make a guess at 500 kbps.
+        unsigned totSessionBandwidth = fBandwidth ? fBandwidth + fBandwidth / 20 : 500;
+        fRTCPInstance = RTCPInstance::createNew(env(), fRTCPSocket,
+                                                totSessionBandwidth,
+                                                (unsigned char const *)
+                                                    fParent.CNAME(),
+                                                NULL /* we're a client */,
+                                                fRTPSource);
+        if (fRTCPInstance == NULL)
+        {
+          env().setResultMsg("Failed to create RTCP instance");
+          break;
+        }
+      }
+      sink = fRTPSink;
+    }
+    else
+    {
+      return False;
+    }
+    // BKKIM -- end
 
     return True;
   } while (0);
@@ -1178,6 +1223,28 @@ Boolean MediaSubsession::parseSDPAttribute_framerate(char const* sdpLine) {
 
   return parseSuccess;
 }
+
+// 20140624 albert.liao modified start
+int MediaSubsession::getFlag(void)
+{
+    return fFlag;
+}
+
+Boolean MediaSubsession::parseSDPAttribute_flag(char const* sdpLine) {
+    // Check for a "a=sendonly|recvonly"
+    Boolean parseSuccess = False;
+
+    if (strncmp(sdpLine, "a=sendonly", 10) == 1) {
+        parseSuccess = True;
+        fFlag = (unsigned)FLAG_RECVONLY;
+    } else if (strncmp(sdpLine, "a=recvonly", 10) == 1) {
+        parseSuccess = True;
+        fFlag = (unsigned)FLAG_SENDONLY;
+    }
+
+    return parseSuccess;
+}
+// 20140624 albert.liao modified end
 
 Boolean MediaSubsession::createSourceObjects(int useSpecialRTPoffset) {
   do {

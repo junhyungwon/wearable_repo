@@ -1,4 +1,9 @@
-NEXXONE_0.90.07_full_N.dat
+bin/rtspserver
+bin/config.xml
+bin/hw_test_binary*
+hw_test_binary*.zip
+NEXX*_full*.dat
+sw_app/hw_diag/MAKEFILE.DEPEND
 remote_update.sh
 update_htmls.sh
 bin/fw_version.txt

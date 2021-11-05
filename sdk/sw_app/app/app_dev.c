@@ -339,7 +339,9 @@ static void *THR_dev(void *prm)
 		//# For button enable, when camera didn't connected 
 		if (rkey == KEY_SHORT) {		
 			/* Short KEY */
+		#if SYS_CONFIG_VOIP
 			app_voip_event_noty();
+		#endif
 			sysprint("[APP_VOIP] Voip Key Pressed !! \n") ;	
 		} 
 		else if (rkey == KEY_LONG) {	 // Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 
