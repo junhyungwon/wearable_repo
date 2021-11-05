@@ -329,11 +329,14 @@ static void *THR_snd_cap(void *prm)
 		//ifr->t_msec = (Uint32)(captime%1000);
 		app_memcpy(addr, isnd->snd_in.sampv, bytes);
 
-#if 0 // Audio Streaming for NEXX360
-		gettimeofday(&tv, NULL) ;
-		timestamp = tv.tv_sec + tv.tv_usec*1000 ;
-		app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
-#endif// Audio Streaming for NEXX360
+#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXX 떨...
+		{
+			struct timeval tv;
+			gettimeofday(&tv, NULL);
+			long timestamp = tv.tv_sec + tv.tv_usec * 1000;
+			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0, 2, timestamp);
+		}
+#endif//SYS_CONFIG_BACKCHANNEL
 
 #endif
 
