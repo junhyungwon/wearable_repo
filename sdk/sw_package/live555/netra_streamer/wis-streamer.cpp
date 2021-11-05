@@ -39,6 +39,7 @@
 #include <Msg_Def.h>
 #include "WW_H264VideoSource.h"
 #include "WW_H264VideoServerMediaSubsession.h"
+#include "WaveBackChannelAudioServerMediaSubsession.hh"
 
 enum  StreamingMode
 {
@@ -79,7 +80,7 @@ int Mpeg4VideoBitrate = 1500000;
 int H264VideoBitrate = 100000;
 int audioOutputBitrate = 128000;
 
-unsigned audioSamplingFrequency = 16000;
+unsigned audioSamplingFrequency = 8000;
 unsigned audioNumChannels = 1;
 int audio_enable = 1;
 unsigned audioType = AUDIO_G711;
@@ -452,6 +453,23 @@ int main(int argc, char** argv) {
 		sms->addSubsession(WISPCMAudioServerMediaSubsession::createNew(sms->envir(), *H264InputDevice[video_type]));
 	}
 
+////////////////////////////////////////////////////////////////////////////////
+#if 1 // Stream 3: backchannel AAC audio ////////////////////////////////////////////////////////////////////
+	// TODO: modify here to support backchannel
+	// implement a new class named ADTSBackChannelAudioFileServerMediaSubsession
+	// use RTPSource to receive data and use ADTSAudioFileSink to save data to file
+	// ADTSBackChannelAudioFileServerMediaSubsession *sub3 = ADTSBackChannelAudioFileServerMediaSubsession
+	// WaveBackChannelAudioFileServerMediaSubsession *sub3 = WaveBackChannelAudioFileServerMediaSubsession::createNew(*env, outputFileName, reuseFirstSource);
+	// WaveBackChannelAudioServerMediaSubsession *sub3 = WaveBackChannelAudioServerMediaSubsession::createNew(*env, outputFileName, reuseFirstSource);
+	char const* outputFileName = "receive.pcm"; // 이 파일은 저장용도로 사용할 예정...
+    Boolean reuseFirstSource = False;
+	WaveBackChannelAudioServerMediaSubsession *sub3 = WaveBackChannelAudioServerMediaSubsession::createNew(*env, outputFileName, reuseFirstSource);
+	sub3->setSubsessionAsBackChannel();
+	int bFlag = sms->addSubsession(sub3);
+	if (bFlag == False) printf("addSubsession for %s error\n", outputFileName);
+#endif	
+////////////////////////////////////////////////////////////////////////////////
+
 	rtspServer->addServerMediaSession(sms);
 
 	char *url = rtspServer->rtspURL(sms);
@@ -695,3 +713,23 @@ int main(int argc, char** argv) {
   return 0; // only to prevent compiler warning
 
 }
+
+// 20140706 albert.liao modified start
+FramedSource* MediaSubsession
+::createNewStreamSource(unsigned /*clientSessionId*/, unsigned& estBitrate) {
+   return NULL;
+}
+
+RTPSink* MediaSubsession
+::createNewRTPSink(Groupsock* rtpGroupsock,
+                   unsigned char rtpPayloadTypeIfDynamic,
+                   FramedSource* inputSource) {
+    
+   return NULL;
+}
+
+Boolean MediaSubsession::createSinkObjects(int useSpecialRTPoffset)
+{
+   return False;
+}
+// 20140706 albert.liao modified end

@@ -47,6 +47,7 @@ protected:
 
 protected: // redefined virtual functions
   virtual char const* sdpLines();
+  virtual char const* sdpLinesNew(Boolean bRequired=False);
   virtual void getStreamParameters(unsigned clientSessionId,
 				   netAddressBits clientAddress,
                                    Port const& clientRTPPort,

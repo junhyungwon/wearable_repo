@@ -65,7 +65,7 @@ ServerMediaSession::ServerMediaSession(UsageEnvironment& env,
 				       Boolean isSSM, char const* miscSDPLines)
   : Medium(env), fIsSSM(isSSM), fSubsessionsHead(NULL),
     fSubsessionsTail(NULL), fSubsessionCounter(0),
-    fReferenceCount(0), fDeleteWhenUnreferenced(False) {
+    fReferenceCount(0), fDeleteWhenUnreferenced(False), fRequiredBackChannel(False) {
   fStreamName = strDup(streamName == NULL ? "" : streamName);
 
   char* libNamePlusVersionStr = NULL; // by default

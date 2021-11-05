@@ -29,6 +29,7 @@ INCLUDES = -I . \
 	-I$(LIVE_DIR)/UsageEnvironment/include \
 	-I$(LIVE_DIR)/groupsock/include \
 	-I$(LIVE_DIR)/liveMedia/include \
+	-I$(LIVE_DIR)/BackChannel/include \
 	-I$(LIVE_DIR)/netra_streamer/netra_interface \
         $(CMEM_INC)
 
@@ -39,10 +40,12 @@ LIBS = $(CMEM_LIB)
 LIBS += -L$(LIVE_DIR)/BasicUsageEnvironment -lBasicUsageEnvironment \
 	-L$(LIVE_DIR)/UsageEnvironment -lUsageEnvironment \
 	-L$(LIVE_DIR)/groupsock -lgroupsock \
+	-L$(LIVE_DIR)/BackChannel -lbackChannel -lpthread\
 	-L$(LIVE_DIR)/liveMedia -lliveMedia \
 	$(LIVE_DIR)/BasicUsageEnvironment/libBasicUsageEnvironment.a \
 	$(LIVE_DIR)/UsageEnvironment/libUsageEnvironment.a \
 	$(LIVE_DIR)/groupsock/libgroupsock.a \
+	$(LIVE_DIR)/BackChannel/libbackChannel.a \
 	$(LIVE_DIR)/liveMedia/libliveMedia.a
 
 OBJS = wis-streamer.o Err.o NETRAInput.o \

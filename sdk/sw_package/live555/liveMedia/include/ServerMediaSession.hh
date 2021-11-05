@@ -66,6 +66,8 @@ public:
   void incrementReferenceCount() { ++fReferenceCount; }
   void decrementReferenceCount() { if (fReferenceCount > 0) --fReferenceCount; }
   Boolean& deleteWhenUnreferenced() { return fDeleteWhenUnreferenced; }
+  Boolean getRequiredBackChannel() { return fRequiredBackChannel;}
+  void setRequiredBackChannel(Boolean bRequired=False) { fRequiredBackChannel = bRequired;}
 
   void deleteAllSubsessions();
     // Removes and deletes all subsessions added by "addSubsession()", returning us to an 'empty' state
@@ -100,6 +102,7 @@ private:
   struct timeval fCreationTime;
   unsigned fReferenceCount;
   Boolean fDeleteWhenUnreferenced;
+  Boolean fRequiredBackChannel;
 };
 
 
@@ -122,6 +125,7 @@ public:
   unsigned trackNumber() const { return fTrackNumber; }
   char const* trackId();
   virtual char const* sdpLines() = 0;
+  virtual char const* sdpLinesNew(Boolean bRequired=False) = 0;
   virtual void getStreamParameters(unsigned clientSessionId, // in
 				   netAddressBits clientAddress, // in
 				   Port const& clientRTPPort, // in

@@ -68,6 +68,11 @@ Boolean PassiveServerMediaSubsession::rtcpIsMuxed() {
 }
 
 char const*
+PassiveServerMediaSubsession::sdpLinesNew(Boolean bRequired) {
+  return sdpLines();
+}
+
+char const*
 PassiveServerMediaSubsession::sdpLines() {
   if (fSDPLines == NULL ) {
     // Construct a set of SDP lines that describe this subsession:

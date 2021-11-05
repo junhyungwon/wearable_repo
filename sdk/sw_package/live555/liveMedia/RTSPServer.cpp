@@ -324,6 +324,8 @@ void RTSPServer::RTSPClientConnection
       strcat(urlTotalSuffix, "/");
     }
     strcat(urlTotalSuffix, urlSuffix);
+
+    // urlTotalSuffix => "all"
     
     if (!authenticationOK("DESCRIBE", urlTotalSuffix, fullRequestStr)) break;
     
@@ -336,6 +338,13 @@ void RTSPServer::RTSPClientConnection
       handleCmd_notFound();
       break;
     }
+
+    if(NULL != strstr(fullRequestStr, "Require: www.onvif.org/ver20/backchannel")){
+      session->setRequiredBackChannel(True);
+    } else {
+      session->setRequiredBackChannel(False);
+    }
+    
     
     // Increment the "ServerMediaSession" object's reference count, in case someone removes it
     // while we're using it:
@@ -358,7 +367,7 @@ void RTSPServer::RTSPClientConnection
     snprintf((char*)fResponseBuffer, sizeof fResponseBuffer,
 	     "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
 	     "%s"
-	     "Content-Base: %s/\r\n"
+	     "Content-Base: %s\r\n"
 	     "Content-Type: application/sdp\r\n"
 	     "Content-Length: %d\r\n\r\n"
 	     "%s",
@@ -742,8 +751,9 @@ void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
 	  handleCmd_sessionNotFound();
 	} else {
 	  // Normal case:
-	  handleCmd_OPTIONS();
-	}
+        if (authenticationOK(cmdName, urlSuffix, (char const*)fRequestBuffer))
+          handleCmd_OPTIONS();
+  }
       } else if (urlPreSuffix[0] == '\0' && urlSuffix[0] == '*' && urlSuffix[1] == '\0') {
 	// The special "*" URL means: an operation on the entire server.  This works only for GET_PARAMETER and SET_PARAMETER:
 	if (strcmp(cmdName, "GET_PARAMETER") == 0) {
