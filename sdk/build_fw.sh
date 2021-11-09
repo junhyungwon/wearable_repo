@@ -13,6 +13,7 @@ function fmenu()
  echo "4. NEXXB                                  "
  echo "5. NEXXB_ONE                              "
  echo "6. NEXX360 Wireless Mux                   "
+ echo "7. NEXX360 Basic for CCTV                 "
  echo "=========================================="
 }
 
@@ -90,6 +91,11 @@ do
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
 			break;;
+		"7" )
+			echo " "
+			echo "select NEXX360 Basic for CCTV "
+			FW_PREFIX="NEXX360C"
+			break;;
 		"6" )
 			echo " "
 			echo "select NEXX360 Wireless MUX"
@@ -156,7 +162,7 @@ echo
 echo "Packaging files..."
 echo
 
-tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt mcu_extb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+tar cvf "$fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt mcu_extb.txt mcu_cctv.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 mv "$fw_name" ../.
 
 # factory distribute package
@@ -169,7 +175,7 @@ echo
 echo "Packaging files..."
 echo
 
-tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt mcu_extb.txt rfs_fit.ubifs rfs_fit.ubifs.md5
+tar cvf "$factory_fw_name" boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt mcu_extb.txt mcu_cctv.txt rfs_fit.ubifs rfs_fit.ubifs.md5
 mv "$factory_fw_name" ../.
 
 # mass production package
@@ -185,7 +191,7 @@ fi
 
 cp ./fit/bin/hw_diag.out ./$masspack_name
 
-cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt mcu_extb.txt rfs_fit.ubifs ./$masspack_name
+cp boot.scr u-boot_fit.min.nand u-boot_fit.bin MLO fw_version.txt uImage_fit mcu_fitt.txt mcu_extb.txt mcu_cctv.txt rfs_fit.ubifs ./$masspack_name
 zip $masspack_name.zip -r $masspack_name
 mv "$masspack_name.zip" ../.
 

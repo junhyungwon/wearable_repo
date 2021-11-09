@@ -64,6 +64,8 @@
 #elif defined(NEXXONE_VOIP)
 #define NEXXONE
 #define MODEL_NAME "NEXXONE"
+#elif defined(NEXX360C)
+#define MODEL_NAME "NEXX360C"
 #endif
 
 
