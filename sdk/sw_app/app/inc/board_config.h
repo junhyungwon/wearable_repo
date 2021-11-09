@@ -103,6 +103,18 @@
 #	define SYS_CONFIG_GPS				1
 #	define SYS_CONFIG_BACKCHANNEL		0
 #	define SYS_MCU_VER					0x0020
+#elif defined(LF_SYS_NEXX360C) //# NEXX360 CCTV (based on nexx360 basic + external battery)
+#	define NEXX360C						
+#	define MODEL_NAME					"NEXX360C"
+#	define MODEL_CH_NUM					4 
+#	define STREAM_CH_NUM				4 
+#	define JPEG_CH_NUM					5 
+#	define MAX_FPS						15
+#	define SYS_CONFIG_VOIP				0
+#	define SYS_CONFIG_WLAN				0
+#	define SYS_CONFIG_GPS				0
+#	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0010
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif

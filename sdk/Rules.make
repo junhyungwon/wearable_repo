@@ -27,6 +27,8 @@ endif
 #    ====> STREAMING: ON, CAM: 1CH, GPS: ON, HDMI: OFF, VOIP: ON
 #  NEXX360W_MUX:
 #    ====> STREAMING: ON, CAM: 4CH, GPS: ON, HDIM: OFF, VOIP: OFF, REC: 1(merged), STREAM :1 (merged)
+#  NEXX360C: NEXX360 Basic for CCTV
+#    ====> STREAMING: OFF, CAM: 4CH, GPS: OFF, HDIM: OFF, VOIP: OFF
 #
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
@@ -36,6 +38,7 @@ endif
 SYSTEM_PLATFORM := NEXXB_ONE
 #SYSTEM_PLATFORM := NEXXONE_VOIP
 #SYSTEM_PLATFORM := NEXX360W_MUX
+#SYSTEM_PLATFORM := NEXX360C
 ######################################################################################
 
 #--- Build Type (debug/release)
@@ -151,6 +154,16 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	USE_VOIP = NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
 	CAM_MANUFACTURER  = AFO
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXX360C)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP := NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER := AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 endif

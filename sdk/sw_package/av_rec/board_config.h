@@ -47,6 +47,10 @@
 #	define NEXX360W_MUX				
 #	define REC_CH_NUM					1
 #	define MAX_FPS						15
+#elif defined(LF_SYS_NEXX360C)
+#	define NEXX360C
+#	define REC_CH_NUM					4
+#	define MAX_FPS						15
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif

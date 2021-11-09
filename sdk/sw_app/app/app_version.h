@@ -31,6 +31,12 @@
 #	else
 #	define FITT360_SW_VER      		"2.09.24.D"
 #	endif
+#elif defined(NEXX360C)
+#	if SW_RELEASE
+#	define FITT360_SW_VER      		"2.09.24C"
+#	else
+#	define FITT360_SW_VER      		"2.09.24.D"
+#	endif
 #elif defined(NEXX360W)
 #	if SW_RELEASE
 #	define FITT360_SW_VER      		"2.09.24N"

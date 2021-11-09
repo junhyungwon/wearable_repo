@@ -37,7 +37,7 @@ static char out_buf[1024];
 
 #if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	#define MAX_FPS 30
-#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C)
 	#define MAX_FPS 15
 #elif defined(FITT360_SECURITY)
 	#define MAX_FPS 15

@@ -63,7 +63,11 @@ static const char *fw_app_name  = "/mmc/app_fitt.out";
 #ifdef EXT_BATT_ONLY
 static const char *fw_mcu_name  = "/mmc/mcu_extb.txt";
 #else
+#if defined(NEXX360C)
+static const char *fw_mcu_name  = "/mmc/mcu_cctv.txt";
+#else
 static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
+#endif /* #if defined(NEXX360C) */
 #endif
 	
 /*----------------------------------------------------------------------------
@@ -368,7 +372,15 @@ static int Delete_updatefile()
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
 		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
-	}		
+	}
+	
+	// delete mcu_cctv.txt
+	memset(cmd, 0, sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "/mmc/mcu_cctv.txt");
+	if (access(cmd, F_OK) == 0) {
+		remove(cmd);
+		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+	}
 	
 	return 0 ;
 }

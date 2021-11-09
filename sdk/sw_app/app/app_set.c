@@ -714,6 +714,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif
+#elif defined(NEXX360C)
+	/* default auto record on */
+	pset->rec_info.auto_rec = ON;
 #else //# NEXX360B, NEXX360H, NEXX360W_MUX
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;

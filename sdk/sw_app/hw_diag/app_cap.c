@@ -368,7 +368,7 @@ int app_cap_start(void)
 	vsysParams.serdesEQ = 2;
 	
 	vsysParams.captMode = CAPT_MODE_720P;
-#if defined(NEXXONE) || defined(NEXX360H) || #defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	vsysParams.numChs = 1;
 #else
 	vsysParams.numChs = 4;
