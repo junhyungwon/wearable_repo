@@ -40,15 +40,13 @@
 #define TIME_DATA_CYCLE		  	100		//# msec, data receive period from micom
 #define TIME_CHK_VLOW			10000	//# msec, low power check time
 #define TIME_CHK_VLEVEL		 	5000	//# msec, battery level check time
-
 #define CNT_CHK_VLOW			(TIME_CHK_VLOW/TIME_DATA_CYCLE)
 #define CNT_CHK_VLEVEL			(TIME_CHK_VLEVEL/TIME_DATA_CYCLE)
 
-#define PSW_EVT_LONG			2
-
 #if defined(NEXX360C)
-#define EBATT_MIN		    	900
+#define LOW_POWER_THRES	    	900
 #else
+#define PSW_EVT_LONG			2
 /* 
  * NEXXB and NEXX Common Voltage 
  */
@@ -86,30 +84,7 @@ typedef struct {
 static app_mcu_t mcu_obj;
 static app_mcu_t *imcu=&mcu_obj;
 
-#if defined(NEXX360C)
-static void delay_3sec_exit(void)
-{
-	struct timeval t1, t2;
-	int tgap=0;
-
-	gettimeofday(&t1, NULL);
-	while ((tgap < MAX_TIME_GAP) && (imcu->val.ebatt > EBATT_MIN)) {
-		gettimeofday(&t2, NULL);
-		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
-		if (tgap <= 0) {
-			/* timesync 에 의해서 gettimeofday 값이 변경되면 무한 루프에 빠진다 */
-			gettimeofday(&t1, NULL);
-		}
-		OSA_waitMsecs(5);
-	}
-	gettimeofday(&t2, NULL);
-
-	printf(" [app] msec[%ld] >>>>>>>> DELAY EXIT  <<<<<<< \n",
-			((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000)));
-
-	mic_msg_exit();
-}
-#else
+#ifndef NEXX360C
 static void delay_3sec_exit(void)
 {
 	struct timeval t1, t2;
@@ -132,7 +107,7 @@ static void delay_3sec_exit(void)
 
 	mic_msg_exit();
 }
-#endif /* #if defined(NEXX360C) */
+#endif /* #ifndef NEXX360C */
 
 void app_mcu_pwr_off(int type)
 {
@@ -143,7 +118,11 @@ void app_mcu_pwr_off(int type)
 	system("/etc/init.d/logging.sh stop");
 	mic_exit_state(type, 0);
 	app_cfg->ste.b.pwr_off = 1;
+#if defined(NEXX360C)
+	mic_msg_exit();
+#else	
 	delay_3sec_exit();
+#endif	
 	OSA_mutexUnlock(&imcu->mutex_3delay);
 }
 
@@ -163,11 +142,14 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 	//# low power check
-	if (ebatt < EBATT_MIN) {
+	//# ebatt를 체크할 경우 크래들 사용이 불가능 해 진다. 따라서 mbatt를 체크하며 크래들 사용 시 
+	//# mbatt는 16V이상, 외장 배터리 사용 시 10V이상 측정되며, 내장 배터리 사용 시 8.4가 측정되므로
+	//# 내장 배터리를 사용하는 경우에는 시스템 Off.
+	if (mbatt < LOW_POWER_THRES) {
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				sysprint("Peek Low Voltage Detected(thres=%d, e=%d)", EBATT_MIN, ebatt);
+				sysprint("Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
