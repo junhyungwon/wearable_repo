@@ -95,7 +95,8 @@ static int submit_settings()
 
         T_CGI_VIDEO_QUALITY vq;
 
-#if defined(NEXXONE) || defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE) || defined(NEXX360C)
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
+    || defined(NEXX360B) || defined(NEXX360C)
 		// Record Options
 		int rec_kbps = 512;
 		if(rec_bps_idx >= 0 && rec_bps_idx < MAX_CNT_REC_KBPS)
