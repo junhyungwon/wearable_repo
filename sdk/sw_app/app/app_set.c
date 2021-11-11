@@ -1082,6 +1082,9 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
+#elif defined(NEXX360C)
+	/* default auto record on */
+	app_set->rec_info.auto_rec = ON;
 #else //# NEXX360B, NEXX360H, NEXX360W_MUX
     app_set->rec_info.auto_rec      = OFF ;
 #endif
