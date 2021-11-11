@@ -431,15 +431,11 @@ int main(int argc, char **argv)
 	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
-//	#if SYS_CONFIG_VOIP
-			/* copy app_fitt.out or full update */
-			ctrl_firmware_update();
-			/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
-			if (app_cfg->ste.b.pwr_off)
-				return 0;
-//	#endif
-#endif
+		/* copy app_fitt.out or full update */
+		ctrl_firmware_update();
+		/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
+		if (app_cfg->ste.b.pwr_off)
+			return 0;
 		/* remove update files */
 		ctrl_reset_nand_update();
 	} else {	//# mmc error
@@ -451,6 +447,7 @@ int main(int argc, char **argv)
 		mic_msg_exit();
 		return -1;
 	}
+	
 	//----------  SD 카드 ----------------------------------------------
 	app_set_open();
     app_setdns() ;  // set resolv.conf
@@ -467,7 +464,6 @@ int main(int argc, char **argv)
 
 	//# start log system
     app_ipins_init();
-	
 	__syslogd_enable(1);
 	
 	app_gui_init();
