@@ -303,7 +303,7 @@ static void *THR_dev(void *prm)
 			}
 		}
 		#endif /* #if SYS_CONFIG_VOIP */
-#elif defined(NEXX360B)
+#elif defined(NEXX360B) || defined(NEXX360H) || defined(NEXX360C)
 		if (!app_cfg->ste.b.ftp_run)
 		{
 			rkey = chk_rec_key();
@@ -313,21 +313,6 @@ static void *THR_dev(void *prm)
 					    app_rec_stop(ON);
 				} else {
 					    app_rec_start();
-				}
-			} else if (rkey == KEY_LONG) {
-			    app_rec_evt(OFF) ;
-			}
-		}
-#elif defined(NEXX360H)
-		if (!app_cfg->ste.b.ftp_run)
-		{
-			rkey = chk_rec_key();
-			/* NEXX360, Fitt360 */
-			if (rkey == KEY_SHORT) {
-				if (app_rec_state()) {
-					  app_rec_stop(ON);
-				} else {
-					app_rec_start();
 				}
 			} else if (rkey == KEY_LONG) {
 			    app_rec_evt(OFF) ;
