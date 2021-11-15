@@ -138,15 +138,23 @@ int MainSocketListen()
 
     reuse = TRUE ;
 
+
     recvBufferSize = BUFFSIZE ;
     sendBufferSize = MAXBUFF*2 ;
     setsockopt (m_ListenSock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
+
+    setsockopt (m_ListenSock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
+    setsockopt (m_ListenSock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (m_ListenSock, SOL_SOCKET, SO_RCVBUF, &recvBufferSize, sizeof(recvBufferSize)) ;
     setsockopt (m_ListenSock, SOL_SOCKET, SO_SNDBUF, &sendBufferSize, sizeof(sendBufferSize)) ;
     setsockopt (m_ListenSock, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof (keepalive)) ;
     setsockopt (m_ListenSock, SOL_TCP,    TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) ;
     setsockopt (m_ListenSock, SOL_TCP,    TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) ;
     setsockopt (m_ListenSock, SOL_TCP,    TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl)) ;
+
+    setsockopt (m_ListenSock, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive)) ;
+    setsockopt (m_ListenSock, IPPROTO_TCP, SO_KEEPALIVE, &keepalive, sizeof(keepalive)) ;
+
 
     m_SocketAddress.sin_family = AF_INET;
     m_SocketAddress.sin_port = htons(SERVER_PORT);

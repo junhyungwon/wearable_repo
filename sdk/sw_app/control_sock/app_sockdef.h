@@ -28,7 +28,7 @@
 #define FALSE		0
 #define SOCK_ERROR      -1
 
-//#define NETWORK_DEBUG
+#define NETWORK_DEBUG
 
 #ifdef NETWORK_DEBUG
 #define DEBUG_PRI(msg, args...) printf("[NETWORK] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)

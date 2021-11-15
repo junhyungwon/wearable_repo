@@ -92,6 +92,8 @@ const int USERAUTHRES_SIZE = sizeof(USERAUTHRES) ;
 void gpsdatareq(int channel, char *data, int len)
 {
 	int sendlen = 0, i ; 
+    socklen_t lon ;
+	int valopt = 0 ;
 
 	GPSREQRCV Gpsreqrcv ;
 
@@ -109,10 +111,18 @@ void gpsdatareq(int channel, char *data, int len)
 	{
 		if(SystemInfo.Channel[i] != 0 )
 		{
-            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSREQRCV_SIZE, 0) ;
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSREQRCV_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("gpsdata res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+			}
         }
 	}
 }
@@ -123,6 +133,9 @@ void gpsdata_send(void *data)
 	app_gps_meta_t *Gpsdata = (app_gps_meta_t *)data;
     int sendlen = 0, i;
     int timezone = 0 ;
+
+    socklen_t lon ;
+	int valopt = 0 ;
 
 	timezone = app_set->time_info.time_zone - 12 ;
 
@@ -154,10 +167,18 @@ void gpsdata_send(void *data)
 	{
 		if(SystemInfo.Channel[i] != 0)
 		{
-            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, GPSPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("gpsdata packet sendlen = %d, channel = %d\n",sendlen, i) ;
+				DEBUG_PRI("gpsdata packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+			}
 		}
     }
 }
@@ -165,6 +186,8 @@ void gpsdata_send(void *data)
 void eventdatareq(int channel, char *data, int len)
 {
 	int sendlen = 0, i ;
+    socklen_t lon ;
+	int valopt = 0 ;
 
 	EVENTREQRCV Eventreqrcv ;
 #ifdef NETWORK_DEBUG
@@ -181,10 +204,18 @@ void eventdatareq(int channel, char *data, int len)
 	{
 		if(SystemInfo.Channel[i] != 0 )
 		{
-            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTREQRCV_SIZE, 0) ;
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTREQRCV_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("eventdatareq res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+			}
         }
 	}
 }
@@ -193,6 +224,8 @@ void eventdatareq(int channel, char *data, int len)
 void eventdata_send(void)
 {
     int sendlen = 0, i;
+    socklen_t lon ;
+	int valopt = 0 ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("Eventdata reached...\n") ;
 #endif
@@ -211,10 +244,18 @@ void eventdata_send(void)
 	{
 		if(SystemInfo.Channel[i] != 0)
 		{
-            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("Eventdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+			}
 		}
     }
 }
@@ -222,6 +263,8 @@ void eventdata_send(void)
 void sosdata_send(void)
 {
     int sendlen = 0, i;
+    socklen_t lon ;
+	int valopt = 0 ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("SOSdata reached...\n") ;
 #endif
@@ -240,10 +283,18 @@ void sosdata_send(void)
 	{
 		if(SystemInfo.Channel[i] != 0)
 		{
-            sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
     DEBUG_PRI("Sosdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
+			}
 		}
     }
 }
