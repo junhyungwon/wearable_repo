@@ -28,10 +28,32 @@
 -----------------------------------------------------------------------------*/
 #define FTP_DBG
 
-#define FTP_STATE_NONE			0
-#define FTP_STATE_CONNECTING	1
-#define FTP_STATE_SENDING		2
-#define FTP_STATE_SEND_DONE		3
+#define FTP_STATE_NONE		     	0
+#define FTP_STATE_CONNECTING		1
+#define FTP_STATE_SENDING			2
+#define FTP_STATE_SEND_DONE			3
+
+#define FOTA_STATE_NONE			 	0
+#define FOTA_STATE_CONNECTING		1
+#define FOTA_STATE_RECEIVE_INFO		2
+#define FOTA_STATE_RECEIVE_FIRM		3
+#define FOTA_STATE_RECEIVE_DONE		4
+
+#define S_OK	1
+#define S_ERR	0
+
+#define CREATE malloc
+#define KEY_NUMERIC		256
+#define KEY_STRING		257
+#define KEY_ENCLOSED	258
+#define KEY_BOOLEAN		259
+#define KEY_NEWLINE		('\n')
+#define KEY_EOF			(EOF)
+#define KEY_INVALID		260
+#define MAXCFG_LENGTH	1024
+#define TITLESIZE		64
+
+
 
 /* Debugging */
 #ifdef FTP_DBG
@@ -51,9 +73,12 @@ typedef struct {
     SSL_CTX *lsslContext ;
     SSL_CTX *dsslContext ;
 	int img_save;
+	int fota_state;
 	int ftp_state;
 	int file_cnt;
     int retry_cnt ;
+	char fota_firmfname[MAX_CHAR_64] ;
+    unsigned long  fota_filesize ;
 	char path[MAX_CHAR_128];
 } app_ftp_t;
 

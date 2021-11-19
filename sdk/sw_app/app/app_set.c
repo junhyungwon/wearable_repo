@@ -199,6 +199,17 @@ static void char_memset(void)
 
     memset(app_set->ftp_info.reserved, CFG_INVALID, 126);
 
+	//# FOTA information
+    app_set->fota_info.port = CFG_INVALID ;
+    memset(app_set->fota_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32);
+    memset(app_set->fota_info.id, CHAR_MEMSET, MAX_CHAR_16);
+    memset(app_set->fota_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
+    memset(app_set->fota_info.confname, CHAR_MEMSET, MAX_CHAR_32);
+
+    app_set->fota_info.ON_OFF = ON ;
+    app_set->fota_info.type = OFF ; // OFF FTP, ON SFTP
+    memset(app_set->fota_info.reserved, CFG_INVALID, 64);
+
 	//# Wifi AP information
     app_set->wifiap.en_key = CFG_INVALID ;
     memset(app_set->wifiap.ssid, CHAR_MEMSET, MAX_CHAR_32 + 3) ;
@@ -370,6 +381,14 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->ftp_info.pwd    = %s\n", pset->ftp_info.pwd);
     printf("pset->ftp_info.ON_OFF = %d\n", pset->ftp_info.ON_OFF);
     printf("pset->ftp_info.file_type = %d\n", pset->ftp_info.file_type);
+	printf("\n");
+
+    printf("pset->fota_info.port   = %d\n", pset->fota_info.port        );
+    printf("pset->fota_info.ipaddr = %s\n", pset->fota_info.ipaddr);
+    printf("pset->fota_info.id     = %s\n", pset->fota_info.id);
+    printf("pset->fota_info.pwd    = %s\n", pset->fota_info.pwd);
+    printf("pset->fota_info.confname = %s\n", pset->fota_info.confname);
+    printf("pset->fota_info.ON_OFF = %d\n", pset->fota_info.ON_OFF);
 	printf("\n");
 
     printf("pset->wifiap.en_key = %d\n", pset->wifiap.en_key);
@@ -649,6 +668,26 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
     if(pset->ftp_info.file_type <= CFG_INVALID)
         pset->ftp_info.file_type = OFF ;
+
+
+	//# FOTA information
+	if(pset->fota_info.port <= CFG_INVALID)
+		pset->fota_info.port	= 21;
+ 
+    if(pset->fota_info.ON_OFF <= CFG_INVALID)
+        pset->fota_info.ON_OFF = ON ;
+
+	if((int)pset->fota_info.ipaddr[0] == CHAR_INVALID || (int)pset->fota_info.ipaddr[0] == 0)
+		strcpy(pset->fota_info.ipaddr, "192.168.40.6");
+
+	if((int)pset->fota_info.id[0] == CHAR_INVALID || (int)pset->fota_info.id[0] == 0)
+		strcpy(pset->fota_info.id, "test");
+
+	if((int)pset->fota_info.pwd[0]  == CHAR_INVALID || (int)pset->fota_info.pwd[0] == 0)
+		strcpy(pset->fota_info.pwd, "test");
+
+	if((int)pset->fota_info.confname[0]  == CHAR_INVALID || (int)pset->fota_info.confname[0] == 0)
+		sprintf(pset->fota_info.confname,"%s.conf", MODEL_NAME);
 
 	//# Wifi AP information
 
@@ -1034,6 +1073,13 @@ static void app_set_default(int default_type)
     strcpy(app_set->ftp_info.ipaddr, "192.168.1.23");
     strcpy(app_set->ftp_info.id, "FTP_ID");
     strcpy(app_set->ftp_info.pwd, "FTP_PASSWORD");
+
+	//# FOTA information
+    app_set->fota_info.port = 21;
+    app_set->fota_info.ON_OFF = ON ;
+    strcpy(app_set->fota_info.ipaddr, "192.168.40.6");
+    strcpy(app_set->fota_info.id, "test");
+    strcpy(app_set->fota_info.pwd, "test");
 
 	//# Wifi AP information
     app_set->wifiap.en_key = ON;

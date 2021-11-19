@@ -430,7 +430,7 @@ int gettime_from_ntp(char *server_addr)
 
 static int time_sync(void)
 {
-    int retval = FALSE, ret = FALSE ;
+    int retval = FALSE;
     char buff[16], timesrv_addr[32] = {0, } ;
     time_t timeval, time_val, set ;
     struct tm tp, tv;
@@ -538,7 +538,7 @@ static void *THR_tsync(void *prm)
         if (cmd == APP_CMD_STOP)  {
             break;
         }
-		
+
 		if(app_cfg->ste.b.cradle_net_run || app_cfg->ste.b.usbnet_run) 
 		{
             if (itsync->tsync_status == TIMESYNC_READY)

@@ -72,9 +72,9 @@
 #define HTTP_NORMAL_REQ             2048
 #define HTTP_MNAME_SIZE             128
 
-#define CLIENT_CERTF  "server.crt"
-#define CLIENT_KEYF   "server.key"
-#define CLIENT_CA_CERTF  "server.crt"
+//#define CLIENT_CERTF  "server.crt"
+//#define CLIENT_KEYF   "server.key"
+//#define CLIENT_CA_CERTF  "server.crt"
 
 #define  JPEG_NAME    "E-"
 #define  META_NAME    "N-"

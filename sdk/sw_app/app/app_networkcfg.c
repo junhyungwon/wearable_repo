@@ -42,7 +42,7 @@ static int gettoken(FILE *fp)
         }
 
         if (ch == ':') {
-            fgets(lexbuf, TITLESIZE, fp);
+            fgets(lexbuf, BUFSIZE, fp);
             return KEY_STRING;
         }
 
@@ -137,22 +137,22 @@ NETWORKCFG *read_cfg_file(char *filename)
 //    int Fps = 0, Bps = 0, Period = 0, Overwrite = 1 ;
     char *key, *strval = NULL;
 #if 0	
-    char ssid[TITLESIZE] = {0, } ;
-    char ap_passwd[TITLESIZE + 30] = {0, };
-    char wlan_ipaddress[TITLESIZE] = {0, };
-    char wlan_gateway[TITLESIZE] = {0, };
-    char wlan_subnet[TITLESIZE] = {0, };
+    char ssid[BUFSIZE] = {0, } ;
+    char ap_passwd[BUFSIZE + 30] = {0, };
+    char wlan_ipaddress[BUFSIZE] = {0, };
+    char wlan_gateway[BUFSIZE] = {0, };
+    char wlan_subnet[BUFSIZE] = {0, };
 
-    char eth_ipaddress[TITLESIZE] = {0, };
-    char eth_gateway[TITLESIZE] = {0, };
-    char eth_subnet[TITLESIZE] = {0, };
+    char eth_ipaddress[BUFSIZE] = {0, };
+    char eth_gateway[BUFSIZE] = {0, };
+    char eth_subnet[BUFSIZE] = {0, };
 
-    char ftp_ipaddress[TITLESIZE] = {0, };
-    char ftp_id[TITLESIZE] = {0, };
-    char ftp_pwd[TITLESIZE] = {0, };
+    char ftp_ipaddress[BUFSIZE] = {0, };
+    char ftp_id[BUFSIZE] = {0, };
+    char ftp_pwd[BUFSIZE] = {0, };
 	
-    char srv_ipaddress[TITLESIZE] = {0, } ;
-    char deviceId[TITLESIZE] = {0, } ;
+    char srv_ipaddress[BUFSIZE] = {0, } ;
+    char deviceId[BUFSIZE] = {0, } ;
 #endif
     char MacAddr[12] ;
  

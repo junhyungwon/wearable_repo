@@ -127,15 +127,25 @@ typedef struct {
 
 typedef struct{
     int port;
-
     char ipaddr[MAX_CHAR_16];
     char id[MAX_CHAR_16];
     char pwd[MAX_CHAR_16];
     short ON_OFF ;
 	short file_type ;           // 0 : all, 1 : event
 	char reserved[124];
-
 } app_network_ftp_t;
+
+typedef struct {
+	short ON_OFF ;
+    short type ; // transfer type . ftp, ftps
+    int port ;
+	char ipaddr[MAX_CHAR_32] ;
+	char id[MAX_CHAR_16]  ;            
+	char pwd[MAX_CHAR_16]  ;            
+	char confname[MAX_CHAR_32]  ;            
+	char reserved[64] ;
+} app_fota_t ;
+
 
 typedef struct{
     int type ;		// cradle, ethernet
@@ -293,12 +303,12 @@ typedef struct {
     
     app_account_t           account_info;
 	app_multi_ap_t          multi_ap;
-
+    app_fota_t				fota_info ;
 #if SYS_CONFIG_VOIP
     app_voip_t              voip; //  => 72 + 40
-	char reserved[360];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40)
+	char reserved[192];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota))
 #else
-	char reserved[472];   // 1024 - 164 (ddns) - 66 (time) - 320(account)
+	char reserved[304];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 168(fota)
 #endif
 	
 } app_set_t;

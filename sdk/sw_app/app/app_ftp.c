@@ -33,6 +33,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <dirent.h>
+#include <ctype.h>
 
 #include <fcntl.h>
 #include <errno.h>
@@ -46,6 +48,8 @@
 #include "app_set.h"
 #include "dev_common.h"
 #include "app_file.h"
+#include "app_version.h"
+#include "app_ctrl.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -62,11 +66,12 @@
 #define FTP_TIME_OUT		5	//# 2sec
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
-
+#define RSIZE 1024
 //#define USE_SSL             
 
 X509* server_cert ;
 X509_NAME *certname = NULL ;
+
 
 /*----------------------------------------------------------------------------
  Declares variable)s
@@ -116,7 +121,7 @@ void  ssl_info_callback(const SSL *s, int where, int ret)
 
 
 
-static int ftpRecvResponse(int sock, char * buf)
+static int ftpRecvResponse(int sock, char * buf, int length)
 {
     socklen_t lon ;
     int valopt = 0 ;
@@ -128,7 +133,11 @@ static int ftpRecvResponse(int sock, char * buf)
         return -1 ;
     }
 
-	len = recv(sock, buf, MSIZE, 0);
+	if(!length)
+		len = recv(sock, buf, RSIZE, 0);
+	else
+		len =recv(sock, buf, length, 0) ;
+
 	if (len == -1) {//receive the data
 		perror("recv");
 		return -1;
@@ -140,6 +149,7 @@ static int ftpRecvResponse(int sock, char * buf)
 	 		break;
 		}
 	}
+
 	printf("%d,%s\n", len, buf); //print response to the screen
 
 	return 0;
@@ -279,6 +289,7 @@ static int ftp_transfer_file(int sd, char *filename)
         {
             break ;
         }
+
         getsockopt(sd, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
         if(valopt)
         {
@@ -330,13 +341,11 @@ static int createDataSock(char * host, int port)
     tv.tv_usec = 0;
 
     strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
-
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
 
     setsockopt (sd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&interface, sizeof(interface)) ;
-
     setsockopt (sd, SOL_TCP,    TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) ;
     setsockopt (sd, SOL_TCP,    TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) ;
     setsockopt (sd, SOL_TCP,    TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl)) ;
@@ -369,20 +378,20 @@ static int ftpSendFile(int sd, char *buf)
 
 static int ftp_change_dir(int sd, char *dirname, int day_dir)
 {
-    char buf[MSIZE] ;
+    char buf[RSIZE] ;
  
     if(day_dir > 0)
     {
         if(ftpNewCmd(sd, buf, "CDUP", "") != 0)
             return -1 ;
 
-        if(ftpRecvResponse(sd, buf) != 0)
+        if(ftpRecvResponse(sd, buf, 0) != 0)
             return -1;
 
         if(ftpNewCmd(sd, buf, "CDUP", "") != 0)
             return -1 ;
 
-        if(ftpRecvResponse(sd, buf) != 0)
+        if(ftpRecvResponse(sd, buf, 0) != 0)
             return -1;
 
 		return 0 ;
@@ -391,7 +400,7 @@ static int ftp_change_dir(int sd, char *dirname, int day_dir)
     if(ftpNewCmd(sd, buf, "CWD", dirname) != 0)
         return -1 ;
 
-    if(ftpRecvResponse(sd, buf) != 0)
+    if(ftpRecvResponse(sd, buf, 0) != 0)
         return -1;
 
     if(strncmp(buf, "250", 3) != 0) // do not exist
@@ -399,7 +408,7 @@ static int ftp_change_dir(int sd, char *dirname, int day_dir)
         if(ftpNewCmd(sd, buf, "MKD", dirname) != 0) 
             return -1 ;
 
-        if(ftpRecvResponse(sd, buf) != 0)
+        if(ftpRecvResponse(sd, buf, 0) != 0)
             return -1 ;
 
         if(strncmp(buf, "257", 3) == 0) // create success
@@ -407,7 +416,7 @@ static int ftp_change_dir(int sd, char *dirname, int day_dir)
             if(ftpNewCmd(sd, buf, "CWD", dirname) != 0)
                 return -1 ;
 
-            if(ftpRecvResponse(sd, buf) != 0)
+            if(ftpRecvResponse(sd, buf, 0) != 0)
                 return -1 ;
 
             if(strncmp(buf, "250", 3) == 0) // chdir success
@@ -427,12 +436,12 @@ static int ftp_send_file(int sd, char *filename)
 {
     char tmpHost[100];
     int tmpPort, data_sock;
-    char buf[MSIZE];
+    char buf[RSIZE];
 	char source_fname[64], dest_fname[64] ;
 
 	if(ftpNewCmd(sd, buf, "TYPE", "I") != 0)
 		return -1 ;
-	if(ftpRecvResponse(sd, buf) != 0)
+	if(ftpRecvResponse(sd, buf, 0) != 0)
 		return -1 ;
     if(strncmp(buf,"200",3) != 0)
 		return -1 ;
@@ -440,7 +449,7 @@ static int ftp_send_file(int sd, char *filename)
 	if(ftpNewCmd(sd, buf, "PASV", "") != 0)
         return -1 ;
 
-	if(ftpRecvResponse(sd, buf) != 0)
+	if(ftpRecvResponse(sd, buf, 0) != 0)
         return -1 ;
 
 	if (strncmp(buf, "227", 3) == 0) 
@@ -457,7 +466,7 @@ static int ftp_send_file(int sd, char *filename)
 		    if(ftpNewCmd(sd,buf,"STOR", source_fname) != 0)
                 return -1 ;
 
-		    if(ftpRecvResponse(sd, buf) != 0)
+		    if(ftpRecvResponse(sd, buf, 0) != 0)
             {
                 return -1 ;
             }
@@ -467,7 +476,7 @@ static int ftp_send_file(int sd, char *filename)
 			{ //make sure response is a 150
 			    if (ftpSendFile(data_sock, filename) == 0) 
 				{
-				    if(ftpRecvResponse(sd, buf) == 0)
+				    if(ftpRecvResponse(sd, buf, 0) == 0)
 					{
 				        if (strncmp(buf, "226", 3) == 0) 
 					    {
@@ -476,14 +485,14 @@ static int ftp_send_file(int sd, char *filename)
 							if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
 								return -1 ;
 
-							if(ftpRecvResponse(sd, buf) == 0)
+							if(ftpRecvResponse(sd, buf, 0) == 0)
 							{		
 								if (strncmp(buf, "350", 3) == 0) 
 								{
 									if(ftpNewCmd(sd,buf,"RNTO", dest_fname) != 0)
 										return -1 ;
 
-									if(ftpRecvResponse(sd, buf) == 0)
+									if(ftpRecvResponse(sd, buf, 0) == 0)
 									{		
 										if (strncmp(buf, "250", 3) == 0)
 										{
@@ -522,13 +531,13 @@ static int ftp_send_file(int sd, char *filename)
 
 static int ftp_login(int sd, char *username, char *password)
 {
-    char buf[MSIZE];
+    char buf[RSIZE];
 
     if (ftpNewCmd(sd, buf, "USER", username) == 0) {  //issue the command to login
-        if(ftpRecvResponse(sd,buf) == 0) {  //wait for response
+        if(ftpRecvResponse(sd,buf, 0) == 0) {  //wait for response
             if(strncmp(buf,"331",3) == 0) {  //make sure response is a 331
                 if(ftpNewCmd(sd,buf,"PASS",password) == 0) {  //send your password
-                    if(ftpRecvResponse(sd,buf) == 0) { //wait for response
+                    if(ftpRecvResponse(sd,buf, 0) == 0) { //wait for response
                         if(strncmp(buf,"230",3) == 0) { //make sure its a 230
                                         return 0;
                         }
@@ -543,7 +552,7 @@ static int ftp_login(int sd, char *username, char *password)
 
 static int ftp_connect (char *hostname, int port)
 {
-	char buf[MSIZE];
+	char buf[RSIZE];
 	int sd, res, reuse = 1;
 	struct timeval tv;
     int keepalive = 1, keepcnt = 1, keepidle = 1, keepintvl = 1 ;
@@ -634,7 +643,7 @@ static int ftp_connect (char *hostname, int port)
 	fcntl(sd, F_SETFL, arg);
 #endif
 
-	if(ftpRecvResponse(sd, buf) == 0) {  //wait for ftp server to start talking
+	if(ftpRecvResponse(sd, buf, 0) == 0) {  //wait for ftp server to start talking
 		if(strncmp(buf,"220",3) == 0) {  //make sure it ends with a 220
 			return sd;
 		}
@@ -647,10 +656,10 @@ ftp_err:
 
 static int ftp_close(int sd)
 {
-	char buf[MSIZE];
+	char buf[RSIZE];
 
 	ftpNewCmd(sd, buf, "QUIT", "");
-	ftpRecvResponse(sd, buf);
+	ftpRecvResponse(sd, buf, 0);
 
 	if (strncmp(buf, "221", 3) == 0) {
 		printf("FTP OK.\n");
@@ -773,6 +782,401 @@ void SSL_Create()
 			printf("Server certificated fail..\n") ;
 	}
 }
+
+
+static int version_check()
+{
+	char model_buff[32];	
+	char sw_buff[32];	
+	int len = 0, ret = 0, retval = 0 ;
+	
+	sprintf(model_buff,"%s", MODEL_NAME) ;
+	sprintf(sw_buff,"%s", FITT360_SW_VER) ;
+    len = strlen(model_buff) ;  
+
+ftp_dbg("version check ...\n") ;
+ftp_dbg("iftp->fota_firmfname = %s MODEL_NAME = %s\n",iftp->fota_firmfname, model_buff) ;
+
+	if (!strncmp(iftp->fota_firmfname, model_buff, len)) 
+	{
+	    ret = strncmp(&iftp->fota_firmfname[len + 1], sw_buff, 7) ;
+		if(ret == 0)
+		{
+		    ftp_dbg("The Firmware version is current version \n");
+		}
+		if(ret == 1)
+		{
+		    ftp_dbg("The Firmware version is up to date\n") ;
+			retval = 1 ;
+		}
+
+		if(ret == -1)
+		{
+		    ftp_dbg("The Firmware version is out of date\n") ;
+		}
+	}
+
+	// remove conf
+	return retval ;
+
+}
+
+static int ftpRecvFile(int sd, char *filename)
+{
+	FILE *in ;
+
+	char buf[MSIZE] = {0, } ;
+	char Iname[64] = {0, } ;
+    
+	size_t len, fsize = 0;
+
+	int retval = -1;
+
+	sprintf(Iname, "/mmc/%s\n",filename) ;
+	Iname[strlen(Iname) - 1] = '\0' ;
+
+	in = fopen((const char *)Iname, "w+") ;
+	if(in == NULL)
+		return -1 ;
+
+	while(1)
+	{
+		len = recv(sd, buf, MSIZE, 0);
+		if(len > 0)
+		{
+			fsize += fwrite(buf, 1, len, in) ;
+			if(fsize == iftp->fota_filesize)
+			{
+				retval = 0;
+				break ;
+			}
+			else if(fsize > iftp->fota_filesize)
+			{
+				retval = -1 ;
+				break ;
+			}
+		}
+		else
+		{
+			retval = -1 ;
+			break ;
+		}
+		OSA_waitMsecs(10) ;
+	}
+    close(sd) ;
+
+	fclose(in) ;
+	return  retval;
+}
+
+static int ftpRecvConFile(int sd, char *filename)
+{
+	char buf[RSIZE] = {0, } ;
+    
+	char *fstr = NULL, *fs = NULL ;
+	size_t len;
+
+	int  retval = S_OK, length = 0 ;
+
+	len = recv(sd, buf, RSIZE, 0) ;
+
+	if(len > 0)
+	{
+		fs = strstr(&buf[0], "filesize=") ;
+		if(fs != NULL)
+		{
+			fs += 9 ;
+		    iftp->fota_filesize = atoi(fs) ;
+		}
+
+		fstr = strstr(buf, "dat");
+		if(fstr != NULL)
+		{
+			fstr += 3;
+			*fstr = '\0' ;
+			length = strlen(buf) ;
+		    strncpy(iftp->fota_firmfname, &buf[5], length) ;
+        }
+
+		retval = 0 ;
+
+	}
+	else
+		retval = -1 ;
+
+	return retval ;
+}
+
+static int fota_receive_firmfile(int sd)
+{
+	char tmpHost[64] = {0, }, buf[1024] = {0, };
+	char RemoteFullPath[64] = {0, } ;
+	int tmpPort, retval = -1, data_sock = 0;
+
+	strcpy(RemoteFullPath, "/FOTA/NEXX") ;
+ 
+	ftpNewCmd(sd, buf, "CWD", RemoteFullPath) ;
+	ftpRecvResponse(sd, buf, 0) ;
+
+	if(strncmp(buf, "250", 3) != 0)
+	{
+		retval = -1 ;
+	}
+	else
+	{
+		ftpNewCmd(sd, buf, "PASV", "") ;
+		ftpRecvResponse(sd, buf, 0) ;
+
+		if(strncmp(buf, "227", 3) == 0)
+		{
+			ftpConvertAddy(buf, tmpHost, &tmpPort) ;
+            
+            data_sock = createDataSock(tmpHost, tmpPort) ;
+            if(data_sock > 0)
+	        {			
+				if(ftpNewCmd(sd, buf, "RETR", iftp->fota_firmfname) != 0)  // nexx_firmware
+					return -1 ;
+
+				if(ftpRecvResponse(sd, buf, 0) !=0 )
+					return -1 ;
+
+				ftp_dbg("ftpRecResponse After RETR = %s\n",buf) ;
+				if(strncmp(buf, "150", 3) == 0)
+				{
+					if(ftpRecvFile(data_sock, iftp->fota_firmfname) == 0)
+					{
+						if(ftpRecvResponse(sd, buf, 0) == 0)
+						{
+							if(strncmp(buf, "226", 3) == 0)
+							{
+								ftp_dbg("%s Receive Done \n",iftp->fota_firmfname) ;
+								retval = 0 ;
+							}
+						}
+					}
+					else
+					{
+						retval = -1 ;
+					}
+				}
+            } 
+		}
+	}
+	close(data_sock) ;
+	return retval ;
+}
+
+static int fota_receive_confile(int sd)
+{
+	char tmpHost[64] = {0, }, buf[1024] = {0, };
+	char RemoteFullPath[64] = {0, } ;
+	char model_buff[64] = {0, } ;
+	int tmpPort, retval = -1, data_sock = 0, confname_len = 0;
+
+    sprintf(model_buff, "%s.conf", MODEL_NAME) ;
+	confname_len = strlen(model_buff) ;
+
+	strcpy(RemoteFullPath, "/FOTA/NEXX") ;
+
+	ftpNewCmd(sd, buf, "CWD", RemoteFullPath) ;
+	ftpRecvResponse(sd, buf, 0) ;
+
+	if(strncmp(buf, "250", 3) != 0)
+	{
+		retval = -1 ;
+	}
+	else
+	{
+		if(ftpNewCmd(sd, buf, "TYPE", "I") != 0)
+			return -1 ;
+		if(ftpRecvResponse(sd, buf, 0) != 0)
+			return -1 ;
+		if(strncmp(buf,"200",3) != 0)
+			return -1 ;
+	
+		ftpNewCmd(sd, buf, "PASV", "") ;
+		ftpRecvResponse(sd, buf, 0) ;
+
+		if(strncmp(buf, "227", 3) == 0)
+		{
+			ftpConvertAddy(buf, tmpHost, &tmpPort) ;
+            
+            data_sock = createDataSock(tmpHost, tmpPort) ;
+            if(data_sock > 0)
+	        {			
+				if(ftpNewCmd(sd, buf, "RETR", app_set->fota_info.confname) != 0)  // nexx_series.conf
+					return -1 ;
+
+				if(ftpRecvResponse(sd, buf, 73 + confname_len) !=0 )  // filezilla server 0.9.2xxx 버전의 response 오류 로 모델별 사이즈를 receive 하고 다음 receive에서 다음 command 처리 
+					return -1 ;
+
+				ftp_dbg("ftpRecResponse After RETR = %s\n",buf) ;
+				if(strncmp(buf, "150", 3) == 0)
+				{
+					if(ftpRecvConFile(data_sock, app_set->fota_info.confname) == 0)
+					{
+						if(ftpRecvResponse(sd, buf, 0) == 0)
+						{
+							if(strncmp(buf, "226", 3) == 0)
+							{
+								ftp_dbg("%s Fota info file receive completed\n", app_set->fota_info.confname) ;
+								retval = 0 ;
+							}
+						}
+					}
+					else
+					{
+						retval = -1 ;
+					}
+				}
+            } 
+		}
+	}
+	close(data_sock) ;
+	return retval ;
+}
+
+int fota_proc()
+{
+	int retry_cnt = 0, ret = 0, retval = 0 ;
+	char cmd[64] = {0, } ;
+
+    iftp->fota_state = FOTA_STATE_CONNECTING ;
+
+	while(iftp->fota_state == FOTA_STATE_CONNECTING)
+	{
+		if(!app_cfg->ftp_enable)
+		{
+			iftp->ftp_state = FOTA_STATE_NONE ;
+			ftp_dbg(" \n[FOTA] FOTA stop process == FOTA DISABLED!! \n") ;
+			break ;
+		}
+
+		//#--- ping check for ftp IP
+		if(iftp->lsdFtp >= 0)
+			close(iftp->lsdFtp);
+
+		// ethX off in ftp running
+		if(!get_netdev_link_status()) { 	
+			iftp->fota_state = FOTA_STATE_NONE;
+			break;
+		}
+		iftp->lsdFtp = ftp_connect(app_set->fota_info.ipaddr, app_set->fota_info.port);
+		if(iftp->lsdFtp != -1)
+		{
+		 //read result
+			while(1)
+			{
+		        ret = ftp_login(iftp->lsdFtp, app_set->fota_info.id, app_set->fota_info.pwd);
+	            if(ret == 0)
+                {
+			        iftp->fota_state = FOTA_STATE_RECEIVE_INFO;
+                    retry_cnt = 0 ;
+					break ;
+                }
+			    else
+                {     
+                    if(retry_cnt >= FTP_RETRY_CNT)
+                    {
+                        iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
+                        retry_cnt = 0 ;
+					    break ;
+                    }
+                    else
+                        retry_cnt += 1 ;
+
+			        ftp_dbg("fota login failure ID:%s, PWD:%s \n",app_set->fota_info.id,app_set->fota_info.pwd);
+                    app_leds_eth_status_ctrl(LED_FTP_ERROR);
+                }
+			}
+		}
+		else 
+        {
+            if(retry_cnt >= FTP_RETRY_CNT)
+            {
+                iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
+                retry_cnt = 0 ;
+				break ;
+            }
+            retry_cnt += 1 ;
+
+		    ftp_dbg("fota connection failure ip:%s port = %d\n", app_set->fota_info.ipaddr, app_set->fota_info.port);
+            app_leds_eth_status_ctrl(LED_FTP_ERROR);
+		}
+		app_msleep(FTP_CYCLE_TIME);
+	}
+
+	if (iftp->fota_state == FOTA_STATE_RECEIVE_INFO)
+	{
+		if(fota_receive_confile(iftp->lsdFtp) == 0)
+		{
+			iftp->fota_state = FOTA_STATE_RECEIVE_FIRM ;
+		    ftp_dbg("receive fota_configure file\n");
+			sysprint("Receive Done Fota configure file !!!\n");
+		}
+		else
+		{
+			iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
+			ftp_close(iftp->lsdFtp) ;
+			ftp_dbg("%s Receive Fail \n",app_set->fota_info.confname) ;
+			sysprint("Did not receive Fota configure file !!!\n");
+		}
+
+		sprintf(cmd, "/mmc/%s",app_set->fota_info.confname) ;
+		if(access(cmd, F_OK) == 0)
+		{
+			remove(cmd);
+			sync() ;
+		}
+	}
+
+	if (iftp->fota_state == FOTA_STATE_RECEIVE_FIRM)
+	{
+		if(version_check())
+		{
+			if(fota_receive_firmfile(iftp->lsdFtp) == 0)
+			{
+				iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
+				ftp_dbg("Receive Remote firmware file\n");
+				sysprint("Receive Done Remote Firmware file !!!\n");
+				retval = 1 ;
+			}
+			else
+			{
+				sprintf(cmd, "/mmc/%s",iftp->fota_firmfname) ;
+				if(access(cmd, F_OK) == 0)
+				{
+					remove(cmd);
+					sync() ;
+					ftp_dbg("%s Receive Fail, Delete unperfect file \n",iftp->fota_firmfname) ;
+				}
+
+				iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
+				sysprint("Receive Fail Remote Firmware file !!!\n");
+			}
+
+		}
+        else  // Same version or older version
+		{
+
+			sprintf(cmd, "/mmc/%s",app_set->fota_info.confname) ;
+			if(access(cmd, F_OK) == 0)
+			{
+				remove(cmd);
+				ftp_dbg("%s Receive Fail, Delete unperfect file \n",app_set->fota_info.confname) ;
+			}
+			sysprint("tried fw update with Same version or older verion firmware !!!\n");
+		}
+
+
+		// rm confile, firmware file
+		ftp_close(iftp->lsdFtp) ;
+		iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
+	}
+
+    return retval ;
+}
+
 
 static void ftp_send(void)
 {
@@ -971,12 +1375,13 @@ void app_ftp_state_reset(void)
 static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
-	int cmd, exit = 0, cradle_status = 0;
+	int cmd, exit = 0, cradle_status = 0, ret = 1;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
 
     iftp->ftp_state = FTP_STATE_NONE;
+    iftp->fota_state = FOTA_STATE_NONE;
     iftp->retry_cnt = 0 ;
 
 //    app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
@@ -1002,80 +1407,99 @@ static void *THR_ftp(void *prm)
 					OSA_waitMsecs(200); /* wait for file close */
 					app_cfg->ste.b.prerec_state = 1 ;
 				}
-				
-				if(app_set->ftp_info.file_type) // ftp send event file
+
+				if(app_set->fota_info.ON_OFF && iftp->fota_state == FOTA_STATE_NONE)
 				{
-					if(get_recorded_efile_count() > 0)
+					app_cfg->ste.b.ftp_run = 1 ;  
+					ret = fota_proc() ;
+					app_cfg->ste.b.ftp_run = 0 ;
+				}
+				if(!ret)
+				{
+					if(app_set->ftp_info.file_type) // ftp send event file
 					{
-	                    ftp_dbg("get_recorded_efile_count = %d\n", get_recorded_efile_count());
-					    iftp->file_cnt = get_recorded_file_count() ;
+						if(get_recorded_efile_count() > 0)
+						{
+				            ftp_dbg("get_recorded_efile_count = %d\n", get_recorded_efile_count());
+						    iftp->file_cnt = get_recorded_file_count() ;
+						}
+						else
+						    iftp->file_cnt = 0 ;
 					}
 					else
-					    iftp->file_cnt = 0 ;
-				}
-                else
-					iftp->file_cnt = get_recorded_file_count() ;
+						iftp->file_cnt = get_recorded_file_count() ;
 
-                if (iftp->file_cnt > 0)  
-                {
-                    if(app_cfg->ftp_enable)
-                    {
-                        app_leds_eth_status_ctrl(LED_FTP_ON);
+					if (iftp->file_cnt > 0)  
+					{
+						if(app_cfg->ftp_enable)
+						{
+							app_leds_eth_status_ctrl(LED_FTP_ON);
 
-                        app_cfg->ste.b.ftp_run = 1 ;  // rec key disable
+							app_cfg->ste.b.ftp_run = 1 ;  // rec key disable
 
-                        ftp_send() ;
-						save_filelist();
-                        app_cfg->ste.b.ftp_run = 0 ;
+							ftp_send() ;
+							save_filelist();
+							app_cfg->ste.b.ftp_run = 0 ;
+						}
 					}
-                }
-                else  
-                {
-                    app_cfg->ste.b.ftp_run = 0 ;
-                    iftp->ftp_state = FTP_STATE_SEND_DONE ;
-					app_leds_backup_state_ctrl(LED_FTP_OFF);
-					app_leds_eth_status_ctrl(LED_FTP_OFF);
-                }  
-            }
-            else
-			{	
-                app_cfg->ste.b.ftp_run = 0 ;
+					else  
+					{
+						app_cfg->ste.b.ftp_run = 0 ;
+						iftp->ftp_state = FTP_STATE_SEND_DONE ;
+						app_leds_backup_state_ctrl(LED_FTP_OFF);
+						app_leds_eth_status_ctrl(LED_FTP_OFF);
+					}  
+				}
+				else
+				{
+					iftp->ftp_state = FTP_STATE_SEND_DONE ; // firmware update done
+					break ;
+				}
+			}
+			else
+			{		
+				app_cfg->ste.b.ftp_run = 0 ;
 			}
 
-			/* ftp connection 실패시 auto record 설정 On, 및 현재 record 상태 였으면 이전 상태로 돌리기 위한 작업 */
-            if (app_cfg->ste.b.prerec_state && iftp->ftp_state == FTP_STATE_SEND_DONE)
+			// ftp connection 실패시 auto record 설정 On, 및 현재 record 상태 였으면 이전 상태로 돌리기 위한 작업 
+
+			if (app_cfg->ste.b.prerec_state && iftp->ftp_state == FTP_STATE_SEND_DONE)
 			{      
 				if(!app_rec_state())
 				{
-                    app_rec_start() ;  // rec start after ftp send
-			        app_cfg->ste.b.prerec_state = 0 ;
+					app_rec_start() ;  // rec start after ftp send
+					app_cfg->ste.b.prerec_state = 0 ;
 				}
-            } 
+			} 
 			
-        }
-        else
-        {
-			/* cradle에서 분리 되었을 경우 처리*/
+		}
+		else
+		{	
+			// cradle에서 분리 되었을 경우 처리
 			if(cradle_status == ON) {
 				save_filelist();
 				cradle_status = OFF ;
-            }
+			}
 			
-            iftp->ftp_state = FTP_STATE_NONE ;
-            app_cfg->ste.b.ftp_run = 0 ;
+			iftp->ftp_state = FTP_STATE_NONE ;
+			app_cfg->ste.b.ftp_run = 0 ;
 
-            if (app_cfg->ste.b.prerec_state && app_cfg->en_rec) {
+			if (app_cfg->ste.b.prerec_state && app_cfg->en_rec) {
 				if(!app_rec_state())
 				{
-                    app_rec_start() ;  // rec start after ftp send
-				    app_cfg->ste.b.prerec_state = 0 ;
+					app_rec_start() ;  // rec start after ftp send
+					app_cfg->ste.b.prerec_state = 0 ;
 				}
 			}
-        }
-		
-        OSA_waitMsecs(1000) ;
+		}
+
+		OSA_waitMsecs(1000) ;
 	}
 
+    if(ret) 
+		ctrl_sys_halt(0) ;
+
+//  reboot for firmware update
     tObj->active = 0;
     aprintf("...exit\n");
 

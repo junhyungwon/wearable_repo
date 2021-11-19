@@ -135,7 +135,7 @@ static Void THR_csock(Void *prm)
 
 static Void *THR_ddns(Void *prm)
 {
-    int exit =0, retval = 0, interval = 0, cmp_interval = 0, cmd ;
+    int exit =0, interval = 0, cmp_interval = 0, cmd ;
     char start_buffer[MAX_CHAR_64] ;
     char stop_buffer[MAX_CHAR_64] ;
 

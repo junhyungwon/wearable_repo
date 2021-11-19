@@ -75,10 +75,8 @@ static FILE *jfp = NULL;
 -----------------------------------------------------------------------------*/
 void video_status(void)
 {
-    int temp, count, ret, vcount = 0;
+    int temp, count, ret, vcount = 0, i = 0;
 	int vstatus[MODEL_CH_NUM + EXCHANNEL] = {0,};
-	int i;
-    char msg[128] = {0,};
 
 	/* current maximum video count */
 	count = Vcap_get_video_status(MODEL_CH_NUM + EXCHANNEL, &vstatus[0], &temp);
@@ -160,7 +158,9 @@ static void proc_vid_cap(void)
 	VCODEC_BITSBUF_S *pFullBuf;
     int i, idx ;
 	
+#ifdef USE_RTMP
 	struct timeval ltime ;
+#endif
 
 	Uint64 captime;
 	stream_info_t *ifr;

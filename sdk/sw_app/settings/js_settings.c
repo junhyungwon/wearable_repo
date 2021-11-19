@@ -298,6 +298,38 @@ static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)
 
 	return 0;
 }
+
+static int	parseNetworkFota(app_set_t* const set, json_object* rootObj)
+{
+	size_t dec_size = 0;
+	const char* STR_FIELD = "fota_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find fota_info\n");
+		return -1;
+	}
+	json_object* tmp = json_object_object_get(jobj, "ON_OFF");
+	set->fota_info.ON_OFF = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "type"); // 0:ftp . //ftps
+	set->fota_info.type = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "port");
+	set->fota_info.port = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "ipaddr");
+	sprintf(set->fota_info.ipaddr, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "id");
+	memcpy(set->fota_info.id, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_16, &dec_size), dec_size);
+	tmp = json_object_object_get(jobj, "pwd");
+	memcpy(set->fota_info.pwd, base64_decode((const unsigned char*)json_object_get_string(tmp), MAX_CHAR_16, &dec_size), dec_size);
+	tmp = json_object_object_get(jobj, "confname");
+	sprintf(set->fota_info.confname, "%s", json_object_get_string(tmp));
+
+	printf("set->fota_info.id: %s\n", set->fota_info.id);
+	printf("set->fota_info.pwd: %s\n", set->fota_info.pwd);
+
+	return 0;
+}
+
 static int	parseNetworkSrv(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "srv_info";
@@ -466,31 +498,34 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	// 5. read network ftp 
 	parseNetworkFtp(set, rootObject);
 
-	// 6. read network wifiap
+	// 6. read network fota 
+	parseNetworkFota(set, rootObject);
+
+	// 7. read network wifiap
 	parseNetworkWifiAp(set, rootObject);
 
-	// 7. read wifilist
+	// 8. read wifilist
 	parseNetworkWifilist(set, rootObject) ;
 
-	// 8. read system info
+	// 9. read system info
 	parseSystemInfo(set, rootObject);
 
-	// 9. read record info
+	// 10. read record info
 	parseRecInfo(set, rootObject);
 
-	// 10. read ddns info
+	// 11. read ddns info
 	parseDdnsInfo(set, rootObject);
 
-	// 11. read time info
+	// 12. read time info
 	parseTimeInfo(set, rootObject);
 
-	// 12. read account info 
+	// 13. read account info 
 	parseAccountInfo(set, rootObject);
 
-    // 13. multap info
+    // 14. multap info
 	parseMultiapInfo(set, rootObject);
 
-	// 14. read voip info
+	// 15. read voip info
 #if SYS_CONFIG_VOIP
 	parseVoipInfo(set, rootObject);
 #endif
@@ -576,6 +611,17 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(network_ftp, "ON_OFF",    json_object_new_int(set->ftp_info.ON_OFF));
 	json_object_object_add(network_ftp, "file_type", json_object_new_int(set->ftp_info.file_type)); // 0:all, 1:event
 	json_object_object_add(rootObject,  "ftp_info", network_ftp);
+
+	// 5. fota server information
+	json_object* network_fota = json_object_new_object();
+	json_object_object_add(network_fota, "ON_OFF", json_object_new_int(set->fota_info.ON_OFF));
+	json_object_object_add(network_fota, "type",   json_object_new_int(set->fota_info.type));
+	json_object_object_add(network_fota, "port",   json_object_new_int(set->fota_info.port));
+	json_object_object_add(network_fota, "ipaddr",  json_object_new_string(set->fota_info.ipaddr));
+	json_object_object_add(network_fota, "id",      json_object_new_string((const char*)base64_encode((const unsigned char*)set->fota_info.id, MAX_CHAR_16, &enc_size)));
+	json_object_object_add(network_fota, "pwd",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->fota_info.pwd, MAX_CHAR_16, &enc_size)));
+	json_object_object_add(network_fota, "confname",json_object_new_string(set->fota_info.confname));
+	json_object_object_add(rootObject,  "fota_info", network_fota);
 
 	// 6. wifi ap information
 	
@@ -699,6 +745,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(network_dev);
 	json_object_put(network_srv);
 	json_object_put(network_ftp);
+	json_object_put(network_fota);
 	json_object_put(wifiap);
 	json_object_put(wifilist);
 	json_object_put(sys_info);

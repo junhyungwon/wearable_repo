@@ -546,7 +546,7 @@ int app_leds_backup_state_ctrl(int ste)
 -----------------------------------------------------------------------------*/
 int app_leds_sys_normal_ctrl(void)
 {
-    int i, g_val = DEV_LED_OFF, r_val = DEV_LED_OFF ;
+    int i;
     int state ;
 
 	for (i = LED_IDX_CAM1; i < LED_IDX_SD_G; i++)

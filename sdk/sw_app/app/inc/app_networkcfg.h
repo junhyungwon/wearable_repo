@@ -14,26 +14,26 @@
 #define  KEY_NEWLINE    ('\n')
 #define  KEY_EOF        (EOF)
 #define  KEY_INVALID    260
-#define  TITLESIZE      35
+#define  BUFSIZE      35
 #define  ADDR_SIZE    16
 
 #pragma pack(1)
 typedef struct TAG_NETWORKCFG {
-    char ssid[TITLESIZE] ;
-    char ap_passwd[TITLESIZE] ;
-    char wlan_ipaddress[TITLESIZE] ;
-    char wlan_subnet[TITLESIZE] ;
-    char wlan_gateway[TITLESIZE] ;
-    char eth_ipaddress[TITLESIZE] ;
-    char eth_subnet[TITLESIZE] ;
-    char eth_gateway[TITLESIZE] ;
-    char ftp_ipaddress[TITLESIZE] ;
+    char ssid[BUFSIZE] ;
+    char ap_passwd[BUFSIZE] ;
+    char wlan_ipaddress[BUFSIZE] ;
+    char wlan_subnet[BUFSIZE] ;
+    char wlan_gateway[BUFSIZE] ;
+    char eth_ipaddress[BUFSIZE] ;
+    char eth_subnet[BUFSIZE] ;
+    char eth_gateway[BUFSIZE] ;
+    char ftp_ipaddress[BUFSIZE] ;
     unsigned short ftp_port ;
-    char ftp_id[TITLESIZE] ;
-    char ftp_pwd[TITLESIZE];
-    char srv_ipaddress[TITLESIZE] ;
+    char ftp_id[BUFSIZE] ;
+    char ftp_pwd[BUFSIZE];
+    char srv_ipaddress[BUFSIZE] ;
     unsigned short srv_port ;
-    char deviceId[TITLESIZE] ;
+    char deviceId[BUFSIZE] ;
 
 }NETWORKCFG ;
 #pragma pack()
