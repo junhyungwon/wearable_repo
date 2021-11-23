@@ -35,10 +35,10 @@ endif
 #SYSTEM_PLATFORM := NEXX360W
 #SYSTEM_PLATFORM := NEXX360H
 #SYSTEM_PLATFORM := NEXXB
-SYSTEM_PLATFORM := NEXXB_ONE
+#SYSTEM_PLATFORM := NEXXB_ONE
 #SYSTEM_PLATFORM := NEXXONE_VOIP
 #SYSTEM_PLATFORM := NEXX360W_MUX
-#SYSTEM_PLATFORM := NEXX360C
+SYSTEM_PLATFORM := NEXX360C
 ######################################################################################
 
 #--- Build Type (debug/release)

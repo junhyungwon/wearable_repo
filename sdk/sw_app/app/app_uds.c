@@ -838,6 +838,13 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->bs.id, app_set->ftp_info.id);
 	strcpy(t->bs.pw, app_set->ftp_info.pwd);
 
+	// fota server(ftp2)
+	t->fota.enable = app_set->fota_info.ON_OFF;
+	t->fota.port   = app_set->fota_info.port;
+	strcpy(t->fota.serveraddr, app_set->fota_info.ipaddr);
+	strcpy(t->fota.id, app_set->fota_info.id);
+	strcpy(t->fota.pw, app_set->fota_info.pwd);
+
 	// manage server
 	t->ms.enable = app_set->srv_info.ON_OFF;
 	t->ms.port   = app_set->srv_info.port;
@@ -910,6 +917,30 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		}
 		if(strcmp(app_set->ftp_info.pwd,t->bs.pw)){
 			strcpy(app_set->ftp_info.pwd,t->bs.pw);
+			isChanged++;
+		}
+	}
+
+	// FOTA server
+	if(app_set->fota_info.ON_OFF != t->fota.enable){
+		app_set->fota_info.ON_OFF = t->fota.enable;
+		isChanged++;
+	}
+	if(app_set->fota_info.ON_OFF){
+		if(app_set->fota_info.port != t->fota.port){
+			app_set->fota_info.port = t->fota.port;
+			isChanged++;
+		}
+		if(strcmp(app_set->fota_info.ipaddr,t->fota.serveraddr)){
+			strcpy(app_set->fota_info.ipaddr,t->fota.serveraddr);
+			isChanged++;
+		}
+		if(strcmp(app_set->fota_info.id,t->fota.id)){
+			strcpy(app_set->fota_info.id,t->fota.id);
+			isChanged++;
+		}
+		if(strcmp(app_set->fota_info.pwd,t->fota.pw)){
+			strcpy(app_set->fota_info.pwd,t->fota.pw);
 			isChanged++;
 		}
 	}
