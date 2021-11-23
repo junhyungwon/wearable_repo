@@ -23,6 +23,15 @@ typedef struct _tagBackupServer {
 	char pw[32];
 	int  port;
 }T_CGI_BACKUP_SERVER;
+
+typedef struct _tagFotaServer {
+	int  enable;
+	char serveraddr[32];
+	char id[32];
+	char pw[32];
+	int  port;
+}T_CGI_FOTA_SERVER;
+
 typedef struct _tagManageServer {
 	int  enable;
 	char serveraddr[128];				// ref) SERVER_URL_SIZE on app_set.h
@@ -69,7 +78,8 @@ typedef struct _tagCgiVoipConfig{
 }T_CGI_VOIP_CONFIG;
 
 typedef struct _tagCgiServersConfig {
-	T_CGI_BACKUP_SERVER bs;  //ftp
+	T_CGI_BACKUP_SERVER bs;    //ftp
+	T_CGI_FOTA_SERVER   fota;  // remote update
 	T_CGI_MANAGE_SERVER ms;
 	T_CGI_DDNS_INFO     ddns;
 	T_CGI_DNS_INFO      dns;

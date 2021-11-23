@@ -30,6 +30,7 @@ static int submit_settings_qcgi()
 
 		int  bs_enable=-1;
 		int  bs_upload_files=-1;
+		int  fota_enable=-1;
 		int  ms_enable=-1;
 		int  ddns_enable=-1;
 		int  ntp_enable=-1;
@@ -62,6 +63,20 @@ static int submit_settings_qcgi()
         if (str != NULL) {
             t.bs.port = atoi(str);
         }
+
+        // FOTA --- start
+        str= req->getstr(req, "fota_enable", false);
+        if (str != NULL) { fota_enable = atoi(str); }
+        str= req->getstr(req, "txt_fota_ip", false);
+        if (str != NULL) { sprintf(t.fota.serveraddr, "%s", str); }
+        str= req->getstr(req, "txt_fota_id", false);
+        if (str != NULL) { sprintf(t.fota.id, "%s", str); }
+        str= req->getstr(req, "txt_fota_pw", false);
+        if (str != NULL) { sprintf(t.fota.pw, "%s", str); }
+        str= req->getstr(req, "txt_fota_port", false);
+        if (str != NULL) { t.fota.port = atoi(str); }
+        // FOTA --- end
+
         str= req->getstr(req, "ms_enable", false);
         if (str != NULL) {
             ms_enable = atoi(str);
@@ -173,13 +188,13 @@ static int submit_settings_qcgi()
 
         //req->free(req);
 
-        CGI_DBG("bs_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
-				bs_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone, t.onvif.id, t.onvif.pw);
+        CGI_DBG("bs_enable:%d, fota_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
+				bs_enable, fota_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone, t.onvif.id, t.onvif.pw);
 
-		if( bs_enable == -1 || ms_enable == -1 
-				|| ddns_enable == -1 || ntp_enable == -1 
-				|| daylight_saving == -1 
-		|| time_zone == -99) {
+		if( bs_enable == -1 || fota_enable == -1 || ms_enable == -1 
+			|| ddns_enable == -1 || ntp_enable == -1 
+			|| daylight_saving == -1 
+		    || time_zone == -99) {
 			CGI_DBG("Invalid Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
@@ -204,6 +219,7 @@ static int submit_settings_qcgi()
 
 		t.bs.enable = bs_enable;
         t.bs.upload_files = bs_upload_files;
+		t.fota.enable = fota_enable;
 		t.ms.enable = ms_enable;
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;

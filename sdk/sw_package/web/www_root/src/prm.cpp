@@ -126,7 +126,7 @@ int put_json_all_config()
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4];
-	json_object *servers_obj, *bs_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
+	json_object *servers_obj, *bs_obj, *fota_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
 
@@ -324,6 +324,7 @@ int put_json_all_config()
 	// servers
 	servers_obj = json_object_new_object();
 	bs_obj      = json_object_new_object();
+	fota_obj    = json_object_new_object();
 	ms_obj      = json_object_new_object();
 	ddns_obj    = json_object_new_object();
 	dns_obj     = json_object_new_object();
@@ -338,17 +339,24 @@ int put_json_all_config()
 			goto _FREE_SERVERS_OBJ;
 		}
 
-		json_object_object_add(bs_obj, "enable",       json_object_new_int(   p.bs.enable));
-		json_object_object_add(bs_obj, "upload_files", json_object_new_int(p.bs.upload_files));
-		json_object_object_add(bs_obj, "serveraddr", json_object_new_string(p.bs.serveraddr));
-		json_object_object_add(bs_obj, "port",       json_object_new_int(   p.bs.port));
-		json_object_object_add(bs_obj, "id",         json_object_new_string(p.bs.id));
-		json_object_object_add(bs_obj, "pw",         json_object_new_string(p.bs.pw));
+		json_object_object_add(bs_obj, "enable",       json_object_new_int   (p.bs.enable));
+		json_object_object_add(bs_obj, "upload_files", json_object_new_int   (p.bs.upload_files));
+		json_object_object_add(bs_obj, "serveraddr",   json_object_new_string(p.bs.serveraddr));
+		json_object_object_add(bs_obj, "port",         json_object_new_int   (p.bs.port));
+		json_object_object_add(bs_obj, "id",           json_object_new_string(p.bs.id));
+		json_object_object_add(bs_obj, "pw",           json_object_new_string(p.bs.pw));
 		json_object_object_add(servers_obj, "bs", bs_obj);
 
-		json_object_object_add(ms_obj, "enable",     json_object_new_int(   p.ms.enable));
+		json_object_object_add(fota_obj, "enable",     json_object_new_int   (p.fota.enable));
+		json_object_object_add(fota_obj, "serveraddr", json_object_new_string(p.fota.serveraddr));
+		json_object_object_add(fota_obj, "port",       json_object_new_int   (p.fota.port));
+		json_object_object_add(fota_obj, "id",         json_object_new_string(p.fota.id));
+		json_object_object_add(fota_obj, "pw",         json_object_new_string(p.fota.pw));
+		json_object_object_add(servers_obj, "fota", fota_obj);
+
+		json_object_object_add(ms_obj, "enable",     json_object_new_int   (p.ms.enable));
 		json_object_object_add(ms_obj, "serveraddr", json_object_new_string(p.ms.serveraddr));
-		json_object_object_add(ms_obj, "port",       json_object_new_int(   p.ms.port));
+		json_object_object_add(ms_obj, "port",       json_object_new_int   (p.ms.port));
 		json_object_object_add(servers_obj, "ms", ms_obj);
 
 		json_object_object_add(ddns_obj, "enable",   json_object_new_int(   p.ddns.enable));
@@ -432,6 +440,7 @@ _FREE_SYSTEM_OBJ:
 
 _FREE_SERVERS_OBJ:
 	json_object_put(bs_obj);
+	json_object_put(fota_obj);
 	json_object_put(ms_obj);
 	json_object_put(ddns_obj);
 	json_object_put(dns_obj);
@@ -572,28 +581,36 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bsobj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
+	json_object *myobj, *bs_obj, *fota_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
 
-	myobj   = json_object_new_object();
-	bsobj   = json_object_new_object();
-	msobj   = json_object_new_object();
-	ddnsobj = json_object_new_object();
-	dnsobj  = json_object_new_object();
-	ntpobj  = json_object_new_object();
+	myobj     = json_object_new_object();
+	bs_obj    = json_object_new_object();
+	fota_obj  = json_object_new_object();
+	msobj     = json_object_new_object();
+	ddnsobj   = json_object_new_object();
+	dnsobj    = json_object_new_object();
+	ntpobj    = json_object_new_object();
 	onvif_obj = json_object_new_object();
 	p2p_obj   = json_object_new_object();
 	voip_obj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
-	json_object_object_add(bsobj, "enable",       json_object_new_int( p->bs.enable));
-	json_object_object_add(bsobj, "upload_files", json_object_new_int( p->bs.upload_files));
-	json_object_object_add(bsobj, "serveraddr", json_object_new_string(p->bs.serveraddr));
-	json_object_object_add(bsobj, "port",       json_object_new_int(   p->bs.port));
-	json_object_object_add(bsobj, "id",         json_object_new_string(p->bs.id));
-	json_object_object_add(bsobj, "pw",         json_object_new_string(p->bs.pw));
-	//json_object_object_add(bsobj, "desc",      json_object_new_string("Backup Server(FTP)"));
-	json_object_object_add(myobj, "bs", bsobj);
+	json_object_object_add(bs_obj, "enable",       json_object_new_int( p->bs.enable));
+	json_object_object_add(bs_obj, "upload_files", json_object_new_int( p->bs.upload_files));
+	json_object_object_add(bs_obj, "serveraddr",   json_object_new_string(p->bs.serveraddr));
+	json_object_object_add(bs_obj, "port",         json_object_new_int(   p->bs.port));
+	json_object_object_add(bs_obj, "id",           json_object_new_string(p->bs.id));
+	json_object_object_add(bs_obj, "pw",           json_object_new_string(p->bs.pw));
+	//json_object_object_add(bs_obj, "desc",      json_object_new_string("Backup Server(FTP)"));
+	json_object_object_add(myobj, "bs", bs_obj);
+
+	json_object_object_add(fota_obj, "enable",     json_object_new_int   (p->fota.enable));
+	json_object_object_add(fota_obj, "serveraddr", json_object_new_string(p->fota.serveraddr));
+	json_object_object_add(fota_obj, "port",       json_object_new_int   (p->fota.port));
+	json_object_object_add(fota_obj, "id",         json_object_new_string(p->fota.id));
+	json_object_object_add(fota_obj, "pw",         json_object_new_string(p->fota.pw));
+	json_object_object_add(myobj, "fota", fota_obj);
 
 	json_object_object_add(msobj, "enable",     json_object_new_int(   p->ms.enable));
 	json_object_object_add(msobj, "serveraddr", json_object_new_string(p->ms.serveraddr));
@@ -647,7 +664,8 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	PUTSTR("%s\r\n", json_object_to_json_string(myobj));
 
 	// free
-	json_object_put(bsobj);
+	json_object_put(bs_obj);
+	json_object_put(fota_obj);
 	json_object_put(msobj);
 	json_object_put(ddnsobj);
 	json_object_put(dnsobj);
