@@ -206,7 +206,7 @@ static void char_memset(void)
     memset(app_set->fota_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->fota_info.confname, CHAR_MEMSET, MAX_CHAR_32);
 
-    app_set->fota_info.ON_OFF = ON ;
+    app_set->fota_info.ON_OFF = OFF ;
     app_set->fota_info.type = OFF ; // OFF FTP, ON SFTP
     memset(app_set->fota_info.reserved, CFG_INVALID, 64);
 
@@ -1076,7 +1076,7 @@ static void app_set_default(int default_type)
 
 	//# FOTA information
     app_set->fota_info.port = 21;
-    app_set->fota_info.ON_OFF = ON ;
+    app_set->fota_info.ON_OFF = OFF ;
     strcpy(app_set->fota_info.ipaddr, "192.168.40.6");
     strcpy(app_set->fota_info.id, "test");
     strcpy(app_set->fota_info.pwd, "test");

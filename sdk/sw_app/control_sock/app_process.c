@@ -75,9 +75,6 @@ char m_SendBuffer[MAXBUFF] ;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
-#define STR_SIZE 	32
-#define FILECNT		100
-#define PACKETSIZE	20480
 
 const int GPSPACKET_SIZE = sizeof(GPSPACKET) ;
 const int GPSREQRCV_SIZE = sizeof(GPSREQRCV) ;
