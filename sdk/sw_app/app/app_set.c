@@ -205,7 +205,6 @@ static void char_memset(void)
     memset(app_set->fota_info.id, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->fota_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->fota_info.confname, CHAR_MEMSET, MAX_CHAR_32);
-
     app_set->fota_info.ON_OFF = OFF ;
     app_set->fota_info.type = OFF ; // OFF FTP, ON SFTP
     memset(app_set->fota_info.reserved, CFG_INVALID, 64);
@@ -675,7 +674,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->fota_info.port	= 21;
  
     if(pset->fota_info.ON_OFF <= CFG_INVALID)
-        pset->fota_info.ON_OFF = ON ;
+        pset->fota_info.ON_OFF = OFF ;
 
 	if((int)pset->fota_info.ipaddr[0] == CHAR_INVALID || (int)pset->fota_info.ipaddr[0] == 0)
 		strcpy(pset->fota_info.ipaddr, "192.168.40.6");
