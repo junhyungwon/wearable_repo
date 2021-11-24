@@ -264,9 +264,12 @@ int app_main(void)
 	
     if (app_set->sys_info.P2P_ON_OFF == ON) 
 	{
+
+#if !defined(LF_SYS_NEXX360C) // 넥씨일 경우는 P2P사용안해욧!
         add_p2p_account() ;
 //        app_p2p_start() ;  // p2p_init 과 동시 동작시 p2p server 2개 동시 동작되는 경우 발생 
         app_p2p_init() ;
+#endif
     }
 
 #if SYS_CONFIG_VOIP	
