@@ -26,7 +26,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define FTP_DBG
+//#define FTP_DBG
 
 #define FTP_STATE_NONE		     	0
 #define FTP_STATE_CONNECTING		1
