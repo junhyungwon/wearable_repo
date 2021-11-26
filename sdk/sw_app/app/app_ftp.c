@@ -1375,7 +1375,7 @@ void app_ftp_state_reset(void)
 static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
-	int cmd, exit = 0, cradle_status = 0, ret = 1;
+	int cmd, exit = 0, cradle_status = 0, ret = 0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
