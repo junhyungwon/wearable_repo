@@ -201,6 +201,7 @@ static void char_memset(void)
 
 	//# FOTA information
     app_set->fota_info.port = CFG_INVALID ;
+    app_set->fota_info.svr_info = CFG_INVALID ;
     memset(app_set->fota_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32);
     memset(app_set->fota_info.id, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->fota_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
@@ -383,6 +384,7 @@ int show_all_cfg(app_set_t* pset)
 	printf("\n");
 
     printf("pset->fota_info.port   = %d\n", pset->fota_info.port        );
+    printf("pset->fota_info.svr_info   = %d\n", pset->fota_info.svr_info        );
     printf("pset->fota_info.ipaddr = %s\n", pset->fota_info.ipaddr);
     printf("pset->fota_info.id     = %s\n", pset->fota_info.id);
     printf("pset->fota_info.pwd    = %s\n", pset->fota_info.pwd);
@@ -673,6 +675,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->fota_info.port <= CFG_INVALID)
 		pset->fota_info.port	= 21;
  
+	if(pset->fota_info.svr_info <= CFG_INVALID)
+		pset->fota_info.svr_info	= 0;
+
     if(pset->fota_info.ON_OFF <= CFG_INVALID)
         pset->fota_info.ON_OFF = OFF ;
 
@@ -1075,6 +1080,7 @@ static void app_set_default(int default_type)
 
 	//# FOTA information
     app_set->fota_info.port = 21;
+    app_set->fota_info.svr_info = 0;
     app_set->fota_info.ON_OFF = OFF ;
     strcpy(app_set->fota_info.ipaddr, "192.168.40.6");
     strcpy(app_set->fota_info.id, "test");

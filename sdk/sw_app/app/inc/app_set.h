@@ -138,7 +138,8 @@ typedef struct{
 typedef struct {
 	short ON_OFF ;
     short type ; // transfer type . ftp, ftps
-    int port ;
+    short port ;
+	short svr_info ;
 	char ipaddr[MAX_CHAR_32] ;
 	char id[MAX_CHAR_16]  ;            
 	char pwd[MAX_CHAR_16]  ;            

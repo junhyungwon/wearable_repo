@@ -315,6 +315,8 @@ static int	parseNetworkFota(app_set_t* const set, json_object* rootObj)
 	set->fota_info.type = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "port");
 	set->fota_info.port = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "svr_info");
+	set->fota_info.svr_info = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "ipaddr");
 	sprintf(set->fota_info.ipaddr, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "id");
@@ -617,6 +619,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(network_fota, "ON_OFF", json_object_new_int(set->fota_info.ON_OFF));
 	json_object_object_add(network_fota, "type",   json_object_new_int(set->fota_info.type));
 	json_object_object_add(network_fota, "port",   json_object_new_int(set->fota_info.port));
+	json_object_object_add(network_fota, "svr_info",   json_object_new_int(set->fota_info.svr_info));
 	json_object_object_add(network_fota, "ipaddr",  json_object_new_string(set->fota_info.ipaddr));
 	json_object_object_add(network_fota, "id",      json_object_new_string((const char*)base64_encode((const unsigned char*)set->fota_info.id, MAX_CHAR_16, &enc_size)));
 	json_object_object_add(network_fota, "pwd",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->fota_info.pwd, MAX_CHAR_16, &enc_size)));
