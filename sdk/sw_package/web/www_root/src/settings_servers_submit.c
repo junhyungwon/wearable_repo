@@ -39,34 +39,27 @@ static int submit_settings_qcgi()
 		int  time_zone=-99;
 		int  enable_p2p=1; // 무조건 1...
 
+
+        // backup server --- start
         char *str= req->getstr(req, "bs_enable", false);
-        if (str != NULL) {
-            bs_enable = atoi(str);
-        }
+        if (str != NULL) { bs_enable = atoi(str); }
         str= req->getstr(req, "bs_upload_files", false);
-        if (str != NULL) {
-            bs_upload_files = atoi(str);
-        }
+        if (str != NULL) { bs_upload_files = atoi(str); }
         str= req->getstr(req, "txt_bs_ip", false);
-        if (str != NULL) {
-            sprintf(t.bs.serveraddr, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.bs.serveraddr, "%s", str); }
         str= req->getstr(req, "txt_bs_id", false);
-        if (str != NULL) {
-            sprintf(t.bs.id, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.bs.id, "%s", str); }
         str= req->getstr(req, "txt_bs_pw", false);
-        if (str != NULL) {
-            sprintf(t.bs.pw, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.bs.pw, "%s", str); }
         str= req->getstr(req, "txt_bs_port", false);
-        if (str != NULL) {
-            t.bs.port = atoi(str);
-        }
+        if (str != NULL) { t.bs.port = atoi(str); }
+        // backup server --- end
 
         // FOTA --- start
         str= req->getstr(req, "fota_enable", false);
         if (str != NULL) { fota_enable = atoi(str); }
+        str= req->getstr(req, "fota_server_info", false);
+        if (str != NULL) { t.fota.server_info = atoi(str); } // 0: same backup server info, 1: manual
         str= req->getstr(req, "txt_fota_ip", false);
         if (str != NULL) { sprintf(t.fota.serveraddr, "%s", str); }
         str= req->getstr(req, "txt_fota_id", false);
@@ -77,79 +70,50 @@ static int submit_settings_qcgi()
         if (str != NULL) { t.fota.port = atoi(str); }
         // FOTA --- end
 
+        // Management Server --- start
         str= req->getstr(req, "ms_enable", false);
-        if (str != NULL) {
-            ms_enable = atoi(str);
-        }
+        if (str != NULL) { ms_enable = atoi(str); }
         str= req->getstr(req, "txt_ms_ip", false);
-        if (str != NULL) {
-            sprintf(t.ms.serveraddr, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.ms.serveraddr, "%s", str); }
         str= req->getstr(req, "txt_ms_port", false);
-        if (str != NULL) {
-            t.ms.port = atoi(str);
-        }
+        if (str != NULL) { t.ms.port = atoi(str); }
+
+        // DDNS -- start
         str= req->getstr(req, "ddns_enable", false);
-        if (str != NULL) {
-            ddns_enable = atoi(str);
-        }
+        if (str != NULL) { ddns_enable = atoi(str); }
         str= req->getstr(req, "txt_ddns_server", false);
-        if (str != NULL) {
-            sprintf(t.ddns.serveraddr, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.ddns.serveraddr, "%s", str); }
         str= req->getstr(req, "txt_ddns_hostname", false);
-        if (str != NULL) {
-            sprintf(t.ddns.hostname, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.ddns.hostname, "%s", str); }
         str= req->getstr(req, "txt_ddns_id", false);
-        if (str != NULL) {
-            sprintf(t.ddns.id, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.ddns.id, "%s", str); }
         str= req->getstr(req, "txt_ddns_pw", false);
-        if (str != NULL) {
-            sprintf(t.ddns.pw, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.ddns.pw, "%s", str); }
+
         str= req->getstr(req, "txt_dns_1", false);
-        if (str != NULL) {
-            sprintf(t.dns.server1, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.dns.server1, "%s", str); }
         str= req->getstr(req, "txt_dns_2", false);
-        if (str != NULL) {
-            sprintf(t.dns.server2, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.dns.server2, "%s", str); }
+
+        // NTP Server
         str= req->getstr(req, "ntp_enable", false);
-        if (str != NULL) {
-            ntp_enable = atoi(str);
-        }
+        if (str != NULL) { ntp_enable = atoi(str); }
         str= req->getstr(req, "txt_ntp_ip", false);
-        if (str != NULL) {
-            sprintf(t.ntp.serveraddr, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.ntp.serveraddr, "%s", str); }
         str= req->getstr(req, "daylight_saving", false);
-        if (str != NULL) {
-            daylight_saving = atoi(str);
-        }
+        if (str != NULL) { daylight_saving = atoi(str); }
         str= req->getstr(req, "cbo_timezone", false);
-        if (str != NULL) {
-            time_zone = atoi(str);
-        }
+        if (str != NULL) { time_zone = atoi(str); }
         str= req->getstr(req, "timezone_abbr", false);
-        if (str != NULL) {
-            sprintf(t.time_zone_abbr, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.time_zone_abbr, "%s", str); }
+
+        // ONVIF
         str= req->getstr(req, "enable_onvif", false);
-        if (str != NULL) {
-			CGI_DBG("str:%s\n", str);
-            enable_onvif = atoi(str);
-        }
+        if (str != NULL) { enable_onvif = atoi(str); }
         str= req->getstr(req, "txt_onvif_id", false);
-        if (str != NULL) {
-            sprintf(t.onvif.id, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.onvif.id, "%s", str); }
         str= req->getstr(req, "txt_onvif_pw", false);
-        if (str != NULL) {
-            sprintf(t.onvif.pw, "%s", str);
-        }
+        if (str != NULL) { sprintf(t.onvif.pw, "%s", str); }
 
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE) \
  || defined(NEXX360B) || defined(NEXX360C)

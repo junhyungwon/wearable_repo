@@ -347,11 +347,12 @@ int put_json_all_config()
 		json_object_object_add(bs_obj, "pw",           json_object_new_string(p.bs.pw));
 		json_object_object_add(servers_obj, "bs", bs_obj);
 
-		json_object_object_add(fota_obj, "enable",     json_object_new_int   (p.fota.enable));
-		json_object_object_add(fota_obj, "serveraddr", json_object_new_string(p.fota.serveraddr));
-		json_object_object_add(fota_obj, "port",       json_object_new_int   (p.fota.port));
-		json_object_object_add(fota_obj, "id",         json_object_new_string(p.fota.id));
-		json_object_object_add(fota_obj, "pw",         json_object_new_string(p.fota.pw));
+		json_object_object_add(fota_obj, "enable",      json_object_new_int   (p.fota.enable));
+		json_object_object_add(fota_obj, "server_info", json_object_new_int(p.fota.server_info));
+		json_object_object_add(fota_obj, "serveraddr",  json_object_new_string(p.fota.serveraddr));
+		json_object_object_add(fota_obj, "port",        json_object_new_int   (p.fota.port));
+		json_object_object_add(fota_obj, "id",          json_object_new_string(p.fota.id));
+		json_object_object_add(fota_obj, "pw",          json_object_new_string(p.fota.pw));
 		json_object_object_add(servers_obj, "fota", fota_obj);
 
 		json_object_object_add(ms_obj, "enable",     json_object_new_int   (p.ms.enable));
@@ -605,11 +606,12 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	//json_object_object_add(bs_obj, "desc",      json_object_new_string("Backup Server(FTP)"));
 	json_object_object_add(myobj, "bs", bs_obj);
 
-	json_object_object_add(fota_obj, "enable",     json_object_new_int   (p->fota.enable));
-	json_object_object_add(fota_obj, "serveraddr", json_object_new_string(p->fota.serveraddr));
-	json_object_object_add(fota_obj, "port",       json_object_new_int   (p->fota.port));
-	json_object_object_add(fota_obj, "id",         json_object_new_string(p->fota.id));
-	json_object_object_add(fota_obj, "pw",         json_object_new_string(p->fota.pw));
+	json_object_object_add(fota_obj, "enable",      json_object_new_int   (p->fota.enable));
+	json_object_object_add(fota_obj, "server_info", json_object_new_int   (p->fota.server_info));
+	json_object_object_add(fota_obj, "serveraddr",  json_object_new_string(p->fota.serveraddr));
+	json_object_object_add(fota_obj, "port",        json_object_new_int   (p->fota.port));
+	json_object_object_add(fota_obj, "id",          json_object_new_string(p->fota.id));
+	json_object_object_add(fota_obj, "pw",          json_object_new_string(p->fota.pw));
 	json_object_object_add(myobj, "fota", fota_obj);
 
 	json_object_object_add(msobj, "enable",     json_object_new_int(   p->ms.enable));
