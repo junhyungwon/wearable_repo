@@ -26,6 +26,7 @@ typedef struct _tagBackupServer {
 
 typedef struct _tagFotaServer {
 	int  enable;
+    int  server_info; // backup server와 같은지, 아니면 직접입력할건지
 	char serveraddr[32];
 	char id[32];
 	char pw[32];
