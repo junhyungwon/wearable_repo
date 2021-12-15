@@ -63,7 +63,7 @@
 #endif
 
 #define FTP_CYCLE_TIME		100
-#define FTP_TIME_OUT		5	//# 2sec
+#define FTP_CONNECT_TIME_OUT		2	//# 5 sec
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 #define RSIZE 1024
@@ -337,7 +337,7 @@ static int createDataSock(char * host, int port)
 		return -1;
     }
 
-    tv.tv_sec = 10;
+    tv.tv_sec = FTP_CONNECT_TIME_OUT;
     tv.tv_usec = 0;
 
     strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
@@ -590,7 +590,7 @@ static int ftp_connect (char *hostname, int port)
 	fcntl(sd, F_SETFL, arg);
 #endif
 
-    tv.tv_sec = 10;
+    tv.tv_sec = FTP_CONNECT_TIME_OUT;
     tv.tv_usec = 0;
 
     strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
@@ -873,7 +873,7 @@ static int ftpRecvConFile(int sd, char *filename)
 {
 	char buf[RSIZE] = {0, } ;
     
-	char *fstr = NULL, *fs = NULL ;
+	char *fstr = NULL, *fs = NULL, *bstr = NULL ;
 	size_t len;
 
 	int  retval = S_OK, length = 0 ;
@@ -897,6 +897,17 @@ static int ftpRecvConFile(int sd, char *filename)
 			length = strlen(buf) ;
 		    strncpy(iftp->fota_firmfname, &buf[5], length) ;
         }
+        else
+		{
+			bstr = strstr(buf, "out") ;
+			if(bstr != NULL)
+			{
+				bstr += 3; 
+				*bstr = '\0' ;
+				length = strlen(buf) ;
+				strncpy(iftp->fota_firmfname, &buf[5], length) ;
+			}
+		}
 
 		retval = 0 ;
 
@@ -1015,7 +1026,7 @@ static int fota_receive_confile(int sd)
 				{
 					if(ftpRecvConFile(data_sock, app_set->fota_info.confname) == 0)
 					{
-						if(ftpRecvResponse(sd, buf, 0) == 0)
+						if(ftpRecvResponse(sd, buf, 0) == 0) // 1021 line의 confname_len 길이 없이 receive 시  1029 line의 receive시 data가 없어 resource is not available .. 에러 발생 
 						{
 							if(strncmp(buf, "226", 3) == 0)
 							{
@@ -1047,7 +1058,7 @@ int fota_proc()
 	{
 		if(!app_cfg->ftp_enable)
 		{
-			iftp->ftp_state = FOTA_STATE_NONE ;
+			iftp->fota_state = FOTA_STATE_NONE ;
 			ftp_dbg(" \n[FOTA] FOTA stop process == FOTA DISABLED!! \n") ;
 			break ;
 		}
@@ -1080,6 +1091,7 @@ int fota_proc()
                     {
                         iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
                         retry_cnt = 0 ;
+						ftp_close(iftp->lsdFtp);
 					    break ;
                     }
                     else
@@ -1229,6 +1241,7 @@ static void ftp_send(void)
                     {
                         iftp->ftp_state = FTP_STATE_SEND_DONE ;
                         retry_cnt = 0 ;
+	           			ftp_close(iftp->lsdFtp);
 					    break ;
                     }
                     else
