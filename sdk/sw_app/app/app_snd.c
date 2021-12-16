@@ -302,7 +302,7 @@ static void *THR_snd_cap(void *prm)
 				write_wav_file(addr, bytes);
 				iwave->wave_frame_cnt++;
 			}
-			#endif
+#endif
 
 #if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXXONE
 			struct timeval tv;
@@ -527,7 +527,8 @@ int app_snd_start(void)
 	memset(isnd, 0, sizeof(app_snd_t));
 	
 	/* set audio record enable */
-	isnd->snd_rec_enable = app_set->rec_info.audio_rec;
+//	isnd->snd_rec_enable = app_set->rec_info.audio_rec;
+	isnd->snd_rec_enable = ON;
 	/* set capture volume */
 	//# "/usr/bin/amixer cset numid=31 60% > /dev/null"
 	dev_snd_set_volume(SND_VOLUME_C, 60);
