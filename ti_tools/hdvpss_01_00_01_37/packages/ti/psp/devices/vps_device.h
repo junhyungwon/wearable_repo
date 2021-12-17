@@ -227,6 +227,24 @@ Int32 Vps_deviceRawRead8 (UInt32 i2cInstId,
                           UInt32 numRegs);
 
 /**
+  \brief Raw Read from device via I2C
+
+  Make sure regValue array is
+  greater or equal to numRegs.
+
+  \param i2cInstId  [IN] \ref VPS_DEVICE_I2C_INST_ID_0 or \ref VPS_DEVICE_I2C_INST_ID_1
+  \param i2cDevAddr [IN] Slave device address (0 .. 0xFF)
+  \param regValue   [IN] Device Register Value Array
+  \param numRegs    [IN] Number of Registers to read
+
+  \return FVID2_SOK on success else failure
+*/
+Int32 Vps_nicpRead8 (UInt32 instId, 
+					 UInt32 devAddr, 
+					 UInt8 *regValue,
+					 UInt8);
+
+/**
   \brief Write registers to device via I2C
 
   Make sure size of regAddr array and regValue array is
