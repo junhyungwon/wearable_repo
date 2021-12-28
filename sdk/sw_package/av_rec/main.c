@@ -225,7 +225,7 @@ static void evt_file_close(void)
 {
 	if (irec->fevt) {
 		avi_file_close(irec->fevt, irec->fname);
-		irec->pre_type = -1 ;
+
 		send_msg(AV_CMD_REC_FLIST, irec->fname);
 		irec->fevt = NULL;
 	}
@@ -299,6 +299,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    if (irec->fevt == NULL)
 			    return EFAIL;
 		
+			irec->pre_type = 1 ;   // 파일이 normal file 일때 처리를 위한 부분 
 		    dprintf("AVI name %s opened!\n", irec->fname);
 			irec->rec_evt_cnt = 0;
 		    return SOK;

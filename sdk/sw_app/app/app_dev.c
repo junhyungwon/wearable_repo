@@ -332,7 +332,7 @@ static void *THR_dev(void *prm)
 		else if (rkey == KEY_LONG) {	 // Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 
 			if(!app_cfg->ste.b.ftp_run) {
 				if (app_rec_state()) {
-					  app_rec_stop(ON);
+					  app_rec_stop(OFF);
 				} else {
 					app_rec_start();
 				}
@@ -346,7 +346,7 @@ static void *THR_dev(void *prm)
 
 				if (value < 2)  //  Rec off or normal/event rec -> SOS ON
 				{
-					app_rec_stop(OFF) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_rec_evt(ON) ;  // SOS REC
 					sysprint("[APP_SOS] Occurs SOS Event !! \n") ;	
 				}

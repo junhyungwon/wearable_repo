@@ -291,7 +291,7 @@ static void *THR_evt_buzzer(void *prm)
 						app_leds_cam_ctrl(i, status);
 					}
 				}
-				if(!(buzzer_cnt % 20))
+				if(!(buzzer_cnt % 60))
                 {
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
