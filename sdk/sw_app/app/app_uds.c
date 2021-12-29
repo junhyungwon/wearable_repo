@@ -780,8 +780,9 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	// voip
+	t->enable   = app_set->voip.ON_OFF;
 	t->use_stun = app_set->voip.use_stun;
-	t->port   = app_set->voip.port;
+	t->port     = app_set->voip.port;
 	strcpy(t->ipaddr, app_set->voip.ipaddr);
 	strcpy(t->userid, app_set->voip.userid);
 	strcpy(t->passwd, app_set->voip.passwd);
@@ -798,29 +799,36 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 	int isChanged=0;
 
 	// voip config
-	if(app_set->voip.use_stun != t->use_stun){
-		app_set->voip.use_stun = t->use_stun;
+	if(app_set->voip.ON_OFF != t->enable){
+		app_set->voip.ON_OFF = t->enable;
 		isChanged++;
 	}
-	if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
-		strcpy(app_set->voip.ipaddr,t->ipaddr);
-		isChanged++;
-	}
-	if(app_set->voip.port != t->port){
-		app_set->voip.port = t->port;
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.userid, t->userid)){
-		strcpy(app_set->voip.userid, t->userid);
-		isChanged++;
-	}
-	if(strlen(t->passwd) && strcmp( app_set->voip.passwd,t->passwd)){
-		strcpy(app_set->voip.passwd,t->passwd);
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.peerid, t->peerid)){
-		strcpy(app_set->voip.peerid, t->peerid);
-		isChanged++;
+
+	if(app_set->voip.ON_OFF == ON) {
+		if(app_set->voip.use_stun != t->use_stun){
+			app_set->voip.use_stun = t->use_stun;
+			isChanged++;
+		}
+		if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
+			strcpy(app_set->voip.ipaddr,t->ipaddr);
+			isChanged++;
+		}
+		if(app_set->voip.port != t->port){
+			app_set->voip.port = t->port;
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.userid, t->userid)){
+			strcpy(app_set->voip.userid, t->userid);
+			isChanged++;
+		}
+		if(strlen(t->passwd) && strcmp( app_set->voip.passwd,t->passwd)){
+			strcpy(app_set->voip.passwd,t->passwd);
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.peerid, t->peerid)){
+			strcpy(app_set->voip.peerid, t->peerid);
+			isChanged++;
+		}
 	}
 
 	return isChanged;
@@ -879,6 +887,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 #if SYS_CONFIG_VOIP
 	// voip
+	t->voip.enable = app_set->voip.ON_OFF;
 	t->voip.port   = app_set->voip.port;
 	t->voip.use_stun = app_set->voip.use_stun;
 	strcpy(t->voip.ipaddr, app_set->voip.ipaddr);
@@ -1055,29 +1064,35 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 #if SYS_CONFIG_VOIP
 	// voip config
-	if(app_set->voip.use_stun != t->voip.use_stun){
-		app_set->voip.use_stun = t->voip.use_stun;
+	if(app_set->voip.ON_OFF != t->voip.enable){
+		app_set->voip.ON_OFF = t->voip.enable;
 		isChanged++;
 	}
-	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
-		strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
-		isChanged++;
-	}
-	if(app_set->voip.port != t->voip.port){
-		app_set->voip.port = t->voip.port;
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.userid, t->voip.userid)){
-		strcpy(app_set->voip.userid, t->voip.userid);
-		isChanged++;
-	}
-	if(strlen(t->voip.passwd) && strcmp( app_set->voip.passwd,t->voip.passwd)){
-		strcpy(app_set->voip.passwd,t->voip.passwd);
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.peerid, t->voip.peerid)){
-		strcpy(app_set->voip.peerid, t->voip.peerid);
-		isChanged++;
+	if(app_set->voip.ON_OFF == ON) {
+		if(app_set->voip.use_stun != t->voip.use_stun){
+			app_set->voip.use_stun = t->voip.use_stun;
+			isChanged++;
+		}
+		if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
+			strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
+			isChanged++;
+		}
+		if(app_set->voip.port != t->voip.port){
+			app_set->voip.port = t->voip.port;
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.userid, t->voip.userid)){
+			strcpy(app_set->voip.userid, t->voip.userid);
+			isChanged++;
+		}
+		if(strlen(t->voip.passwd) && strcmp( app_set->voip.passwd,t->voip.passwd)){
+			strcpy(app_set->voip.passwd,t->voip.passwd);
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.peerid, t->voip.peerid)){
+			strcpy(app_set->voip.peerid, t->voip.peerid);
+			isChanged++;
+		}
 	}
 #endif	
 	return isChanged;

@@ -117,6 +117,10 @@ static int submit_settings_qcgi()
 
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE) \
  || defined(NEXX360B) || defined(NEXX360C)
+        str= req->getstr(req, "voip_enable", false);
+        if (str != NULL) {
+            t.voip.enable = atoi(str);
+        }
         str= req->getstr(req, "voip_use_stun", false);
         if (str != NULL) {
             t.voip.use_stun = atoi(str);
@@ -147,7 +151,9 @@ static int submit_settings_qcgi()
 		if (str != NULL) {
 			enable_p2p = atoi(str);
 		}
-        CGI_DBG("use stun:%d, voip.ip:%s, voip.id:%s, voip.peerid:%s\n", t.voip.use_stun, t.voip.ipaddr, t.voip.userid, t.voip.peerid);
+        CGI_DBG("enable:%d, use stun:%d, voip.ip:%s, voip.id:%s, voip.peerid:%s\n", 
+        t.voip.enable,
+        t.voip.use_stun, t.voip.ipaddr, t.voip.userid, t.voip.peerid);
 #endif
 
         //req->free(req);

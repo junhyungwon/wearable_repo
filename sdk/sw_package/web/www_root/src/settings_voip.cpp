@@ -21,6 +21,7 @@ int main()
 
 	printf("<voip>\n");
 	printf("<model>%s</model>\n", MODEL_NAME);
+	printf("<enable>%s</enable>\n", t.enable);
 	printf("<use_stun>%s</use_stun>\n", t.use_stun);
 	printf("<ip>%s</ip>\n", t.ipaddr);
 	printf("<port>%d</port>\n", t.port);

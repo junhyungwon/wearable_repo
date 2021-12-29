@@ -280,7 +280,8 @@ static void char_memset(void)
     memset(app_set->voip.passwd, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
 	app_set->voip.use_stun = 0 ;
-    memset(app_set->voip.reserved, CHAR_MEMSET, 40) ;
+	app_set->voip.ON_OFF = CFG_INVALID ;
+    memset(app_set->voip.reserved, CHAR_MEMSET, 38) ;
     memset(app_set->reserved, CFG_INVALID, 360) ;
 #else
     memset(app_set->reserved, CFG_INVALID, 472) ;
@@ -463,6 +464,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->voip.passwd = %s\n", pset->voip.passwd);
     printf("pset->voip.peerid = %s\n", pset->voip.peerid);
     printf("pset->voip.use_stun = %d\n", pset->voip.use_stun);
+    printf("pset->voip.ON_OFF = %d\n", pset->voip.ON_OFF);
 #endif
 	printf("\n");
 
@@ -910,6 +912,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->voip.use_stun <= CFG_INVALID)
 		pset->voip.use_stun = 0;
+	if(pset->voip.ON_OFF <= CFG_INVALID)
+		pset->voip.ON_OFF = ON;
 #endif
 		
 	if(0 == access("/mmc/show_all_cfg", F_OK))
@@ -1207,7 +1211,8 @@ static void app_set_default(int default_type)
 	memset((void*)app_set->voip.userid, 0x00, sizeof(app_set->voip.userid));
 	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
     app_set->voip.use_stun = 0;
-	memset((void*)app_set->voip.reserved, 0x00, 40);
+    app_set->voip.ON_OFF = ON;
+	memset((void*)app_set->voip.reserved, 0x00, 38);
 #endif	
 }
 

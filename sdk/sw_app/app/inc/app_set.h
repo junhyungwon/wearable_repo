@@ -281,8 +281,9 @@ typedef struct {
     char  passwd[MAX_CHAR_16] ;
     char  peerid[MAX_CHAR_16] ;
     short private_network_only;
-    int use_stun ;
-	char reserved[40] ;
+    int   use_stun ;
+	short ON_OFF ;
+	char reserved[38] ;
 } app_voip_t; // 72 
 #pragma pack()
 #endif
