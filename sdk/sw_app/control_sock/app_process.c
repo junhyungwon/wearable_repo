@@ -257,6 +257,45 @@ void eventdata_send(void)
     }
 }
 
+void stop_sos_send(void)
+{
+    int sendlen = 0, i;
+    socklen_t lon ;
+	int valopt = 0 ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("STOP SOSdata reached...\n") ;
+#endif
+    EVENTPACKET Sospacket ;
+
+	Sospacket.identifier = htons(IDENTIFIER) ;
+	Sospacket.cmd = htons(CMD_STOP_SOSDATA) ;
+	Sospacket.length = htons(EVENTPACKET_SIZE) ;
+ 
+	sprintf(Sospacket.uid, "%s", app_set->sys_info.uid) ;
+	sprintf(Sospacket.deviceId, "%s", app_set->sys_info.deviceId) ;
+
+	memcpy(m_SendBuffer, &Sospacket, EVENTPACKET_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("STOP Sosdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+			}
+		}
+    }
+}
+
 void sosdata_send(void)
 {
     int sendlen = 0, i;

@@ -52,6 +52,7 @@ typedef enum {
 	//# event
 	APP_EVT_PWROFF = 0x10,
 	APP_EVT_MMC,
+	APP_SOS_SEND_STOP,
 
 	//# for rec proc
 	APP_REC_START = 0x20,

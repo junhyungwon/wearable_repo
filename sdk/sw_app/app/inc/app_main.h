@@ -93,7 +93,7 @@
 #define FTP_DEV_ETH0			1
 #define FTP_DEV_ETH1			2
 
-#if defined(NEXXB) 
+#if defined(NEXXB) || defined(NEXXB_ONE)
 #define FTP_CUR_DEV				FTP_DEV_ETH1 //#FTP_DEV_ETH1 /* TODO */
 #else
 #define FTP_CUR_DEV				FTP_DEV_ETH0

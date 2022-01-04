@@ -353,6 +353,7 @@ static void *THR_dev(void *prm)
 				else if(value == 2) // value 2, SOS Rec  , Value 1 Normal/Event REc
                 {
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+					app_sos_send_stop(ON) ;
 					sysprint("[APP_SOS] End SOS Event !! \n") ;	
 				}
 				dprintf("SOS Short Key Pressed!\n");
