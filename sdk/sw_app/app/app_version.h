@@ -27,51 +27,51 @@
 
 #if defined(NEXX360B)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29B"
+#	define FITT360_SW_VER      		"2.09.30B"
 #	else
-#	define FITT360_SW_VER      		"2.09.29.D"
+#	define FITT360_SW_VER      		"2.09.30.D"
 #	endif
 #elif defined(NEXX360C)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29C"
+#	define FITT360_SW_VER      		"2.09.30C"
 #	else
-#	define FITT360_SW_VER      		"2.09.29.D"
+#	define FITT360_SW_VER      		"2.09.30.D"
 #	endif
 #elif defined(NEXX360W)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29N"
+#	define FITT360_SW_VER      		"2.09.30N"
 #	else
-#	define FITT360_SW_VER      		"2.09.29.D"
+#	define FITT360_SW_VER      		"2.09.30.D"
 #	endif
 #elif defined(NEXX360W_MUX)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29N_MUX"
+#	define FITT360_SW_VER      		"2.09.30N_MUX"
 #	else
-#	define FITT360_SW_VER      		"2.09.29.D"
+#	define FITT360_SW_VER      		"2.09.30.D"
 #	endif
 #elif defined(NEXXB)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29"
+#	define FITT360_SW_VER      		"2.09.30"
 #	else
-#	define FITT360_SW_VER      		"2.09.29.D"
+#	define FITT360_SW_VER      		"2.09.30.D"
 #	endif
 #elif defined(NEXXB_ONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29"
+#	define FITT360_SW_VER      		"2.09.30"
 #	else
-#	define FITT360_SW_VER      		"2.09.29.D"
+#	define FITT360_SW_VER      		"2.09.30.D"
 #	endif
 #elif defined(NEXX360H)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.29H"
+#	define FITT360_SW_VER      		"2.09.30H"
 #	else
-#	define FITT360_SW_VER      		"2.09.29D"
+#	define FITT360_SW_VER      		"2.09.30D"
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"1.01.29"
+#	define FITT360_SW_VER      		"1.01.30"
 #	else
-#	define FITT360_SW_VER      		"1.01.29.D"
+#	define FITT360_SW_VER      		"1.01.30.D"
 #	endif
 #endif
 #endif	/* _APP_VERSION_H_ */

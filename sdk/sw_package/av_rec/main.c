@@ -325,7 +325,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
-					irec->pre_type = 1 ;   // event file 직전 파일이 normal file 일때 처리를 위한 부분 
+//					irec->pre_type = 1 ;   // event file 직전 파일이 normal file 일때 처리를 위한 부분 
                 }
 				else if(strstr(irec->fname, "/mmc/DCIM/S_"))  // 현재 recording 파일이 SOS file인 경우 
 				{
@@ -397,7 +397,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
-					irec->pre_type = 1 ;   // SOS file 직전 파일이 normal file 일때 처리를 위한 부분 
+//					irec->pre_type = 1 ;   // SOS file 직전 파일이 normal file 일때 처리를 위한 부분 
                 }
 				else if(strstr(irec->fname, "/mmc/DCIM/E_"))  // 현재 recording 파일이 event file인 경우 
 				{
@@ -415,6 +415,8 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
 
+				// SOS 하스퍼 시나리오 SOS 지속 울림 
+#if 0				
 					if(irec->rec_evt_cnt == 0)
 					{
 						if(irec->pre_type == 1)  // SOS 발생전에 Normal recording 중인 경우 
@@ -422,10 +424,11 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 							evt_file_close();
 					        send_msg(AV_CMD_REC_RESTART, NULL);
 						}
-						else
+						else 
 					        send_msg(AV_CMD_REC_EVT_END, NULL);
                     }
-                }  
+#endif
+                } 
 
 	            irec->old_min = ts.tm_min;
                 minute_change = 0;
@@ -434,7 +437,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 		if (irec->fevt == NULL)  // 이전상태 record 아님 
 		{
-            if(irec->rec_evt_cnt > 0)
+//          if(irec->rec_evt_cnt > 0)  // 하스퍼 
 			{
   		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
 		        sprintf(filename, "%s/%s/S_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
@@ -752,6 +755,7 @@ static void app_main(void)
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			break;
 		case AV_CMD_REC_GSTOP:
+		printf("AV_CMD_REC_GSTOP\n");
 			irec->pre_type = -1 ;
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			break;
