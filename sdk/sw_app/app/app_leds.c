@@ -307,7 +307,7 @@ int app_leds_voip_ctrl(int ste)
 		return 0;
 	}
 
-#if defined(NEXXB) || defined(NEXXB_ONE)	
+#if defined(NEXXB)	
 	index = LED_IDX_CAM2;
 #else
 	index = LED_IDX_CAM4;
