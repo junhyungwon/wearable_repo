@@ -114,7 +114,19 @@
 #	define SYS_CONFIG_WLAN				0
 #	define SYS_CONFIG_GPS				0
 #	define SYS_CONFIG_BACKCHANNEL		0
-#	define SYS_MCU_VER					0x0010
+#	define SYS_MCU_VER					0x0020
+#elif defined(LF_SYS_NEXX360W_CCTV) //# NEXX360 Wireless CCTV (external battery)
+#	define NEXX360W_CCTV						
+#	define MODEL_NAME					"NEXX360W_CCTV"
+#	define MODEL_CH_NUM					4 
+#	define STREAM_CH_NUM				4 
+#	define JPEG_CH_NUM					5 
+#	define MAX_FPS						15
+#	define SYS_CONFIG_VOIP				0
+#	define SYS_CONFIG_WLAN				1
+#	define SYS_CONFIG_GPS				0
+#	define SYS_CONFIG_BACKCHANNEL		0
+#	define SYS_MCU_VER					0x0020
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif
