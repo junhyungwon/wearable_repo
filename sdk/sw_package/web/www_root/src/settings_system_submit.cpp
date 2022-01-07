@@ -56,7 +56,7 @@ static int submit_settings()
 		}
 
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE) \
- || defined(NEXX360B) || defined(NEXX360C)
+ || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		if( strlen(t.uid) < 1) {
 			CGI_DBG("UID Invalid Parameter\n");
 			return ERR_INVALID_PARAM;

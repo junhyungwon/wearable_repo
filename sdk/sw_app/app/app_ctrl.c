@@ -63,7 +63,7 @@ static const char *fw_app_name  = "/mmc/app_fitt.out";
 #ifdef EXT_BATT_ONLY
 static const char *fw_mcu_name  = "/mmc/mcu_extb.txt";
 #else
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 static const char *fw_mcu_name  = "/mmc/mcu_cctv.txt";
 #else
 static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";

@@ -14,6 +14,7 @@ function fmenu()
  echo "5. NEXXB_ONE                              "
  echo "6. NEXX360 Wireless Mux                   "
  echo "7. NEXX360 Basic for CCTV                 "
+ echo "8. NEXX360 Wireless for CCTV              "
  echo "=========================================="
 }
 
@@ -90,6 +91,11 @@ do
 			echo " "
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
+			break;;
+		"8" )
+			echo " "
+			echo "select NEXX360 Wireless for CCTV "
+			FW_PREFIX="NEXX360W_CCTV"
 			break;;
 		"7" )
 			echo " "

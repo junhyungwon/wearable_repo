@@ -384,6 +384,8 @@ int app_onvif_init_config()
 		fputs("		<Model>FITT360 Security</Model>\n", fp);
 #elif defined(NEXX360C)
 		fputs("		<Model>NEXX360C</Model>\n", fp);
+#elif defined(NEXX360W_CCTV)
+		fputs("		<Model>NEXX360W_CCTV</Model>\n", fp);		
 #else
 #error "Check Model Name"
 #endif
@@ -421,7 +423,7 @@ int app_onvif_init_config()
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
 #if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE) 
 		fputs("			<framerate>30</framerate>\n", fp);
-#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C)
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		fputs("			<framerate>15</framerate>\n", fp);
 #elif defined(FITT360_SECURITY)
 		fputs("			<framerate>15</framerate>\n", fp);
@@ -432,7 +434,7 @@ int app_onvif_init_config()
 		fputs("			<h264>\n", fp);
 #if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
         fputs("				<gov_length>30</gov_length>\n", fp);
-#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C)
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C) || defined(NEXX360W_CCTV)
         fputs("				<gov_length>15</gov_length>\n", fp);
 #elif defined(FITT360_SECURITY)
         fputs("				<gov_length>15</gov_length>\n", fp);
@@ -474,7 +476,7 @@ int app_onvif_init_config()
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
 #if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 		fputs("			<framerate>30</framerate>\n", fp);
-#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C)
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		fputs("			<framerate>15</framerate>\n", fp);
 #elif defined(FITT360_SECURITY)
 		fputs("			<framerate>15</framerate>\n", fp);

@@ -759,7 +759,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 	#endif
-#elif defined(NEXX360C)
+#elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
 #else //# NEXX360B, NEXX360H, NEXX360W_MUX
@@ -810,8 +810,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
 	
-	/* AES�� ����ϴ� ��� ���ڿ��� ���� 0xff �Ǵ� 0x00���� �����ϴ� ��찡 �ִ�. */
-	/* ���� 4byte ũ�⸦ ���� */
+	/* AES를 사용하는 경우 문자열에 따라서 0xff 또는 0x00으로 시작하는 경우가 있다. */
+	/* 따라서 4byte 크기를 비교함 */
 	{
 		int *tmp_buf;
 		int res;
@@ -1100,7 +1100,7 @@ static void app_set_default(int default_type)
     for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		app_set->wifilist[i].en_key = ON;
-		//# 0���� �ʱ�ȭ
+		//# 0으로 초기화
 		memset(app_set->wifilist[i].ssid, 0, MAX_CHAR_32);
 		memset(app_set->wifilist[i].pwd, 0, MAX_CHAR_64);
 		app_set->wifilist[i].stealth = OFF;
@@ -1137,7 +1137,7 @@ static void app_set_default(int default_type)
 	#else
 	app_set->rec_info.auto_rec      = OFF ;
 	#endif
-#elif defined(NEXX360C)
+#elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
 #else //# NEXX360B, NEXX360H, NEXX360W_MUX
@@ -1227,7 +1227,7 @@ static void app_set_delete_cfg(void)
 	} else {
 		fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_NAND,
 							strerror(errno));
-		/* TODO ������ �߻����� ���??? */	
+		/* TODO 에러가 발생했을 경우??? */	
 	} 
 		
 	if (app_cfg->ste.b.mmc) 
@@ -1238,7 +1238,7 @@ static void app_set_delete_cfg(void)
 		} else {
 			fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_MMC, 
 							strerror(errno));
-			/* TODO ������ �߻����� ���??? */
+			/* TODO 에러가 발생했을 경우??? */
 		}
 	}
 	sync();
@@ -1271,7 +1271,7 @@ int app_set_open(void)
     if( EFAIL == ret)
 		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
 	
-	// data �˻�..cfg_read �Ʒ��κп� �ִ°� ����..
+	// data 검사..cfg_read 아래부분에 있는거 복붙..
 	if(EFAIL != ret){
 	    cfg_param_check_nexx(app_set);
 		app_set_version_read();
