@@ -51,11 +51,11 @@
 #define DEFAULT_STM_QUALITY        	1000    // default streaming kbps
 #define DEFAULT_REC_QUALITY    		4000    // default recording kbps
 
-#if SYS_CONFIG_VOIP
+
 #define PBX_SERVER_ADDR         	"52.78.124.88"
 #define PBX_SERVER_PORT         	6060
 #define PBX_SERVER_PW           	"9999"
-#endif
+
 
 typedef enum {
 	RATE_CTRL_VBR,
@@ -272,7 +272,7 @@ typedef struct {
     short ON_OFF ;
 } app_multi_ap_t; // 66
 
-#if SYS_CONFIG_VOIP
+
 #pragma pack(1)
 typedef struct {
     char  ipaddr[MAX_CHAR_16];
@@ -286,7 +286,7 @@ typedef struct {
 	char reserved[38] ;
 } app_voip_t; // 72 
 #pragma pack()
-#endif
+
 
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1 = records + streaming
@@ -306,12 +306,10 @@ typedef struct {
     app_account_t           account_info;
 	app_multi_ap_t          multi_ap;
     app_fota_t				fota_info ;
-#if SYS_CONFIG_VOIP
+
     app_voip_t              voip; //  => 72 + 40
 	char reserved[192];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota))
-#else
-	char reserved[304];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 168(fota)
-#endif
+
 	
 } app_set_t;
 

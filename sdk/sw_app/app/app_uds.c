@@ -776,7 +776,7 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 	return -1;
 }
 
-#if SYS_CONFIG_VOIP
+
 int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	// voip
@@ -834,7 +834,7 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 	return isChanged;
 	// 웹에서 apply,누르면 restart는 하는걸로...
 }
-#endif
+
 
 int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 {
@@ -885,7 +885,6 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	
 	t->p2p.enable = app_set->sys_info.P2P_ON_OFF;
 
-#if SYS_CONFIG_VOIP
 	// voip
 	t->voip.enable = app_set->voip.ON_OFF;
 	t->voip.port   = app_set->voip.port;
@@ -894,7 +893,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->voip.userid, app_set->voip.userid);
 	strcpy(t->voip.passwd, app_set->voip.passwd);
 	strcpy(t->voip.peerid, app_set->voip.peerid);
-#endif
+
 	return 0;
 }
 
@@ -1062,7 +1061,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	}
 #endif
 
-#if SYS_CONFIG_VOIP
+
 	// voip config
 	if(app_set->voip.ON_OFF != t->voip.enable){
 		app_set->voip.ON_OFF = t->voip.enable;
@@ -1094,7 +1093,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			isChanged++;
 		}
 	}
-#endif	
+	
 	return isChanged;
 	// restart 후에 적용됨. 2019년 8월 22일, 웹에서 apply,누르면 restart는 하는걸로...
 }
@@ -2103,7 +2102,7 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "reload_config") == 0)
 		{
 		}
-		#if SYS_CONFIG_VOIP		
+				
 		else if (strcmp(rbuf, "GetVoipConfiguration") == 0) {
 			sysprint("[APP_UDS] --- GetVoipConfiguration ---\n");
 
@@ -2152,7 +2151,6 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-		#endif
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
 			sysprint("[APP_UDS] --- GetServersConfiguration ---\n");
 

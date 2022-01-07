@@ -5,7 +5,18 @@
 #include "js_settings.h"
 #include "board_config.h"
 
-#if SYS_CONFIG_VOIP
+json_object *json_find_obj (json_object * jobj, char *find_key) 
+{ 
+	size_t key_len = strlen(find_key); 
+	json_object_object_foreach(jobj, key, val) 
+	{ 
+		if (strlen(key) == key_len && !memcmp (key, find_key, key_len)) 
+			return val;
+	} 
+	return NULL; // not found
+}
+
+
 static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "voip_info";
@@ -27,12 +38,18 @@ static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 	sprintf(set->voip.peerid, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "use_stun");
 	set->voip.use_stun = json_object_get_int(tmp);
-	tmp = json_object_object_get(jobj, "enable");
-	set->voip.ON_OFF = json_object_get_int(tmp);
+
+    if(json_find_obj(jobj, "enable") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "enable");
+		set->voip.ON_OFF = json_object_get_int(tmp);
+	}
+	else
+		set->voip.ON_OFF = -1;
 
 	return 0;
 }
-#endif
+
 static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 {
 	size_t dec_size = 0;
@@ -530,9 +547,9 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	parseMultiapInfo(set, rootObject);
 
 	// 15. read voip info
-#if SYS_CONFIG_VOIP
+
 	parseVoipInfo(set, rootObject);
-#endif
+
 
 	// finish
 	json_object_put(rootObject);
@@ -721,7 +738,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(multi_ap, "ON_OFF",       json_object_new_int(set->multi_ap.ON_OFF));
     json_object_object_add(rootObject,  "multi_ap", multi_ap);
 
-#if SYS_CONFIG_VOIP
+
 	// 13. voip information
 	json_object* voip_info = json_object_new_object();
 	json_object_object_add(voip_info, "ipaddr",   json_object_new_string(set->voip.ipaddr));
@@ -732,7 +749,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(voip_info, "use_stun", json_object_new_int(set->voip.use_stun));
 	json_object_object_add(voip_info, "enable",   json_object_new_int(set->voip.ON_OFF));
 	json_object_object_add(rootObject,  "voip_info", voip_info);
-#endif
+
 
 	// Finish
 	printf("Write JSON Data\n");
@@ -762,9 +779,9 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(onvif);
 	json_object_put(account_info);
 	json_object_put(multi_ap);
-#if SYS_CONFIG_VOIP
+
 	json_object_put(voip_info);
-#endif
+
 	json_object_put(rootObject);
 
     return ret;

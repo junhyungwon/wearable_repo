@@ -26,9 +26,9 @@
 #include "app_netmgr.h"
 #include "app_buzz.h"
 
-#if SYS_CONFIG_VOIP
+
 #include "app_voip.h"
-#endif
+
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -103,7 +103,8 @@ static void *THR_gui(void *prm)
 		}
 #endif		
 //# ----------------- VOIP Handler -----------------------------------------------------
-#if SYS_CONFIG_VOIP
+    if(app_set->voip.ON_OFF)
+	{
 		if (!app_cfg->ste.b.voip) 
 		{
 			/* 유선망은 제외 USB 네트워크 */
@@ -155,7 +156,7 @@ static void *THR_gui(void *prm)
 		if (app_cfg->ste.b.voip_buzz) {
 			app_buzz_ctrl(100, 2);
 		}
-#endif
+	}
 //# -------------- End of VOIP ----------------------------------------------------------------
 //# -------------- Damaged SD Card EVENT Handler-----------------------------------------------
 		if (app_cfg->ste.b.mmc_err) {

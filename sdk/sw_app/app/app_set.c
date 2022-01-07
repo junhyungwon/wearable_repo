@@ -40,9 +40,9 @@
 #include "app_ctrl.h"
 #include "js_settings.h"
 
-#if SYS_CONFIG_VOIP
+
 #include "app_voip.h"
-#endif
+
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -128,11 +128,11 @@ static void set_uid()
 	    if(!strncmp(uid, "LFS", 3))
 	    {
             sprintf(app_set->sys_info.uid, "%s", uid); 
-#if SYS_CONFIG_VOIP
+
 	        sprintf(app_set->voip.userid, "%d%d%s", 'A', 1, &uid[12]);
 			if(!strcmp(app_set->voip.peerid, ""))
                 sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
-#endif
+
         }
 	}	
 }
@@ -272,7 +272,7 @@ static void char_memset(void)
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
     app_set->multi_ap.ON_OFF = CFG_INVALID ;
 
-#if SYS_CONFIG_VOIP
+
 	// VOIP size : 66 
     app_set->voip.port = CFG_INVALID ;
     memset(app_set->voip.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
@@ -283,9 +283,7 @@ static void char_memset(void)
 	app_set->voip.ON_OFF = CFG_INVALID ;
     memset(app_set->voip.reserved, CFG_INVALID, 38) ;
     memset(app_set->reserved, CFG_INVALID, 192) ;
-#else
-    memset(app_set->reserved, CFG_INVALID, 304) ;
-#endif
+
 
 }
 
@@ -457,7 +455,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
     printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
 
-#if SYS_CONFIG_VOIP
+
     printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
     printf("pset->voip.port   = %d\n", pset->voip.port);
     printf("pset->voip.userid = %s\n", pset->voip.userid);
@@ -465,7 +463,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->voip.peerid = %s\n", pset->voip.peerid);
     printf("pset->voip.use_stun = %d\n", pset->voip.use_stun);
     printf("pset->voip.ON_OFF = %d\n", pset->voip.ON_OFF);
-#endif
+
 	printf("\n");
 
     return 0;
@@ -742,23 +740,12 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
+	
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXXB_ONE)
 
-#if defined(NEXXONE)
-	#if SYS_CONFIG_VOIP
-    if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = ON ;
-	#else
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
-	#endif	
-#elif defined(NEXX360W) || defined(NEXXB) || defined(NEXXB_ONE)
-	#if SYS_CONFIG_VOIP
-    if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = ON ;
-	#else
-	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = OFF ;
-	#endif
+
 #elif defined(NEXX360C)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
@@ -894,7 +881,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->multi_ap.ON_OFF = OFF ;
 
     printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
-#if SYS_CONFIG_VOIP	
+
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
 
@@ -914,7 +901,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->voip.use_stun = 0;
 	if(pset->voip.ON_OFF <= CFG_INVALID)
 		pset->voip.ON_OFF = ON;
-#endif
+
 		
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
@@ -1125,18 +1112,10 @@ static void app_set_default(int default_type)
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
 
-#if defined(NEXXONE)	
-    #if SYS_CONFIG_VOIP
-	app_set->rec_info.auto_rec      = ON ;
-	#else
+
+#if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
-	#endif
-#elif defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
-    #if SYS_CONFIG_VOIP
-	app_set->rec_info.auto_rec      = ON ;
-	#else
-	app_set->rec_info.auto_rec      = OFF ;
-	#endif
+
 #elif defined(NEXX360C)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
@@ -1204,7 +1183,6 @@ static void app_set_default(int default_type)
 
     app_set->multi_ap.ON_OFF = OFF ; 
 
-#if SYS_CONFIG_VOIP
     strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);
     app_set->voip.port = PBX_SERVER_PORT;
     strcpy(app_set->voip.passwd, PBX_SERVER_PW);
@@ -1213,7 +1191,7 @@ static void app_set_default(int default_type)
     app_set->voip.use_stun = 0;
     app_set->voip.ON_OFF = ON;
 	memset((void*)app_set->voip.reserved, 0x00, 38);
-#endif	
+	
 }
 
 static void app_set_delete_cfg(void)

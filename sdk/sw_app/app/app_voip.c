@@ -90,7 +90,7 @@ static int __aic3x_output_level[3] = {
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
-#if SYS_CONFIG_VOIP
+
 static const char *__action_str(int act)
 {
 	switch (act) {
@@ -557,4 +557,4 @@ int app_voip_is_registered(void)
 	return res;	
 }
 
-#endif /* end of #ifdef SYS_CONFIG_VOIP */
+ /* end of #ifdef SYS_CONFIG_VOIP */

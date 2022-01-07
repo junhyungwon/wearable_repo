@@ -231,15 +231,15 @@ static void *THR_snd_cap(void *prm)
 	read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
 	ret = dev_snd_set_param("aic3x", &isnd->snd_in, SND_PCM_CAP, 
 				APP_SND_CH, APP_SND_SRATE, read_sz);
-#if SYS_CONFIG_VOIP	
-	ret |= dev_snd_set_param("dummy", &isnd->snd_dup, SND_PCM_PLAY, 
+	if(app_set->voip.ON_OFF)
+		ret |= dev_snd_set_param("dummy", &isnd->snd_dup, SND_PCM_PLAY, 
 				APP_SND_CH, APP_SND_SRATE, read_sz);
-#endif
+
 	ret |= dev_snd_open(SND_IN_DEV, &isnd->snd_in);
 
-#if SYS_CONFIG_VOIP
-	ret |= dev_snd_open(SND_DUP_DEV, &isnd->snd_dup);
-#endif
+	if(app_set->voip.ON_OFF)
+		ret |= dev_snd_open(SND_DUP_DEV, &isnd->snd_dup);
+		
 	if (ret) {
 		eprintf("Failed to init sound device!\n");
 		return NULL;
@@ -247,9 +247,10 @@ static void *THR_snd_cap(void *prm)
 	
 	si_size  = (read_sz * APP_SND_CH * (SND_PCM_BITS / 8));
 	dev_snd_start(&isnd->snd_in);
-#if SYS_CONFIG_VOIP	
-	dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
-#endif
+
+    if(app_set->voip.ON_OFF)
+		dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
+
 	while (!exit)
 	{
 		int bytes = 0;
@@ -264,12 +265,13 @@ static void *THR_snd_cap(void *prm)
 			continue;
 		}
 
-#if SYS_CONFIG_VOIP		
-		//# copy to dup device
-		app_memcpy(isnd->snd_dup.sampv, isnd->snd_in.sampv, bytes);
-		/* VOIP를 사용할 경우에만 copy ?? */
-		dev_snd_write(&isnd->snd_dup, bytes/2); 
-#endif	
+		if(app_set->voip.ON_OFF)
+		{
+			//# copy to dup device
+			app_memcpy(isnd->snd_dup.sampv, isnd->snd_in.sampv, bytes);
+			/* VOIP를 사용할 경우에만 copy ?? */
+			dev_snd_write(&isnd->snd_dup, bytes/2); 
+		}	
 
 #if defined(NEXXONE)	
 		if (isnd->snd_rec_enable)
@@ -302,14 +304,15 @@ static void *THR_snd_cap(void *prm)
 				write_wav_file(addr, bytes);
 				iwave->wave_frame_cnt++;
 			}
-#endif
+			#endif
 
-#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXXONE
-			struct timeval tv;
-			gettimeofday(&tv, NULL) ;
-			long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
-			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
-#endif// Audio Streaming for NEXXONE
+	 	 	if(!app_set->voip.ON_OFF) // BACKCHANNEL AUDIO
+			{
+				struct timeval tv;
+				gettimeofday(&tv, NULL) ;
+				long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
+				app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
+			}
 		}
 #else		
 			//# audio codec : g.711
@@ -329,34 +332,34 @@ static void *THR_snd_cap(void *prm)
 		//ifr->t_msec = (Uint32)(captime%1000);
 		app_memcpy(addr, isnd->snd_in.sampv, bytes);
 
-#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXX 떨...
+	 	if(!app_set->voip.ON_OFF) // BACKCHANNEL AUDIO
 		{
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
 			long timestamp = tv.tv_sec + tv.tv_usec * 1000;
 			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0, 2, timestamp);
 		}
-#endif//SYS_CONFIG_BACKCHANNEL
 
 #endif
 
 	}
 
-#if SYS_CONFIG_VOIP
-	dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
-	dev_snd_stop(&isnd->snd_in, SND_PCM_CAP);
-#endif	
+	if(app_set->voip.ON_OFF)
+	{
+		dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
+		dev_snd_stop(&isnd->snd_in, SND_PCM_CAP);
+	}
 	dev_snd_param_free(&isnd->snd_in);
-#if SYS_CONFIG_VOIP	
-	dev_snd_param_free(&isnd->snd_dup);
-#endif	
+	if(app_set->voip.ON_OFF)
+		dev_snd_param_free(&isnd->snd_dup);
+
 	tObj->active = 0;
 	aprintf("...exit\n");
 
 	return NULL;
 }
 
-#if SYS_CONFIG_BACKCHANNEL
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -514,7 +517,7 @@ static void *THR_bc_play(void *prm)
 
 	return NULL;
 }
-#endif // SYS_CONFIG_BACKCHANNEL
+
 
 /*****************************************************************************
 * @brief    sound init/exit function
@@ -543,13 +546,16 @@ int app_snd_start(void)
 		return -1;
 	}
 
-#if SYS_CONFIG_BACKCHANNEL
-	//#--- create backchannel play thread bkkim
-	if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		eprintf("create bc play thread\n");
-		return -1;
+
+    if(!app_set->voip.ON_OFF)
+	{
+		//#--- create backchannel play thread bkkim
+		if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
+			eprintf("create bc play thread\n");
+			return -1;
+		}
 	}
-#endif//SYS_CONFIG_BACKCHANNEL
+
 
 	aprintf("... done!\n");
 

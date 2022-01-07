@@ -29,9 +29,9 @@
 #include "app_gui.h"
 #include "app_buzz.h"
 
-#if SYS_CONFIG_VOIP
+
 #include "app_voip.h"
-#endif
+
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -385,44 +385,38 @@ static void *THR_micom(void *prm)
 					} else {
 						dprintf("skip power switch event!!!\n");
 					}
-				} else {
+				} 
+				else 
+				{
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
-					#if SYS_CONFIG_VOIP 
-					if (!app_cfg->ste.b.ftp_run) 
-					{    
+					if(app_set->voip.ON_OFF)
+					{
+						if (!app_cfg->ste.b.ftp_run) 
+						{    
 #if defined(NEXXB) || defined(NEXXB_ONE)	
-				 		value = app_rec_state() ;
-			            if(value < 2) // REC Off or Event Rec or Normal Rec
-						{
-						    app_rec_evt(OFF) ;
-							sysprint("[APP_MICOM] - Event Record Start ---\n");
-						}
+				 			value = app_rec_state() ;
+			            	if(value < 2) // REC Off or Event Rec or Normal Rec
+							{
+						    	app_rec_evt(OFF) ;
+								sysprint("[APP_MICOM] - Event Record Start ---\n");
+							}
 #else
-						if (app_rec_state()) {
-							app_rec_stop(ON);
-						} else {
+							if (app_rec_state()) {
+								app_rec_stop(ON);
+							} else {
 							app_rec_start();
+							}
+#endif
 						}
-#endif
 					}
-					#else
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-				    		change_video_fxn();
-					}
-					#endif
-#elif defined(NEXX360B)
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-				    		change_video_fxn();
-					}
-#elif defined(NEXX360H)
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-				    		change_video_fxn();
-					}
-#endif
 				}
+#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H)
+				if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
+					if (!app_cfg->ste.b.nokey)
+			    		change_video_fxn();
+				}
+#endif
+				
 				break;
 			}
 			

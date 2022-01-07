@@ -35,9 +35,9 @@
 #include "app_process.h"
 #include "app_buzz.h"
 
-#if SYS_CONFIG_VOIP
+
 #include "app_voip.h"
-#endif
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -267,17 +267,17 @@ static void *THR_dev(void *prm)
 		//# For button enable, when camera didn't connected 
 		if (rkey == KEY_SHORT) {		
 			/* Short KEY */
-		#if SYS_CONFIG_VOIP
-			app_voip_event_noty();
-		#endif
+			if(app_set->voip.ON_OFF)
+				app_voip_event_noty();
+
 		} else if (rkey == KEY_LONG) {	
 			/* volume control */
-		#if SYS_CONFIG_VOIP
-			app_rec_evt(OFF) ;  // event
-		#endif
+			if(app_set->voip.ON_OFF)
+				app_rec_evt(OFF) ;  // event
 		}
 #elif defined(NEXX360W) || defined(NEXX360W_MUX)
-		#if SYS_CONFIG_VOIP
+	if(app_set->voip.ON_OFF)
+	{
 		/* record key --> call function */
 		rkey = chk_rec_key();
 		//# For button enable, when camera didn't connected 
@@ -288,7 +288,9 @@ static void *THR_dev(void *prm)
 			/* volume control */
 			app_rec_evt(OFF) ;
 		}
-		#else
+	}
+	else
+	{
 		if (!app_cfg->ste.b.ftp_run)
 		{
 			rkey = chk_rec_key();
@@ -302,7 +304,7 @@ static void *THR_dev(void *prm)
 			    app_rec_evt(OFF) ;
 			}
 		}
-		#endif /* #if SYS_CONFIG_VOIP */
+	}
 #elif defined(NEXX360B) || defined(NEXX360H) || defined(NEXX360C)
 		if (!app_cfg->ste.b.ftp_run)
 		{
@@ -324,9 +326,9 @@ static void *THR_dev(void *prm)
 		//# For button enable, when camera didn't connected 
 		if (rkey == KEY_SHORT) {		
 			/* Short KEY */
-		#if SYS_CONFIG_VOIP
+		if(app_set->voip.ON_OFF)
 			app_voip_event_noty();
-		#endif
+		
 			sysprint("[APP_VOIP] Voip Key Pressed !! \n") ;	
 		} 
 		else if (rkey == KEY_LONG) {	 // Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 

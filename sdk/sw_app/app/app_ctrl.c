@@ -46,10 +46,6 @@
 #include "app_buzz.h"
 #include "app_watchdog.h"
 
-#if SYS_CONFIG_VOIP
-#include "app_voip.h"
-#endif
-
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
