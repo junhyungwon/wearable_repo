@@ -116,7 +116,7 @@ static int submit_settings_qcgi()
         if (str != NULL) { sprintf(t.onvif.pw, "%s", str); }
 
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE) \
- || defined(NEXX360B) || defined(NEXX360C)
+ || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
         str= req->getstr(req, "voip_enable", false);
         if (str != NULL) {
             t.voip.enable = atoi(str);
@@ -177,7 +177,7 @@ static int submit_settings_qcgi()
 #endif
 
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
- || defined(NEXX360B) || defined(NEXX360C)
+ || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		if(enable_p2p == -1){
 			CGI_DBG("Invalid Parameter:enable_p2p\n");
 			return ERR_INVALID_PARAM;

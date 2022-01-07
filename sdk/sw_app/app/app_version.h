@@ -73,5 +73,11 @@
 #	else
 #	define FITT360_SW_VER      		"1.01.30.D"
 #	endif
+#elif defined(NEXX360W_CCTV)
+#	if SW_RELEASE
+#	define FITT360_SW_VER      		"2.09.30N_CCTV"
+#	else
+#	define FITT360_SW_VER      		"2.09.30.D"
+#	endif
 #endif
 #endif	/* _APP_VERSION_H_ */

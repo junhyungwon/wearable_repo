@@ -274,7 +274,7 @@ uboot:
 	@echo -e "\n--- make uboot done! (`date +'%H:%M:%S'`)---\n"
 
 ubootscr:
-ifeq ($(SYSTEM_PLATFORM),NEXX360C)
+ifeq ($(USE_CCTV),YES)
 	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_cctv.sh $(UBOOTDIR)/boot.scr
 else
 ifeq ($(EXTERNAL_BATTERY_ONLY),YES)

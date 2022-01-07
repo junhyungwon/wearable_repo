@@ -51,6 +51,10 @@
 #	define NEXX360C
 #	define REC_CH_NUM					4
 #	define MAX_FPS						15
+#elif defined(LF_SYS_NEXX360W_CCTV)
+#	define NEXX360W_CCTV
+#	define REC_CH_NUM					4
+#	define MAX_FPS						15
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif

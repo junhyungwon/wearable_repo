@@ -43,7 +43,7 @@
 #define CNT_CHK_VLOW			(TIME_CHK_VLOW/TIME_DATA_CYCLE)
 #define CNT_CHK_VLEVEL			(TIME_CHK_VLEVEL/TIME_DATA_CYCLE)
 
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 #define LOW_POWER_THRES	    	900
 #else
 #define PSW_EVT_LONG			2
@@ -84,7 +84,7 @@ typedef struct {
 static app_mcu_t mcu_obj;
 static app_mcu_t *imcu=&mcu_obj;
 
-#ifndef NEXX360C
+#if !defined(NEXX360C) && !defined(NEXX360W_CCTV)
 static void delay_3sec_exit(void)
 {
 	struct timeval t1, t2;
@@ -107,7 +107,7 @@ static void delay_3sec_exit(void)
 
 	mic_msg_exit();
 }
-#endif /* #ifndef NEXX360C */
+#endif /* #if !defined(NEXX360C) && !defined(NEXX360W_CCTV) */
 
 void app_mcu_pwr_off(int type)
 {
@@ -118,7 +118,7 @@ void app_mcu_pwr_off(int type)
 	system("/etc/init.d/logging.sh stop");
 	mic_exit_state(type, 0);
 	app_cfg->ste.b.pwr_off = 1;
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 	mic_msg_exit();
 #else	
 	delay_3sec_exit();
@@ -129,7 +129,7 @@ void app_mcu_pwr_off(int type)
 /*----------------------------------------------------------------------------
  check voltage
 -----------------------------------------------------------------------------*/
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 static int c_volt_chk = 0;
 /*
  * Case NEXX_C
@@ -442,7 +442,7 @@ static void *THR_micom(void *prm)
 
 	return NULL;
 }
-#endif /* #if defined(NEXX360C) */
+#endif /* #if defined(NEXX360C) || defined(NEXX360W_CCTV) */
 
 /*****************************************************************************
 * @brief    micom watchdog function

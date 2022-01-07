@@ -303,7 +303,7 @@ static void *THR_dev(void *prm)
 			}
 		}
 		#endif /* #if SYS_CONFIG_VOIP */
-#elif defined(NEXX360B) || defined(NEXX360H) || defined(NEXX360C)
+#elif defined(NEXX360B) || defined(NEXX360H) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		if (!app_cfg->ste.b.ftp_run)
 		{
 			rkey = chk_rec_key();
