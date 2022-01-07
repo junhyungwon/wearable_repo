@@ -281,12 +281,12 @@ static void char_memset(void)
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
 	app_set->voip.use_stun = 0 ;
 	app_set->voip.ON_OFF = CFG_INVALID ;
-    memset(app_set->voip.reserved, CHAR_MEMSET, 38) ;
-    memset(app_set->reserved, CFG_INVALID, 360) ;
+    memset(app_set->voip.reserved, CFG_INVALID, 38) ;
+    memset(app_set->reserved, CFG_INVALID, 192) ;
 #else
-    memset(app_set->reserved, CFG_INVALID, 472) ;
+    memset(app_set->reserved, CFG_INVALID, 304) ;
 #endif
-//    memset(app_set->reserved, CFG_INVALID, 794) ;
+
 }
 
 int GetSvrMacAddress(char *mac_address)
@@ -810,8 +810,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
 	
-	/* AES¸¦ »ç¿ëÇÏ´Â °æ¿ì ¹®ÀÚ¿­¿¡ µû¶ó¼­ 0xff ¶Ç´Â 0x00À¸·Î ½ÃÀÛÇÏ´Â °æ¿ì°¡ ÀÖ´Ù. */
-	/* µû¶ó¼­ 4byte Å©±â¸¦ ºñ±³ÇÔ */
+	/* AESï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 0xff ï¿½Ç´ï¿½ 0x00ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ì°¡ ï¿½Ö´ï¿½. */
+	/* ï¿½ï¿½ï¿½ï¿½ 4byte Å©ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ */
 	{
 		int *tmp_buf;
 		int res;
@@ -1100,7 +1100,7 @@ static void app_set_default(int default_type)
     for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		app_set->wifilist[i].en_key = ON;
-		//# 0À¸·Î ÃÊ±âÈ­
+		//# 0ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 		memset(app_set->wifilist[i].ssid, 0, MAX_CHAR_32);
 		memset(app_set->wifilist[i].pwd, 0, MAX_CHAR_64);
 		app_set->wifilist[i].stealth = OFF;
@@ -1227,7 +1227,7 @@ static void app_set_delete_cfg(void)
 	} else {
 		fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_NAND,
 							strerror(errno));
-		/* TODO ¿¡·¯°¡ ¹ß»ýÇßÀ» °æ¿ì??? */	
+		/* TODO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½??? */	
 	} 
 		
 	if (app_cfg->ste.b.mmc) 
@@ -1238,7 +1238,7 @@ static void app_set_delete_cfg(void)
 		} else {
 			fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_MMC, 
 							strerror(errno));
-			/* TODO ¿¡·¯°¡ ¹ß»ýÇßÀ» °æ¿ì??? */
+			/* TODO ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½??? */
 		}
 	}
 	sync();
@@ -1271,7 +1271,7 @@ int app_set_open(void)
     if( EFAIL == ret)
 		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
 	
-	// data °Ë»ç..cfg_read ¾Æ·¡ºÎºÐ¿¡ ÀÖ´Â°Å º¹ºÙ..
+	// data ï¿½Ë»ï¿½..cfg_read ï¿½Æ·ï¿½ï¿½ÎºÐ¿ï¿½ ï¿½Ö´Â°ï¿½ ï¿½ï¿½ï¿½ï¿½..
 	if(EFAIL != ret){
 	    cfg_param_check_nexx(app_set);
 		app_set_version_read();
