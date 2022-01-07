@@ -745,15 +745,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
-	#endif	
-#elif defined(NEXX360W) || defined(NEXXB) || defined(NEXXB_ONE)
-	#if SYS_CONFIG_VOIP
-    if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = ON ;
-	#else
-	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = OFF ;
-	#endif
+	
+
 #elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
@@ -1123,7 +1116,7 @@ static void app_set_default(int default_type)
 
 #if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
-	#endif
+
 #elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
