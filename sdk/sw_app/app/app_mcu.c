@@ -388,35 +388,34 @@ static void *THR_micom(void *prm)
 				} 
 				else 
 				{
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
+					#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
 					if(app_set->voip.ON_OFF)
 					{
 						if (!app_cfg->ste.b.ftp_run) 
 						{    
-#if defined(NEXXB) || defined(NEXXB_ONE)	
+							#if defined(NEXXB) || defined(NEXXB_ONE)	
 				 			value = app_rec_state() ;
 			            	if(value < 2) // REC Off or Event Rec or Normal Rec
 							{
 						    	app_rec_evt(OFF) ;
 								sysprint("[APP_MICOM] - Event Record Start ---\n");
 							}
-#else
+							#else
 							if (app_rec_state()) {
 								app_rec_stop(ON);
 							} else {
 							app_rec_start();
 							}
-#endif
+							#endif /* #if defined(NEXXB) || defined(NEXXB_ONE) */
 						}
 					}
+					#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H)
+					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
+						if (!app_cfg->ste.b.nokey)
+			    			change_video_fxn();
+					}
+					#endif
 				}
-#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H)
-				if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-					if (!app_cfg->ste.b.nokey)
-			    		change_video_fxn();
-				}
-#endif
-				
 				break;
 			}
 			
