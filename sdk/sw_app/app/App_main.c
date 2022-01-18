@@ -414,8 +414,8 @@ int app_cfg_init(void)
 int main(int argc, char **argv)
 {
 	unsigned long part_size = 0;
-	int ret, mmc_state;
-
+	int ret, mmc_state;	
+	
 	printf("\n--- FITT360 start (v%s) ---\n", FITT360_SW_VER);
 	
 	/* micom ready 신호 전달 */
@@ -428,9 +428,19 @@ int main(int argc, char **argv)
 	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
 	ret = ctrl_mmc_check_exfat(&part_size);
 	if (ret == 1) {
-		ctrl_mmc_exfat_format(part_size);
+		ctrl_mmc_exFAT_format(part_size);
 	}
 	
+	/* SD 카드 fsck 실행 */
+	system("/bin/umount /mmc"); /* umount */
+	app_msleep(100);
+	//# execute to repair
+	system("/sbin/fsck.fat -a -w /dev/mmcblk0p1");
+	//# mount sd card.
+	system("/bin/mount -t vfat /dev/mmcblk0p1 /mmc");
+	//# To remove recovery file!! FSCK****.REC
+	system("/bin/rm -rf /mmc/*.REC");
+		
 	/* mmc prepare: 쓰기 가능한 지 확인 및 log 디렉토리 생성 */
 	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
@@ -442,7 +452,7 @@ int main(int argc, char **argv)
 			return 0;
 		/* remove update files */
 		ctrl_reset_nand_update();
-	} else {	//# mmc error
+	} else {	
 		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
 		app_buzz_ctrl(100, 1);
 		app_msleep(5000);
@@ -455,7 +465,6 @@ int main(int argc, char **argv)
 	//----------  SD 카드 ----------------------------------------------
 	app_set_open();
     app_setdns() ;  // set resolv.conf
-
 	//#--- system init
 	ret = main_thread_init();
 	if (ret < 0) {
