@@ -53,10 +53,8 @@ int ctrl_set_DNS(char *server_addr) ;
 int ctrl_get_hw_version(char *version);
 int ctrl_get_mcu_version(char *version);
 int ctrl_mmc_check_exfat(unsigned long *size);
-int ctrl_mmc_exfat_format(unsigned long size);
+int ctrl_mmc_exFAT_format(unsigned long size);
 int ctrl_mmc_check_partitions(void);
-int ctrl_mmc_check_fsck(void);
-int ctrl_mmc_run_fsck(void);
 int ctrl_mmc_check_writable(void);
 
 void ctrl_swosd_enable(int idx, int ch, int draw);
