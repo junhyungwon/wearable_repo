@@ -216,7 +216,6 @@ static void char_memset(void)
     memset(app_set->wifiap.pwd, CHAR_MEMSET, MAX_CHAR_64 + 1) ;
 	app_set->wifiap.stealth = CFG_INVALID ;
     memset(app_set->wifiap.reserved, CFG_INVALID, 72) ;
-
     
 	//# Wifilist information
 	for(i = 0; i < WIFIAP_CNT; i++)
@@ -272,7 +271,6 @@ static void char_memset(void)
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
     app_set->multi_ap.ON_OFF = CFG_INVALID ;
 
-
 	// VOIP size : 66 
     app_set->voip.port = CFG_INVALID ;
     memset(app_set->voip.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
@@ -283,8 +281,6 @@ static void char_memset(void)
 	app_set->voip.ON_OFF = CFG_INVALID ;
     memset(app_set->voip.reserved, CFG_INVALID, 38) ;
     memset(app_set->reserved, CFG_INVALID, 192) ;
-
-
 }
 
 int GetSvrMacAddress(char *mac_address)
@@ -670,7 +666,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->ftp_info.file_type <= CFG_INVALID)
         pset->ftp_info.file_type = OFF ;
 
-
 	//# FOTA information
 	if(pset->fota_info.port <= CFG_INVALID)
 		pset->fota_info.port	= 21;
@@ -694,7 +689,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		sprintf(pset->fota_info.confname,"%s.conf", MODEL_NAME);
 
 	//# Wifi AP information
-
 	if(pset->wifiap.en_key != ON && pset->wifiap.en_key != OFF)
 	    pset->wifiap.en_key = ON;
 
@@ -710,11 +704,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
     #endif
         strcpy(pset->wifiap.pwd,"AP_PASSWORD");
-	
-
 
 	//# Wifilist information
-
 	for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		if(pset->wifilist[i].en_key != ON && pset->wifilist[i].en_key != OFF)
@@ -732,7 +723,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
 		#endif
 		    memset(pset->wifilist[i].pwd, 0, MAX_CHAR_64);
-
 	}
 
 	if(pset->rec_info.period_idx < REC_PERIOD_01 && pset->rec_info.period_idx >= REC_PERIOD_MAX)
@@ -741,16 +731,11 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
 	
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXXB_ONE)
-
-	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = OFF ;
-	
-
-#elif defined(NEXX360C) || defined(NEXX360W_CCTV)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
-#else //# NEXX360B, NEXX360H, NEXX360W_MUX
+#else 
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXXB/NEXXB_ONE/NEXX360H/NEXXONE
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 #endif		
@@ -882,7 +867,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->multi_ap.ON_OFF = OFF ;
 
     printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
-
+	
+	//# ----------------- VOIP Parameters Start -----------------------------------------
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
 
@@ -900,10 +886,16 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->voip.use_stun <= CFG_INVALID)
 		pset->voip.use_stun = 0;
-	if(pset->voip.ON_OFF <= CFG_INVALID)
-		pset->voip.ON_OFF = ON;
 
-		
+#if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)	
+   	if(pset->voip.ON_OFF <= CFG_INVALID)
+		pset->voip.ON_OFF = ON;
+#else
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
+   	if(pset->voip.ON_OFF <= CFG_INVALID)
+		pset->voip.ON_OFF = OFF;
+#endif	
+	//# ----------------- VOIP Parameters End -----------------------------------------
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 }
@@ -1116,7 +1108,6 @@ static void app_set_default(int default_type)
 
 #if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
-
 #elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
@@ -1181,18 +1172,24 @@ static void app_set_default(int default_type)
 	app_set->account_info.onvif.lv = 0;	// 0:Administrator
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
-
     app_set->multi_ap.ON_OFF = OFF ; 
-
+	
+	//#------------- VOIP Params Start ---------------------------------------------------
     strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);
     app_set->voip.port = PBX_SERVER_PORT;
     strcpy(app_set->voip.passwd, PBX_SERVER_PW);
 	memset((void*)app_set->voip.userid, 0x00, sizeof(app_set->voip.userid));
 	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
     app_set->voip.use_stun = 0;
-    app_set->voip.ON_OFF = ON;
-	memset((void*)app_set->voip.reserved, 0x00, 38);
 	
+#if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)	
+    app_set->voip.ON_OFF = ON;
+#else
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
+    app_set->voip.ON_OFF = OFF;
+#endif	
+	memset((void*)app_set->voip.reserved, 0x00, 38);
+	//#------------- VOIP Params End ---------------------------------------------------
 }
 
 static void app_set_delete_cfg(void)

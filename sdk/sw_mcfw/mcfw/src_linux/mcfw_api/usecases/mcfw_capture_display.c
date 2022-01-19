@@ -435,18 +435,14 @@ static void display_link_delete(void)
 }
 
 /*****************************************************************************
-* @brief	mcfw_capture_display_init function for ubx
+* @brief	mcfw_capture_display_init function for ONE Channel
 * @section	DESC Description
 *	- desc : HD 2ch, D1 8ch
 *****************************************************************************/
 #if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
 void mcfw_capture_display_init(void)
-#else
-void mcfw_capture_display_init(int mode)
-#endif
 {
 	CaptureLink_CreateParams		capturePrm;
-	//DeiLink_CreateParams			deiPrm;
 	NsfLink_CreateParams			nsfPrm, nsfPrm1;
 	DupLink_CreateParams			dupPrm0, dupPrm1, dupPrm2;
 	MergeLink_CreateParams			mergePrm0;
@@ -470,20 +466,13 @@ void mcfw_capture_display_init(int mode)
 	//# Capture link
 	//#-------------------------------------------
 	//#--- capture link params
-	#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
 	capture_link_params_init(&capturePrm, num_ch);
-	#else
-	capture_link_params_init(&capturePrm, num_ch, mode);
-	#endif
 	capturePrm.outQueParams[0].nextLink	= gVcapModuleContext.nsfId[0];
 
 	//#--- nsf link params
 	nsf_link_params_init(&nsfPrm);
 	nsfPrm.inQueParams.prevLinkId		= gVcapModuleContext.captureId;
 	nsfPrm.inQueParams.prevLinkQueId	= 0;
-#if defined(LF_SYS_NEXX360W_MUX)
-	nsfPrm.outQueParams[0].nextLink		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
-#else
     nsfPrm.outQueParams[0].nextLink		= SYSTEM_VPSS_LINK_ID_DUP_0;
 	
 	//#--- dup link params
@@ -491,36 +480,9 @@ void mcfw_capture_display_init(int mode)
 	dupPrm0.inQueParams.prevLinkQueId	= 0;
 	dupPrm0.numOutQue					= 2;
 	dupPrm0.notifyNextLink				= TRUE;
-#endif
 
 	if(gVsysModuleContext.vsysConfig.enableHDMI)
 	{
-#if defined(LF_SYS_NEXX360W_MUX)
-        swms_link_params_init(&swMsPrm, VDIS_DEV_HDMI, num_ch);
-        swMsPrm.inQueParams.prevLinkId      = gVcapModuleContext.nsfId[0];
-        swMsPrm.inQueParams.prevLinkQueId   = 0;
-	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_0;
-
-		//#--- dup link params
-		dupPrm0.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
-		dupPrm0.inQueParams.prevLinkQueId	= 0;
-		dupPrm0.numOutQue					= 2;
-		dupPrm0.notifyNextLink				= TRUE;
-		dupPrm0.outQueParams[0].nextLink	= gVdisModuleContext.displayId[VDIS_DEV_HDMI];
-	    dupPrm0.outQueParams[1].nextLink	= gVcapModuleContext.nsfId[1];
-
-        nsf_link_params_init(&nsfPrm1);
-        nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_0;
-        nsfPrm1.inQueParams.prevLinkQueId    = 1;
-        nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_1;
-
-        dupPrm1.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
-	    dupPrm1.inQueParams.prevLinkQueId	= 0;
-	    dupPrm1.numOutQue					= 3;
-	    dupPrm1.notifyNextLink				= TRUE;
-	    dupPrm1.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-	    dupPrm1.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-#else
         dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
   	    dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 
@@ -539,30 +501,9 @@ void mcfw_capture_display_init(int mode)
         nsf_link_params_init(&nsfPrm1);
         nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_1;
         nsfPrm1.inQueParams.prevLinkQueId    = 1;
-#endif		
+
         if(gVsysModuleContext.vsysConfig.enableMjpeg)
         {
-#if defined(LF_SYS_NEXX360W_MUX)
-	        dupPrm1.outQueParams[2].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-
-            mergePrm0.numInQue = 3;
-		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[1].prevLinkQueId  = 1;
-            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[2].prevLinkQueId  = 2;
-        }
-		else
-		{
-            dupPrm1.numOutQue					= 2;
-
-            mergePrm0.numInQue = 2;
-            mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[1].prevLinkQueId  = 1;   
-#else
 			nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2;
 
             dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
@@ -589,7 +530,6 @@ void mcfw_capture_display_init(int mode)
             mergePrm0.inQueParams[0].prevLinkQueId  = 0;
             mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[1];
             mergePrm0.inQueParams[1].prevLinkQueId  = 0;   
-#endif  
 		}	
 		mergePrm0.notifyNextLink  				= TRUE;
 
@@ -601,26 +541,12 @@ void mcfw_capture_display_init(int mode)
 		}
 
         disp_link_pararms_init(&dispPrm, VDIS_DEV_HDMI);
-#if defined(LF_SYS_NEXX360W_MUX)
-	    dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_0;
-#else
 		dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_1;
-#endif
 	    dispPrm.inQueParams[0].prevLinkQueId 	= 0;
 
 	    //#--- capture link
 	    System_linkCreate(gVcapModuleContext.captureId, &capturePrm, sizeof(capturePrm));
 	    System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm,	sizeof(nsfPrm));
-#if defined(LF_SYS_NEXX360W_MUX)
-		System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
-		
-	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
-
-        //#--- Display link creation -------------------------------------
-
-	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
-	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
-#else
         System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
 
         //#--- Display link creation -------------------------------------
@@ -632,9 +558,6 @@ void mcfw_capture_display_init(int mode)
 		{
 		    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
         }
-
-
-#endif
 
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
@@ -653,41 +576,13 @@ void mcfw_capture_display_init(int mode)
 	}
 	else
 	{
-#if defined(LF_SYS_NEXX360W_MUX)
-	    swms_link_params_init(&swMsPrm, VDIS_DEV_SD, num_ch);
-        swMsPrm.inQueParams.prevLinkId      = gVcapModuleContext.nsfId[0];
-        swMsPrm.inQueParams.prevLinkQueId   = 0;
-	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_0;
-
-		//#--- dup link params
-		dupPrm0.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
-		dupPrm0.inQueParams.prevLinkQueId	= 0;
-		dupPrm0.numOutQue					= 2;
-		dupPrm0.notifyNextLink				= TRUE;
-		dupPrm0.outQueParams[0].nextLink	= gVdisModuleContext.displayId[VDIS_DEV_SD];
-	    dupPrm0.outQueParams[1].nextLink	= gVcapModuleContext.nsfId[1];
-
-        nsf_link_params_init(&nsfPrm1);
-        nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_0;
-        nsfPrm1.inQueParams.prevLinkQueId    = 1;
-        nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_1;
-
-        dupPrm1.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
-	    dupPrm1.inQueParams.prevLinkQueId	= 0;
-	    dupPrm1.numOutQue					= 3;
-	    dupPrm1.notifyNextLink				= TRUE;
-	    dupPrm1.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-	    dupPrm1.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-#else
         dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-//	    dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_IPC_OUT_M3_0;
   	    dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 
         swms_link_params_init(&swMsPrm, VDIS_DEV_SD, num_ch);
         swMsPrm.inQueParams.prevLinkId      = SYSTEM_VPSS_LINK_ID_DUP_0;
         swMsPrm.inQueParams.prevLinkQueId   = 1;
 	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_1;
-//      swMsPrm.outQueParams.nextLink       = gVdisModuleContext.displayId[VDIS_DEV_SD];
 
         dupPrm1.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 	    dupPrm1.inQueParams.prevLinkQueId	= 0;
@@ -699,31 +594,9 @@ void mcfw_capture_display_init(int mode)
         nsf_link_params_init(&nsfPrm1);
         nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_1;
         nsfPrm1.inQueParams.prevLinkQueId    = 1;
-#endif
 		
         if(gVsysModuleContext.vsysConfig.enableMjpeg)
         {
-#if defined(LF_SYS_NEXX360W_MUX)
-	        dupPrm1.outQueParams[2].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-
-            mergePrm0.numInQue = 3;
-		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[1].prevLinkQueId  = 1;
-            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[2].prevLinkQueId  = 2;
-        }
-		else
-		{
-            dupPrm1.numOutQue					= 2;
-
-            mergePrm0.numInQue = 2;
-            mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
-            mergePrm0.inQueParams[1].prevLinkQueId  = 1;   
-#else
             nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2; 
 
             dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
@@ -750,7 +623,6 @@ void mcfw_capture_display_init(int mode)
             mergePrm0.inQueParams[0].prevLinkQueId  = 0;
             mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[1];
             mergePrm0.inQueParams[1].prevLinkQueId  = 0;
-#endif
 		}	
 		mergePrm0.notifyNextLink  				= TRUE;
 
@@ -762,29 +634,15 @@ void mcfw_capture_display_init(int mode)
 		}
 
         disp_link_pararms_init(&dispPrm, VDIS_DEV_SD);
-#if defined(LF_SYS_NEXX360W_MUX)
-	    dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_0;
-#else
         dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_1;
-#endif
 	    dispPrm.inQueParams[0].prevLinkQueId 	= 0;
 
 	    //#--- capture link
 	    System_linkCreate(gVcapModuleContext.captureId, &capturePrm, sizeof(capturePrm));
 	    System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm,	sizeof(nsfPrm));
-#if defined(LF_SYS_NEXX360W_MUX)
-		System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
-		
-	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
-
-        //#--- Display link creation -------------------------------------
-
-	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
-	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
-#else
 		System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
 
-	 //#--- Display link creation -------------------------------------
+	 	//#--- Display link creation -------------------------------------
         System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
 	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
@@ -792,7 +650,6 @@ void mcfw_capture_display_init(int mode)
 		{
 		    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
         }
-#endif          
 
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
@@ -811,6 +668,456 @@ void mcfw_capture_display_init(int mode)
 	}
 
 }
+
+#elif defined(LF_SYS_NEXX360W_MUX)
+/*****************************************************************************
+* @brief	mcfw_capture_display_init function for 1 channel mux capture.
+* @section	DESC Description
+*	- desc : HD 2ch, D1 8ch
+*****************************************************************************/
+void mcfw_capture_display_init(int mode)
+{
+	CaptureLink_CreateParams		capturePrm;
+	NsfLink_CreateParams			nsfPrm, nsfPrm1;
+	DupLink_CreateParams			dupPrm0, dupPrm1, dupPrm2;
+	MergeLink_CreateParams			mergePrm0;
+	NullLink_CreateParams			nullPrm0;
+    SwMsLink_CreateParams           swMsPrm;
+	DisplayLink_CreateParams    	dispPrm ;
+
+	int num_ch = gVsysModuleContext.vsysConfig.numChs;
+
+	dprintf("%s: num_ch %d\n", __func__, num_ch);
+
+	//#	link IDs
+	gVcapModuleContext.captureId	= SYSTEM_LINK_ID_CAPTURE;
+	gVcapModuleContext.nsfId[0]		= SYSTEM_LINK_ID_NSF_0;
+	gVcapModuleContext.nsfId[1]		= SYSTEM_LINK_ID_NSF_1;
+	gVdisModuleContext.swMsId[0]                = SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+	gVdisModuleContext.displayId[VDIS_DEV_HDMI] = SYSTEM_LINK_ID_DISPLAY_0;
+	gVdisModuleContext.displayId[VDIS_DEV_SD]   = SYSTEM_LINK_ID_DISPLAY_2;
+
+	//#-------------------------------------------
+	//# Capture link
+	//#-------------------------------------------
+	//#--- capture link params
+	capture_link_params_init(&capturePrm, num_ch, mode);
+	capturePrm.outQueParams[0].nextLink	= gVcapModuleContext.nsfId[0];
+
+	//#--- nsf link params
+	nsf_link_params_init(&nsfPrm);
+	nsfPrm.inQueParams.prevLinkId		= gVcapModuleContext.captureId;
+	nsfPrm.inQueParams.prevLinkQueId	= 0;
+	nsfPrm.outQueParams[0].nextLink		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+
+	if(gVsysModuleContext.vsysConfig.enableHDMI)
+	{
+        swms_link_params_init(&swMsPrm, VDIS_DEV_HDMI, num_ch);
+        swMsPrm.inQueParams.prevLinkId      = gVcapModuleContext.nsfId[0];
+        swMsPrm.inQueParams.prevLinkQueId   = 0;
+	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_0;
+
+		//#--- dup link params
+		dupPrm0.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+		dupPrm0.inQueParams.prevLinkQueId	= 0;
+		dupPrm0.numOutQue					= 2;
+		dupPrm0.notifyNextLink				= TRUE;
+		dupPrm0.outQueParams[0].nextLink	= gVdisModuleContext.displayId[VDIS_DEV_HDMI];
+	    dupPrm0.outQueParams[1].nextLink	= gVcapModuleContext.nsfId[1];
+
+        nsf_link_params_init(&nsfPrm1);
+        nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_0;
+        nsfPrm1.inQueParams.prevLinkQueId    = 1;
+        nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_1;
+
+        dupPrm1.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
+	    dupPrm1.inQueParams.prevLinkQueId	= 0;
+	    dupPrm1.numOutQue					= 3;
+	    dupPrm1.notifyNextLink				= TRUE;
+	    dupPrm1.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+	    dupPrm1.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+        
+		if(gVsysModuleContext.vsysConfig.enableMjpeg)
+        {
+	        dupPrm1.outQueParams[2].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+
+            mergePrm0.numInQue = 3;
+		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[1].prevLinkQueId  = 1;
+            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[2].prevLinkQueId  = 2;
+        }
+		else
+		{
+            dupPrm1.numOutQue					= 2;
+
+            mergePrm0.numInQue = 2;
+            mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[1].prevLinkQueId  = 1;   
+  
+		}	
+		mergePrm0.notifyNextLink  				= TRUE;
+
+	    if(gVsysModuleContext.vsysConfig.enableEncode) {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_LINK_ID_SWOSD_0; //SYSTEM_VPSS_LINK_ID_IPC_OUT_M3_0;
+		} else {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_VPSS_LINK_ID_NULL_0;
+			null_link_params_init(&nullPrm0, SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+		}
+
+        disp_link_pararms_init(&dispPrm, VDIS_DEV_HDMI);
+	    dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_0;
+	    dispPrm.inQueParams[0].prevLinkQueId 	= 0;
+
+	    //#--- capture link
+	    System_linkCreate(gVcapModuleContext.captureId, &capturePrm, sizeof(capturePrm));
+	    System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm,	sizeof(nsfPrm));
+		System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
+
+        //#--- Display link creation -------------------------------------
+	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
+	    //#--- encoder link
+		if(gVsysModuleContext.vsysConfig.enableEncode) {
+	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+
+		} else {
+			System_linkCreate(SYSTEM_VPSS_LINK_ID_NULL_0, &nullPrm0, sizeof(nullPrm0));
+		}
+
+	    //#--- display link
+        System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_HDMI], &dispPrm, sizeof(dispPrm));
+//	    display_link_create(SYSTEM_VPSS_LINK_ID_DUP_0, 1, num_ch /* or 1 */);
+	    dprintf("%s done!\n", __func__);
+	}
+	else
+	{
+	    swms_link_params_init(&swMsPrm, VDIS_DEV_SD, num_ch);
+        swMsPrm.inQueParams.prevLinkId      = gVcapModuleContext.nsfId[0];
+        swMsPrm.inQueParams.prevLinkQueId   = 0;
+	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_0;
+
+		//#--- dup link params
+		dupPrm0.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+		dupPrm0.inQueParams.prevLinkQueId	= 0;
+		dupPrm0.numOutQue					= 2;
+		dupPrm0.notifyNextLink				= TRUE;
+		dupPrm0.outQueParams[0].nextLink	= gVdisModuleContext.displayId[VDIS_DEV_SD];
+	    dupPrm0.outQueParams[1].nextLink	= gVcapModuleContext.nsfId[1];
+
+        nsf_link_params_init(&nsfPrm1);
+        nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_0;
+        nsfPrm1.inQueParams.prevLinkQueId    = 1;
+        nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_1;
+
+        dupPrm1.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
+	    dupPrm1.inQueParams.prevLinkQueId	= 0;
+	    dupPrm1.numOutQue					= 3;
+	    dupPrm1.notifyNextLink				= TRUE;
+	    dupPrm1.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+	    dupPrm1.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+		
+        if(gVsysModuleContext.vsysConfig.enableMjpeg)
+        {
+	        dupPrm1.outQueParams[2].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+
+            mergePrm0.numInQue = 3;
+		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[1].prevLinkQueId  = 1;
+            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[2].prevLinkQueId  = 2;
+        }
+		else
+		{
+            dupPrm1.numOutQue					= 2;
+
+            mergePrm0.numInQue = 2;
+            mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
+            mergePrm0.inQueParams[1].prevLinkQueId  = 1;   
+		}	
+		mergePrm0.notifyNextLink  				= TRUE;
+
+	    if(gVsysModuleContext.vsysConfig.enableEncode) {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_LINK_ID_SWOSD_0; //SYSTEM_VPSS_LINK_ID_IPC_OUT_M3_0;
+		} else {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_VPSS_LINK_ID_NULL_0;
+			null_link_params_init(&nullPrm0, SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+		}
+
+        disp_link_pararms_init(&dispPrm, VDIS_DEV_SD);
+	    dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_0;
+	    dispPrm.inQueParams[0].prevLinkQueId 	= 0;
+
+	    //#--- capture link
+	    System_linkCreate(gVcapModuleContext.captureId, &capturePrm, sizeof(capturePrm));
+	    System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm,	sizeof(nsfPrm));
+		System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
+
+        //#--- Display link creation -------------------------------------
+	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
+
+	    //#--- encoder link
+		if(gVsysModuleContext.vsysConfig.enableEncode) {
+	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+
+		} else {
+			System_linkCreate(SYSTEM_VPSS_LINK_ID_NULL_0, &nullPrm0, sizeof(nullPrm0));
+		}
+
+	    //#--- display link
+        System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_SD], &dispPrm, sizeof(dispPrm));
+//	    display_link_create(SYSTEM_VPSS_LINK_ID_DUP_0, 1, num_ch /* or 1 */);
+	    dprintf("%s done!\n", __func__);
+	}
+}
+
+#else
+/*****************************************************************************
+* @brief	mcfw_capture_display_init function for NEXX360W/NEXX360B/NEXXB/NEXX360C/NEXX360W_CCTV
+* @section	DESC Description
+*****************************************************************************/
+void mcfw_capture_display_init(int mode)
+{
+	CaptureLink_CreateParams		capturePrm;
+	NsfLink_CreateParams			nsfPrm, nsfPrm1;
+	DupLink_CreateParams			dupPrm0, dupPrm1, dupPrm2;
+	MergeLink_CreateParams			mergePrm0;
+	NullLink_CreateParams			nullPrm0;
+    SwMsLink_CreateParams           swMsPrm;
+	DisplayLink_CreateParams    	dispPrm ;
+
+	int num_ch = gVsysModuleContext.vsysConfig.numChs;
+
+	dprintf("%s: num_ch %d\n", __func__, num_ch);
+
+	//#	link IDs
+	gVcapModuleContext.captureId	= SYSTEM_LINK_ID_CAPTURE;
+	gVcapModuleContext.nsfId[0]		= SYSTEM_LINK_ID_NSF_0;
+	gVcapModuleContext.nsfId[1]		= SYSTEM_LINK_ID_NSF_1;
+	gVdisModuleContext.swMsId[0]                = SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+	gVdisModuleContext.displayId[VDIS_DEV_HDMI] = SYSTEM_LINK_ID_DISPLAY_0;
+	gVdisModuleContext.displayId[VDIS_DEV_SD]   = SYSTEM_LINK_ID_DISPLAY_2;
+
+	//#-------------------------------------------
+	//# Capture link
+	//#-------------------------------------------
+	//#--- capture link params
+	capture_link_params_init(&capturePrm, num_ch, mode);
+	capturePrm.outQueParams[0].nextLink	= gVcapModuleContext.nsfId[0];
+
+	//#--- nsf link params
+	nsf_link_params_init(&nsfPrm);
+	nsfPrm.inQueParams.prevLinkId		= gVcapModuleContext.captureId;
+	nsfPrm.inQueParams.prevLinkQueId	= 0;
+    nsfPrm.outQueParams[0].nextLink		= SYSTEM_VPSS_LINK_ID_DUP_0;
+	
+	//#--- dup link params
+	dupPrm0.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[0];
+	dupPrm0.inQueParams.prevLinkQueId	= 0;
+	dupPrm0.numOutQue					= 2;
+	dupPrm0.notifyNextLink				= TRUE;
+
+	if(gVsysModuleContext.vsysConfig.enableHDMI)
+	{
+        dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+  	    dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+
+        swms_link_params_init(&swMsPrm, VDIS_DEV_HDMI, num_ch);
+        swMsPrm.inQueParams.prevLinkId      = SYSTEM_VPSS_LINK_ID_DUP_0;
+        swMsPrm.inQueParams.prevLinkQueId   = 1;
+	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_1;
+
+        dupPrm1.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+	    dupPrm1.inQueParams.prevLinkQueId	= 0;
+	    dupPrm1.numOutQue					= 2;
+	    dupPrm1.notifyNextLink				= TRUE;
+	    dupPrm1.outQueParams[0].nextLink	= gVdisModuleContext.displayId[VDIS_DEV_HDMI];
+	    dupPrm1.outQueParams[1].nextLink	= gVcapModuleContext.nsfId[1];
+
+        nsf_link_params_init(&nsfPrm1);
+        nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_1;
+        nsfPrm1.inQueParams.prevLinkQueId    = 1;
+
+        if(gVsysModuleContext.vsysConfig.enableMjpeg)
+        {
+			nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2;
+
+            dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
+	        dupPrm2.inQueParams.prevLinkQueId	= 0;
+	        dupPrm2.numOutQue					= 2;
+	        dupPrm2.notifyNextLink				= TRUE;
+	        dupPrm2.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+	        dupPrm2.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;  
+
+            mergePrm0.numInQue = 3;
+		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+            mergePrm0.inQueParams[1].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+            mergePrm0.inQueParams[2].prevLinkQueId  = 1;
+        }
+		else
+		{
+		    nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_MERGE_0;
+
+            mergePrm0.numInQue = 2;
+            mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[1];
+            mergePrm0.inQueParams[1].prevLinkQueId  = 0;   
+		}	
+		mergePrm0.notifyNextLink  				= TRUE;
+
+	    if(gVsysModuleContext.vsysConfig.enableEncode) {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_LINK_ID_SWOSD_0; //SYSTEM_VPSS_LINK_ID_IPC_OUT_M3_0;
+		} else {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_VPSS_LINK_ID_NULL_0;
+			null_link_params_init(&nullPrm0, SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+		}
+
+        disp_link_pararms_init(&dispPrm, VDIS_DEV_HDMI);
+		dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_1;
+	    dispPrm.inQueParams[0].prevLinkQueId 	= 0;
+
+	    //#--- capture link
+	    System_linkCreate(gVcapModuleContext.captureId, &capturePrm, sizeof(capturePrm));
+	    System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm,	sizeof(nsfPrm));
+        System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
+
+        //#--- Display link creation -------------------------------------
+        System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
+	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
+		if(gVsysModuleContext.vsysConfig.enableMjpeg)
+		{
+		    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
+        }
+
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
+
+	    //#--- encoder link
+		if(gVsysModuleContext.vsysConfig.enableEncode) {
+	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+
+		} else {
+			System_linkCreate(SYSTEM_VPSS_LINK_ID_NULL_0, &nullPrm0, sizeof(nullPrm0));
+		}
+
+	    //#--- display link
+        System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_HDMI], &dispPrm, sizeof(dispPrm));
+//	    display_link_create(SYSTEM_VPSS_LINK_ID_DUP_0, 1, num_ch /* or 1 */);
+	    dprintf("%s done!\n", __func__);
+	}
+	else
+	{
+        dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+//	    dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_IPC_OUT_M3_0;
+  	    dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+
+        swms_link_params_init(&swMsPrm, VDIS_DEV_SD, num_ch);
+        swMsPrm.inQueParams.prevLinkId      = SYSTEM_VPSS_LINK_ID_DUP_0;
+        swMsPrm.inQueParams.prevLinkQueId   = 1;
+	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_1;
+//      swMsPrm.outQueParams.nextLink       = gVdisModuleContext.displayId[VDIS_DEV_SD];
+
+        dupPrm1.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+	    dupPrm1.inQueParams.prevLinkQueId	= 0;
+	    dupPrm1.numOutQue					= 2;
+	    dupPrm1.notifyNextLink				= TRUE;
+	    dupPrm1.outQueParams[0].nextLink	= gVdisModuleContext.displayId[VDIS_DEV_SD];
+	    dupPrm1.outQueParams[1].nextLink	= gVcapModuleContext.nsfId[1];
+
+        nsf_link_params_init(&nsfPrm1);
+        nsfPrm1.inQueParams.prevLinkId       = SYSTEM_VPSS_LINK_ID_DUP_1;
+        nsfPrm1.inQueParams.prevLinkQueId    = 1;
+		
+        if(gVsysModuleContext.vsysConfig.enableMjpeg)
+        {
+            nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2; 
+
+            dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
+	        dupPrm2.inQueParams.prevLinkQueId	= 0;
+	        dupPrm2.numOutQue					= 2;
+	        dupPrm2.notifyNextLink				= TRUE;
+	        dupPrm2.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+	        dupPrm2.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;  
+
+		    mergePrm0.numInQue = 3;
+		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+            mergePrm0.inQueParams[1].prevLinkQueId  = 0;
+		    mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+            mergePrm0.inQueParams[2].prevLinkQueId  = 1;
+        }
+		else
+		{
+		    nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_MERGE_0;
+
+            mergePrm0.numInQue = 2;
+            mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
+            mergePrm0.inQueParams[0].prevLinkQueId  = 0;
+            mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[1];
+            mergePrm0.inQueParams[1].prevLinkQueId  = 0;
+		}	
+		mergePrm0.notifyNextLink  				= TRUE;
+
+	    if(gVsysModuleContext.vsysConfig.enableEncode) {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_LINK_ID_SWOSD_0; //SYSTEM_VPSS_LINK_ID_IPC_OUT_M3_0;
+		} else {
+		    mergePrm0.outQueParams.nextLink     = SYSTEM_VPSS_LINK_ID_NULL_0;
+			null_link_params_init(&nullPrm0, SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+		}
+
+        disp_link_pararms_init(&dispPrm, VDIS_DEV_SD);
+        dispPrm.inQueParams[0].prevLinkId	= SYSTEM_VPSS_LINK_ID_DUP_1;
+	    dispPrm.inQueParams[0].prevLinkQueId 	= 0;
+
+	    //#--- capture link
+	    System_linkCreate(gVcapModuleContext.captureId, &capturePrm, sizeof(capturePrm));
+	    System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm,	sizeof(nsfPrm));
+		System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_0, &dupPrm0, sizeof(dupPrm0));
+
+	 	//#--- Display link creation -------------------------------------
+        System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
+	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
+		if(gVsysModuleContext.vsysConfig.enableMjpeg)
+		{
+		    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
+        }
+	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
+
+	    //#--- encoder link
+		if(gVsysModuleContext.vsysConfig.enableEncode) {
+	    	encoder_link_create(SYSTEM_VPSS_LINK_ID_MERGE_0, 0);
+
+		} else {
+			System_linkCreate(SYSTEM_VPSS_LINK_ID_NULL_0, &nullPrm0, sizeof(nullPrm0));
+		}
+
+	    //#--- display link
+        System_linkCreate(gVdisModuleContext.displayId[VDIS_DEV_SD], &dispPrm, sizeof(dispPrm));
+//	    display_link_create(SYSTEM_VPSS_LINK_ID_DUP_0, 1, num_ch /* or 1 */);
+	    dprintf("%s done!\n", __func__);
+	}
+
+}
+#endif /* #if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE) */
 
 void mcfw_capture_display_exit(void)
 {
