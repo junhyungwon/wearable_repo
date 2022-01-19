@@ -35,7 +35,6 @@
 #include "app_process.h"
 #include "app_buzz.h"
 
-
 #include "app_voip.h"
 
 /*----------------------------------------------------------------------------
@@ -120,7 +119,6 @@ static int _chk_time_file(void)
 	}
 
 	fclose(fp);
-
 	//# delete time file
 	sprintf(cmd, "rm -rf %s", file);
 	system(cmd);
@@ -155,9 +153,9 @@ int dev_ste_key(int gio)
 }
 
 static int cnt_key=0, ste_key=KEY_NONE;
-static int chk_rec_key(void)
+static int chk_input_key(int gpiokey)
 {
-	int key = dev_ste_key(REC_KEY);
+	int key = dev_ste_key(gpiokey);
 
 	if(ste_key != KEY_NONE) {
 		if(key == 1) {
@@ -190,46 +188,9 @@ static int chk_rec_key(void)
 	return ste_key;
 }
 
-#if defined(NEXXB) || defined(NEXXB_ONE)
-static int cnt_sos_key=0, ste_sos_key=KEY_NONE;
-static int chk_sos_key(void)
-{
-	int key = dev_ste_key(SOS_KEY);
-
-	if(ste_sos_key != KEY_NONE) {
-		if(key == 1) {
-			ste_sos_key = KEY_NONE;
-		}
-		return KEY_NONE;
-	}
-
-	if(cnt_sos_key)
-	{
-		if(key == 0) {	//# press
-			cnt_sos_key--;
-			if(cnt_sos_key == 0) {
-				ste_sos_key = KEY_LONG;
-			}
-		}
-		else {
-			cnt_sos_key = 0;
-			ste_sos_key = KEY_SHORT;
-		}
-	}
-	else {
-		if(ste_sos_key == KEY_NONE) {
-			if(key == 0) {
-				cnt_sos_key = 20;		//# 1sec
-			}
-		}
-	}
-
-	return ste_sos_key;
-}
-#endif
-
+#if defined(NEXXONE)
 /*****************************************************************************
-* @brief    dev thread function
+* @brief    REC KEY & SD Card Insert/remove Detection thread function (NEXXONE)
 * @section  [desc]
 *****************************************************************************/
 static void *THR_dev(void *prm)
@@ -238,9 +199,6 @@ static void *THR_dev(void *prm)
 	int exit=0;
 	int mmc, cmd, value = 0;
 	int rkey;
-#if defined(NEXXB) || defined(NEXXB_ONE)	
-	int rkey2;
-#endif	
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -261,110 +219,15 @@ static void *THR_dev(void *prm)
 			app_mcu_pwr_off(OFF_RESET);
 		}
 		
-#if defined(NEXXONE)
 		/* record key --> call function */
-		rkey = chk_rec_key();
-		//# For button enable, when camera didn't connected 
-		if (rkey == KEY_SHORT) {		
-			/* Short KEY */
+		rkey = chk_input_key(REC_KEY);
+		if (rkey == KEY_SHORT) {
 			if(app_set->voip.ON_OFF)
 				app_voip_event_noty();
-
 		} else if (rkey == KEY_LONG) {	
-			/* volume control */
 			if(app_set->voip.ON_OFF)
 				app_rec_evt(OFF) ;  // event
 		}
-#elif defined(NEXX360W) || defined(NEXX360W_MUX)
-	if(app_set->voip.ON_OFF)
-	{
-		/* record key --> call function */
-		rkey = chk_rec_key();
-		//# For button enable, when camera didn't connected 
-		if (rkey == KEY_SHORT) {		
-			/* Short KEY */
-			app_voip_event_noty();
-		} else if (rkey == KEY_LONG) {	
-			/* volume control */
-			app_rec_evt(OFF) ;
-		}
-	}
-	else
-	{
-		if (!app_cfg->ste.b.ftp_run)
-		{
-			rkey = chk_rec_key();
-			if (rkey == KEY_SHORT) {
-				if (app_rec_state()) {
-					app_rec_stop(ON);
-				} else {
-					app_rec_start();
-				}
-			} else if (rkey == KEY_LONG) {
-			    app_rec_evt(OFF) ;
-			}
-		}
-	}
-#elif defined(NEXX360B) || defined(NEXX360H) || defined(NEXX360C) || defined(NEXX360W_CCTV)
-		if (!app_cfg->ste.b.ftp_run)
-		{
-			rkey = chk_rec_key();
-			/* NEXX360, Fitt360 */
-			if (rkey == KEY_SHORT) {
-				if (app_rec_state()) {
-					    app_rec_stop(ON);
-				} else {
-					    app_rec_start();
-				}
-			} else if (rkey == KEY_LONG) {
-			    app_rec_evt(OFF) ;
-			}
-		}
-#elif defined(NEXXB) || defined(NEXXB_ONE)
-		/* record key --> call function */
-		rkey = chk_rec_key();
-		//# For button enable, when camera didn't connected 
-		if (rkey == KEY_SHORT) {		
-			/* Short KEY */
-		if(app_set->voip.ON_OFF)
-			app_voip_event_noty();
-		
-			sysprint("[APP_VOIP] Voip Key Pressed !! \n") ;	
-		} 
-		else if (rkey == KEY_LONG) {	 // Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 
-			if(!app_cfg->ste.b.ftp_run) {
-				if (app_rec_state()) {
-					  app_rec_stop(OFF);
-				} else {
-					app_rec_start();
-				}
-			}
-		}
-		
-		if(!app_cfg->ste.b.ftp_run) {
-			rkey2 = chk_sos_key();
-			if (rkey2 == KEY_SHORT) {  // SOS REC ON/OFF toggle 
-				value = app_rec_state() ;
-
-				if (value < 2)  //  Rec off or normal/event rec -> SOS ON
-				{
-					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
-					app_rec_evt(ON) ;  // SOS REC
-					sysprint("[APP_SOS] Occurs SOS Event !! \n") ;	
-				}
-				else if(value == 2) // value 2, SOS Rec  , Value 1 Normal/Event REc
-                {
-					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
-					app_sos_send_stop(ON) ;
-					sysprint("[APP_SOS] End SOS Event !! \n") ;	
-				}
-				dprintf("SOS Short Key Pressed!\n");
-			} 
-			else if (rkey2 == KEY_LONG) {	
-				dprintf("SOS Long Key Pressed!\n");
-			}
-		}
-#endif		
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
@@ -373,6 +236,154 @@ static void *THR_dev(void *prm)
 
 	return NULL;
 }
+
+#elif defined(NEXX360W) || defined(NEXX360W_MUX) || defined(NEXX360B) || \
+	defined(NEXX360H) || defined(NEXX360C) || defined(NEXX360W_CCTV)
+/*****************************************************************************
+* @brief    REC KEY & SD Card Insert/remove Detection thread function 
+*          (NEXX360W/NEX360W_MUX/NEXX360B/NEXX360H/NEXX360C/NEXX360W_CCTV)
+* @section  [desc]
+*****************************************************************************/
+static void *THR_dev(void *prm)
+{
+    app_thr_obj *tObj = &idev->devObj;
+	int exit=0;
+	int mmc, cmd, value = 0;
+	int rkey;
+	
+	aprintf("enter...\n");
+	tObj->active = 1;
+
+	while(!exit)
+	{
+		cmd = tObj->cmd;
+		if (cmd == APP_CMD_STOP) {
+			break;
+		}
+
+		//# check mmc card
+		mmc = dev_ste_mmc();
+		if (mmc != app_cfg->ste.b.mmc) {
+			app_cfg->ste.b.mmc = mmc;
+			aprintf("SD Card removed.. system will restart!\n");
+			app_rec_stop(OFF);
+			app_mcu_pwr_off(OFF_RESET);
+		}
+		
+		/* record key --> call function */
+		rkey = chk_input_key(REC_KEY);
+		#if SYS_CONFIG_VOIP
+		if (app_set->voip.ON_OFF) {
+			if (rkey == KEY_SHORT) {		
+				app_voip_event_noty();
+			} else if (rkey == KEY_LONG) {	
+				app_rec_evt(OFF) ;
+			}
+		}
+		#else
+		if (!app_cfg->ste.b.ftp_run) {
+			if (rkey == KEY_SHORT) {
+				if (app_rec_state()) {
+					app_rec_stop(ON);
+				} else {
+					app_rec_start();
+				}
+			} else if (rkey == KEY_LONG) {
+				app_rec_evt(OFF) ;
+			}
+		}
+		#endif /* #if SYS_CONFIG_VOIP */
+		app_msleep(TIME_DEV_CYCLE);
+	}
+
+	tObj->active = 0;
+	aprintf("...exit\n");
+
+	return NULL;
+}
+
+#elif defined(NEXXB) || defined(NEXXB_ONE)
+/*****************************************************************************
+* @brief    REC KEY & SD Card Insert/remove Detection thread function(NEXXB/NEXXB_ONE) 
+* @section  [desc]
+*****************************************************************************/
+static void *THR_dev(void *prm)
+{
+    app_thr_obj *tObj = &idev->devObj;
+	int exit=0;
+	int mmc, cmd, value = 0;
+	int rkey, skey;
+	
+	aprintf("enter...\n");
+	tObj->active = 1;
+
+	while(!exit)
+	{
+		cmd = tObj->cmd;
+		if (cmd == APP_CMD_STOP) {
+			break;
+		}
+
+		//# check mmc card
+		mmc = dev_ste_mmc();
+		if (mmc != app_cfg->ste.b.mmc) {
+			app_cfg->ste.b.mmc = mmc;
+			aprintf("SD Card removed.. system will restart!\n");
+			app_rec_stop(OFF);
+			app_mcu_pwr_off(OFF_RESET);
+		}
+		
+		/* record key --> call function */
+		rkey = chk_input_key(REC_KEY);
+		//# For button enable, when camera didn't connected 
+		if (rkey == KEY_SHORT) {		
+			/* Short KEY */
+			if (app_set->voip.ON_OFF)
+				app_voip_event_noty();
+		} else if (rkey == KEY_LONG) {
+			//# Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 
+			if (!app_cfg->ste.b.ftp_run) {
+				if (app_rec_state()) {
+					app_rec_stop(OFF);
+				} else {
+					app_rec_start();
+				}
+			}
+		}
+		
+		skey = chk_input_key(SOS_KEY);
+		if (!app_cfg->ste.b.ftp_run) {
+			if (skey == KEY_SHORT) {  // SOS REC ON/OFF toggle 
+				value = app_rec_state() ;
+				/*
+				 * return 1-> EVENT, return 2-> SOS
+				 */
+				if (value == 2) { 
+					// value 2, SOS Rec  , Value 1 Normal/Event REc
+					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+					app_sos_send_stop(ON) ;
+					sysprint("[APP_SOS] End SOS Event !! \n");	
+				} else {
+					//  Rec off or normal/event rec -> SOS ON
+					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+					app_rec_evt(ON) ;  // SOS REC
+					sysprint("[APP_SOS] Occurs SOS Event !! \n");
+				}
+				dprintf("SOS Short Key Pressed!\n");
+			} else if (skey == KEY_LONG) {	
+				dprintf("SOS Long Key Pressed!\n");
+			}
+		}
+		app_msleep(TIME_DEV_CYCLE);
+	}
+	tObj->active = 0;
+	aprintf("...exit\n");
+
+	return NULL;
+}
+#else
+#error "Not defined Build Model!"
+#endif
 
 /*****************************************************************************
 * @brief    IO device thread start/stop
