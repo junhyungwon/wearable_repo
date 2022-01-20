@@ -167,6 +167,93 @@ static void	null_link_params_init(NullLink_CreateParams *nullPrm, UInt32 prev_id
 	nullPrm->inQueParams[0].prevLinkQueId	= prev_que_id;
 }
 
+#if defined(LF_SYS_NEXXONE_VOIP)
+static void	enc_link_params_init(EncLink_CreateParams *encPrm)
+{
+	EncLink_ChCreateParams *pLinkChPrm;
+	EncLink_ChDynamicParams	*pLinkDynPrm;
+	VENC_CHN_DYNAMIC_PARAM_S *pDynPrm;
+	VENC_CHN_PARAMS_S *pChPrm;
+	UInt32 i ;
+
+	EncLink_CreateParams_Init(encPrm);
+
+	encPrm->numCh = gVsysModuleContext.vsysConfig.numChs + 3;
+
+	encPrm->numBufPerCh[0]	= NUM_ENCODE_BUFFERS;
+
+	for	(i=0; i<encPrm->numCh; i++)
+	{
+		if(i < 2)
+		{
+			pLinkChPrm	= &encPrm->chCreateParams[i];
+			pLinkDynPrm	= &pLinkChPrm->defaultDynamicParams;
+
+			pChPrm		= &gVencModuleContext.vencConfig.encChannelParams[i];
+			pDynPrm		= &pChPrm->dynamicParam;
+
+			pLinkChPrm->format					= IVIDEO_H264HP;
+			pLinkChPrm->profile					= gVencModuleContext.vencConfig.h264Profile[i];
+			pLinkChPrm->dataLayout				= IVIDEO_PROGRESSIVE;
+			pLinkChPrm->fieldMergeEncodeEnable	= FALSE;
+			pLinkChPrm->enableAnalyticinfo		= pChPrm->enableAnalyticinfo;
+			pLinkChPrm->maxBitRate				= pChPrm->maxBitRate;
+			pLinkChPrm->encodingPreset			= pChPrm->encodingPreset;
+			pLinkChPrm->rateControlPreset		= pChPrm->rcType;
+			pLinkChPrm->enableHighSpeed         = FALSE;
+			pLinkChPrm->StreamPreset            = 1;  //  1  ALG_VID_ENC_PRESET_HIGHSPEED  3 ALG_VID_ENC_PRESET_SVC_AUTO 
+
+	      	pLinkDynPrm->outputFrameRate		= pDynPrm->frameRate * 1000;
+		    pLinkDynPrm->intraFrameInterval		= pDynPrm->intraFrameInterval;
+			pLinkDynPrm->targetBitRate			= pDynPrm->targetBitRate;
+			pLinkDynPrm->interFrameInterval		= 1;
+			pLinkDynPrm->mvAccuracy				= IVIDENC2_MOTIONVECTOR_QUARTERPEL;
+			pLinkDynPrm->inputFrameRate			= pDynPrm->inputFrameRate;
+			pLinkDynPrm->rcAlg					= pDynPrm->rcAlg;
+			pLinkDynPrm->qpMin					= pDynPrm->qpMin;
+			pLinkDynPrm->qpMax					= pDynPrm->qpMax;
+			pLinkDynPrm->qpInit					= pDynPrm->qpInit;
+			pLinkDynPrm->vbrDuration			= pDynPrm->vbrDuration;
+			pLinkDynPrm->vbrSensitivity			= pDynPrm->vbrSensitivity;
+
+			gVencModuleContext.encFormat[i]		= pLinkChPrm->format;
+		}
+		else // mjpeg
+		{
+			pLinkChPrm	= &encPrm->chCreateParams[i];
+			pLinkDynPrm = &pLinkChPrm->defaultDynamicParams;
+
+			pChPrm		= &gVencModuleContext.vencConfig.encChannelParams[i];
+			pDynPrm		= &pChPrm->dynamicParam;
+
+			pLinkChPrm->format					= IVIDEO_MJPEG;
+			pLinkChPrm->profile					= 0;
+			pLinkChPrm->dataLayout				= IVIDEO_PROGRESSIVE;
+			pLinkChPrm->fieldMergeEncodeEnable	= FALSE;
+			pLinkChPrm->enableAnalyticinfo		= 0;
+			pLinkChPrm->maxBitRate				= 0;
+			pLinkChPrm->encodingPreset			= 0;
+			pLinkChPrm->rateControlPreset		= 0;
+
+
+			pLinkDynPrm->outputFrameRate		= pDynPrm->frameRate * 1000;
+			pLinkDynPrm->intraFrameInterval		= 1;
+			pLinkDynPrm->targetBitRate			= 100*1000;
+			pLinkDynPrm->interFrameInterval		= 1;
+			pLinkDynPrm->mvAccuracy				= 0;
+//			pLinkDynPrm->inputFrameRate			= pDynPrm->inputFrameRate;
+			pLinkDynPrm->inputFrameRate			= VPS_FPS;
+			pLinkDynPrm->qpMin					= 0;
+			pLinkDynPrm->qpMax					= 0;
+			pLinkDynPrm->qpInit					= 0;
+			pLinkDynPrm->vbrDuration			= 0;
+			pLinkDynPrm->vbrSensitivity			= 0;
+			
+		}
+	}
+}
+
+#else
 static void	enc_link_params_init(EncLink_CreateParams *encPrm)
 {
 	EncLink_ChCreateParams *pLinkChPrm;
@@ -258,6 +345,7 @@ static void	enc_link_params_init(EncLink_CreateParams *encPrm)
 		}
 	}
 }
+#endif
 
 static void	swms_link_params_init(SwMsLink_CreateParams	*swMsPrm, int dev_id, int win_num)
 {
@@ -444,7 +532,7 @@ void mcfw_capture_display_init(void)
 {
 	CaptureLink_CreateParams		capturePrm;
 	NsfLink_CreateParams			nsfPrm, nsfPrm1;
-	DupLink_CreateParams			dupPrm0, dupPrm1, dupPrm2;
+	DupLink_CreateParams			dupPrm0, dupPrm1;
 	MergeLink_CreateParams			mergePrm0;
 	NullLink_CreateParams			nullPrm0;
     SwMsLink_CreateParams           swMsPrm;
@@ -478,17 +566,21 @@ void mcfw_capture_display_init(void)
 	//#--- dup link params
 	dupPrm0.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[0];
 	dupPrm0.inQueParams.prevLinkQueId	= 0;
-	dupPrm0.numOutQue					= 2;
+    if(gVsysModuleContext.vsysConfig.enableMjpeg)
+		dupPrm0.numOutQue					= 3;
+	else
+		dupPrm0.numOutQue					= 2;
 	dupPrm0.notifyNextLink				= TRUE;
 
 	if(gVsysModuleContext.vsysConfig.enableHDMI)
 	{
         dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-  	    dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+        dupPrm0.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+  	    dupPrm0.outQueParams[2].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 
         swms_link_params_init(&swMsPrm, VDIS_DEV_HDMI, num_ch);
         swMsPrm.inQueParams.prevLinkId      = SYSTEM_VPSS_LINK_ID_DUP_0;
-        swMsPrm.inQueParams.prevLinkQueId   = 1;
+        swMsPrm.inQueParams.prevLinkQueId   = 2;
 	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_1;
 
         dupPrm1.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
@@ -504,21 +596,13 @@ void mcfw_capture_display_init(void)
 
         if(gVsysModuleContext.vsysConfig.enableMjpeg)
         {
-			nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2;
-
-            dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
-	        dupPrm2.inQueParams.prevLinkQueId	= 0;
-	        dupPrm2.numOutQue					= 2;
-	        dupPrm2.notifyNextLink				= TRUE;
-	        dupPrm2.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-	        dupPrm2.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;  
-
+			nsfPrm1.outQueParams[0].nextLink    = SYSTEM_VPSS_LINK_ID_MERGE_0;
             mergePrm0.numInQue = 3;
 		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
             mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+		    mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[1];
             mergePrm0.inQueParams[1].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
             mergePrm0.inQueParams[2].prevLinkQueId  = 1;
         }
 		else
@@ -554,10 +638,6 @@ void mcfw_capture_display_init(void)
         System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
 	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
-		if(gVsysModuleContext.vsysConfig.enableMjpeg)
-		{
-		    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
-        }
 
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
@@ -577,11 +657,12 @@ void mcfw_capture_display_init(void)
 	else
 	{
         dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-  	    dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+        dupPrm0.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+  	    dupPrm0.outQueParams[2].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
 
         swms_link_params_init(&swMsPrm, VDIS_DEV_SD, num_ch);
         swMsPrm.inQueParams.prevLinkId      = SYSTEM_VPSS_LINK_ID_DUP_0;
-        swMsPrm.inQueParams.prevLinkQueId   = 1;
+        swMsPrm.inQueParams.prevLinkQueId   = 2;
 	    swMsPrm.outQueParams.nextLink       = SYSTEM_VPSS_LINK_ID_DUP_1;
 
         dupPrm1.inQueParams.prevLinkId		= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
@@ -597,21 +678,13 @@ void mcfw_capture_display_init(void)
 		
         if(gVsysModuleContext.vsysConfig.enableMjpeg)
         {
-            nsfPrm1.outQueParams[0].nextLink     = SYSTEM_VPSS_LINK_ID_DUP_2; 
-
-            dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[1];
-	        dupPrm2.inQueParams.prevLinkQueId	= 0;
-	        dupPrm2.numOutQue					= 2;
-	        dupPrm2.notifyNextLink				= TRUE;
-	        dupPrm2.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
-	        dupPrm2.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;  
-
-		    mergePrm0.numInQue = 3;
+			nsfPrm1.outQueParams[0].nextLink    = SYSTEM_VPSS_LINK_ID_MERGE_0;
+            mergePrm0.numInQue = 3;
 		    mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
             mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-            mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+		    mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[1];
             mergePrm0.inQueParams[1].prevLinkQueId  = 0;
-		    mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+            mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
             mergePrm0.inQueParams[2].prevLinkQueId  = 1;
         }
 		else
@@ -646,10 +719,6 @@ void mcfw_capture_display_init(void)
         System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
 	    System_linkCreate(gVcapModuleContext.nsfId[1], &nsfPrm1, sizeof(nsfPrm1));
-		if(gVsysModuleContext.vsysConfig.enableMjpeg)
-		{
-		    System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
-        }
 
 	    System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
 
