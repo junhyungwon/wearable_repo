@@ -35,8 +35,10 @@ struct stream_s {
 
 void app_rtmp_get_endpoint()
 {
-	sprintf(rtmp_endpoint, "rtmp://111.218.68.122:1935/%s/myStream/key", app_set->sys_info.deviceId) ;
-//	sprintf(rtmp_endpoint, "rtmp://54.180.141.121:1935/%s/myStream/key", "nexxone_jay") ;
+//	sprintf(rtmp_endpoint, "rtmp://111.218.68.122:1935/%s/myStream/key", app_set->sys_info.deviceId) ;  // autobahn 
+//	sprintf(rtmp_endpoint, "rtmp://54.180.141.121:1935/%s/myStream/key", app_set->sys_info.deviceId) ;  // type2
+	sprintf(rtmp_endpoint, "rtmp://54.180.141.121:1935/live/%s", app_set->sys_info.deviceId) ;   // address type1 = normal
+//	sprintf(rtmp_endpoint, "rtmp://11.93.10.51:1935/live/%s", app_set->sys_info.deviceId) ;     // samsung display
 }
 
 static void _init_queue() {

@@ -409,11 +409,6 @@ static void *THR_micom(void *prm)
 							#endif /* #if defined(NEXXB) || defined(NEXXB_ONE) */
 						}
 					}
-					#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H)
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-			    			change_video_fxn();
-					}
 					#endif
 				}
 				break;
