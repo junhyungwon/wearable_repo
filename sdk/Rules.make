@@ -87,9 +87,6 @@ TILER_ENABLE := NO
 #--- Teardown method (YES/NO)
 TEARDOWN_LOAD_UNLOAD := YES
 
-#--- RTMP Publishing feature (YES/NO)
-USE_RTMP = NO
-
 #--- CCTV Platform feature (YES/NO)
 USE_CCTV = YES
 
@@ -396,7 +393,6 @@ export SYSTEM_PLATFORM
 export USE_ISP
 export USE_WIFI
 export USE_VOIP
-export USE_RTMP
 export USE_KCMVP
 export THIRD_PARTY
 export CAM_MANUFACTURER

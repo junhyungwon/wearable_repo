@@ -35,10 +35,7 @@
 #include "app_mcu.h"
 #include "app_web.h"
 #include "app_gps.h"
-
-#ifdef USE_RTMP
 #include "app_rtmp.h"
-#endif
 
 #define H264_DUMP  0
 #define JPEG_DUMP  0
@@ -158,9 +155,7 @@ static void proc_vid_cap(void)
 	VCODEC_BITSBUF_S *pFullBuf;
     int i, idx ;
 	
-#ifdef USE_RTMP
 	struct timeval ltime ;
-#endif
 
 	Uint64 captime;
 	stream_info_t *ifr;
@@ -207,11 +202,12 @@ static void proc_vid_cap(void)
 				/* ch == 1 --> streaming */
                 if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == STREAM_CH_NUM)
                 {
-#ifdef USE_RTMP
-					gettimeofday(&ltime, NULL) ;
-					ifr->t_sec = ltime.tv_sec ;
-					ifr->t_msec = ltime.tv_usec / 1000 ;
-#endif					
+					if(app_set->rtmp.ON_OFF)
+					{
+						gettimeofday(&ltime, NULL) ;
+						ifr->t_sec = ltime.tv_sec ;
+						ifr->t_msec = ltime.tv_usec / 1000 ;
+					}
 //                    printf("ifr->t_sec = %d ifr->t_msec = %ld \n",ifr->t_sec, ifr->t_msec) ;
 #if H264_DUMP
                     if(first == 0 && ifr->is_key)
@@ -232,9 +228,9 @@ static void proc_vid_cap(void)
                     }
 #endif
 
-#ifdef USE_RTMP
-                    app_rtmp_publish_video(ifr);
-#endif
+					if(app_set->rtmp.ON_OFF)
+						app_rtmp_publish_video(ifr);
+
                     app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
@@ -546,9 +542,8 @@ int app_cap_start(void)
 
 	cap_enc_late_init();
 
-#ifndef USE_RTMP
-	ctrl_enc_multislice() ; 
-#endif
+	if(app_set->rtmp.ON_OFF)
+		ctrl_enc_multislice() ; 
 
 	aprintf("....done!\n");
 

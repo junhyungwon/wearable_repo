@@ -56,6 +56,9 @@
 #define PBX_SERVER_PORT         	6060
 #define PBX_SERVER_PW           	"9999"
 
+#define RTMP_SERVER_URL            "rtmp://<ipaddress>:<port>/live/<streamname>"
+#define RTMP_SERVER_ADDR            "192.168.1.252"
+#define RTMP_SERVER_PORT            1935
 
 typedef enum {
 	RATE_CTRL_VBR,
@@ -287,6 +290,16 @@ typedef struct {
 } app_voip_t; // 72 
 #pragma pack()
 
+#pragma pack(1)
+typedef struct {
+	short ON_OFF ;
+    short USE_URL ;
+    short port ;
+    char  ipaddr[MAX_CHAR_64];
+//    char  userid[MAX_CHAR_16] ;
+//    char  passwd[MAX_CHAR_16] ;
+} app_rtmp_addr_t; // 70 
+#pragma pack()
 
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1 = records + streaming
@@ -308,8 +321,8 @@ typedef struct {
     app_fota_t				fota_info ;
 
     app_voip_t              voip; //  => 72 + 40
-	char reserved[192];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota))
-
+    app_rtmp_addr_t         rtmp ; // 102 
+	char reserved[90];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
 	
 } app_set_t;
 

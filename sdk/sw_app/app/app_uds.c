@@ -50,10 +50,8 @@
 #include "cgi_param.h"
 #include "app_encrypt.h"
 #include "app_decrypt.h"
-
-#ifdef USE_RTMP
 #include "app_rtmp.h"
-#endif
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -1613,8 +1611,7 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-#ifdef USE_RTMP
-		else if (strcmp(rbuf, "ControlRtmp") == 0) {
+		else if (strcmp(rbuf, "ControlRtmp") == 0 && app_set->rtmp.ON_OFF) {
 			sysprint("[APP_UDS] --- ControlRtmp ---\n");
 
 			// 1. send READY
@@ -1644,7 +1641,6 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-#endif
 		else if (strcmp(rbuf, "GetSystemDateAndTime") == 0)
 		{
 			//sysprint("[APP_UDS] --- GetSystemDateAndTime---\n");

@@ -53,11 +53,7 @@
 #include "app_buzz.h"
 #include "app_libuv.h"
 #include "app_watchdog.h"
-
-#ifdef USE_RTMP
 #include "app_rtmp.h"
-#endif
-
 
 #include "app_voip.h"
 
@@ -219,15 +215,16 @@ int app_main(void)
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
     app_libuv_start();
-#ifdef USE_RTMP
-    app_rtmp_start();
+    if(app_set->rtmp.ON_OFF)
+	{
+	    app_rtmp_start();
 
     // disable SIGPIPE
-    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
+	    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
 
     // enable in default
-    app_rtmp_enable();
-#endif
+	    app_rtmp_enable();
+	}
 
     app_cap_start();
 	app_snd_start(); 
@@ -349,9 +346,9 @@ int app_main(void)
     app_snd_stop(); 
     app_cap_stop();
 
-#ifdef USE_RTMP
-    app_rtmp_stop();
-#endif
+    if(app_set->rtmp.ON_OFF)
+		app_rtmp_stop();
+
     app_libuv_stop();
 
     if (app_cfg->ste.b.rtsptx) {

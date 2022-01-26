@@ -16,6 +16,50 @@ json_object *json_find_obj (json_object * jobj, char *find_key)
 	return NULL; // not found
 }
 
+static int	parseRtmpInfo(app_set_t* const set, json_object* rootObj)
+{
+	const char* STR_FIELD = "rtmp_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find rtmp_info\n");
+		return -1;
+	}
+	json_object* tmp ;
+/*
+	tmp = json_object_object_get(jobj, "userid");
+	sprintf(set->voip.userid, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "passwd");
+	sprintf(set->voip.passwd, "%s", json_object_get_string(tmp));
+*/
+    if(json_find_obj(jobj, "ON_OFF") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ON_OFF");
+		set->rtmp.ON_OFF = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("RTMP ON_OFF 항목 없음\n") ;
+		set->rtmp.ON_OFF = -1;
+	}
+
+    if(json_find_obj(jobj, "USE_URL") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "USE_URL");
+		set->rtmp.USE_URL = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("RTMP USE_URL 항목 없음\n") ;
+		set->rtmp.USE_URL = -1;
+	}
+	tmp = json_object_object_get(jobj, "ipaddr");
+	sprintf(set->rtmp.ipaddr, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "port");
+	set->rtmp.port = json_object_get_int(tmp);
+
+	return 0;
+}
 
 static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 {
@@ -39,9 +83,9 @@ static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 	tmp = json_object_object_get(jobj, "use_stun");
 	set->voip.use_stun = json_object_get_int(tmp);
 
-    if(json_find_obj(jobj, "enable") != NULL)
+    if(json_find_obj(jobj, "ON_OFF") != NULL)
     {
-		tmp = json_object_object_get(jobj, "enable");
+		tmp = json_object_object_get(jobj, "ON_OFF");
 		set->voip.ON_OFF = json_object_get_int(tmp);
 	}
 	else
@@ -547,9 +591,12 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	parseMultiapInfo(set, rootObject);
 
 	// 15. read voip info
-
+	
 	parseVoipInfo(set, rootObject);
 
+	// 16. read rtmpserver info
+	
+	parseRtmpInfo(set, rootObject);
 
 	// finish
 	json_object_put(rootObject);
@@ -739,16 +786,26 @@ int js_write_settings(const app_set_t* const set, const char* fname)
     json_object_object_add(rootObject,  "multi_ap", multi_ap);
 
 
-	// 13. voip information
+	// 14. voip information
 	json_object* voip_info = json_object_new_object();
 	json_object_object_add(voip_info, "ipaddr",   json_object_new_string(set->voip.ipaddr));
-	json_object_object_add(voip_info, "port",   json_object_new_int(set->voip.port));
+	json_object_object_add(voip_info, "port",     json_object_new_int(set->voip.port));
 	json_object_object_add(voip_info, "userid",   json_object_new_string(set->voip.userid));
 	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->voip.passwd));
 	json_object_object_add(voip_info, "peerid",   json_object_new_string(set->voip.peerid));
 	json_object_object_add(voip_info, "use_stun", json_object_new_int(set->voip.use_stun));
-	json_object_object_add(voip_info, "enable",   json_object_new_int(set->voip.ON_OFF));
-	json_object_object_add(rootObject,  "voip_info", voip_info);
+	json_object_object_add(voip_info, "ON_OFF",   json_object_new_int(set->voip.ON_OFF));
+	json_object_object_add(rootObject, "voip_info", voip_info);
+
+	// 15. rtmp information
+	json_object* rtmp_info = json_object_new_object();
+	json_object_object_add(rtmp_info, "ON_OFF",   json_object_new_int(set->rtmp.ON_OFF));
+	json_object_object_add(rtmp_info, "USE_URL",   json_object_new_int(set->rtmp.USE_URL));
+	json_object_object_add(rtmp_info, "ipaddr",   json_object_new_string(set->rtmp.ipaddr));
+	json_object_object_add(rtmp_info, "port",     json_object_new_int(set->rtmp.port));	
+//	json_object_object_add(voip_info, "userid",   json_object_new_string(set->rtmp.userid));
+//	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->rtmp.passwd));
+	json_object_object_add(rootObject, "rtmp_info", rtmp_info);
 
 
 	// Finish
@@ -781,6 +838,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(multi_ap);
 
 	json_object_put(voip_info);
+	json_object_put(rtmp_info);
 
 	json_object_put(rootObject);
 

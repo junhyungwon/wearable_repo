@@ -280,7 +280,15 @@ static void char_memset(void)
 	app_set->voip.use_stun = 0 ;
 	app_set->voip.ON_OFF = CFG_INVALID ;
     memset(app_set->voip.reserved, CFG_INVALID, 38) ;
-    memset(app_set->reserved, CFG_INVALID, 192) ;
+
+	app_set->rtmp.ON_OFF = CFG_INVALID ;
+	app_set->rtmp.USE_URL = CFG_INVALID ;
+	app_set->rtmp.port = CFG_INVALID ;
+	memset(app_set->rtmp.ipaddr, CHAR_MEMSET, MAX_CHAR_64) ;
+//	memset(app_set->rtmp.userid, CHAR_MEMSET, MAX_CHAR_16) ;
+//	memset(app_set->rtmp.passwd, CHAR_MEMSET, MAX_CHAR_16) ;
+
+    memset(app_set->reserved, CFG_INVALID, 90) ;
 }
 
 int GetSvrMacAddress(char *mac_address)
@@ -451,7 +459,6 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
     printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
 
-
     printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
     printf("pset->voip.port   = %d\n", pset->voip.port);
     printf("pset->voip.userid = %s\n", pset->voip.userid);
@@ -459,6 +466,13 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->voip.peerid = %s\n", pset->voip.peerid);
     printf("pset->voip.use_stun = %d\n", pset->voip.use_stun);
     printf("pset->voip.ON_OFF = %d\n", pset->voip.ON_OFF);
+
+    printf("pset->rtmp.ON_OFF = %d\n", pset->rtmp.ON_OFF);
+    printf("pset->rtmp.USE_URL    = %d\n", pset->rtmp.USE_URL);
+    printf("pset->rtmp.ipaddr = %s\n", pset->rtmp.ipaddr);
+    printf("pset->rtmp.port   = %d\n", pset->rtmp.port);
+//    printf("pset->rtmp.userid = %s\n", pset->rtmp.userid);
+//    printf("pset->rtmp.passwd = %s\n", pset->rtmp.passwd);
 
 	printf("\n");
 
@@ -896,6 +910,31 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->voip.ON_OFF = OFF;
 #endif	
 	//# ----------------- VOIP Parameters End -----------------------------------------
+
+	if(pset->rtmp.ON_OFF <= CFG_INVALID)
+		pset->rtmp.ON_OFF = OFF;
+
+	if(pset->rtmp.USE_URL <= CFG_INVALID)
+		pset->rtmp.USE_URL = OFF;
+
+	if(pset->rtmp.port <= CFG_INVALID)
+		pset->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
+
+	if((int)pset->rtmp.ipaddr[0] == CHAR_INVALID || (int)pset->rtmp.ipaddr[0] == 0)
+	{
+		if(pset->rtmp.USE_URL) 
+			strcpy(pset->rtmp.ipaddr, RTMP_SERVER_URL);
+		else
+			strcpy(pset->rtmp.ipaddr, RTMP_SERVER_ADDR);
+	}
+/*
+	if((int)pset->rtmp.userid[0] == CHAR_INVALID || (int)pset->rtmp.userid[0] == 0)
+		strcpy(pset->rtmp.userid, "admin");
+
+	if((int)pset->rtmp.passwd[0]  == CHAR_INVALID || (int)pset->rtmp.passwd[0] == 0)
+		strcpy(pset->rtmp.passwd, "admin");
+*/
+
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 }
@@ -1190,6 +1229,13 @@ static void app_set_default(int default_type)
 #endif	
 	memset((void*)app_set->voip.reserved, 0x00, 38);
 	//#------------- VOIP Params End ---------------------------------------------------
+
+	app_set->rtmp.ON_OFF = OFF;
+	app_set->rtmp.USE_URL = OFF;
+	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
+	strcpy(app_set->rtmp.ipaddr, RTMP_SERVER_ADDR);
+//	strcpy(app_set->rtmp.userid, "admin");
+//	strcpy(app_set->rtmp.passwd, "admin");
 }
 
 static void app_set_delete_cfg(void)
