@@ -295,10 +295,10 @@ typedef struct {
 	short ON_OFF ;
     short USE_URL ;
     short port ;
-    char  ipaddr[MAX_CHAR_64];
-//    char  userid[MAX_CHAR_16] ;
+    char  ipaddr[MAX_CHAR_16];
+    char  FULL_URL[MAX_CHAR_64] ;
 //    char  passwd[MAX_CHAR_16] ;
-} app_rtmp_addr_t; // 70 
+} app_rtmp_addr_t; //86 
 #pragma pack()
 
 typedef struct {
@@ -321,8 +321,8 @@ typedef struct {
     app_fota_t				fota_info ;
 
     app_voip_t              voip; //  => 72 + 40
-    app_rtmp_addr_t         rtmp ; // 102 
-	char reserved[90];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
+    app_rtmp_addr_t         rtmp ; // 86 
+	char reserved[104];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
 	
 } app_set_t;
 

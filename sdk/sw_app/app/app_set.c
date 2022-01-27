@@ -284,7 +284,8 @@ static void char_memset(void)
 	app_set->rtmp.ON_OFF = CFG_INVALID ;
 	app_set->rtmp.USE_URL = CFG_INVALID ;
 	app_set->rtmp.port = CFG_INVALID ;
-	memset(app_set->rtmp.ipaddr, CHAR_MEMSET, MAX_CHAR_64) ;
+	memset(app_set->rtmp.ipaddr, CHAR_MEMSET, MAX_CHAR_16) ;
+	memset(app_set->rtmp.FULL_URL, CHAR_MEMSET, MAX_CHAR_64) ;
 //	memset(app_set->rtmp.userid, CHAR_MEMSET, MAX_CHAR_16) ;
 //	memset(app_set->rtmp.passwd, CHAR_MEMSET, MAX_CHAR_16) ;
 
@@ -470,6 +471,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->rtmp.ON_OFF = %d\n", pset->rtmp.ON_OFF);
     printf("pset->rtmp.USE_URL    = %d\n", pset->rtmp.USE_URL);
     printf("pset->rtmp.ipaddr = %s\n", pset->rtmp.ipaddr);
+    printf("pset->rtmp.FULL_URL = %s\n", pset->rtmp.FULL_URL);
     printf("pset->rtmp.port   = %d\n", pset->rtmp.port);
 //    printf("pset->rtmp.userid = %s\n", pset->rtmp.userid);
 //    printf("pset->rtmp.passwd = %s\n", pset->rtmp.passwd);
@@ -921,12 +923,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
 
 	if((int)pset->rtmp.ipaddr[0] == CHAR_INVALID || (int)pset->rtmp.ipaddr[0] == 0)
-	{
-		if(pset->rtmp.USE_URL) 
-			strcpy(pset->rtmp.ipaddr, RTMP_SERVER_URL);
-		else
-			strcpy(pset->rtmp.ipaddr, RTMP_SERVER_ADDR);
-	}
+		strcpy(pset->rtmp.ipaddr, RTMP_SERVER_ADDR);
+
+	if((int)pset->rtmp.FULL_URL[0] == CHAR_INVALID || (int)pset->rtmp.FULL_URL[0] == 0)
+		strcpy(pset->rtmp.FULL_URL, RTMP_SERVER_URL);
 /*
 	if((int)pset->rtmp.userid[0] == CHAR_INVALID || (int)pset->rtmp.userid[0] == 0)
 		strcpy(pset->rtmp.userid, "admin");
@@ -1234,6 +1234,7 @@ static void app_set_default(int default_type)
 	app_set->rtmp.USE_URL = OFF;
 	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
 	strcpy(app_set->rtmp.ipaddr, RTMP_SERVER_ADDR);
+	strcpy(app_set->rtmp.FULL_URL, RTMP_SERVER_URL);
 //	strcpy(app_set->rtmp.userid, "admin");
 //	strcpy(app_set->rtmp.passwd, "admin");
 }

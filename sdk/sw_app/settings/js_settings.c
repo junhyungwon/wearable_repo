@@ -55,6 +55,8 @@ static int	parseRtmpInfo(app_set_t* const set, json_object* rootObj)
 	}
 	tmp = json_object_object_get(jobj, "ipaddr");
 	sprintf(set->rtmp.ipaddr, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "FULL_URL");
+	sprintf(set->rtmp.FULL_URL, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "port");
 	set->rtmp.port = json_object_get_int(tmp);
 
@@ -802,6 +804,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(rtmp_info, "ON_OFF",   json_object_new_int(set->rtmp.ON_OFF));
 	json_object_object_add(rtmp_info, "USE_URL",   json_object_new_int(set->rtmp.USE_URL));
 	json_object_object_add(rtmp_info, "ipaddr",   json_object_new_string(set->rtmp.ipaddr));
+	json_object_object_add(rtmp_info, "FULL_URL",   json_object_new_string(set->rtmp.FULL_URL));
 	json_object_object_add(rtmp_info, "port",     json_object_new_int(set->rtmp.port));	
 //	json_object_object_add(voip_info, "userid",   json_object_new_string(set->rtmp.userid));
 //	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->rtmp.passwd));
