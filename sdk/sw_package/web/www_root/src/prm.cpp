@@ -1,6 +1,7 @@
 /*
  * @file  prm.cpp
  * @brief process actions...search, update, delete ...
+ * @etc js_settings.c에 있는 json 파일과 field name들이 다르다. 이 파일의 json들은 curl등을 위한  Web API용이니 헷갈리지 말자!
  */
 
 /*******************************************************************************
@@ -126,7 +127,7 @@ int put_json_all_config()
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4];
-	json_object *servers_obj, *bs_obj, *fota_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
+	json_object *servers_obj, *bs_obj, *fota_obj, *mediaserver_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
 
@@ -325,6 +326,7 @@ int put_json_all_config()
 	servers_obj = json_object_new_object();
 	bs_obj      = json_object_new_object();
 	fota_obj    = json_object_new_object();
+	mediaserver_obj    = json_object_new_object();
 	ms_obj      = json_object_new_object();
 	ddns_obj    = json_object_new_object();
 	dns_obj     = json_object_new_object();
@@ -354,6 +356,15 @@ int put_json_all_config()
 		json_object_object_add(fota_obj, "id",          json_object_new_string(p.fota.id));
 		json_object_object_add(fota_obj, "pw",          json_object_new_string(p.fota.pw));
 		json_object_object_add(servers_obj, "fota", fota_obj);
+
+		json_object_object_add(mediaserver_obj, "enable",            json_object_new_int   (p.mediaserver.enable));
+		json_object_object_add(mediaserver_obj, "use_full_path_url", json_object_new_int   (p.mediaserver.use_full_path_url));
+		json_object_object_add(mediaserver_obj, "full_path_url",     json_object_new_string(p.mediaserver.full_path_url));
+		json_object_object_add(mediaserver_obj, "serveraddr",        json_object_new_string(p.mediaserver.serveraddr));
+		json_object_object_add(mediaserver_obj, "port",              json_object_new_int   (p.mediaserver.port));
+		// json_object_object_add(mediaserver_obj, "id",          json_object_new_string(p.mediaserver.id));
+		// json_object_object_add(mediaserver_obj, "pw",          json_object_new_string(p.mediaserver.pw));
+		json_object_object_add(servers_obj, "fota", mediaserver_obj);
 
 		json_object_object_add(ms_obj, "enable",     json_object_new_int   (p.ms.enable));
 		json_object_object_add(ms_obj, "serveraddr", json_object_new_string(p.ms.serveraddr));
@@ -443,6 +454,7 @@ _FREE_SYSTEM_OBJ:
 _FREE_SERVERS_OBJ:
 	json_object_put(bs_obj);
 	json_object_put(fota_obj);
+	json_object_put(mediaserver_obj);
 	json_object_put(ms_obj);
 	json_object_put(ddns_obj);
 	json_object_put(dns_obj);
@@ -474,7 +486,8 @@ _FREE_CAMERA_OBJ:
 	json_object_put(all_config);
 
 	return ret;
-}
+
+}//put_json_all_config
 
 void put_json_system_info(T_CGI_SYSTEM_INFO *p)
 {
@@ -584,11 +597,12 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bs_obj, *fota_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
+	json_object *myobj, *bs_obj, *fota_obj, *mediaserver_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
 
 	myobj     = json_object_new_object();
 	bs_obj    = json_object_new_object();
 	fota_obj  = json_object_new_object();
+	mediaserver_obj  = json_object_new_object();
 	msobj     = json_object_new_object();
 	ddnsobj   = json_object_new_object();
 	dnsobj    = json_object_new_object();
@@ -615,6 +629,15 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(fota_obj, "id",          json_object_new_string(p->fota.id));
 	json_object_object_add(fota_obj, "pw",          json_object_new_string(p->fota.pw));
 	json_object_object_add(myobj, "fota", fota_obj);
+
+	json_object_object_add(mediaserver_obj, "enable",            json_object_new_int   (p->mediaserver.enable));
+	json_object_object_add(mediaserver_obj, "use_full_path_url", json_object_new_int   (p->mediaserver.use_full_path_url));
+	json_object_object_add(mediaserver_obj, "full_path_url",     json_object_new_string(p->mediaserver.full_path_url));
+	json_object_object_add(mediaserver_obj, "serveraddr",        json_object_new_string(p->mediaserver.serveraddr));
+	json_object_object_add(mediaserver_obj, "port",              json_object_new_int   (p->mediaserver.port));
+	// json_object_object_add(mediaserver_obj, "id",          json_object_new_string(p->fota.id));
+	// json_object_object_add(mediaserver_obj, "pw",          json_object_new_string(p->fota.pw));
+	json_object_object_add(myobj, "mediaserver", mediaserver_obj);
 
 	json_object_object_add(msobj, "enable",     json_object_new_int(   p->ms.enable));
 	json_object_object_add(msobj, "serveraddr", json_object_new_string(p->ms.serveraddr));
@@ -671,6 +694,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	// free
 	json_object_put(bs_obj);
 	json_object_put(fota_obj);
+	json_object_put(mediaserver_obj);
 	json_object_put(msobj);
 	json_object_put(ddnsobj);
 	json_object_put(dnsobj);
@@ -679,7 +703,8 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(p2p_obj);
 	json_object_put(voip_obj);
 	json_object_put(myobj);
-}
+
+}//put_json_servers_config
 
 // deprecate?
 void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
@@ -732,6 +757,7 @@ void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 	json_object_put(myobj);
 }
 
+// multiple Wifi-AP
 void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 {
 	int i;
@@ -991,6 +1017,7 @@ int do_search(char *pContents)
 					return 0;
 				}
 				else if(!strcmp(prm[i].value, "network_config2")){
+					// Multiple Wifi-ap
 					T_CGI_NETWORK_CONFIG2 t;memset(&t,0, sizeof t);
 					sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&t, sizeof t );
 					put_json_network_config2(&t);

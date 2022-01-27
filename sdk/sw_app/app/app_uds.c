@@ -852,6 +852,15 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->fota.id, app_set->fota_info.id);
 	strcpy(t->fota.pw, app_set->fota_info.pwd);
 
+	// media server(rtmp)
+	t->mediaserver.enable            = app_set->rtmp.ON_OFF;
+	t->mediaserver.use_full_path_url = app_set->rtmp.USE_URL;
+	t->mediaserver.port              = app_set->rtmp.port;
+	strcpy(t->mediaserver.full_path_url, app_set->rtmp.FULL_URL);
+	strcpy(t->mediaserver.serveraddr,    app_set->rtmp.ipaddr);
+	// strcpy(t->mediaserver.id, app_set->fota_info.id);
+	// strcpy(t->mediaserver.pw, app_set->fota_info.pwd);
+
 	// manage server
 	t->ms.enable = app_set->srv_info.ON_OFF;
 	t->ms.port   = app_set->srv_info.port;
@@ -957,6 +966,42 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 				strcpy(app_set->fota_info.pwd, t->fota.pw);
 				isChanged++;
 			}
+		}
+	}
+
+	//Media Server(rtmp)
+	if(app_set->rtmp.ON_OFF != t->mediaserver.enable){
+		app_set->rtmp.ON_OFF = t->mediaserver.enable;
+		isChanged++;
+	}
+	if(app_set->rtmp.ON_OFF){
+		if(app_set->rtmp.USE_URL != t->mediaserver.use_full_path_url){ 
+			app_set->rtmp.USE_URL = t->mediaserver.use_full_path_url;
+			isChanged++;
+		}
+		if (app_set->rtmp.USE_URL == 1) // full path url
+		{
+			if (strcmp(app_set->rtmp.FULL_URL, t->mediaserver.full_path_url)) {
+				strcpy(app_set->rtmp.FULL_URL, t->mediaserver.full_path_url);
+				isChanged++;
+			}
+		} else {
+			if (strcmp(app_set->rtmp.ipaddr, t->mediaserver.serveraddr)) {
+				strcpy(app_set->rtmp.ipaddr, t->mediaserver.serveraddr);
+				isChanged++;
+			}
+			if(app_set->rtmp.port != t->mediaserver.port){
+				app_set->rtmp.port = t->mediaserver.port;
+				isChanged++;
+			}
+			// if (strcmp(app_set->rtmp.id, t->mediaserver.id)) {
+			// 	strcpy(app_set->rtmp.id, t->mediaserver.id);
+			// 	isChanged++;
+			// }
+			// if (strcmp(app_set->rtmp.pwd, t->mediaserver.pw)) {
+			// 	strcpy(app_set->rtmp.pwd, t->mediaserver.pw);
+			// 	isChanged++;
+			// }
 		}
 	}
 

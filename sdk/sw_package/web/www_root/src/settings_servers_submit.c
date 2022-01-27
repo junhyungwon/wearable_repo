@@ -31,6 +31,7 @@ static int submit_settings_qcgi()
 		int  bs_enable=-1;
 		int  bs_upload_files=-1;
 		int  fota_enable=-1;
+		int  mediaserver_enable=-1;
 		int  ms_enable=-1;
 		int  ddns_enable=-1;
 		int  ntp_enable=-1;
@@ -70,6 +71,22 @@ static int submit_settings_qcgi()
         if (str != NULL) { t.fota.port = atoi(str); }
         // FOTA --- end
 
+        // Media Server --- start
+        str= req->getstr(req, "mediaserver_enable", false);
+        if (str != NULL) { mediaserver_enable = atoi(str); }
+        //if(mediaserver_enable==1)
+        {
+            str= req->getstr(req, "mediaserver_use_full_path_url", false);
+            if (str != NULL) { t.mediaserver.use_full_path_url = atoi(str); }
+            str= req->getstr(req, "mediaserver_full_path_url", false);
+            if (str != NULL) { sprintf(t.mediaserver.full_path_url, "%s", str); }
+            str= req->getstr(req, "mediaserver_server_addr", false);
+            if (str != NULL) { sprintf(t.mediaserver.serveraddr, "%s", str); }
+            str= req->getstr(req, "mediaserver_port", false);
+            if (str != NULL) { t.mediaserver.port = atoi(str); }
+        }
+        // Media Server --- end
+        
         // Management Server --- start
         str= req->getstr(req, "ms_enable", false);
         if (str != NULL) { ms_enable = atoi(str); }
@@ -169,6 +186,11 @@ static int submit_settings_qcgi()
 			return ERR_INVALID_PARAM;
 		}
 
+        if( mediaserver_enable == -1) {
+			CGI_DBG("Invalid Parameter Media Server Enable variable\n");
+			return ERR_INVALID_PARAM;
+        }
+
 #if defined(FITT360_SECURITY)
 		if(enable_onvif==-1){
 			CGI_DBG("Incorrect enable_onvif\n");
@@ -190,6 +212,7 @@ static int submit_settings_qcgi()
 		t.bs.enable = bs_enable;
         t.bs.upload_files = bs_upload_files;
 		t.fota.enable = fota_enable;
+		t.mediaserver.enable = mediaserver_enable;
 		t.ms.enable = ms_enable;
 		t.ddns.enable = ddns_enable;
 		t.ntp.enable = ntp_enable;

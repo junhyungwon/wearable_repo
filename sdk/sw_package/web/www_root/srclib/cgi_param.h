@@ -33,11 +33,22 @@ typedef struct _tagFotaServer {
 	int  port;
 }T_CGI_FOTA_SERVER;
 
+typedef struct _tagMediaServer {
+	int  enable;
+    int  use_full_path_url;  // 따로 입력할건지, 주소를 통으로 입력할건지
+	char full_path_url[64];
+	char serveraddr[16];
+	int  port;
+	char id[32];
+	char pw[32];
+}T_CGI_MEDIA_SERVER;
+
 typedef struct _tagManageServer {
 	int  enable;
 	char serveraddr[128];				// ref) SERVER_URL_SIZE on app_set.h
 	int  port;
 }T_CGI_MANAGE_SERVER;
+
 typedef struct _tagDdnsInfo {
 	int  enable;
 	char serveraddr[64];
@@ -81,8 +92,9 @@ typedef struct _tagCgiVoipConfig{
 
 typedef struct _tagCgiServersConfig {
 	T_CGI_BACKUP_SERVER bs;    //ftp
-	T_CGI_FOTA_SERVER   fota;  // remote update
-	T_CGI_MANAGE_SERVER ms;
+	T_CGI_FOTA_SERVER   fota;          // remote update
+	T_CGI_MEDIA_SERVER  mediaserver;   // media server(rtmp)
+	T_CGI_MANAGE_SERVER ms;            // manage server
 	T_CGI_DDNS_INFO     ddns;
 	T_CGI_DNS_INFO      dns;
 	T_CGI_NTP_INFO      ntp;
