@@ -542,7 +542,7 @@ int app_cap_start(void)
 
 	cap_enc_late_init();
 
-	if(app_set->rtmp.ON_OFF)
+	if(!app_set->rtmp.ON_OFF)
 		ctrl_enc_multislice() ; 
 
 	aprintf("....done!\n");

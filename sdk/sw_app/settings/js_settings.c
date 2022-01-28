@@ -26,12 +26,6 @@ static int	parseRtmpInfo(app_set_t* const set, json_object* rootObj)
 		return -1;
 	}
 	json_object* tmp ;
-/*
-	tmp = json_object_object_get(jobj, "userid");
-	sprintf(set->voip.userid, "%s", json_object_get_string(tmp));
-	tmp = json_object_object_get(jobj, "passwd");
-	sprintf(set->voip.passwd, "%s", json_object_get_string(tmp));
-*/
     if(json_find_obj(jobj, "ON_OFF") != NULL)
     {
 		tmp = json_object_object_get(jobj, "ON_OFF");
@@ -53,10 +47,20 @@ static int	parseRtmpInfo(app_set_t* const set, json_object* rootObj)
 		printf("RTMP USE_URL 항목 없음\n") ;
 		set->rtmp.USE_URL = -1;
 	}
+
+    if(json_find_obj(jobj, "FULL_URL") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "FULL_URL");
+		sprintf(set->rtmp.FULL_URL, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		printf("RTMP FULL_URL 항목 없음\n") ;
+		sprintf(set->rtmp.FULL_URL, "%s",  RTMP_SERVER_URL);
+	}
+
 	tmp = json_object_object_get(jobj, "ipaddr");
 	sprintf(set->rtmp.ipaddr, "%s", json_object_get_string(tmp));
-	tmp = json_object_object_get(jobj, "FULL_URL");
-	sprintf(set->rtmp.FULL_URL, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "port");
 	set->rtmp.port = json_object_get_int(tmp);
 
