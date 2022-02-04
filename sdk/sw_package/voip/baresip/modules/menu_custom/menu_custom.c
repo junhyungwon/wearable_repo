@@ -113,7 +113,7 @@ static int cmenu_register_user(int network, int enable, short port, int level, c
 	/* set alsa output level */
 	percent = __aic3x_output_level[level];	
 	alsa_mixer_set_volume(SND_VOLUME_P, percent);
-	printf("set voip default sound volume %d,%d(percent)!\n", level, percent);
+//	printf("set voip default sound volume %d,%d(percent)!\n", level, percent);
 
 	memset(ui_buf, 0, sizeof(ui_buf));
 	memset(devname, 0, sizeof(devname));

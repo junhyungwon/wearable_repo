@@ -467,10 +467,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 
     if(EFAIL == release) // RELEASE Version .. --> update file delete
 	{
-		
-
 		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
-
 		Delete_updatefile() ;	
 
 		return -1;
@@ -483,29 +480,29 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 
 	//# micom version check..
 	_check_micom_update();
-		// check md5sum
-		sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
-		FILE *fp = popen(cmd, "r");
-		if(fp){
-			char line[255]={0};
-			fgets(line, 255, fp);
-			printf("%s\n", line);
+	// check md5sum
+	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
+	FILE *fp = popen(cmd, "r");
+	if(fp){
+		char line[255]={0};
+		fgets(line, 255, fp);
+		printf("%s\n", line);
 
-			if(NULL == strstr(line, " OK")){
+		if(NULL == strstr(line, " OK")){
 
-				//TODO: 실패할 경우, 압축해제한 파일들 처리
-				pclose(fp);
-				return -1;
-			}
-
-			pclose(fp);
-			// OK, ready to firmware upgrade
-		}
-		else {
-			eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
 			//TODO: 실패할 경우, 압축해제한 파일들 처리
+			pclose(fp);
 			return -1;
 		}
+
+		pclose(fp);
+		// OK, ready to firmware upgrade
+	}
+	else {
+		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+		//TODO: 실패할 경우, 압축해제한 파일들 처리
+		return -1;
+	}
 
 #if 0
 		thrRunFWUpdate(NULL);
