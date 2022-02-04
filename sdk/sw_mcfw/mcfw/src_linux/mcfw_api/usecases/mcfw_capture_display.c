@@ -1114,6 +1114,35 @@ void mcfw_capture_display_init(int mode)
 }
 #endif /* #if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE) */
 
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
+/*****************************************************************************
+* @brief	mcfw_capture_display_exit function for NEXX 1CH Series.
+* @section	DESC Description
+*****************************************************************************/
+void mcfw_capture_display_exit(void)
+{
+	//#-------------------------------------------
+	//# link deletion
+	//#-------------------------------------------
+	display_link_delete();
+	if(gVsysModuleContext.vsysConfig.enableEncode) {
+		encoder_link_delete();
+	} else {
+		System_linkDelete(SYSTEM_VPSS_LINK_ID_NULL_0);
+	}
+	System_linkDelete(SYSTEM_VPSS_LINK_ID_MERGE_0);
+	System_linkDelete(SYSTEM_VPSS_LINK_ID_DUP_0);
+	System_linkDelete(gVcapModuleContext.nsfId[0]);
+	System_linkDelete(SYSTEM_VPSS_LINK_ID_DUP_1);
+	System_linkDelete(gVcapModuleContext.captureId);
+
+	dprintf("%s done!\n", __func__);
+}
+#else
+/*****************************************************************************
+* @brief	mcfw_capture_display_exit function for NEXX360W/NEXX360B/NEXXB/NEXX360C/NEXX360W_CCTV/NEXX360W_MUX
+* @section	DESC Description
+*****************************************************************************/
 void mcfw_capture_display_exit(void)
 {
 	//#-------------------------------------------
@@ -1136,3 +1165,4 @@ void mcfw_capture_display_exit(void)
 
 	dprintf("%s done!\n", __func__);
 }
+#endif
