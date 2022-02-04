@@ -243,7 +243,6 @@ static void *THR_rec_send_msg(void *prm)
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
 	aprintf("exit\n");
-	
 	return NULL;
 }
 
@@ -309,9 +308,7 @@ static void *THR_stop_sos(void *prm)
 	tObj->active = 0;
 		
 	aprintf("exit\n");
-	
 	return NULL;
-
 }
 
 /*****************************************************************************
@@ -398,7 +395,6 @@ static void *THR_evt_buzzer(void *prm)
 	tObj->active = 0;
 		
 	aprintf("exit\n");
-	
 	return NULL;
 }
 

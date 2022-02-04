@@ -17,6 +17,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <alsa/asoundlib.h>
 
 //# include mcfw_linux
 #include "ti_vsys.h"
@@ -29,7 +30,6 @@
 #include "app_util.h"
 #include "app_dev.h"
 #include "dev_gpio.h"
-#include "dev_snd.h"
 #include "dev_common.h"
 #include "dev_micom.h"
 #include "app_udpsock.h"
@@ -63,6 +63,20 @@ typedef struct {
 	app_thr_obj sndOut;	//# ir thread
 	
 } app_gui_t;
+
+#define SND_PCM_BITS		16 /* bits per sample */
+typedef struct {
+	char path[256];			//# pcm virtual name
+	snd_pcm_t *pcm_t;
+	
+	int channel;
+	int sample_rate;
+	int mode;
+	int num_frames;
+	
+	char *sampv;
+
+} snd_prm_t;
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -297,38 +311,359 @@ static int test_key(app_thr_obj *tObj)
 	return res;
 }
 
-/* Sound In/Out */
+//################################ ALSA Capture / Playback Helper Routine###########################################
+static inline void *advance(void *p, int incr)
+{
+    unsigned char *d = p;
+    return (d + incr);
+}
+
+static int _snd_set_param(const char *name, snd_prm_t *prm, 
+					int mode, int ch, int rate, int ptime)
+{
+	int sampc = 0;
+	int ret = 0;
+	
+	/* For Debugging */
+	memset(prm->path, 0, sizeof(prm->path));
+	strcpy(prm->path, name);
+	
+	/* capture device init */
+	prm->channel = ch;
+	prm->mode = mode; //# capture ? playback
+	prm->sample_rate = rate;
+	/* 1초에 sample에 해당하는 프레임 수신. 
+	 * period size = 1s:8000 = 80ms : ? --> sample rate * ptime / 1000
+	 */
+	prm->num_frames = ptime; //# period
+	sampc = rate * ch * ptime / 1000;
+	prm->sampv = (char *)malloc(sampc * SND_PCM_BITS / 8); //# 1sample 16bit..
+	if (prm->sampv == NULL)
+		ret = -1;
+	
+	return ret;
+}
+
+static void _snd_set_swparam(snd_prm_t *prm, int mode)
+{
+	snd_pcm_sw_params_t *sw_params = NULL;
+	snd_pcm_t *handle = prm->pcm_t;
+	snd_pcm_uframes_t buffer_size, period_size;
+	int err;
+	
+	period_size = prm->num_frames;
+	buffer_size = (period_size * 4); //# alsa 표준
+	
+	/* set software params */
+	snd_pcm_sw_params_alloca(&sw_params);
+    err = snd_pcm_sw_params_current(handle, sw_params);
+    if (err < 0) {
+        dprintf("Failed to get current software parameters\n");
+    }
+	snd_pcm_sw_params_set_avail_min(handle, sw_params, period_size);
+
+	if (mode == 1) {
+		snd_pcm_sw_params_set_start_threshold(handle, sw_params, buffer_size);
+	    snd_pcm_sw_params_set_stop_threshold(handle, sw_params, buffer_size);
+	} else {
+		snd_pcm_sw_params_set_start_threshold(handle, sw_params, 1);
+	    snd_pcm_sw_params_set_stop_threshold(handle, sw_params, buffer_size);	
+	}
+
+    err = snd_pcm_sw_params(handle, sw_params);
+    if (err < 0) {
+        dprintf("Failed to set software parameters\n");
+    }
+}
+
+static int _snd_open(const char *pcm_name, snd_prm_t *prm)
+{
+	unsigned int freq, nchannels;
+	int err;
+	
+	snd_pcm_t *handle = NULL;
+	snd_pcm_hw_params_t *hw_params = NULL;
+
+	snd_pcm_uframes_t buffer_size, period_size;
+	snd_pcm_stream_t mode;
+	
+	period_size = prm->num_frames;
+	buffer_size = (period_size * 4); //# alsa 표준
+	
+	if (prm->mode == 1) {
+		mode = SND_PCM_STREAM_PLAYBACK;
+	} else {
+		mode = SND_PCM_STREAM_CAPTURE;	
+	}
+	
+	err = snd_pcm_open(&handle, pcm_name, mode, 0);
+	if (err < 0) {
+		dprintf("alsa: could not open device '%s' (%s)\n", pcm_name, 
+												snd_strerror(err));
+		goto out;
+	}
+	
+	snd_pcm_hw_params_alloca(&hw_params);
+	err = snd_pcm_hw_params_any(handle, hw_params);
+	if (err < 0) {
+		dprintf("Failed to initialize hardware parameters\n");
+		goto out;
+	}
+
+	/* Set access type.*/
+	err = snd_pcm_hw_params_set_access(handle, hw_params,
+							SND_PCM_ACCESS_RW_INTERLEAVED);
+	if (err < 0) {
+		dprintf("Failed to set access type\n");
+		goto out;
+	}
+
+	/* Set sample format */
+	err = snd_pcm_hw_params_set_format(handle, hw_params, SND_PCM_FORMAT_S16_LE);
+	if (err < 0) {
+		dprintf("cannot set sample format!\n");
+		goto out;
+	}
+
+	/* Set sample rate. If the exact rate is not supported */
+	/* by the hardware, use nearest possible rate.         */
+	freq = prm->sample_rate;
+	err = snd_pcm_hw_params_set_rate_near(handle, hw_params, &freq, 0);
+	if (err < 0) {
+		dprintf("Failed to set frequency %d\n", freq);
+		goto out;
+	}
+	
+	nchannels = prm->channel;
+	err = snd_pcm_hw_params_set_channels(handle, hw_params, nchannels);
+	if (err < 0) {
+		dprintf("Failed to set number of channels %d\n", nchannels);
+		goto out;
+	}
+
+    err = snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0);
+    if (err < 0) {
+        dprintf("Failed to set period size to %ld\n", period_size);
+        goto out;
+    }
+
+    err = snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size);
+    if (err < 0) {
+        dprintf("Failed to set buffer size to %ld\n", buffer_size);
+        goto out;
+    }
+
+	/* Apply HW parameter settings to */
+    /* PCM device and prepare device  */
+    err = snd_pcm_hw_params(handle, hw_params);
+	if (err < 0) {
+		dprintf("Unable to install hw params\n");
+		goto out;
+	}
+
+	/* prepare for audio device */
+	err = snd_pcm_prepare(handle);
+    if (err < 0) {
+        printf("Could not prepare handle %p\n", handle);
+        goto out;
+    }
+
+	prm->pcm_t = handle;
+	err = 0;
+	
+out:
+	if (err) {
+		dprintf("alsa: init failed: err=%d\n", err);
+	}
+	
+	return err;
+}
+
+static void _snd_param_free(snd_prm_t *prm)
+{
+	memset(prm->path, 0, sizeof(prm->path));
+	if (prm->sampv != NULL) {
+		free(prm->sampv);
+		prm->sampv = NULL;
+	}
+}
+
+static void _snd_start(snd_prm_t *prm)
+{
+	snd_pcm_t *handle = prm->pcm_t;
+	int err;
+	
+	/* Start */
+	err = snd_pcm_start(handle);
+	if (err) {
+		dprintf("alsa: could not start ausrc device %s, (%s)\n", 
+				prm->path, snd_strerror(err));
+	}
+}
+
+static void _snd_stop(snd_prm_t *prm, int mode)
+{
+	snd_pcm_t *handle = prm->pcm_t;
+	
+	if (handle != NULL) {
+		if (mode == 1) {
+			snd_pcm_nonblock(handle, 0);
+			/* Stop PCM device after pending frames have been played */
+			snd_pcm_drain(handle);
+			//snd_pcm_nonblock(handle, 1);
+		}  else {
+			//alsa_mixer_cset(SND_PGA_CAPTURE_SWITCH, 0);
+		}
+		snd_pcm_hw_free(handle);
+		snd_pcm_close(handle);
+	}
+}
+
+static ssize_t _snd_read(snd_prm_t *prm)
+{
+	snd_pcm_t *handle = prm->pcm_t;
+	char *rbuf = (char *)prm->sampv;
+
+	ssize_t result = 0;
+	size_t count = (size_t)prm->num_frames;
+	int hwshift;
+
+	hwshift = prm->channel * (SND_PCM_BITS / 8);
+
+	while (count > 0)
+	{
+		snd_pcm_sframes_t r;
+
+		r = snd_pcm_readi(handle, rbuf, count);
+		if (r <= 0)
+		{
+			switch (r) {
+			case 0:
+				dprintf(" Failed to read frames(zero)\n");
+				continue;
+
+			case -EAGAIN:
+				dprintf(" pcm wait (count = %d)!!\n", count);
+				snd_pcm_wait(handle, 100);
+				break;
+
+			case -EPIPE:
+				dprintf(" pcm overrun(count = %d)!!\n", count);
+				snd_pcm_prepare(handle);
+				break;
+
+			default:
+				dprintf(" read error!!\n");
+				return -1;
+			}
+		}
+
+		/* read size is frame size. For byte conversion..*/
+		/* Frame = 1sample * Total Channel, 1 sample = 16bit (2Byte) */
+		if (r > 0) {
+			rbuf = advance(rbuf, (r * hwshift));
+			result += (r * hwshift);
+			count -= r;
+		}
+	}
+
+	return result;
+}
+
+static ssize_t _snd_write(snd_prm_t *prm, size_t w_samples)
+{
+	snd_pcm_t *handle = prm->pcm_t;
+	char *rbuf = (char *)prm->sampv;
+	
+	ssize_t result = 0;
+	size_t count = (size_t)w_samples;
+	size_t period = (size_t)prm->num_frames;
+	int hwshift;
+
+	hwshift = prm->channel * (SND_PCM_BITS / 8); //# 16bit * channel / 8bit
+
+	if (count < period) {
+    	snd_pcm_format_set_silence(SND_PCM_FORMAT_S16_LE, rbuf + (count * hwshift),
+						(period - count) * prm->channel);
+        count = period;
+	}
+
+	while (count > 0)
+	{
+		snd_pcm_sframes_t r;
+		int ret;
+
+		r = snd_pcm_writei(handle, rbuf, count);
+		if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
+			//dprintf("pcm write wait(100ms)!!\n");
+			snd_pcm_wait(handle, 100);
+		} else if (r == -EPIPE) {
+			//dprintf("pcm write underrun!!\n");
+			ret = snd_pcm_prepare(handle);
+			if (ret < 0) {
+				dprintf("Failed to prepare handle %p\n", handle);
+			}
+			continue;
+		} else if (r == -ESTRPIPE) {
+			ret = snd_pcm_resume(handle);
+			if (ret < 0) {
+				dprintf("Failed. Restarting stream.\n");
+			}
+			continue;
+		} else if (r < 0) {
+			dprintf("write error\n");
+			return -1;
+		}
+
+		if (r > 0) {
+			rbuf = advance(rbuf, r * hwshift);
+			result += (r * hwshift);
+			count -= r;
+		}
+	}
+
+	return result;
+}
+
+//##################################################################################################################
+/*----------------------------- Sound In/Out ------------------------------------------------------------------- */
 static void thr_snd_in_cleanup(void *prm)
 {
-	dev_snd_stop(&snd_in_data, SND_PCM_CAP);
-	dev_snd_param_free(&snd_in_data);
+	_snd_stop(&snd_in_data, 0);
+	_snd_param_free(&snd_in_data);
 }
 
 static void *thr_snd_in(void *prm)
 {
 	int buf_sz;
 	int exit = 0, r;
-
-	dev_snd_set_input_path(SND_MIC_IN);
+	FILE *f;
+	
+	/* set capture volume */
+	//# "/usr/bin/amixer cset numid=31 60% > /dev/null"
+	f = popen("/usr/bin/amixer cset numid=31 60% > /dev/null", "r");
+	if (f != NULL) {
+		pclose(f);
+	}
+	
 	/* get alsa period size (in sec) */
 	buf_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
-	r = dev_snd_set_param("aic3x", &snd_in_data, SND_PCM_CAP, 
+	r = _snd_set_param("aic3x", &snd_in_data, 0, 
 				APP_SND_CH, APP_SND_SRATE, buf_sz);
 
-	r |= dev_snd_open("plughw:0,0", &snd_in_data);
+	r |= _snd_open("plughw:0,0", &snd_in_data);
 	if (r) {
 		eprintf("Failed to init sound device!\n");
 	}
 	
-	dev_snd_start(&snd_in_data);
-	dev_snd_set_volume(SND_VOLUME_C, 60);	//# set default volume 60%
+	_snd_start(&snd_in_data);
 	pthread_cleanup_push(thr_snd_in_cleanup, (void *)&snd_in_data);
 
 	while (!exit)
 	{
 		int bytes = 0;
 		
-		bytes = dev_snd_read(&snd_in_data);
+		bytes = _snd_read(&snd_in_data);
 		if (bytes > 0) {
 			write(snd_pipe[1], snd_in_data.sampv, bytes);
 		}
@@ -342,42 +677,47 @@ static void *thr_snd_in(void *prm)
 static void thr_snd_out_cleanup(void *prm)
 {
 	OSA_waitMsecs(100);
-	dev_snd_stop(&snd_out_data, SND_PCM_PLAY);
-	dev_snd_param_free(&snd_out_data);
+	_snd_stop(&snd_out_data, 1);
+	_snd_param_free(&snd_out_data);
 }
 
 void *thr_snd_out(void *prm)
 {
 	int buf_sz, so_size;
 	int exit = 0, r;
-
-	dev_snd_set_volume(SND_VOLUME_P, 70);
-
+	FILE *f;
+	
+	/* set playback volume */
+	//# "/usr/bin/amixer cset numid=1 70% > /dev/null"
+	f = popen("/usr/bin/amixer cset numid=1 70% > /dev/null", "r");
+	if (f != NULL) {
+		pclose(f);
+	}
+	
 	/* get alsa period size (in sec) */
 	buf_sz  = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
 	so_size = (buf_sz * APP_SND_CH * (SND_PCM_BITS / 8)); 
-	r = dev_snd_set_param("aic3x", &snd_out_data, SND_PCM_PLAY, 
+	r = _snd_set_param("aic3x", &snd_out_data, 1, 
 				APP_SND_CH, APP_SND_SRATE, buf_sz);
 
-	r |= dev_snd_open("plughw:0,0", &snd_out_data);
+	r |= _snd_open("plughw:0,0", &snd_out_data);
 	if (r) {
 		eprintf("Failed to init sound device!\n");
 		return NULL;
 	}
 
-	dev_snd_set_swparam(&snd_out_data, SND_PCM_PLAY);
+	_snd_set_swparam(&snd_out_data, 1);
 	pthread_cleanup_push(thr_snd_out_cleanup, (void *)&snd_out_data);
 
 	while (!exit)
 	{
 		r = read(snd_pipe[0], snd_out_data.sampv, so_size);
 		if (r > 0) {
-			dev_snd_write(&snd_out_data, r/2);
+			_snd_write(&snd_out_data, r/2);
 		}
 	}
 
 	pthread_cleanup_pop(0);
-
 	return NULL;
 }
 
@@ -388,7 +728,6 @@ int test_snd(app_thr_obj *tObj)
 	aprintf("sount test start...\n");
 	
 	pipe(snd_pipe);
-
 	/* create sound in/out thread */
 	thread_create(&igui->sndIn, thr_snd_in, APP_THREAD_PRI, NULL, NULL);
 	thread_create(&igui->sndOut, thr_snd_out, APP_THREAD_PRI, NULL, NULL);
@@ -399,11 +738,9 @@ int test_snd(app_thr_obj *tObj)
 	
 	thread_delete(&igui->sndOut);
 	thread_delete(&igui->sndIn);
-
 	return res;
 }
-
-//############################################################################
+//########################################################################################################
 
 /*****************************************************************************
 * @brief    test menu function
