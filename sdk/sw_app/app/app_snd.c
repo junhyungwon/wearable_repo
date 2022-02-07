@@ -47,6 +47,7 @@ typedef struct {
 	
 	snd_pcm_t *aic3x;    //# read sound card.
 	snd_pcm_t *dummy;    //# dummy sound card (virtual)
+	snd_pcm_t *bcsnd;    //# backchannel sound card.
 	
 	g_mem_info_t *imem;
 } app_snd_t;
@@ -65,7 +66,7 @@ static app_snd_t *isnd=&snd_obj;
 * @brief    ALSA Initialize
 *****************************************************************************/
 static snd_pcm_t * __snd_init(const char *pcm_name, int ch, int rate, 
-						int period_ms, int playback)
+						int period_frames, int playback)
 {
 	snd_pcm_t *handle = NULL;
 	snd_pcm_hw_params_t *hw_params = NULL;
@@ -98,7 +99,7 @@ static snd_pcm_t * __snd_init(const char *pcm_name, int ch, int rate,
 	nchannels = (unsigned int)ch;
 	snd_pcm_hw_params_set_channels(handle, hw_params, nchannels);
 	
-	period_size = period_ms;
+	period_size = period_frames;
 	buffer_size = (period_size * 4); //# alsa 표준
     if (snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0) < 0) {
         dprintf("%s: Failed to set period size to %ld\n", pcm_name, period_size);
@@ -154,7 +155,7 @@ static void *THR_snd_cap(void *prm)
 	stream_info_t *ifr;
 	
 	int exit=0, idx;
-	size_t btime_ms = 0;
+	size_t pframes = 0; /* alsa read size(frames) */
 	
 	char *addr=NULL;
 	char *csampv=NULL; /* capture sound buffer */
@@ -164,14 +165,15 @@ static void *THR_snd_cap(void *prm)
 	aprintf("enter...\n");
 	
 	/* 
-	 * set alsa buffer time in ms (프레임 단위로 설정함)
-	 * 1s:8000sample(8KHz sampling rate) = PTIME:x
-	 * x(ms) = samplerate * ptime / 1000 (ms)
+	 * set alsa period size (프레임 단위로 설정함)
+	 * 1초:sample rate = PTIME(ms):x
+	 * 1000(ms):8000(8KHz sampling rate) = 80(ms):x
+	 * x(frame) = samplerate * 80 / 1000
 	 */
-	btime_ms = APP_SND_SRATE * APP_SND_PTIME / 1000;
+	pframes = APP_SND_SRATE * APP_SND_PTIME / 1000;
 	/* Initialize ALSA MIC */
 	isnd->aic3x = __snd_init(SND_AIC3X, APP_SND_CH, 
-						APP_SND_SRATE, btime_ms, APP_SND_CAPT_DEV);
+						APP_SND_SRATE, pframes, APP_SND_CAPT_DEV);
 	if (isnd->aic3x == NULL) {
 		eprintf("Failed to init %s device!\n", SND_AIC3X);
 		return NULL;
@@ -179,10 +181,9 @@ static void *THR_snd_cap(void *prm)
 	
 	/* 
 	 * alloc buffer (byte 단위로 변경해야 한다)
-	 * 1 sample = pcm bits / 8 = 16 / 8 = 2
-	 * 1 frame = 1 sample * channel = 2 * 1 = 2 (만일 2ch일 경우== 4)
+	 * 1 frame = 1 sample(16bit/8) * channel = 2 * 1 = 2 (만일 2ch일 경우== 4)
 	 */
-	csampv = (char *)malloc(btime_ms * FRAME_PER_BYTES);
+	csampv = (char *)malloc(pframes * FRAME_PER_BYTES);
 	if (csampv == NULL) {
 		__snd_exit(isnd->aic3x);
 		return NULL;
@@ -193,7 +194,7 @@ static void *THR_snd_cap(void *prm)
 	 */
 	if (app_set->voip.ON_OFF) {
 		isnd->dummy = __snd_init(SND_DUMMY, APP_SND_CH, APP_SND_SRATE, 
-								btime_ms, APP_SND_PLAY_DEV);
+								pframes, APP_SND_PLAY_DEV);
 		if (isnd->dummy == NULL) {
 			eprintf("Failed to init %s device!\n", SND_DUMMY);
 			__snd_exit(isnd->aic3x);
@@ -201,12 +202,7 @@ static void *THR_snd_cap(void *prm)
 			return NULL;
 		}
 		
-		/* 
-		 * alloc buffer (byte 단위로 변경해야 한다)
-		 * 1 sample = pcm bits / 8 = 16 / 8 = 2
-		 * 1 frame = 1 sample * channel = 2 * 1 = 2 (만일 2ch일 경우== 4)
-		 */
-		psampv = (char *)malloc(btime_ms * FRAME_PER_BYTES);
+		psampv = (char *)malloc(pframes * FRAME_PER_BYTES);
 		if (psampv == NULL) {
 			__snd_exit(isnd->aic3x);
 			__snd_exit(isnd->dummy);
@@ -217,16 +213,12 @@ static void *THR_snd_cap(void *prm)
 
     if (app_set->voip.ON_OFF) {
 		snd_pcm_sw_params_t *sw_params = NULL;
-		snd_pcm_uframes_t buffer_size=0;
 		
-		/* set software params */
 		snd_pcm_sw_params_alloca(&sw_params);
 		snd_pcm_sw_params_current(isnd->dummy, sw_params);
-		snd_pcm_sw_params_set_avail_min(isnd->dummy, sw_params, btime_ms);
-		/* ALSA 표준 버퍼 --> x4 */
-		buffer_size = btime_ms*4;
-		snd_pcm_sw_params_set_start_threshold(isnd->dummy, sw_params, buffer_size);
-	    snd_pcm_sw_params_set_stop_threshold(isnd->dummy, sw_params, buffer_size);
+		snd_pcm_sw_params_set_avail_min(isnd->dummy, sw_params, pframes);
+		snd_pcm_sw_params_set_start_threshold(isnd->dummy, sw_params, pframes*4);
+	    snd_pcm_sw_params_set_stop_threshold(isnd->dummy, sw_params, pframes*4);
 		snd_pcm_sw_params(isnd->dummy, sw_params);
 	}
 	
@@ -240,7 +232,7 @@ static void *THR_snd_cap(void *prm)
 		if (tObj->cmd == APP_CMD_EXIT)
 			break;
 		
-		period = btime_ms;
+		period = pframes;
 		r = snd_pcm_readi(isnd->aic3x, csampv, period);
 		if (r > 0) {
 			ssize_t bytes=0;
@@ -260,12 +252,13 @@ static void *THR_snd_cap(void *prm)
 				w = snd_pcm_writei(isnd->dummy, psampv, r);
 				if (w < 0) {
 					if (w == -EAGAIN) {
-						//dprintf("pcm write wait(required 100ms)!!\n");
+						//dprintf("dummy pcm write wait(required 100ms)!!\n");
 						snd_pcm_wait(isnd->dummy, 100);
 					} else if (w == -EPIPE) {
-						//dprintf("pcm write underrun!!\n");
+						//dprintf("dummy pcm write underrun!!\n");
 						snd_pcm_prepare(isnd->dummy);
 					} else if (w == -ESTRPIPE) {
+						//dprintf("dummy pcm write resume!!\n");
 						snd_pcm_resume(isnd->dummy);
 					} else {
 						/* debugging : 이 경우가 발생하면 안됨 */
@@ -273,7 +266,8 @@ static void *THR_snd_cap(void *prm)
 					}
 				} else if ((w >= 0) && ((size_t)w < r)) {
 					/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
-					//snd_pcm_wait(isnd->dummy, 100);
+					//dprintf("dummy pcm not enough sound data!!\n");
+					snd_pcm_wait(isnd->dummy, 100);
 				}
 			} /* if (app_set->voip.ON_OFF) */	
 		
@@ -325,8 +319,9 @@ static void *THR_snd_cap(void *prm)
 	}
 	/* stop mic pcm */
 	__snd_exit(isnd->aic3x);
-	if (csampv != NULL)
+	if (csampv != NULL){
 		free(csampv);
+	}
 	if (app_set->voip.ON_OFF) {
 		if (psampv != NULL)
 			free(psampv);
@@ -421,42 +416,37 @@ static void *THR_bc_play(void *prm)
 	int cmd, exit=0;
 	int bytes = 0;
 	short lbuf[2048];
-	size_t btime_ms = 0;
+	size_t pframes = 0;
 	
 	char *sampv=NULL; /* playback sound buffer */
 	/* 
-	 * set alsa buffer time in ms (프레임 단위로 설정함)
-	 * 1s:8000sample(8KHz sampling rate) = PTIME:x
-	 * x(ms) = samplerate * ptime / 1000 (ms)
+	 * set alsa period size (프레임 단위로 설정함)
+	 * 1초:sample rate = PTIME(ms):x
+	 * 1000(ms):8000(8KHz sampling rate) = 80(ms):x
+	 * x(frame) = samplerate * 80 / 1000
 	 */
-	btime_ms = APP_SND_BC_SRATE * APP_SND_BC_PTIME / 1000;
+	pframes = APP_SND_BC_SRATE * APP_SND_BC_PTIME / 1000;
 	/* Initialize ALSA Speaker */
-	isnd->aic3x = __snd_init(SND_AIC3X, APP_SND_BC_CH, APP_SND_BC_SRATE, 
-						btime_ms, APP_SND_PLAY_DEV);
-	if (isnd->aic3x == NULL) {
+	isnd->bcsnd = __snd_init(SND_AIC3X, APP_SND_BC_CH, APP_SND_BC_SRATE, 
+						pframes, APP_SND_PLAY_DEV);
+	if (isnd->bcsnd == NULL) {
 		eprintf("Failed to init %s device!\n", SND_AIC3X);
 		return NULL;
 	}
 	
-	/* 
-	 * alloc buffer (byte 단위로 변경해야 한다)
-	 * 1 sample = pcm bits / 8 = 16 / 8 = 2
-	 * 1 frame = 1 sample * channel = 2 * 1 = 2 (만일 2ch일 경우== 4)
-	 */
-	sampv = (char *)malloc(btime_ms * FRAME_PER_BYTES);
+	sampv = (char *)malloc(pframes * FRAME_PER_BYTES);
 	if (sampv == NULL) {
-		__snd_exit(isnd->aic3x);
+		__snd_exit(isnd->bcsnd);
 		return NULL;
 	}
 	
 	/* set ALSA software params */
 	snd_pcm_sw_params_alloca(&sw_params);
-	snd_pcm_sw_params_current(isnd->aic3x, sw_params);
-	snd_pcm_sw_params_set_avail_min(isnd->aic3x, sw_params, btime_ms);
-	/* ALSA 표준 버퍼 --> x4 */
-	snd_pcm_sw_params_set_start_threshold(isnd->aic3x, sw_params, btime_ms*4);
-	snd_pcm_sw_params_set_stop_threshold(isnd->aic3x, sw_params, btime_ms*4);
-	snd_pcm_sw_params(isnd->aic3x, sw_params);
+	snd_pcm_sw_params_current(isnd->bcsnd, sw_params);
+	snd_pcm_sw_params_set_avail_min(isnd->bcsnd, sw_params, pframes);
+	snd_pcm_sw_params_set_start_threshold(isnd->bcsnd, sw_params, pframes*4);
+	snd_pcm_sw_params_set_stop_threshold(isnd->bcsnd, sw_params, pframes*4);
+	snd_pcm_sw_params(isnd->bcsnd, sw_params);
 	
 	//# message queue
 	ibcplay->qid = Msg_Init(BCPLAY_MSG_KEY);
@@ -485,7 +475,7 @@ static void *THR_bc_play(void *prm)
 				bytes = ibcplay->len;
 				//dprintf("received audio data, len=%d\n", bytes);
 
-				if (bytes == 0)
+				if (bytes == 0) 
 				{
 					eprintf("bc sound size error!!\n");
 					continue;
@@ -508,22 +498,23 @@ static void *THR_bc_play(void *prm)
 				//			(btime_ms - r) * APP_SND_CH);
 				//	bytes = btime_ms;
 				//}
-				w = snd_pcm_writei(isnd->aic3x, sampv, bytes);
+				w = snd_pcm_writei(isnd->bcsnd, sampv, bytes);
 				if (w < 0) {
 					if (w == -EAGAIN) {
-						//dprintf("pcm write wait(required 100ms)!!\n");
-						snd_pcm_wait(isnd->aic3x, 100);
+						//dprintf("bcsnd pcm write wait(required 100ms)!!\n");
+						snd_pcm_wait(isnd->bcsnd, 100);
 					} else if (w == -EPIPE) {
-						//dprintf("pcm write underrun!!\n");
-						snd_pcm_prepare(isnd->aic3x);
+						//dprintf("bcsnd pcm write underrun!!\n");
+						snd_pcm_prepare(isnd->bcsnd);
 					} else if (w == -ESTRPIPE) {
-						snd_pcm_resume(isnd->aic3x);
+						//dprintf("bcsnd pcm write resume!!\n");
+						snd_pcm_resume(isnd->bcsnd);
 					} else if (w < 0) {
 						eprintf("backchannel sound device write error!!\n");
 					}
 				} else if ((w >= 0) && ((size_t)w < bytes)) {
 					/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
-					//snd_pcm_wait(isnd->aic3x, 100);
+					//snd_pcm_wait(isnd->bcsnd, 100);
 				}
 			}
 			break;
@@ -531,10 +522,10 @@ static void *THR_bc_play(void *prm)
 	} /* while(!exit) */
 	
 	/* Stop PCM device after pending frames have been played */
-	snd_pcm_nonblock(isnd->aic3x, 0);
-	snd_pcm_drain(isnd->aic3x);
-	//snd_pcm_nonblock(isnd->aic3x, 1);
-	__snd_exit(isnd->aic3x);
+	snd_pcm_nonblock(isnd->bcsnd, 0);
+	snd_pcm_drain(isnd->bcsnd);
+	//snd_pcm_nonblock(isnd->bcsnd, 1);
+	__snd_exit(isnd->bcsnd);
 	/* buffer free */
 	if (sampv != NULL)
 		free(sampv);
@@ -549,8 +540,7 @@ static void *THR_bc_play(void *prm)
 *****************************************************************************/
 int app_snd_start(void)
 {
-	g_mem_info_t *imem;
-	FILE *f;
+	g_mem_info_t *imem=NULL;
 	
 	memset(isnd, 0, sizeof(app_snd_t));
 	/* set capture volume */
