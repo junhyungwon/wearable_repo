@@ -240,8 +240,7 @@ static void *THR_dev(void *prm)
 	return NULL;
 }
 
-#elif defined(NEXX360W) || defined(NEXX360W_MUX) || defined(NEXX360B) || \
-	defined(NEXX360H) || defined(NEXX360C) || defined(NEXX360W_CCTV)
+#elif defined(NEXX360W) || defined(NEXX360W_MUX) || defined(NEXX360B) || defined(NEXX360H) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 /*****************************************************************************
 * @brief    REC KEY & SD Card Insert/remove Detection thread function 
 *          (NEXX360W/NEX360W_MUX/NEXX360B/NEXX360H/NEXX360C/NEXX360W_CCTV)
@@ -275,15 +274,13 @@ static void *THR_dev(void *prm)
 		
 		/* record key --> call function */
 		rkey = chk_input_key(REC_KEY);
-		if (app_set->voip.ON_OFF) {
-			if (rkey == KEY_SHORT) {		
-//				app_voip_event_noty();
-			} else if (rkey == KEY_LONG) {	
-				if (app_rec_state()) {
-					app_rec_stop(ON);
-				} else {
-					app_rec_start();
-				}
+		if (rkey == KEY_SHORT) {		
+//			app_voip_event_noty();
+		} else if (rkey == KEY_LONG) {	
+			if (app_rec_state()) {
+				app_rec_stop(ON);
+			} else {
+				app_rec_start();
 			}
 		}
 
