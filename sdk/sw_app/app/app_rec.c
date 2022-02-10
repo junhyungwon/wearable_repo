@@ -281,10 +281,9 @@ static void *THR_stop_sos(void *prm)
 				{
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
-#if defined(NEXXB) || defined(NEXXB_ONE)
 						if(option) // SOS
 							stop_sos_send() ;
-#endif
+
 					    evt_sndcnt += 1 ;
 					}
 					else
@@ -357,14 +356,11 @@ static void *THR_evt_buzzer(void *prm)
 				{
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
-#if defined(NEXXB) || defined(NEXXB_ONE)
 						if(option) // SOS
 							sosdata_send() ;
 						else
 						    eventdata_send() ;					    
-#else
-						eventdata_send() ;
-#endif
+
 					    evt_sndcnt += 1 ;
 					}
 				}
