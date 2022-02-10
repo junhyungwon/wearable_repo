@@ -207,7 +207,6 @@ static void *THR_rec_send_msg(void *prm)
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_REC_EVT) {
-#if defined(NEXXB) || defined(NEXXB_ONE)
 			if(option)
 			{
 				irec->rec_state  = 2;// SOS
@@ -218,10 +217,7 @@ static void *THR_rec_send_msg(void *prm)
                 irec->rec_state  = 1; // Event 
 			    send_msg(AV_CMD_REC_EVT);
 			}
-#else
-            irec->rec_state  = 1;  
-			send_msg(AV_CMD_REC_EVT);
-#endif
+
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_CMD_STOP) {

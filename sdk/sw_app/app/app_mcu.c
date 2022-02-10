@@ -50,9 +50,9 @@
 /* 
  * NEXXB and NEXX Common Voltage 
  */
-/* ¾îÅÇÅÍ »ç¿ë ½Ã -> 16V ÀÌ»ó
- * ³»Àå ¹èÅÍ¸® »ç¿ë ½Ã -> ³»Àå ¹èÅÍ¸® Àü¾ÐÀÌ ÃøÁ¤µÊ.
- * ¿ÜÀå ¹èÅÍ¸® »ç¿ë -> ¿ÜÀå ¹èÅÍ¸® Àü¾Ð ÃøÁ¤µÊ.
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ -> 16V ï¿½Ì»ï¿½
+ * ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+ * ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ -> ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
  */
 #define MBATT_MIN					600
 #define IBATT_MIN		    		620 //590 //#  5.90 V->6.4V, minimum battery voltage
@@ -95,7 +95,7 @@ static void delay_3sec_exit(void)
 		gettimeofday(&t2, NULL);
 		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
 		if (tgap <= 0) {
-			/* timesync ¿¡ ÀÇÇØ¼­ gettimeofday °ªÀÌ º¯°æµÇ¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁø´Ù */
+			/* timesync ï¿½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ gettimeofday ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 			gettimeofday(&t1, NULL);
 		}
 		OSA_waitMsecs(5);
@@ -133,7 +133,7 @@ void app_mcu_pwr_off(int type)
 static int c_volt_chk = 0;
 /*
  * Case NEXX_C
- * ³»Àå ¹èÅÍ¸®´Â ½´ÆÛÄ¸ ¿ëµµ·Î »ç¿ëµÊ. ¿ÜÀå Àü¾Ð¸¸ È®ÀÎÇÏ¿© 9V ÀÌÇÏ·Î ³·¾ÆÁö´Â °æ¿ì Á¾·áÇØ¾ß ÇÔ.
+ * ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä¸ ï¿½ëµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ð¸ï¿½ È®ï¿½ï¿½ï¿½Ï¿ï¿½ 9V ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½ï¿½.
  */
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
@@ -142,9 +142,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 	//# low power check
-	//# ebatt¸¦ Ã¼Å©ÇÒ °æ¿ì Å©·¡µé »ç¿ëÀÌ ºÒ°¡´É ÇØ Áø´Ù. µû¶ó¼­ mbatt¸¦ Ã¼Å©ÇÏ¸ç Å©·¡µé »ç¿ë ½Ã 
-	//# mbatt´Â 16VÀÌ»ó, ¿ÜÀå ¹èÅÍ¸® »ç¿ë ½Ã 10VÀÌ»ó ÃøÁ¤µÇ¸ç, ³»Àå ¹èÅÍ¸® »ç¿ë ½Ã 8.4°¡ ÃøÁ¤µÇ¹Ç·Î
-	//# ³»Àå ¹èÅÍ¸®¸¦ »ç¿ëÇÏ´Â °æ¿ì¿¡´Â ½Ã½ºÅÛ Off.
+	//# ebattï¿½ï¿½ Ã¼Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò°ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ mbattï¿½ï¿½ Ã¼Å©ï¿½Ï¸ï¿½ Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ 
+	//# mbattï¿½ï¿½ 16Vï¿½Ì»ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ 10Vï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ 8.4ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹Ç·ï¿½
+	//# ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ Off.
 	if (mbatt < LOW_POWER_THRES) {
 		if (c_volt_chk) {
 			c_volt_chk--;
@@ -246,8 +246,8 @@ static int power_on_lv = 1;
  *
  * Others
  * LF External Batt full charge level is 11.7V
- * mbatt´Â Àü¿ø¿¡ µû¶ó¼­ ´Ù¸£°Ô ÃøÁ¤µÊ. ¾îÅÇÅÍ´Â 16V, ¿ÜÀåÀº 9V ¶Ç´Â 11V ³»ÀåÀº 8V
- * ³»Àå max (8.43V), ¿ÜÀå ¹èÅÍ¸® ÃÖ¼Ò 8.75V ÀÌ»ó. 
+ * mbattï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½Í´ï¿½ 16V, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 9V ï¿½Ç´ï¿½ 11V ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 8V
+ * ï¿½ï¿½ï¿½ï¿½ max (8.43V), ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ö¼ï¿½ 8.75V ï¿½Ì»ï¿½. 
  */
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
@@ -256,9 +256,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	
 #ifdef EXT_BATT_ONLY
 	/* 
-	 * ¿ÜÀå º¸Á¶¹èÅÍ¸®¸¦ »ç¿ëÇÏ´Â °æ¿ì Ç×»ó Àü¾ÐÀÌ °íÁ¤µÅ¼­ Ãâ·ÂµÇ¹Ç·Î
-	 * ¹èÅÍ¸® ´Ü°è¸¦ ÃøÁ¤ÇÒ ¼ö ¾ø´Ù. ¶ÇÇÑ Low Battery·Î ÃøÁ¤ÀÌ ºÒ°¡´É ÇÔ.
-	 * ±×³É ²¨Áü.
+	 * ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½×»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å¼ï¿½ ï¿½ï¿½ÂµÇ¹Ç·ï¿½
+	 * ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½Ü°è¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ Low Batteryï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò°ï¿½ï¿½ï¿½ ï¿½ï¿½.
+	 * ï¿½×³ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	 */
 	return 0;
 #endif
@@ -388,33 +388,26 @@ static void *THR_micom(void *prm)
 				} 
 				else 
 				{
-					#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
-					if(app_set->voip.ON_OFF)
+					if (!app_cfg->ste.b.ftp_run) 
 					{
-						if (!app_cfg->ste.b.ftp_run) 
-						{    
-							#if defined(NEXXB) || defined(NEXXB_ONE)	
-				 			value = app_rec_state() ;
-			            	if(value < 2) // REC Off or Event Rec or Normal Rec
-							{
-						    	app_rec_evt(OFF) ;
-								sysprint("[APP_MICOM] - Event Record Start ---\n");
-							}
-							#else
-							if (app_rec_state()) {
-								app_rec_stop(ON);
-							} else {
-							app_rec_start();
-							}
-							#endif /* #if defined(NEXXB) || defined(NEXXB_ONE) */
+						value = app_rec_state() ;
+					/*
+					 * return 1-> NORMAL, 2-> SOS
+					 */
+						if (value == 2) { 
+						// value 1, SOS Rec  , Value 1 Normal/Event REc
+							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+							app_sos_send_stop(ON) ;
+							sysprint("[APP_SOS] End SOS Event !! \n");	
+						} 
+						else {
+							//  Rec off or normal/event rec -> SOS ON
+							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+							app_rec_evt(ON) ;  // SOS REC
+							sysprint("[APP_SOS] Occurs SOS Event !! \n");
 						}
 					}
-					#elif defined(NEXX360B) || defined(NEXX360W) || defined(NEXX360H)
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-			    			change_video_fxn();
-					}
-					#endif
+					dprintf("SOS Short Key Pressed!\n");
 				}
 				break;
 			}

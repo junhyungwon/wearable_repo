@@ -225,8 +225,11 @@ static void *THR_dev(void *prm)
 			if(app_set->voip.ON_OFF)
 				app_voip_event_noty();
 		} else if (rkey == KEY_LONG) {	
-			if(app_set->voip.ON_OFF)
-				app_rec_evt(OFF) ;  // event
+			if (app_rec_state()) {
+				app_rec_stop(ON);
+			} else {
+				app_rec_start();
+			}
 		}
 		app_msleep(TIME_DEV_CYCLE);
 	}
@@ -272,27 +275,18 @@ static void *THR_dev(void *prm)
 		
 		/* record key --> call function */
 		rkey = chk_input_key(REC_KEY);
-		#if SYS_CONFIG_VOIP
 		if (app_set->voip.ON_OFF) {
 			if (rkey == KEY_SHORT) {		
-				app_voip_event_noty();
+//				app_voip_event_noty();
 			} else if (rkey == KEY_LONG) {	
-				app_rec_evt(OFF) ;
-			}
-		}
-		#else
-		if (!app_cfg->ste.b.ftp_run) {
-			if (rkey == KEY_SHORT) {
 				if (app_rec_state()) {
 					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}
-			} else if (rkey == KEY_LONG) {
-				app_rec_evt(OFF) ;
 			}
 		}
-		#endif /* #if SYS_CONFIG_VOIP */
+
 		app_msleep(TIME_DEV_CYCLE);
 	}
 
@@ -344,7 +338,7 @@ static void *THR_dev(void *prm)
 			//# Normal Rec ( 영업 요청으로 Event rec에서 normal로 변경) 
 			if (!app_cfg->ste.b.ftp_run) {
 				if (app_rec_state()) {
-					app_rec_stop(OFF);
+					app_rec_stop(ON);
 				} else {
 					app_rec_start();
 				}

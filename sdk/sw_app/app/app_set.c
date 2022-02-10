@@ -927,13 +927,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if((int)pset->rtmp.FULL_URL[0] == CHAR_INVALID || (int)pset->rtmp.FULL_URL[0] == 0)
 		strcpy(pset->rtmp.FULL_URL, RTMP_SERVER_URL);
-/*
-	if((int)pset->rtmp.userid[0] == CHAR_INVALID || (int)pset->rtmp.userid[0] == 0)
-		strcpy(pset->rtmp.userid, "admin");
-
-	if((int)pset->rtmp.passwd[0]  == CHAR_INVALID || (int)pset->rtmp.passwd[0] == 0)
-		strcpy(pset->rtmp.passwd, "admin");
-*/
 
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
@@ -1235,8 +1228,6 @@ static void app_set_default(int default_type)
 	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
 	strcpy(app_set->rtmp.ipaddr, RTMP_SERVER_ADDR);
 	strcpy(app_set->rtmp.FULL_URL, RTMP_SERVER_URL);
-//	strcpy(app_set->rtmp.userid, "admin");
-//	strcpy(app_set->rtmp.passwd, "admin");
 }
 
 static void app_set_delete_cfg(void)
