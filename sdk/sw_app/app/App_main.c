@@ -240,7 +240,8 @@ int app_main(void)
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
-	app_rtsptx_start();
+    if(!app_set->rtmp.ON_OFF)
+		app_rtsptx_start();
 
 	//if(app_set->net_info.enable_onvif==1)
 	{
@@ -351,7 +352,7 @@ int app_main(void)
 
     app_libuv_stop();
 
-    if (app_cfg->ste.b.rtsptx) {
+    if (!app_set->rtmp.ON_OFF && app_cfg->ste.b.rtsptx) {
         app_rtsptx_stop();
     }
     
