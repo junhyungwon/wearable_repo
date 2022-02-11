@@ -75,7 +75,7 @@ enum{
 // Functions to set the optimal buffer size for RTP sink objects.
 // These should be called before each RTPSink is created.
 #define AUDIO_MAX_FRAME_SIZE 20480
-#define VIDEO_MAX_FRAME_SIZE 200000
+#define VIDEO_MAX_FRAME_SIZE 300000
 inline void setAudioRTPSinkBufferSize() { OutPacketBuffer::maxSize = AUDIO_MAX_FRAME_SIZE; }
 inline void setVideoRTPSinkBufferSize() { OutPacketBuffer::maxSize = VIDEO_MAX_FRAME_SIZE; }
 int GetSprop(void *pBuff, char vType);
