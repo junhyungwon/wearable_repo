@@ -77,7 +77,7 @@ static inline int _checkAsyncQueue() {
 }
 
 static int _checkCpuLoad() {
-    if (*procLoad == -1 || *procLoad >= 50) {
+    if (*procLoad == -1 || *procLoad >= 70) {
         fprintf(stderr, "[RTMP] high cpu load(self: %d, total: %d).\n"
             , *procLoad, *cpuLoad);
 
