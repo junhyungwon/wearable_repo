@@ -197,11 +197,18 @@ static void proc_vid_cap(void)
 
 			app_memcpy(ifr->addr, (char*)pFullBuf->bufVirtAddr, ifr->b_size);
 			
-//            if(app_cfg->ste.b.rtsptx)
+            if(app_cfg->ste.b.rtsptx)
             {
 				/* ch == 1 --> streaming */
                 if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_H264HP && ifr->ch == STREAM_CH_NUM)
                 {
+					if(app_set->rtmp.ON_OFF)
+					{
+						gettimeofday(&ltime, NULL) ;
+						ifr->t_sec = ltime.tv_sec ;
+						ifr->t_msec = ltime.tv_usec / 1000 ;
+					}
+//                    printf("ifr->t_sec = %d ifr->t_msec = %ld \n",ifr->t_sec, ifr->t_msec) ;
 #if H264_DUMP
                     if(first == 0 && ifr->is_key)
                     {
@@ -220,16 +227,11 @@ static void proc_vid_cap(void)
                         }
                     }
 #endif
-					if(app_set->rtmp.ON_OFF)
-					{
-						gettimeofday(&ltime, NULL) ;
-						ifr->t_sec = ltime.tv_sec ;
-						ifr->t_msec = ltime.tv_usec / 1000 ;
-						app_rtmp_publish_video(ifr);
-					}
 
-            		if(app_cfg->ste.b.rtsptx)
-            	        app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
+					if(app_set->rtmp.ON_OFF)
+						app_rtmp_publish_video(ifr);
+
+                    app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH1, captime);
                 }
 				/* ch == 2 --> JPEG  */
@@ -254,8 +256,7 @@ static void proc_vid_cap(void)
                         fclose(jfp) ;
 				    }
 #endif
-            		if(app_cfg->ste.b.rtsptx)
-                    	app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
+                    app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size,
                                         ifr->is_key?FTYPE_VID_I:FTYPE_VID_P, STYPE_VID_CH2, captime);
                 } 
 
