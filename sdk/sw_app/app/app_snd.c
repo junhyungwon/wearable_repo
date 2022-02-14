@@ -290,7 +290,8 @@ static void *THR_snd_cap(void *prm)
 				struct timeval tv;
 				gettimeofday(&tv, NULL) ;
 				long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
-				app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
+				if(app_cfg->ste.b.rtsptx)
+					app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
 			}
 		} else {
 			/* error returned */

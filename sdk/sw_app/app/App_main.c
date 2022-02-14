@@ -214,9 +214,10 @@ int app_main(void)
     sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
-    app_libuv_start();
+//    app_libuv_start();
     if(app_set->rtmp.ON_OFF)
 	{
+    	app_libuv_start();
 	    app_rtmp_start();
 
     // disable SIGPIPE
@@ -240,15 +241,17 @@ int app_main(void)
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
-	app_rtsptx_start();
+    if(!app_set->rtmp.ON_OFF)
+		app_rtsptx_start();
 
 	//if(app_set->net_info.enable_onvif==1)
+    if(!app_set->rtmp.ON_OFF)
 	{
 		if (app_onvifserver_start() == 0) {
 			app_cfg->ste.b.onvifserver = 1; // have to add this flag....
 		}
 	}
-	
+	app_uds_start();
 	app_web_boot_passwordfile();
 	if (app_web_start_server() ==0) {
         app_cfg->ste.b.web_server = 1; // have to add this flag....
@@ -259,7 +262,7 @@ int app_main(void)
 	if (app_set->ftp_info.ON_OFF)
         app_ftp_init();
 	
-    if (app_set->sys_info.P2P_ON_OFF == ON) 
+    if (app_set->sys_info.P2P_ON_OFF == ON && !app_set->rtmp.ON_OFF) 
 	{
 		#if SYS_CONFIG_WLAN
         add_p2p_account() ;
@@ -327,6 +330,7 @@ int app_main(void)
 #endif
 
 	//if(app_set->net_info.enable_onvif==1)
+    if(!app_set->rtmp.ON_OFF)
 	{
 		if (app_cfg->ste.b.onvifserver) // have to add this flag....
 		{
@@ -335,7 +339,7 @@ int app_main(void)
 		}
 	}
     
-    if(app_set->sys_info.P2P_ON_OFF == ON)
+    if(app_set->sys_info.P2P_ON_OFF == ON && !app_set->rtmp.ON_OFF)
     {
 		#if SYS_CONFIG_WLAN
         app_p2p_exit() ;
@@ -347,9 +351,10 @@ int app_main(void)
     app_cap_stop();
 
     if(app_set->rtmp.ON_OFF)
+	{
 		app_rtmp_stop();
-
-    app_libuv_stop();
+    	app_libuv_stop();
+	}
 
     if (app_cfg->ste.b.rtsptx) {
         app_rtsptx_stop();

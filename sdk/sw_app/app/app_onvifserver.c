@@ -649,8 +649,6 @@ void * onvifserver_thread(void * argv)
 *****************************************************************************/
 int app_onvifserver_start(void)
 {
-	app_uds_start();
-
 	g_running = 1;
 
 	int ret = pthread_create(&g_tid,NULL, onvifserver_thread, NULL);
