@@ -277,6 +277,7 @@ int main(int argc, char *argv[])
 	// printf("Tunnel Version[%X]\n", P2PTunnel_Version());
 	printf("Tunnel Version[%X]\n", TF_P2PTunnel_Version());
 	
+//	P2PTunnel_ShowDebug(2) ;
 	P2PTunnel_SetServer(p2pServer);
 	int ret = P2PTunnelServerInitialize(20);
 	if(ret < 0)
