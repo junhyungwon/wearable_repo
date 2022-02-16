@@ -153,6 +153,7 @@ static void *THR_snd_cap(void *prm)
 {
 	app_thr_obj *tObj = &isnd->cObj;
 	stream_info_t *ifr;
+	snd_pcm_sw_params_t *sw_params = NULL;
 	
 	int exit=0, idx;
 	size_t pframes = 0; /* alsa read size(frames) */
@@ -192,35 +193,29 @@ static void *THR_snd_cap(void *prm)
 	/* mic data를 copy해서 baresip 에 전달하기 위한 dummpy sound 장치 
 	 * playback 장치로 설정해야 함. (마지막 인자를 1로 설정)
 	 */
-	if (app_set->voip.ON_OFF) {
-		isnd->dummy = __snd_init(SND_DUMMY, APP_SND_CH, APP_SND_SRATE, 
-								pframes, APP_SND_PLAY_DEV);
-		if (isnd->dummy == NULL) {
-			eprintf("Failed to init %s device!\n", SND_DUMMY);
-			__snd_exit(isnd->aic3x);
-			free(csampv);
-			return NULL;
-		}
-		
-		psampv = (char *)malloc(pframes * FRAME_PER_BYTES);
-		if (psampv == NULL) {
-			__snd_exit(isnd->aic3x);
-			__snd_exit(isnd->dummy);
-			free(csampv);
-			return NULL;
-		}
+	isnd->dummy = __snd_init(SND_DUMMY, APP_SND_CH, APP_SND_SRATE, 
+							pframes, APP_SND_PLAY_DEV);
+	if (isnd->dummy == NULL) {
+		eprintf("Failed to init %s device!\n", SND_DUMMY);
+		__snd_exit(isnd->aic3x);
+		free(csampv);
+		return NULL;
+	}
+	
+	psampv = (char *)malloc(pframes * FRAME_PER_BYTES);
+	if (psampv == NULL) {
+		__snd_exit(isnd->aic3x);
+		__snd_exit(isnd->dummy);
+		free(csampv);
+		return NULL;
 	}
 
-    if (app_set->voip.ON_OFF) {
-		snd_pcm_sw_params_t *sw_params = NULL;
-		
-		snd_pcm_sw_params_alloca(&sw_params);
-		snd_pcm_sw_params_current(isnd->dummy, sw_params);
-		snd_pcm_sw_params_set_avail_min(isnd->dummy, sw_params, pframes);
-		snd_pcm_sw_params_set_start_threshold(isnd->dummy, sw_params, pframes*4);
-	    snd_pcm_sw_params_set_stop_threshold(isnd->dummy, sw_params, pframes*4);
-		snd_pcm_sw_params(isnd->dummy, sw_params);
-	}
+	snd_pcm_sw_params_alloca(&sw_params);
+	snd_pcm_sw_params_current(isnd->dummy, sw_params);
+	snd_pcm_sw_params_set_avail_min(isnd->dummy, sw_params, pframes);
+	snd_pcm_sw_params_set_start_threshold(isnd->dummy, sw_params, pframes*4);
+	snd_pcm_sw_params_set_stop_threshold(isnd->dummy, sw_params, pframes*4);
+	snd_pcm_sw_params(isnd->dummy, sw_params);
 	
 	/* recording device start */
 	snd_pcm_start(isnd->aic3x);
@@ -311,22 +306,19 @@ static void *THR_snd_cap(void *prm)
 		} /* end of if (r > 0) */
 	} /* while (!exit) */
 
-	if (app_set->voip.ON_OFF) {
-		snd_pcm_nonblock(isnd->dummy, 0);
-		/* Stop PCM device after pending frames have been played */
-		snd_pcm_drain(isnd->dummy);
-		//snd_pcm_nonblock(isnd->dummy, 1);
-		__snd_exit(isnd->dummy);
-	}
+	snd_pcm_nonblock(isnd->dummy, 0);
+	/* Stop PCM device after pending frames have been played */
+	snd_pcm_drain(isnd->dummy);
+	//snd_pcm_nonblock(isnd->dummy, 1);
+	__snd_exit(isnd->dummy);
+	
 	/* stop mic pcm */
 	__snd_exit(isnd->aic3x);
 	if (csampv != NULL){
 		free(csampv);
 	}
-	if (app_set->voip.ON_OFF) {
-		if (psampv != NULL)
-			free(psampv);
-	}
+	if (psampv != NULL)
+		free(psampv);
 	
 	tObj->active = 0;
 	aprintf("...exit\n");
