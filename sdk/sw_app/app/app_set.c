@@ -911,6 +911,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
    	if(pset->voip.ON_OFF <= CFG_INVALID)
 		pset->voip.ON_OFF = OFF;
 #endif	
+	app_cfg->voip_set_ON_OFF = pset->voip.ON_OFF ;
+
 	//# ----------------- VOIP Parameters End -----------------------------------------
 
 	if(pset->rtmp.ON_OFF <= CFG_INVALID)
@@ -1220,6 +1222,9 @@ static void app_set_default(int default_type)
 	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
     app_set->voip.ON_OFF = OFF;
 #endif	
+    
+	app_cfg->voip_set_ON_OFF = app_set->voip.ON_OFF ;
+
 	memset((void*)app_set->voip.reserved, 0x00, 38);
 	//#------------- VOIP Params End ---------------------------------------------------
 

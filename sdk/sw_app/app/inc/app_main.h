@@ -227,6 +227,7 @@ typedef struct {
     int evt_type;          // distinguish event type shock and others
     char ftp_enable;
     int vid_count ; 
+	int voip_set_ON_OFF ;
 
 	char cfg_mmc_path[MAX_CHAR_128];
 	char cfg_nand_path[MAX_CHAR_128];
