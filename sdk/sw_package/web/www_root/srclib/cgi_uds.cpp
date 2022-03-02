@@ -407,7 +407,8 @@ int sysctl_message(
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
 					T_CGI_OPERATION_CONFIG *t = (T_CGI_OPERATION_CONFIG*)data;
-					sscanf(rbuf, "%d %d %d %d %d %d", 
+					sscanf(rbuf, "%d %d %d %d %d %d %d", 
+							&t->stm.enable_audio,
 							&t->rec.pre_rec,
 							&t->rec.auto_rec,
 							&t->rec.audio_rec,
@@ -433,7 +434,8 @@ int sysctl_message(
 				// 3. write id/password info
 				T_CGI_OPERATION_CONFIG t;
 				memcpy(&t, data, sizeof(t));
-				sprintf(wbuf, "%d %d %d %d %d %d", 
+				sprintf(wbuf, "%d %d %d %d %d %d %d", 
+						t.stm.enable_audio, 
 						t.rec.pre_rec, 
 						t.rec.auto_rec, 
 						t.rec.audio_rec, 

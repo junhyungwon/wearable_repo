@@ -222,6 +222,23 @@ static int	parseDdnsInfo(app_set_t* const set, json_object* rootObj)
 
 	return 0;
 }
+
+static int	parseStmInfo(app_set_t* const set, json_object* rootObj)
+{
+	const char* STR_FIELD = "stm_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find stm_info\n");
+		return -1;
+	}
+	json_object* tmp = json_object_object_get(jobj, "enable_audio");
+	set->stm_info.enable_audio = json_object_get_int(tmp);
+
+	return 0;
+
+}
+
 static int	parseRecInfo(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "rec_info";
@@ -604,6 +621,10 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	
 	parseRtmpInfo(set, rootObject);
 
+	// 17. stream info
+	parseStmInfo(set, rootObject);
+
+
 	// finish
 	json_object_put(rootObject);
 
@@ -814,6 +835,10 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 //	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->rtmp.passwd));
 	json_object_object_add(rootObject, "rtmp_info", rtmp_info);
 
+	// 16. streaming information
+	json_object* stm_info = json_object_new_object();
+	json_object_object_add(stm_info, "enable_audio",   json_object_new_int(set->stm_info.enable_audio));
+	json_object_object_add(rootObject, "stm_info", stm_info);
 
 	// Finish
 	printf("Write JSON Data\n");
@@ -846,6 +871,8 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 
 	json_object_put(voip_info);
 	json_object_put(rtmp_info);
+
+	json_object_put(stm_info);
 
 	json_object_put(rootObject);
 

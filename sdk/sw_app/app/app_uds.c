@@ -1409,6 +1409,14 @@ static int getGop(int ch)
 	return gop;
 }
 
+static int setStreamOptions(int enable_audio)
+{
+	if(app_set->stm_info.enable_audio != enable_audio){
+		app_set->stm_info.enable_audio = enable_audio;
+	}
+
+	return 0;
+}
 static int setRecordOptions(int pre_rec,int auto_rec, int audio_rec, int rec_interval, int rec_overwrite)
 {
 	app_set->rec_info.auto_rec   = auto_rec;     // 0:OFF, 1:ON
@@ -2709,7 +2717,8 @@ void *myFunc(void *arg)
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
 			{
-				sprintf(strOptions, "%d %d %d %d %d %d",
+				sprintf(strOptions, "%d %d %d %d %d %d %d",
+						app_set->stm_info.enable_audio,     // 0:on, 1:off
 						app_set->rec_info.pre_rec,     // 0:on, 1:off
 						app_set->rec_info.auto_rec,    // 0:on, 1:off
 						app_set->rec_info.audio_rec,   // 0:on, 1:off
@@ -2737,15 +2746,18 @@ void *myFunc(void *arg)
 				ret = read(cs_uds, rbuf, sizeof rbuf);
 				DBG_UDS("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
+					int stream_enable_audio = 0;
 					int pre_rec=0, auto_rec=0, audio_rec=0, rec_interval=0, rec_overwrite=0;
 					int display_datetime=0;
-					sscanf(rbuf, "%d %d %d %d %d %d", 
+					sscanf(rbuf, "%d %d %d %d %d %d %d", 
+							&stream_enable_audio,
 							&pre_rec,
 							&auto_rec,
 							&audio_rec,
 							&rec_interval,
 							&rec_overwrite,
 							&display_datetime);
+					setStreamOptions(stream_enable_audio);
 					setRecordOptions(pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite);
 					setDisplayDateTime(display_datetime);
 

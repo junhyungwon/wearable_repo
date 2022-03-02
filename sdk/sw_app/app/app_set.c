@@ -423,6 +423,9 @@ int show_all_cfg(app_set_t* pset)
 
 	printf("\n");
 
+	printf("pset->stm_info.enable_audio = %d\n",pset->stm_info.enable_audio) ;
+	printf("\n");
+
 	printf("pset->rec_info.period_idx = %d\n", pset->rec_info.period_idx);
 	printf("pset->rec_info.overwrite  = %d\n", pset->rec_info.overwrite );
     printf("pset->rec_info.auto_rec = %d\n",pset->rec_info.auto_rec) ;
@@ -741,6 +744,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		    memset(pset->wifilist[i].pwd, 0, MAX_CHAR_64);
 	}
 
+	if(pset->stm_info.enable_audio != ON && pset->stm_info.enable_audio != OFF)
+	    pset->stm_info.enable_audio = OFF ;
+
 	if(pset->rec_info.period_idx < REC_PERIOD_01 && pset->rec_info.period_idx >= REC_PERIOD_MAX)
 		pset->rec_info.period_idx = REC_PERIOD_01;
 
@@ -912,6 +918,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->voip.ON_OFF = OFF;
 #endif	
 	app_cfg->voip_set_ON_OFF = pset->voip.ON_OFF ;
+	app_cfg->stream_enable_audio = pset->stm_info.enable_audio;
 
 	//# ----------------- VOIP Parameters End -----------------------------------------
 
@@ -1135,6 +1142,9 @@ static void app_set_default(int default_type)
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 
     strcpy(app_set->sys_info.p2p_passwd, P2P_DEFAULT_PW) ;
 
+	//# streaming information
+	app_set->stm_info.enable_audio     = OFF ;
+
 	//# rec information
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
@@ -1224,6 +1234,7 @@ static void app_set_default(int default_type)
 #endif	
     
 	app_cfg->voip_set_ON_OFF = app_set->voip.ON_OFF ;
+	app_cfg->stream_enable_audio = app_set->stm_info.enable_audio;
 
 	memset((void*)app_set->voip.reserved, 0x00, 38);
 	//#------------- VOIP Params End ---------------------------------------------------

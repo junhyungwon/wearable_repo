@@ -231,6 +231,9 @@ typedef struct {
 
 	char cfg_mmc_path[MAX_CHAR_128];
 	char cfg_nand_path[MAX_CHAR_128];
+
+	int  stream_enable_audio;
+
 } app_cfg_t;
 
 /*----------------------------------------------------------------------------

@@ -216,6 +216,12 @@ typedef struct {
 //} __attribute__((packed)) app_system_t;
 
 typedef struct {
+    char enable_audio;       // on, off   
+	 
+	char reserved[15];
+}app_stm_cfg_t;
+
+typedef struct {
 	int period_idx;
 	int overwrite;
     char pre_rec;         // on, off
@@ -312,6 +318,7 @@ typedef struct {
 	app_network_wifiap_t	wifilist[WIFIAP_CNT];		//# wifi ap list information for client-mode
 
 	app_system_t	   		sys_info;
+	app_stm_cfg_t			stm_info;   // streaming info
 	app_rec_cfg_t			rec_info;
     app_ddnscfg_t           ddns_info;
     app_timecfg_t           time_info;
@@ -322,7 +329,9 @@ typedef struct {
 
     app_voip_t              voip; //  => 72 + 40
     app_rtmp_addr_t         rtmp ; // 86 
-	char reserved[104];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
+
+	char reserved[88];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
+                         // - 16 ( streaming cfg )
 	
 } app_set_t;
 

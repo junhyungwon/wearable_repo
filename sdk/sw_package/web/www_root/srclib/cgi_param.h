@@ -108,6 +108,10 @@ typedef struct _tagCgiServersConfig {
 }T_CGI_SERVERS_CONFIG;
 /* end of servers settings */
 
+typedef struct _tagCgiStreamingConfig {
+    int enable_audio;      // on,off;
+}T_CGI_STREAMING_CONFIG;
+
 typedef struct _tagCgiRecordingConfig {
     int pre_rec;        // on or off
     int auto_rec;         // enable on startup
@@ -117,6 +121,7 @@ typedef struct _tagCgiRecordingConfig {
 }T_CGI_RECORDING_CONFIG;
 
 typedef struct _tagCgiOperationConfiguration {
+    T_CGI_STREAMING_CONFIG stm;
     T_CGI_RECORDING_CONFIG rec;
     int display_datetime;
     //T_CGI_P2PSERVER_CONFIG p2p;

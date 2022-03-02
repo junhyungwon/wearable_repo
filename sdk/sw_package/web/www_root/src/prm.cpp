@@ -125,7 +125,7 @@ int put_json_all_config()
 
 	json_object *all_config;
 	json_object *camera_obj, *recordobj, *streamobj;
-	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
+	json_object *operation_obj, *stm_obj, *misc_obj, *rec_obj, *p2p_obj;
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4];
 	json_object *servers_obj, *bs_obj, *fota_obj, *mediaserver_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
@@ -246,6 +246,7 @@ int put_json_all_config()
 
 	// Operation Settings
 	operation_obj = json_object_new_object();
+	stm_obj  = json_object_new_object();
 	rec_obj  = json_object_new_object();
 	misc_obj = json_object_new_object();
 	{
@@ -254,6 +255,9 @@ int put_json_all_config()
 			ret = -1;
 			goto _FREE_OPERATION_OBJ;
 		}
+
+		json_object_object_add(stm_obj, "enable_audio",    json_object_new_int(p.stm.enable_audio));
+		json_object_object_add(operation_obj, "stream", stm_obj);
 
 		json_object_object_add(rec_obj, "pre_rec",   json_object_new_int(p.rec.pre_rec));
 		json_object_object_add(rec_obj, "auto_rec", json_object_new_int(p.rec.audio_rec));
@@ -473,6 +477,7 @@ _FREE_NETWORK_OBJ:
 	json_object_put(network_obj);
 
 _FREE_OPERATION_OBJ:
+	json_object_put(stm_obj);
 	json_object_put(rec_obj);
 	json_object_put(misc_obj);
 	json_object_put(p2p_obj);
@@ -829,13 +834,17 @@ void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 
 void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 {
-	json_object *myobj, *misc_obj, *recordobj;
+	json_object *myobj, *streamobj, *misc_obj, *recordobj;
 
 	myobj = json_object_new_object();
+	streamobj = json_object_new_object();
 	recordobj = json_object_new_object();
 	misc_obj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+
+	json_object_object_add(streamobj, "enable_audio",  json_object_new_int(p->stm.enable_audio));
+	json_object_object_add(myobj, "stream", streamobj);
 
 	json_object_object_add(recordobj, "pre_rec", json_object_new_int(p->rec.pre_rec));
 	json_object_object_add(recordobj, "auto_rec", json_object_new_int(p->rec.auto_rec));
@@ -854,6 +863,7 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	printf("%s\r\n", json_object_to_json_string(myobj));
 
 	// free
+	json_object_put(streamobj);
 	json_object_put(recordobj);
 	json_object_put(misc_obj);
 	json_object_put(myobj);
