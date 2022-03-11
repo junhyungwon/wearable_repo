@@ -60,6 +60,10 @@
 #define RTMP_SERVER_ADDR            "192.168.1.252"
 #define RTMP_SERVER_PORT            1935
 
+#define SSLVPN_ID                   "vpnID"
+#define SSLVPN_KEY                  "abcd1234"
+#define SSLVPN_IPADDRESS            "56.112.48.100"
+
 typedef enum {
 	RATE_CTRL_VBR,
 	RATE_CTRL_CBR,
@@ -307,6 +311,24 @@ typedef struct {
 } app_rtmp_addr_t; //86 
 #pragma pack()
 
+#pragma pack(1)
+typedef struct {
+    short ON_OFF ;
+    short vendor ; // 0 XGATE
+    char vpn_id[MAX_CHAR_32] ;
+    short heartbeat_interval ;
+    short heartbeat_threshold ; 
+    short protocol ; // 0 tcp , 1 udp 
+    short port ;
+    short queue ;  // queue size
+    short key[MAX_CHAR_16] ;
+    short encrypt_type ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+    char ipaddr[MAX_CHAR_32] ;
+    short NI ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
+
+} app_sslvpncfg_t ;
+#pragma pack()
+
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1 = records + streaming
 	app_watchdog_t			wd;
@@ -329,8 +351,8 @@ typedef struct {
 
     app_voip_t              voip; //  => 72 + 40
     app_rtmp_addr_t         rtmp ; // 86 
-
-	char reserved[88];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
+    app_sslvpncfg_t         sslvpn_info ;
+//	char reserved[88];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
                          // - 16 ( streaming cfg )
 	
 } app_set_t;

@@ -113,7 +113,7 @@ int app_p2p_start(void)
 #elif defined(NEXXB_ONE)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXB_ONE", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #endif
-					printf("%s!\n", p2p_cmd) ;
+					printf("%s\n", p2p_cmd) ;
 					system(p2p_cmd) ;
 					return 0;
 				}

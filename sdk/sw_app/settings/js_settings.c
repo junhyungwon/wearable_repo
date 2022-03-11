@@ -16,6 +16,140 @@ json_object *json_find_obj (json_object * jobj, char *find_key)
 	return NULL; // not found
 }
 
+static int	parseSSLvpnInfo(app_set_t* const set, json_object* rootObj)
+{
+	const char* STR_FIELD = "sslvpn_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find sslvpn_info\n");
+		return -1;
+	}
+
+	json_object* tmp ;
+    if(json_find_obj(jobj, "ON_OFF") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ON_OFF");
+		set->sslvpn_info.ON_OFF = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN ON_OFF 항목 없음\n") ;
+		set->sslvpn_info.ON_OFF = -1;
+	}
+
+    if(json_find_obj(jobj, "vendor") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "vendor");
+		set->sslvpn_info.vendor = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN vendor 항목 없음\n") ;
+		set->sslvpn_info.vendor = -1;
+	}
+
+    if(json_find_obj(jobj, "vpn_id") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "vpn_id");
+		sprintf(set->sslvpn_info.vpn_id, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		sprintf(set->sslvpn_info.vpn_id, "%s",  SSLVPN_ID);
+	}
+
+    if(json_find_obj(jobj, "heartbeat_interval") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "heartbeat_interval");
+		set->sslvpn_info.heartbeat_interval = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN heartbeat_interval 항목 없음\n") ;
+		set->sslvpn_info.heartbeat_interval = -1;
+	}
+
+    if(json_find_obj(jobj, "heartbeat_threshold") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "heartbeat_threshold");
+		set->sslvpn_info.heartbeat_threshold = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN heartbeat_threshold 항목 없음\n") ;
+		set->sslvpn_info.heartbeat_threshold = -1;
+	}
+
+    if(json_find_obj(jobj, "protocol") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "protocol");
+		set->sslvpn_info.protocol = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN protocol 항목 없음\n") ;
+		set->sslvpn_info.protocol = -1;
+	}
+
+    if(json_find_obj(jobj, "queue") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "queue");
+		set->sslvpn_info.queue = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN queue 항목 없음\n") ;
+		set->sslvpn_info.queue = -1;
+	}
+
+    if(json_find_obj(jobj, "key") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "key");
+		sprintf(set->sslvpn_info.key, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		printf("SSLVPN key 항목 없음\n") ;
+		sprintf(set->sslvpn_info.key, "%s", SSLVPN_KEY) ;
+	}
+
+    if(json_find_obj(jobj, "encrypt_type") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "encrypt_type");
+		set->sslvpn_info.encrypt_type = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN encrypt_type 항목 없음\n") ;
+		set->sslvpn_info.encrypt_type = -1;
+	}
+
+    if(json_find_obj(jobj, "ipaddr") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ipaddr");
+		sprintf(set->sslvpn_info.ipaddr, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		printf("SSLVPN ipaddr 항목 없음\n") ;
+		sprintf(set->sslvpn_info.ipaddr, "%s", SSLVPN_IPADDRESS) ;
+	}
+
+    if(json_find_obj(jobj, "NI") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "NI");
+		set->sslvpn_info.NI = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN NI 항목 없음\n") ;
+		set->sslvpn_info.NI = -1;
+	}
+
+	return 0;
+}
+
 static int	parseRtmpInfo(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "rtmp_info";
@@ -624,6 +758,9 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	// 17. stream info
 	parseStmInfo(set, rootObject);
 
+	// 18. sslvpn info
+	parseSSLvpnInfo(set, rootObject);
+
 
 	// finish
 	json_object_put(rootObject);
@@ -840,6 +977,23 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(stm_info, "enable_audio",   json_object_new_int(set->stm_info.enable_audio));
 	json_object_object_add(rootObject, "stm_info", stm_info);
 
+	// 17. sslvpn information
+	json_object* sslvpn_info = json_object_new_object();
+	json_object_object_add(sslvpn_info, "ON_OFF",   json_object_new_int(set->sslvpn_info.ON_OFF));
+	json_object_object_add(sslvpn_info, "vendor",   json_object_new_int(set->sslvpn_info.vendor));
+	json_object_object_add(sslvpn_info, "vpn_id",   json_object_new_string(set->sslvpn_info.vpn_id));
+	json_object_object_add(sslvpn_info, "heartbeat_interval",     json_object_new_int(set->sslvpn_info.heartbeat_interval));	
+	json_object_object_add(sslvpn_info, "heartbeat_threshold",     json_object_new_int(set->sslvpn_info.heartbeat_threshold));	
+	json_object_object_add(sslvpn_info, "protocol",     json_object_new_int(set->sslvpn_info.protocol));	
+	json_object_object_add(sslvpn_info, "port",     json_object_new_int(set->sslvpn_info.port));	
+	json_object_object_add(sslvpn_info, "queue",     json_object_new_int(set->sslvpn_info.queue));	
+	json_object_object_add(sslvpn_info, "key",   json_object_new_string(set->sslvpn_info.key));
+	json_object_object_add(sslvpn_info, "encrypt_type",     json_object_new_int(set->sslvpn_info.encrypt_type));	
+	json_object_object_add(sslvpn_info, "ipaddr",   json_object_new_string(set->sslvpn_info.ipaddr));
+	json_object_object_add(sslvpn_info, "NI",     json_object_new_int(set->sslvpn_info.NI));	
+	json_object_object_add(rootObject, "sslvpn_info", sslvpn_info);
+
+
 	// Finish
 	printf("Write JSON Data\n");
 	printf("%s\n", json_object_to_json_string(rootObject));
@@ -873,6 +1027,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(rtmp_info);
 
 	json_object_put(stm_info);
+    json_object_put(sslvpn_info) ;
 
 	json_object_put(rootObject);
 

@@ -28,8 +28,8 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define REC_SEC_01MIN			1	//# max 1 min.
-#define REC_SEC_O5MIN			5	//# max 5 min.
+#define REC_SEC_01MIN			10	//# max 1 min.
+#define REC_SEC_05MIN			5	//# max 5 min.
 
 #define PRE_REC_SEC             15      // max 15 secs.
 
@@ -49,7 +49,7 @@ typedef struct {
 	
 } app_rec_t;
 
-static unsigned int grec_time[REC_PERIOD_MAX] = { REC_SEC_01MIN, REC_SEC_O5MIN };
+static unsigned int grec_time[REC_PERIOD_MAX] = { REC_SEC_01MIN, REC_SEC_05MIN };
 
 /*----------------------------------------------------------------------------
  Declares variables

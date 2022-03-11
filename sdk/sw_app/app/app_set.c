@@ -286,10 +286,24 @@ static void char_memset(void)
 	app_set->rtmp.port = CFG_INVALID ;
 	memset(app_set->rtmp.ipaddr, CHAR_MEMSET, MAX_CHAR_16) ;
 	memset(app_set->rtmp.FULL_URL, CHAR_MEMSET, MAX_CHAR_64) ;
+
+	app_set->sslvpn_info.ON_OFF = CFG_INVALID ;
+	app_set->sslvpn_info.vendor = CFG_INVALID ;
+	memset(app_set->sslvpn_info.vpn_id, CHAR_MEMSET, MAX_CHAR_32) ;
+	app_set->sslvpn_info.heartbeat_interval = CFG_INVALID ;
+	app_set->sslvpn_info.heartbeat_threshold = CFG_INVALID ;
+    app_set->sslvpn_info.protocol = CFG_INVALID ;
+	app_set->sslvpn_info.port = CFG_INVALID ;
+	app_set->sslvpn_info.queue = CFG_INVALID ;
+	memset(app_set->sslvpn_info.key, CHAR_MEMSET, MAX_CHAR_16) ;
+	app_set->sslvpn_info.encrypt_type = CFG_INVALID ;
+	memset(app_set->sslvpn_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32) ;
+	app_set->sslvpn_info.NI = CFG_INVALID ;
+
 //	memset(app_set->rtmp.userid, CHAR_MEMSET, MAX_CHAR_16) ;
 //	memset(app_set->rtmp.passwd, CHAR_MEMSET, MAX_CHAR_16) ;
 
-    memset(app_set->reserved, CFG_INVALID, 90) ;
+//    memset(app_set->reserved, CFG_INVALID, 90) ;
 }
 
 int GetSvrMacAddress(char *mac_address)
@@ -476,6 +490,20 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->rtmp.ipaddr = %s\n", pset->rtmp.ipaddr);
     printf("pset->rtmp.FULL_URL = %s\n", pset->rtmp.FULL_URL);
     printf("pset->rtmp.port   = %d\n", pset->rtmp.port);
+
+	printf("pset->sslvpn_info.ON_OFF = %d\n", pset->sslvpn_info.ON_OFF) ;
+	printf("pset->sslvpn_info.vendor = %d\n", pset->sslvpn_info.vendor) ;
+	printf("pset->sslvpn_info.vpn_id = %s\n", pset->sslvpn_info.vpn_id) ;
+	printf("pset->sslvpn_info.heartbeat_interval = %d\n",pset->sslvpn_info.heartbeat_interval) ;
+	printf("pset->sslvpn_info.heartbeat_threshold = %d\n", pset->sslvpn_info.heartbeat_threshold) ;
+    printf("pset->sslvpn_info.protocol = %d\n", pset->sslvpn_info.protocol) ;
+	printf("pset->sslvpn_info.port = %d\n", pset->sslvpn_info.port) ;
+	printf("pset->sslvpn_info.queue = %d\n", pset->sslvpn_info.queue) ;
+	printf("pset->sslvpn_info.key = %s\n", pset->sslvpn_info.key) ;
+	printf("pset->sslvpn_info.encrypt_type = %d\n", pset->sslvpn_info.encrypt_type) ;
+	printf("pset->sslvpn_info.ipaddr = %s\n", pset->sslvpn_info.ipaddr) ;
+	printf("pset->sslvpn_info.NI = %d\n", pset->sslvpn_info.NI) ;
+
 //    printf("pset->rtmp.userid = %s\n", pset->rtmp.userid);
 //    printf("pset->rtmp.passwd = %s\n", pset->rtmp.passwd);
 
@@ -937,6 +965,43 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->rtmp.FULL_URL[0] == CHAR_INVALID || (int)pset->rtmp.FULL_URL[0] == 0)
 		strcpy(pset->rtmp.FULL_URL, RTMP_SERVER_URL);
 
+	
+	if(pset->sslvpn_info.ON_OFF <= CFG_INVALID)
+		pset->sslvpn_info.ON_OFF = OFF ;
+
+	if(pset->sslvpn_info.vendor <= CFG_INVALID)
+		pset->sslvpn_info.vendor = OFF ;  // 0 XGATE VPN
+	
+	if((int)pset->sslvpn_info.vpn_id[0] == CHAR_INVALID || (int)pset->sslvpn_info.vpn_id[0] == 0)
+		strcpy(pset->sslvpn_info.vpn_id, SSLVPN_ID) ;
+
+	if(pset->sslvpn_info.heartbeat_interval <= CFG_INVALID)
+		pset->sslvpn_info.heartbeat_interval = 3000 ;
+	
+	if(pset->sslvpn_info.heartbeat_threshold <= CFG_INVALID)
+		pset->sslvpn_info.heartbeat_threshold = 3 ;
+
+	if(pset->sslvpn_info.protocol <= CFG_INVALID)
+		pset->sslvpn_info.protocol = OFF; // 0 TCP, 1 UDP
+
+	if(pset->sslvpn_info.port <= CFG_INVALID)
+		pset->sslvpn_info.port = 3600 ;
+
+	if(pset->sslvpn_info.queue <= CFG_INVALID)
+		pset->sslvpn_info.queue = 16384 ;
+	
+	if((int)pset->sslvpn_info.key[0] == CHAR_INVALID || (int)pset->sslvpn_info.key[0] == 0)
+		strcpy(pset->sslvpn_info.key, SSLVPN_KEY) ;
+
+	if(pset->sslvpn_info.encrypt_type <= CFG_INVALID)
+		pset->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+
+	if((int)pset->sslvpn_info.ipaddr[0] == CHAR_INVALID || (int)pset->sslvpn_info.ipaddr[0] == 0)
+		strcpy(pset->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
+	
+	if(pset->sslvpn_info.NI <= CFG_INVALID)
+		pset->sslvpn_info.NI = OFF ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
+
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 }
@@ -1244,6 +1309,20 @@ static void app_set_default(int default_type)
 	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
 	strcpy(app_set->rtmp.ipaddr, RTMP_SERVER_ADDR);
 	strcpy(app_set->rtmp.FULL_URL, RTMP_SERVER_URL);
+
+	app_set->sslvpn_info.ON_OFF = OFF ;
+	app_set->sslvpn_info.vendor = OFF ; // 0 XGATE
+	strcpy(app_set->sslvpn_info.vpn_id, SSLVPN_ID) ;
+	app_set->sslvpn_info.heartbeat_interval = 3000 ;
+	app_set->sslvpn_info.heartbeat_threshold = 3 ;
+	app_set->sslvpn_info.protocol = OFF ; // 0 tcp , 1 udp 
+	app_set->sslvpn_info.port = 3600 ;
+	app_set->sslvpn_info.queue = 16384 ;
+	strcpy(app_set->sslvpn_info.key, SSLVPN_KEY) ;
+	app_set->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+	strcpy(app_set->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
+	app_set->sslvpn_info.NI = OFF ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
+
 }
 
 static void app_set_delete_cfg(void)
