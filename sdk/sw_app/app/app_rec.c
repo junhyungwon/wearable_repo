@@ -28,7 +28,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define REC_SEC_01MIN			10	//# max 1 min.
+#define REC_SEC_01MIN			1	//# max 1 min.
 #define REC_SEC_05MIN			5	//# max 5 min.
 
 #define PRE_REC_SEC             15      // max 15 secs.
