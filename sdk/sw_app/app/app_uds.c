@@ -81,6 +81,28 @@ static pthread_t  	g_tid;              // uds task id
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+static int check_cval_str(char * o, char * n){
+
+	if( strcmp(o , n) != 0) {
+		strcpy(o, n); return 1;
+	}
+	return 0;
+}
+static int check_cval_int(int * o, int n){
+
+	if( *o != n) {
+		*o =  n; return 1;
+	}
+	return 0;
+}
+static int check_cval_short(short * o, int n){
+
+	if( *o != n) {
+		*o =  n; return 1;
+	}
+	return 0;
+}
+
 static int setStreamVideoQuality( int stm_res, int stm_fps, int stm_bps, int stm_gop)
 {
 	int ch = STM_CH_NUM;
@@ -555,6 +577,24 @@ static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
 		    DBG_UDS("app_set->wifilist[%d].pwd=%s\n", i, app_set->wifilist[i].pwd);
 		    isChanged++;
 	    }
+	}
+
+
+	// ssl vpn
+	isChanged += check_cval_short(&app_set->sslvpn_info.ON_OFF, t->sslvpn.enable);
+
+	if(t->sslvpn.enable) {
+		isChanged += check_cval_short(&app_set->sslvpn_info.vendor, t->sslvpn.vendor); // 0 XGATE
+		isChanged += check_cval_str( app_set->sslvpn_info.vpn_id, t->sslvpn.vpn_id);
+		isChanged += check_cval_short(&app_set->sslvpn_info.heartbeat_interval,  t->sslvpn.heartbeat_interval);
+		isChanged += check_cval_short(&app_set->sslvpn_info.heartbeat_threshold, t->sslvpn.heartbeat_threshold);
+		isChanged += check_cval_short(&app_set->sslvpn_info.protocol,     t->sslvpn.protocol); // 0 tcp , 1 udp 
+		isChanged += check_cval_short(&app_set->sslvpn_info.port,         t->sslvpn.port);
+		isChanged += check_cval_short(&app_set->sslvpn_info.queue,        t->sslvpn.queue_size);  // queue size
+		isChanged += check_cval_str( app_set->sslvpn_info.key,          t->sslvpn.key);
+		isChanged += check_cval_short(&app_set->sslvpn_info.encrypt_type, t->sslvpn.encrypt_type); // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+		isChanged += check_cval_str( app_set->sslvpn_info.ipaddr,       t->sslvpn.ipaddress);
+		isChanged += check_cval_short(&app_set->sslvpn_info.NI,           t->sslvpn.network_interface); // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
 	}
 
 	if(isChanged>0) {
@@ -2434,6 +2474,23 @@ void *myFunc(void *arg)
 				t.live_stream_account_enctype = app_set->account_info.enctype;
 				strcpy(t.live_stream_account.id, rtsp_user);
 				strcpy(t.live_stream_account.pw, rtsp_pass);
+
+				// ssl vpn write --- start
+				{
+					t.sslvpn.enable = app_set->sslvpn_info.ON_OFF;
+					t.sslvpn.vendor = app_set->sslvpn_info.vendor;
+					strcpy(t.sslvpn.vpn_id, app_set->sslvpn_info.vpn_id);
+					t.sslvpn.heartbeat_interval  = app_set->sslvpn_info.heartbeat_interval;
+					t.sslvpn.heartbeat_threshold = app_set->sslvpn_info.heartbeat_threshold;
+					t.sslvpn.protocol   = app_set->sslvpn_info.protocol;
+					t.sslvpn.port       = app_set->sslvpn_info.port;
+					t.sslvpn.queue_size = app_set->sslvpn_info.queue;
+					strcpy(t.sslvpn.key, app_set->sslvpn_info.key);
+					t.sslvpn.encrypt_type = app_set->sslvpn_info.encrypt_type;
+					strcpy(t.sslvpn.ipaddress, app_set->sslvpn_info.ipaddr);
+					t.sslvpn.network_interface = app_set->sslvpn_info.NI;
+				}
+				// ssl vpn write --- end
 
 				ret = write(cs_uds, &t, sizeof t);
 				DBG_UDS("sent, ret=%d \n", ret);

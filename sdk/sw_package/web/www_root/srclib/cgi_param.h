@@ -175,6 +175,21 @@ typedef struct _tagCgiRtspConfig{
     char pw[128];         // PW
 }T_CGI_RTSP_CONFIG;
 
+typedef struct _tagCgiSslVpnConfig{
+    int  enable;
+    int  vendor;
+    char vpn_id[256];
+    int  heartbeat_interval;
+    int  heartbeat_threshold;
+    int  protocol;
+    int  port;
+    int  queue_size;
+    char key[256];
+    int  encrypt_type;
+    char ipaddress[32];
+    int  network_interface;
+}T_CGI_SSLVPN_CONFIG;
+
 typedef struct _tagCgiNetworkConfiguration {
     T_CGI_NETWORK_INTERFACE wireless;
     T_CGI_NETWORK_INTERFACE cradle;
@@ -192,6 +207,7 @@ typedef struct _tagCgiNetworkConfiguration2 {
     int       live_stream_account_enable;
 	int		  live_stream_account_enctype;
     T_CGI_ACCOUNT live_stream_account;
+    T_CGI_SSLVPN_CONFIG sslvpn;
 }T_CGI_NETWORK_CONFIG2;
 
 typedef struct _tagCgiSystemConfiguration{

@@ -321,9 +321,9 @@ typedef struct {
     short protocol ; // 0 tcp , 1 udp 
     short port ;
     short queue ;  // queue size
-    short key[MAX_CHAR_16] ;
+    char  key[MAX_CHAR_16] ;
     short encrypt_type ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
-    char ipaddr[MAX_CHAR_32] ;
+    char  ipaddr[MAX_CHAR_32] ;
     short NI ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
 
 } app_sslvpncfg_t ;

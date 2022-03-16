@@ -126,7 +126,7 @@ int put_json_all_config()
 	json_object *all_config;
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *stm_obj, *misc_obj, *rec_obj, *p2p_obj;
-	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4];
+	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4], *sslvpn;
 	json_object *servers_obj, *bs_obj, *fota_obj, *mediaserver_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
@@ -279,6 +279,7 @@ int put_json_all_config()
 	wifiap_obj   = json_object_new_object();
 	livestm_obj  = json_object_new_object();
 	wifilist     = json_object_new_array();
+	sslvpn       = json_object_new_object();
 	{
 		T_CGI_NETWORK_CONFIG2 p;memset(&p, 0, sizeof p);
 		if(0>sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&p, sizeof p )){
@@ -322,6 +323,25 @@ int put_json_all_config()
 			json_object_array_add(wifilist, wifiInfo[i]);
 		}
 		json_object_object_add(network_obj, "wifilist", wifilist) ;
+
+
+		// ssl vpn
+		{
+			json_object_object_add(sslvpn, "enable",              json_object_new_int(    p.sslvpn.enable ));
+			json_object_object_add(sslvpn, "vendor",              json_object_new_int(    p.sslvpn.vendor ));
+			json_object_object_add(sslvpn, "vpn_id",              json_object_new_string( p.sslvpn.vpn_id ));
+			json_object_object_add(sslvpn, "heartbeat_interval",  json_object_new_int(    p.sslvpn.heartbeat_interval ));
+			json_object_object_add(sslvpn, "heartbeat_threshold", json_object_new_int(    p.sslvpn.heartbeat_threshold ));
+			json_object_object_add(sslvpn, "protocol",            json_object_new_int(    p.sslvpn.protocol ));
+			json_object_object_add(sslvpn, "port",                json_object_new_int(    p.sslvpn.port ));
+			json_object_object_add(sslvpn, "queue_size",          json_object_new_int(    p.sslvpn.queue_size ));
+			json_object_object_add(sslvpn, "key",                 json_object_new_string( p.sslvpn.key ));
+			json_object_object_add(sslvpn, "encrypt_type",        json_object_new_int(    p.sslvpn.encrypt_type ));
+			json_object_object_add(sslvpn, "ipaddress",           json_object_new_string( p.sslvpn.ipaddress ));
+			json_object_object_add(sslvpn, "network_interface",   json_object_new_int(    p.sslvpn.network_interface ));
+
+			json_object_object_add( network_obj, "sslvpn", sslvpn ) ;
+		}
 	}
 	json_object_object_add(all_config, "network_settings", network_obj);
 
@@ -474,6 +494,7 @@ _FREE_NETWORK_OBJ:
 	json_object_put(livestm_obj);
 	for(i = 0; i < 4 ; i++)json_object_put(wifiInfo[i]);
 	json_object_put(wifilist);
+	json_object_put(sslvpn);
 	json_object_put(network_obj);
 
 _FREE_OPERATION_OBJ:
@@ -766,35 +787,37 @@ void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 {
 	int i;
-	json_object *myobj, *wirelessobj, *cradleobj, *wifiapobj, *livestmobj, *wifilist;
+	json_object *network, *wirelessobj, *cradleobj, *wifiapobj, *livestmobj, *wifilist;
+	json_object *sslvpn;
     json_object* wifiInfo[4];
 
-	myobj       = json_object_new_object();
+	network     = json_object_new_object();
 	wirelessobj = json_object_new_object();
 	cradleobj   = json_object_new_object();
 	wifiapobj   = json_object_new_object();
 	wifilist    = json_object_new_array();
 	livestmobj  = json_object_new_object();
+	sslvpn      = json_object_new_object();
 
-	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+	json_object_object_add(network, "model", json_object_new_string(MODEL_NAME));
 
-	json_object_object_add(myobj, "wifi_ap_multi", json_object_new_int(p->wifi_ap_multi));
+	json_object_object_add(network, "wifi_ap_multi", json_object_new_int(p->wifi_ap_multi));
 
 	json_object_object_add(wirelessobj, "addr_type", json_object_new_int(p->wireless.addr_type));
 	json_object_object_add(wirelessobj, "ipv4",      json_object_new_string(p->wireless.ipv4));
 	json_object_object_add(wirelessobj, "gateway",   json_object_new_string(p->wireless.gw));
 	json_object_object_add(wirelessobj, "netmask",   json_object_new_string(p->wireless.mask));
-	json_object_object_add(myobj, "wireless", wirelessobj);
+	json_object_object_add(network, "wireless", wirelessobj);
 
 	json_object_object_add(cradleobj, "addr_type", json_object_new_int(p->cradle.addr_type));
 	json_object_object_add(cradleobj, "ipv4",      json_object_new_string(p->cradle.ipv4));
 	json_object_object_add(cradleobj, "gateway",   json_object_new_string(p->cradle.gw));
 	json_object_object_add(cradleobj, "netmask",   json_object_new_string(p->cradle.mask));
-	json_object_object_add(myobj, "cradle", cradleobj);
+	json_object_object_add(network, "cradle", cradleobj);
 
 	json_object_object_add(wifiapobj, "ssid", json_object_new_string(p->wifi_ap.id));
 	json_object_object_add(wifiapobj, "pass",   json_object_new_string(p->wifi_ap.pw));
-	json_object_object_add(myobj, "wifi_ap", wifiapobj);
+	json_object_object_add(network, "wifi_ap", wifiapobj);
 
 	char fname[10];
 	for(i = 0 ; i < 4 ; i++)
@@ -808,19 +831,38 @@ void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 
 		json_object_array_add(wifilist, wifiInfo[i]);
 	}
-	json_object_object_add(myobj, "wifilist", wifilist) ;
+	json_object_object_add(network, "wifilist", wifilist) ;
 
 	json_object_object_add(livestmobj, "enable",  json_object_new_int(   p->live_stream_account_enable));
 	json_object_object_add(livestmobj, "enctype", json_object_new_int(   p->live_stream_account_enctype));
 	json_object_object_add(livestmobj, "id",      json_object_new_string(p->live_stream_account.id));
 	json_object_object_add(livestmobj, "pw",      json_object_new_string(p->live_stream_account.pw));
-	json_object_object_add(myobj, "live_stream_account", livestmobj);
+	json_object_object_add(network,    "live_stream_account", livestmobj);
+
+
+	// ssl vpn
+	{
+		json_object_object_add(sslvpn, "enable",              json_object_new_int(    p->sslvpn.enable ));
+		json_object_object_add(sslvpn, "vendor",              json_object_new_int(    p->sslvpn.vendor ));
+		json_object_object_add(sslvpn, "vpn_id",              json_object_new_string( p->sslvpn.vpn_id ));
+		json_object_object_add(sslvpn, "heartbeat_interval",  json_object_new_int(    p->sslvpn.heartbeat_interval ));
+		json_object_object_add(sslvpn, "heartbeat_threshold", json_object_new_int(    p->sslvpn.heartbeat_threshold ));
+		json_object_object_add(sslvpn, "protocol",            json_object_new_int(    p->sslvpn.protocol ));
+		json_object_object_add(sslvpn, "port",                json_object_new_int(    p->sslvpn.port ));
+		json_object_object_add(sslvpn, "queue_size",          json_object_new_int(    p->sslvpn.queue_size ));
+		json_object_object_add(sslvpn, "key",                 json_object_new_string( p->sslvpn.key ));
+		json_object_object_add(sslvpn, "encrypt_type",        json_object_new_int(    p->sslvpn.encrypt_type ));
+		json_object_object_add(sslvpn, "ipaddress",           json_object_new_string( p->sslvpn.ipaddress ));
+		json_object_object_add(sslvpn, "network_interface",   json_object_new_int(    p->sslvpn.network_interface ));
+
+		json_object_object_add(network, "sslvpn", sslvpn ) ;
+	}
 
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
 	PUT_CRLF;
 
-	PUTSTR("%s\r\n", json_object_to_json_string(myobj));
+	PUTSTR("%s\r\n", json_object_to_json_string(network));
 
 	// free
 	json_object_put(wirelessobj);
@@ -829,7 +871,8 @@ void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 	for(i = 0 ; i < 4 ; i++) json_object_put(wifiInfo[i]);
 	json_object_put(wifilist);
 	json_object_put(livestmobj);
-	json_object_put(myobj);
+	json_object_put(sslvpn);
+	json_object_put(network);
 }
 
 void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
