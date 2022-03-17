@@ -313,18 +313,18 @@ typedef struct {
 
 #pragma pack(1)
 typedef struct {
-    short ON_OFF ;
+    short ON_OFF ; // default OFF
     short vendor ; // 0 XGATE
-    char vpn_id[MAX_CHAR_32] ;
-    short heartbeat_interval ;
-    short heartbeat_threshold ; 
-    short protocol ; // 0 tcp , 1 udp 
-    unsigned short port ;
-    short queue ;  // queue size
-    char  key[MAX_CHAR_16] ;
-    short encrypt_type ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
-    char  ipaddr[MAX_CHAR_32] ;
-    short NI ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
+    char vpn_id[MAX_CHAR_32] ; // default user0001
+    short heartbeat_interval ; // 0 ~ 32767 default 3000
+    short heartbeat_threshold ; // 0 ~ 32767 default 3
+    short protocol ; // 0 tcp , 1 udp  default 0
+    unsigned short port ; // 1024 ~ 49152 default 3900
+    short queue ;  // queue size 0 ~ 32767 default 16384
+    char  key[MAX_CHAR_16] ; // default abcd1234
+    short encrypt_type ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed  default 0
+    char  ipaddr[MAX_CHAR_32] ; // default 211.34.58.52
+    short NI ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1   default 2 (usb0)
 
 } app_sslvpncfg_t ;
 #pragma pack()

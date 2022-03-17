@@ -214,7 +214,12 @@ int app_main(void)
     sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
-//    app_libuv_start();
+    if(app_set->sslvpn_info.ON_OFF)
+	{
+		app_sslvpn_start() ;
+	}
+
+
     if(app_set->rtmp.ON_OFF)
 	{
     	app_libuv_start();
@@ -359,7 +364,10 @@ int app_main(void)
     if (app_cfg->ste.b.rtsptx) {
         app_rtsptx_stop();
     }
-    
+
+    if(app_set->sslvpn_info.ON_OFF)
+		app_sslvpn_stop() ;
+
 	app_tsync_exit() ;
 	app_netmgr_exit();
 	app_mcu_stop();
@@ -485,7 +493,7 @@ int main(int argc, char **argv)
 	app_dev_init();
     app_tsync_init() ;
 
-    setting_txtbase() ;
+//    setting_txtbase() ;
 
 	if (app_file_init() == SOK) {
 		app_rec_init();

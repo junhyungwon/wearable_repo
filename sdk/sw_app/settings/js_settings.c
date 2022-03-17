@@ -92,6 +92,17 @@ static int	parseSSLvpnInfo(app_set_t* const set, json_object* rootObj)
 		set->sslvpn_info.protocol = -1;
 	}
 
+    if(json_find_obj(jobj, "port") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "port");
+		set->sslvpn_info.port = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN port 항목 없음\n") ;
+		set->sslvpn_info.port = -1;
+	}
+
     if(json_find_obj(jobj, "queue") != NULL)
     {
 		tmp = json_object_object_get(jobj, "queue");
