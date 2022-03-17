@@ -60,9 +60,9 @@
 #define RTMP_SERVER_ADDR            "192.168.1.252"
 #define RTMP_SERVER_PORT            1935
 
-#define SSLVPN_ID                   "vpnID"
+#define SSLVPN_ID                   "user001"
 #define SSLVPN_KEY                  "abcd1234"
-#define SSLVPN_IPADDRESS            "56.112.48.100"
+#define SSLVPN_IPADDRESS            "211.34.58.52"
 
 typedef enum {
 	RATE_CTRL_VBR,
@@ -319,7 +319,7 @@ typedef struct {
     short heartbeat_interval ;
     short heartbeat_threshold ; 
     short protocol ; // 0 tcp , 1 udp 
-    short port ;
+    unsigned short port ;
     short queue ;  // queue size
     char  key[MAX_CHAR_16] ;
     short encrypt_type ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed

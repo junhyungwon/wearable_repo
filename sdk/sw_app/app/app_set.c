@@ -42,7 +42,7 @@
 
 
 #include "app_voip.h"
-
+#include "app_sslvpn.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -975,19 +975,19 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->sslvpn_info.vpn_id[0] == CHAR_INVALID || (int)pset->sslvpn_info.vpn_id[0] == 0)
 		strcpy(pset->sslvpn_info.vpn_id, SSLVPN_ID) ;
 
-	if(pset->sslvpn_info.heartbeat_interval <= CFG_INVALID)
+	if(pset->sslvpn_info.heartbeat_interval <= CFG_INVALID || pset->sslvpn_info.heartbeat_interval > 32767)
 		pset->sslvpn_info.heartbeat_interval = 3000 ;
 	
-	if(pset->sslvpn_info.heartbeat_threshold <= CFG_INVALID)
+	if(pset->sslvpn_info.heartbeat_threshold <= CFG_INVALID || pset->sslvpn_info.heartbeat_threshold > 32767)
 		pset->sslvpn_info.heartbeat_threshold = 3 ;
 
 	if(pset->sslvpn_info.protocol <= CFG_INVALID)
 		pset->sslvpn_info.protocol = OFF; // 0 TCP, 1 UDP
 
-	if(pset->sslvpn_info.port <= CFG_INVALID)
-		pset->sslvpn_info.port = 3600 ;
+	if((pset->sslvpn_info.port < 1024) || pset->sslvpn_info.port > 49151)
+		pset->sslvpn_info.port = 3900 ;
 
-	if(pset->sslvpn_info.queue <= CFG_INVALID)
+	if(pset->sslvpn_info.queue <= CFG_INVALID || pset->sslvpn_info.queue > 32767)
 		pset->sslvpn_info.queue = 16384 ;
 	
 	if((int)pset->sslvpn_info.key[0] == CHAR_INVALID || (int)pset->sslvpn_info.key[0] == 0)
@@ -1000,7 +1000,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		strcpy(pset->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
 	
 	if(pset->sslvpn_info.NI <= CFG_INVALID)
-		pset->sslvpn_info.NI = OFF ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
+		pset->sslvpn_info.NI = 2 ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
 
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
@@ -1316,12 +1316,12 @@ static void app_set_default(int default_type)
 	app_set->sslvpn_info.heartbeat_interval = 3000 ;
 	app_set->sslvpn_info.heartbeat_threshold = 3 ;
 	app_set->sslvpn_info.protocol = OFF ; // 0 tcp , 1 udp 
-	app_set->sslvpn_info.port = 3600 ;
+	app_set->sslvpn_info.port = 3900 ;
 	app_set->sslvpn_info.queue = 16384 ;
 	strcpy(app_set->sslvpn_info.key, SSLVPN_KEY) ;
 	app_set->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
 	strcpy(app_set->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
-	app_set->sslvpn_info.NI = OFF ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
+	app_set->sslvpn_info.NI = 2 ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
 
 }
 
@@ -1411,6 +1411,7 @@ int app_set_open(void)
     app_set_delete_cfg(); // another verion setting file
     set_uid() ;  // read uid from nand and then set uid to app_set
 
+    app_set_sslvpnconf() ;
 	app_set_write();
 	printf("done\n");
 
