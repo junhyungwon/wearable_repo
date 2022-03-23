@@ -60,9 +60,11 @@
 #define RTMP_SERVER_ADDR            "192.168.1.252"
 #define RTMP_SERVER_PORT            1935
 
-#define SSLVPN_ID                   "user001"
+//#define SSLVPN_ID                   "user001"
+#define SSLVPN_ID                   "vpnID"
 #define SSLVPN_KEY                  "abcd1234"
-#define SSLVPN_IPADDRESS            "211.34.58.52"
+//#define SSLVPN_IPADDRESS            "211.34.58.52"
+#define SSLVPN_IPADDRESS            "vpn_serverIP"
 
 typedef enum {
 	RATE_CTRL_VBR,

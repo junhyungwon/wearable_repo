@@ -953,6 +953,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rtmp.ON_OFF <= CFG_INVALID)
 		pset->rtmp.ON_OFF = OFF;
 
+	pset->rtmp.ON_OFF = OFF;
+
 	if(pset->rtmp.USE_URL <= CFG_INVALID)
 		pset->rtmp.USE_URL = OFF;
 
