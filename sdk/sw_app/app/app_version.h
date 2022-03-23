@@ -23,61 +23,61 @@
 #define TCX_MODEL   				MODEL_NAME
 
 /* Fixed Hardware Version */
-#define FITT380_HW_VER				"Rev.0.3" 
+#define FITT360_HW_VER				"Rev.0.3" 
 
-#if defined(NEXX380B)
+#if defined(NEXX360B)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38B"
+#	define FITT360_SW_VER      		"2.09.38B"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
-#elif defined(NEXX380C)
+#elif defined(NEXX360C)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38C"
+#	define FITT360_SW_VER      		"2.09.38C"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
-#elif defined(NEXX380W)
+#elif defined(NEXX360W)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38N"
+#	define FITT360_SW_VER      		"2.09.38N"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
-#elif defined(NEXX380W_MUX)
+#elif defined(NEXX360W_MUX)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38N_MUX"
+#	define FITT360_SW_VER      		"2.09.38N_MUX"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
 #elif defined(NEXXB)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38"
+#	define FITT360_SW_VER      		"2.09.38"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
 #elif defined(NEXXB_ONE)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38"
+#	define FITT360_SW_VER      		"2.09.38"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
-#elif defined(NEXX380H)
+#elif defined(NEXX360H)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38H"
+#	define FITT360_SW_VER      		"2.09.38H"
 #	else
-#	define FITT380_SW_VER      		"2.09.38D"
+#	define FITT360_SW_VER      		"2.09.38D"
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"1.01.38"
+#	define FITT360_SW_VER      		"1.01.38"
 #	else
-#	define FITT380_SW_VER      		"1.01.38.D"
+#	define FITT360_SW_VER      		"1.01.38.D"
 #	endif
-#elif defined(NEXX380W_CCTV)
+#elif defined(NEXX360W_CCTV)
 #	if SW_RELEASE
-#	define FITT380_SW_VER      		"2.09.38N_CCTV"
+#	define FITT360_SW_VER      		"2.09.38N_CCTV"
 #	else
-#	define FITT380_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.38.D"
 #	endif
 #endif
 #endif	/* _APP_VERSION_H_ */
