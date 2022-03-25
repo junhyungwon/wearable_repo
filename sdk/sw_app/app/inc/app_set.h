@@ -64,7 +64,7 @@
 #define SSLVPN_ID                   "vpnID"
 #define SSLVPN_KEY                  "abcd1234"
 //#define SSLVPN_IPADDRESS            "211.34.58.52"
-#define SSLVPN_IPADDRESS            "vpn_serverIP"
+#define SSLVPN_IPADDRESS            "192.168.40.1"
 
 typedef enum {
 	RATE_CTRL_VBR,
