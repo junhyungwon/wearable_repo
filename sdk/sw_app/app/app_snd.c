@@ -44,7 +44,8 @@ typedef struct {
 
 typedef struct {
 	app_thr_obj cObj;	 //# sound in thread
-	
+	app_thr_obj rObj;	 //# message receive thread
+		
 	snd_pcm_t *aic3x;    //# read sound card.
 	snd_pcm_t *dummy;    //# dummy sound card (virtual)
 	snd_pcm_t *bcsnd;    //# backchannel sound card.
@@ -335,6 +336,8 @@ static void *THR_snd_cap(void *prm)
 	return NULL;
 }
 
+#if SYS_CONFIG_VOIP
+/* VOIP를 사용할 수 있는 board에서만 동작해야 함 */
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -352,8 +355,6 @@ typedef struct {
 	unsigned char sbuf[BCPLAY_RCV_SIZE];
 } bcplay_to_main_msg_t;
 typedef struct {
-	app_thr_obj rObj;		//# message receive thread
-	
 	int qid;
 	int shmid;
 	
@@ -414,6 +415,7 @@ static int ulaw2linear(unsigned char u_val)
 
 static void *THR_bc_play(void *prm)
 {
+	app_thr_obj *tObj = &isnd->rObj;
 	snd_pcm_sw_params_t *sw_params = NULL;
 	
 	int cmd, exit=0;
@@ -422,6 +424,9 @@ static void *THR_bc_play(void *prm)
 	size_t pframes = 0;
 	
 	char *sampv=NULL; /* playback sound buffer */
+	
+	tObj->active = 1;
+	aprintf("enter...\n");
 	/* 
 	 * set alsa period size (프레임 단위로 설정함)
 	 * 1초:sample rate = PTIME(ms):x
@@ -533,9 +538,11 @@ static void *THR_bc_play(void *prm)
 	if (sampv != NULL)
 		free(sampv);
 		
+	tObj->active = 0;
 	aprintf("...exit\n");
 	return NULL;
 }
+#endif /* end of #if SYS_CONFIG_VOIP */
 
 /*****************************************************************************
 * @brief    sound init/exit function
@@ -558,14 +565,17 @@ int app_snd_start(void)
 		eprintf("create thread\n");
 		return -1;
 	}
-
-    if(!app_cfg->voip_set_ON_OFF) {
+	
+	#if SYS_CONFIG_VOIP
+    /* VOIP를 사용할 수 있는 board에서만 동작 */
+	if(!app_cfg->voip_set_ON_OFF) {
 		//#--- create backchannel play thread bkkim
-		if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
+		if (thread_create(&isnd->rObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
 			eprintf("create bc play thread\n");
 			return -1;
 		}
 	}
+	#endif
 
 	aprintf("... done!\n");
 	return 0;
@@ -575,8 +585,18 @@ void app_snd_stop(void)
 {
 	app_thr_obj *tObj;
 
-	//#--- stop thread
+	#if SYS_CONFIG_VOIP
+	//#--- stop backchannel audio
+	tObj = &isnd->rObj;
+	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while(tObj->active) {
+		app_msleep(20);
+	}
+	thread_delete(tObj);
+	#endif
+		
 	tObj = &isnd->cObj;
+	//#--- stop mic capture
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while(tObj->active) {
 		app_msleep(20);

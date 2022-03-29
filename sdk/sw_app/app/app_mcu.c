@@ -50,9 +50,9 @@
 /* 
  * NEXXB and NEXX Common Voltage 
  */
-/* ������ ��� �� -> 16V �̻�
- * ���� ���͸� ��� �� -> ���� ���͸� ������ ������.
- * ���� ���͸� ��� -> ���� ���͸� ���� ������.
+/* 어탭터 사용 시 -> 16V 이상
+ * 내장 배터리 사용 시 -> 내장 배터리 전압이 측정됨.
+ * 외장 배터리 사용 -> 외장 배터리 전압 측정됨.
  */
 #define MBATT_MIN					600
 #define IBATT_MIN		    		620 //590 //#  5.90 V->6.4V, minimum battery voltage
@@ -95,7 +95,7 @@ static void delay_3sec_exit(void)
 		gettimeofday(&t2, NULL);
 		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
 		if (tgap <= 0) {
-			/* timesync �� ���ؼ� gettimeofday ���� ����Ǹ� ���� ������ ������ */
+			/* timesync 에 의해서 gettimeofday 값이 변경되면 무한 루프에 빠진다 */
 			gettimeofday(&t1, NULL);
 		}
 		OSA_waitMsecs(5);
@@ -133,7 +133,7 @@ void app_mcu_pwr_off(int type)
 static int c_volt_chk = 0;
 /*
  * Case NEXX_C
- * ���� ���͸��� ����ĸ �뵵�� ����. ���� ���и� Ȯ���Ͽ� 9V ���Ϸ� �������� ��� �����ؾ� ��.
+ * 내장 배터리는 슈퍼캡 용도로 사용됨. 외장 전압만 확인하여 9V 이하로 낮아지는 경우 종료해야 함.
  */
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
@@ -142,9 +142,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 	//# low power check
-	//# ebatt�� üũ�� ��� ũ���� ����� �Ұ��� �� ����. ���� mbatt�� üũ�ϸ� ũ���� ��� �� 
-	//# mbatt�� 16V�̻�, ���� ���͸� ��� �� 10V�̻� �����Ǹ�, ���� ���͸� ��� �� 8.4�� �����ǹǷ�
-	//# ���� ���͸��� ����ϴ� ��쿡�� �ý��� Off.
+	//# ebatt를 체크할 경우 크래들 사용이 불가능 해 진다. 따라서 mbatt를 체크하며 크래들 사용 시 
+	//# mbatt는 16V이상, 외장 배터리 사용 시 10V이상 측정되며, 내장 배터리 사용 시 8.4가 측정되므로
+	//# 내장 배터리를 사용하는 경우에는 시스템 Off.
 	if (mbatt < LOW_POWER_THRES) {
 		if (c_volt_chk) {
 			c_volt_chk--;
@@ -246,8 +246,8 @@ static int power_on_lv = 1;
  *
  * Others
  * LF External Batt full charge level is 11.7V
- * mbatt�� ������ ���� �ٸ��� ������. �����ʹ� 16V, ������ 9V �Ǵ� 11V ������ 8V
- * ���� max (8.43V), ���� ���͸� �ּ� 8.75V �̻�. 
+ * mbatt는 전원에 따라서 다르게 측정됨. 어탭터는 16V, 외장은 9V 또는 11V 내장은 8V
+ * 내장 max (8.43V), 외장 배터리 최소 8.75V 이상. 
  */
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
@@ -256,9 +256,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	
 #ifdef EXT_BATT_ONLY
 	/* 
-	 * ���� �������͸��� ����ϴ� ��� �׻� ������ �����ż� ��µǹǷ�
-	 * ���͸� �ܰ踦 ������ �� ����. ���� Low Battery�� ������ �Ұ��� ��.
-	 * �׳� ����.
+	 * 외장 보조배터리를 사용하는 경우 항상 전압이 고정돼서 출력되므로
+	 * 배터리 단계를 측정할 수 없다. 또한 Low Battery로 측정이 불가능 함.
+	 * 그냥 꺼짐.
 	 */
 	return 0;
 #endif
