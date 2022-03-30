@@ -27,57 +27,57 @@
 
 #if defined(NEXX360B)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38B"
+#	define FITT360_SW_VER      		"2.09.39B"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360C)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38C"
+#	define FITT360_SW_VER      		"2.09.39C"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360W)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38N"
+#	define FITT360_SW_VER      		"2.09.39N"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360W_MUX)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38N_MUX"
+#	define FITT360_SW_VER      		"2.09.39N_MUX"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXXB)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38"
+#	define FITT360_SW_VER      		"2.09.39"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXXB_ONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38"
+#	define FITT360_SW_VER      		"2.09.39"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360H)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38H"
+#	define FITT360_SW_VER      		"2.09.39H"
 #	else
-#	define FITT360_SW_VER      		"2.09.38D"
+#	define FITT360_SW_VER      		"2.09.39D"
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"1.01.38"
+#	define FITT360_SW_VER      		"1.01.39"
 #	else
-#	define FITT360_SW_VER      		"1.01.38.D"
+#	define FITT360_SW_VER      		"1.01.39.D"
 #	endif
 #elif defined(NEXX360W_CCTV)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.38N_CCTV"
+#	define FITT360_SW_VER      		"2.09.39N_CCTV"
 #	else
-#	define FITT360_SW_VER      		"2.09.38.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #endif
 #endif	/* _APP_VERSION_H_ */
