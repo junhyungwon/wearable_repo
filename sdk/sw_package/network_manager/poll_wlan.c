@@ -32,7 +32,7 @@
 #define WLAN_OPER_PATH	  			"/sys/class/net/wlan0/operstate"
 
 /* Wi-Fi Module name */
-#define RTL_8821A_NAME				"8821au"
+#define RTL_8821A_NAME				"8811au"
 #define RTL_88X2B_NAME				"88x2bu"
 
 typedef struct {

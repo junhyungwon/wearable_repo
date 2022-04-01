@@ -445,6 +445,8 @@ int app_sos_send_stop(int etype)
 {
 	dprintf("STOP Sending SOS Packet!!\n");
 	event_send(&irec->kObj, APP_SOS_SEND_STOP, etype, 0); // etype == 0 event, etype == 1 SOS
+	
+	return SOK;
 }
 
 int app_rec_evt(int etype)

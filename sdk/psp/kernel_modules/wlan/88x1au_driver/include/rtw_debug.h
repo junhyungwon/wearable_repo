@@ -95,7 +95,7 @@ extern void rtl871x_cedbg(const char *fmt, ...);
 	#define _seqdump(sel, fmt, arg...) _dbgdump(fmt, ##arg)
 #endif
 
-#undef CONFIG_RTW_DEBUG //# added by udworks
+//#undef CONFIG_RTW_DEBUG //# added by udworks
 #ifdef CONFIG_RTW_DEBUG
 
 #ifndef _OS_INTFS_C_
