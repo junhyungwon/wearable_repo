@@ -240,7 +240,7 @@
 #ifdef CONFIG_USE_USB_BUFFER_ALLOC_RX
 
 #else
-	#define CONFIG_PREALLOC_RECV_SKB
+	#define CONFIG_PREALLOC_RECV_SKB /* not used */
 	#ifdef CONFIG_PREALLOC_RECV_SKB
 		/* #define CONFIG_FIX_NR_BULKIN_BUFFER */ /* only use PREALLOC_RECV_SKB buffer, don't alloc skb at runtime */
 	#endif
@@ -340,12 +340,12 @@
 /* #define DBG_MEM_ALLOC */
 /* #define DBG_IOCTL */
 
-/* #define DBG_TX */
+#define DBG_TX
 /* #define DBG_XMIT_BUF */
 /* #define DBG_XMIT_BUF_EXT */
-/* #define DBG_TX_DROP_FRAME */
+#define DBG_TX_DROP_FRAME
 
-/* #define DBG_RX_DROP_FRAME */
+/*#define DBG_RX_DROP_FRAME*/
 /* #define DBG_RX_SEQ */
 /* #define DBG_RX_SIGNAL_DISPLAY_PROCESSING */
 /* #define DBG_RX_SIGNAL_DISPLAY_SSID_MONITORED "jeff-ap" */

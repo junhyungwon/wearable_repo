@@ -367,6 +367,7 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsig
 #endif
       makeSocketBlocking(socketNum, RTPINTERFACE_BLOCKING_WRITE_TIMEOUT_MS);
       sendResult = send(socketNum, (char const*)(&data[numBytesSentSoFar]), numBytesRemainingToSend, 0/*flags*/);
+	  makeSocketNonBlocking(socketNum);
       if ((unsigned)sendResult != numBytesRemainingToSend) {
 	// The blocking "send()" failed, or timed out.  In either case, we assume that the
 	// TCP connection has failed (or is 'hanging' indefinitely), and we stop using it
@@ -379,7 +380,6 @@ Boolean RTPInterface::sendDataOverTCP(int socketNum, u_int8_t const* data, unsig
 	removeStreamSocket(socketNum, 0xFF);
 	return False;
       }
-      makeSocketNonBlocking(socketNum);
 
       return True;
     } else if (sendResult < 0 && envir().getErrno() != EAGAIN) {

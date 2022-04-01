@@ -1480,7 +1480,8 @@ int app_set_write(void)
 		eprintf("couldn't open %s file\n", path);
 	}
 #endif
-
+	
+	dprintf("CFG sync start..\n");
 	sync();
 	aprintf("....exit!\n");
 
