@@ -245,12 +245,6 @@ static void *THR_dev(void *prm)
 						break ;
 				}
 			}
-				
-//			app_voip_event_noty();
-		} else if (rkey == KEY_LONG) {	
-
-			}
-
 		} else if (rkey == KEY_LONG) {	
 			if (app_rec_state()) {
 				app_rec_stop(ON);
