@@ -56,7 +56,7 @@
 #include "app_rtmp.h"
 
 #include "app_voip.h"
-
+#include "app_bcall.h"
 
 #ifdef USE_KCMVP
 #include "mcapi.h"
@@ -275,9 +275,10 @@ int app_main(void)
         app_p2p_init() ;
 		#endif		
     }
-
     if(app_set->voip.ON_OFF)
 		app_voip_init();
+    else
+    	app_call_control_init() ;
 
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
@@ -529,6 +530,8 @@ int main(int argc, char **argv)
     app_ipins_exit();
 	if(app_set->voip.ON_OFF)
 		app_voip_exit(); /* voip exit */
+	else
+    	app_call_control_exit() ;
 
 #if SYS_CONFIG_GPS	
 	app_gps_exit();

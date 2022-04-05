@@ -293,6 +293,7 @@ static void *THR_snd_cap(void *prm)
 				struct timeval tv;
 				gettimeofday(&tv, NULL) ;
 				long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
+//				printf("app_cfg->ste.b.rtsptx = %d app_cfg->stream_enable_audio = %d\n",app_cfg->ste.b.rtsptx, app_cfg->stream_enable_audio) ;
 				if(app_cfg->ste.b.rtsptx && app_cfg->stream_enable_audio)
 					app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
 			}

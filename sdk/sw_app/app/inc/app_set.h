@@ -316,7 +316,7 @@ typedef struct {
 #pragma pack(1)
 typedef struct {
     short ON_OFF ; // default OFF
-    short vendor ; // 0 XGATE
+    short vendor ; // 0 AXGATE
     char vpn_id[MAX_CHAR_32] ; // default user0001
     short heartbeat_interval ; // 0 ~ 32767 default 3000
     short heartbeat_threshold ; // 0 ~ 32767 default 3

@@ -584,7 +584,7 @@ static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
 	isChanged += check_cval_short(&app_set->sslvpn_info.ON_OFF, t->sslvpn.enable);
 
 	if(t->sslvpn.enable) {
-		isChanged += check_cval_short(&app_set->sslvpn_info.vendor, t->sslvpn.vendor); // 0 XGATE
+		isChanged += check_cval_short(&app_set->sslvpn_info.vendor, t->sslvpn.vendor); // 0 AXGATE
 		isChanged += check_cval_str( app_set->sslvpn_info.vpn_id, t->sslvpn.vpn_id);
 		isChanged += check_cval_short(&app_set->sslvpn_info.heartbeat_interval,  t->sslvpn.heartbeat_interval);
 		isChanged += check_cval_short(&app_set->sslvpn_info.heartbeat_threshold, t->sslvpn.heartbeat_threshold);

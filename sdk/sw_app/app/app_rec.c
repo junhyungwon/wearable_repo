@@ -356,12 +356,14 @@ static void *THR_evt_buzzer(void *prm)
 				{
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
+#ifndef NEXX360B
 						if(option) // SOS
 							sosdata_send() ;
 						else
 						    eventdata_send() ;					    
 
 					    evt_sndcnt += 1 ;
+#endif
 					}
 				}
 

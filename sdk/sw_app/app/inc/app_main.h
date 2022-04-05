@@ -99,6 +99,19 @@
 #define FTP_CUR_DEV				FTP_DEV_ETH0
 #endif
 
+//# app CALL STATUS
+typedef enum {
+	APP_STATE_NONE,
+	//# for thread
+	APP_STATE_INCOMING = 0x01,
+	APP_STATE_ACCEPT,
+    APP_STATE_CALLING,
+	APP_STATE_OUTCOMING,
+
+	MAX_STATE_CMD
+} app_state_e;
+
+
 typedef enum {
 	STE_GPS = 0,
 	STE_DTIME,

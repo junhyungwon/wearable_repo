@@ -972,7 +972,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->sslvpn_info.ON_OFF = OFF ;
 
 	if(pset->sslvpn_info.vendor <= CFG_INVALID)
-		pset->sslvpn_info.vendor = OFF ;  // 0 XGATE VPN
+		pset->sslvpn_info.vendor = OFF ;  // 0 AXGATE VPN
 	
 	if((int)pset->sslvpn_info.vpn_id[0] == CHAR_INVALID || (int)pset->sslvpn_info.vpn_id[0] == 0)
 		strcpy(pset->sslvpn_info.vpn_id, SSLVPN_ID) ;
@@ -1313,7 +1313,7 @@ static void app_set_default(int default_type)
 	strcpy(app_set->rtmp.FULL_URL, RTMP_SERVER_URL);
 
 	app_set->sslvpn_info.ON_OFF = OFF ;
-	app_set->sslvpn_info.vendor = OFF ; // 0 XGATE
+	app_set->sslvpn_info.vendor = OFF ; // 0 AXGATE
 	strcpy(app_set->sslvpn_info.vpn_id, SSLVPN_ID) ;
 	app_set->sslvpn_info.heartbeat_interval = 3000 ;
 	app_set->sslvpn_info.heartbeat_threshold = 3 ;
