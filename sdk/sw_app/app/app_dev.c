@@ -198,7 +198,7 @@ static void *THR_dev(void *prm)
     app_thr_obj *tObj = &idev->devObj;
 	int exit=0;
 	int mmc, cmd, value = 0;
-	int rkey;
+	int rkey, call_state;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -226,10 +226,29 @@ static void *THR_dev(void *prm)
 				app_voip_event_noty();
 			else
 			{
-				if(get_calling_state() == APP_STATE_INCOMING )
-					app_accept_call() ; // Back channel signal
-				else if(get_calling_state() == APP_STATE_CALLING)
-					app_close_call() ;
+				call_state = get_calling_state() ;		
+				switch(call_state)
+				{
+					case APP_STATE_INCOMING :
+						app_accept_call() ; // Back channel signal
+						break;
+					case APP_STATE_ACCEPT :
+					    break;
+					case APP_STATE_CALLING :
+						app_close_call() ;
+						break ;
+					case APP_STATE_NONE :
+					    app_call_send() ;
+						break ;
+					case APP_STATE_OUTCOMING :  // call cancel 
+						app_close_call() ;
+						break ;
+				}
+			}
+				
+//			app_voip_event_noty();
+		} else if (rkey == KEY_LONG) {	
+
 			}
 
 		} else if (rkey == KEY_LONG) {	
