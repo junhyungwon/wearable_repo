@@ -16,6 +16,12 @@
   Defines referenced header files
 -----------------------------------------------------------------------------*/
 
+#define CALL_DEFAULT_RES			0x00
+#define CALL_CONNECT_ESTABLISHED    0x01 
+#define CALL_CONNECT_FAIL           0x63 // 99
+
+
+
 /*----------------------------------------------------------------------------
   Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -85,6 +91,36 @@ typedef struct TAG_USERAUTHRES {
 } USERAUTHRES ;
 #pragma pack()
 
+#pragma pack(1)
+typedef struct TAG_CALL_REQ{
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+	char UID[32] ;
+	char DeviceId[32] ;
+	char Reserved[32] ;
+} CALL_REQ ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_CALL_RES{
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+	unsigned short result ;
+	char Reserved[32] ;
+} CALL_RES ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_CALL_CLOSE{
+	unsigned short identifier ;
+	unsigned short cmd ;
+	unsigned short length ;
+} CALL_CLOSE ;
+#pragma pack()
+
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -98,5 +134,12 @@ void gpsdata_send(void *data);
 void eventdata_send(void);
 void sosdata_send(void);
 void userauthreq(int, char*, int) ;
+void stop_sos_send(void) ;
+void recv_call_req(int, char*, int) ; // nexx manager -> nexx series
+void recv_call_res(int, char*, int) ; // nexx manager -> nexx series
+void recv_call_close(int, char*, int) ; // nexx manager -> nexx series
+
+void send_call_req() ;
+void send_call_close() ;
 
 #endif // _APP_PROCESS_H

@@ -51,11 +51,20 @@
 #define DEFAULT_STM_QUALITY        	1000    // default streaming kbps
 #define DEFAULT_REC_QUALITY    		4000    // default recording kbps
 
-#if SYS_CONFIG_VOIP
+
 #define PBX_SERVER_ADDR         	"52.78.124.88"
 #define PBX_SERVER_PORT         	6060
 #define PBX_SERVER_PW           	"9999"
-#endif
+
+#define RTMP_SERVER_URL            "rtmp://<ipaddress>:<port>/live/<streamname>"
+#define RTMP_SERVER_ADDR            "192.168.1.252"
+#define RTMP_SERVER_PORT            1935
+
+//#define SSLVPN_ID                   "user001"
+#define SSLVPN_ID                   "vpnID"
+#define SSLVPN_KEY                  "abcd1234"
+//#define SSLVPN_IPADDRESS            "211.34.58.52"
+#define SSLVPN_IPADDRESS            "192.168.40.1"
 
 typedef enum {
 	RATE_CTRL_VBR,
@@ -213,6 +222,12 @@ typedef struct {
 //} __attribute__((packed)) app_system_t;
 
 typedef struct {
+    char enable_audio;       // on, off   
+	 
+	char reserved[15];
+}app_stm_cfg_t;
+
+typedef struct {
 	int period_idx;
 	int overwrite;
     char pre_rec;         // on, off
@@ -272,7 +287,7 @@ typedef struct {
     short ON_OFF ;
 } app_multi_ap_t; // 66
 
-#if SYS_CONFIG_VOIP
+
 #pragma pack(1)
 typedef struct {
     char  ipaddr[MAX_CHAR_16];
@@ -281,11 +296,40 @@ typedef struct {
     char  passwd[MAX_CHAR_16] ;
     char  peerid[MAX_CHAR_16] ;
     short private_network_only;
-    int use_stun ;
-	char reserved[40] ;
+    int   use_stun ;
+	short ON_OFF ;
+	char reserved[38] ;
 } app_voip_t; // 72 
 #pragma pack()
-#endif
+
+#pragma pack(1)
+typedef struct {
+	short ON_OFF ;
+    short USE_URL ;
+    short port ;
+    char  ipaddr[MAX_CHAR_16];
+    char  FULL_URL[MAX_CHAR_64] ;
+//    char  passwd[MAX_CHAR_16] ;
+} app_rtmp_addr_t; //86 
+#pragma pack()
+
+#pragma pack(1)
+typedef struct {
+    short ON_OFF ; // default OFF
+    short vendor ; // 0 AXGATE
+    char vpn_id[MAX_CHAR_32] ; // default user0001
+    short heartbeat_interval ; // 0 ~ 32767 default 3000
+    short heartbeat_threshold ; // 0 ~ 32767 default 3
+    short protocol ; // 0 tcp , 1 udp  default 0
+    unsigned short port ; // 1024 ~ 49152 default 3900
+    short queue ;  // queue size 0 ~ 32767 default 16384
+    char  key[MAX_CHAR_16] ; // default abcd1234
+    short encrypt_type ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed  default 0
+    char  ipaddr[MAX_CHAR_32] ; // default 211.34.58.52
+    short NI ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1   default 2 (usb0)
+
+} app_sslvpncfg_t ;
+#pragma pack()
 
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1 = records + streaming
@@ -298,6 +342,7 @@ typedef struct {
 	app_network_wifiap_t	wifilist[WIFIAP_CNT];		//# wifi ap list information for client-mode
 
 	app_system_t	   		sys_info;
+	app_stm_cfg_t			stm_info;   // streaming info
 	app_rec_cfg_t			rec_info;
     app_ddnscfg_t           ddns_info;
     app_timecfg_t           time_info;
@@ -305,12 +350,12 @@ typedef struct {
     app_account_t           account_info;
 	app_multi_ap_t          multi_ap;
     app_fota_t				fota_info ;
-#if SYS_CONFIG_VOIP
+
     app_voip_t              voip; //  => 72 + 40
-	char reserved[192];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota))
-#else
-	char reserved[304];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - 168(fota)
-#endif
+    app_rtmp_addr_t         rtmp ; // 86 
+    app_sslvpncfg_t         sslvpn_info ;
+//	char reserved[88];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
+                         // - 16 ( streaming cfg )
 	
 } app_set_t;
 

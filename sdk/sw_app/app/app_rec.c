@@ -29,7 +29,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define REC_SEC_01MIN			1	//# max 1 min.
-#define REC_SEC_O5MIN			5	//# max 5 min.
+#define REC_SEC_05MIN			5	//# max 5 min.
 
 #define PRE_REC_SEC             15      // max 15 secs.
 
@@ -37,6 +37,7 @@ typedef struct {
 	app_thr_obj sObj;		//# rec message send thread
 	app_thr_obj rObj;		//# rec message receive thread
 	app_thr_obj bObj;		//# event buzzer thread
+	app_thr_obj kObj;		//# stop sos event packet
 	
 	int init;
 	int qid;
@@ -48,7 +49,7 @@ typedef struct {
 	
 } app_rec_t;
 
-static unsigned int grec_time[REC_PERIOD_MAX] = { REC_SEC_01MIN, REC_SEC_O5MIN };
+static unsigned int grec_time[REC_PERIOD_MAX] = { REC_SEC_01MIN, REC_SEC_05MIN };
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -206,7 +207,6 @@ static void *THR_rec_send_msg(void *prm)
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_REC_EVT) {
-#if defined(NEXXB) || defined(NEXXB_ONE)
 			if(option)
 			{
 				irec->rec_state  = 2;// SOS
@@ -217,10 +217,7 @@ static void *THR_rec_send_msg(void *prm)
                 irec->rec_state  = 1; // Event 
 			    send_msg(AV_CMD_REC_EVT);
 			}
-#else
-            irec->rec_state  = 1;  
-			send_msg(AV_CMD_REC_EVT);
-#endif
+
 			app_leds_rec_ctrl(LED_REC_ON);
 			/* TODO */
 		} else if (cmd == APP_CMD_STOP) {
@@ -242,7 +239,70 @@ static void *THR_rec_send_msg(void *prm)
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
 	aprintf("exit\n");
+	return NULL;
+}
+
+/*****************************************************************************
+* @brief    SOS Stop thread function
+* @section  [prm] active channel
+*****************************************************************************/
+static void *THR_stop_sos(void *prm)
+{
+	app_thr_obj *tObj = &irec->kObj;
+	int cmd = 0, loop_cnt = 0, evt_sndcnt = 0, option = 0;
+	int exit = 0;
+	int status = 0, i = 0 ;
 	
+	aprintf("enter...\n");
+	tObj->active = 1;
+	
+	while (!exit)
+	{
+		cmd = event_wait(tObj);
+		option = tObj->param0 ;
+		if (cmd == APP_CMD_EXIT) {
+			/* send exit command to stop sos process */
+			exit = 1;
+			break;
+		}  
+		else if (cmd == APP_CMD_STOP) {
+            continue ;
+		}
+		
+		while(1) 
+		{
+            if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
+			    break;
+			} 
+
+			if(tObj->cmd == APP_SOS_SEND_STOP)
+			{
+				if(!(loop_cnt % 20)) // 1초 간격
+				{
+					if(evt_sndcnt < 10)   // event 시 10회만 전달 
+					{
+						if(option) // SOS
+							stop_sos_send() ;
+
+					    evt_sndcnt += 1 ;
+					}
+					else
+					{
+					    tObj->cmd = APP_REC_EVT ;
+						evt_sndcnt = 0 ;
+					}
+					loop_cnt = 0 ;
+				}
+			}
+			OSA_waitMsecs(50);
+			loop_cnt += 1 ;
+        }
+//		evt_sndcnt = 0 ;
+	}
+	
+	tObj->active = 0;
+		
+	aprintf("exit\n");
 	return NULL;
 }
 
@@ -291,21 +351,24 @@ static void *THR_evt_buzzer(void *prm)
 						app_leds_cam_ctrl(i, status);
 					}
 				}
-				if(!(buzzer_cnt % 20))
-                {
+
+				if(!(buzzer_cnt % 20)) // 1초 간격
+				{
 					if(evt_sndcnt < 10)   // event 시 10회만 전달 
 					{
-#if defined(NEXXB) || defined(NEXXB_ONE)
+#ifndef NEXX360B
 						if(option) // SOS
 							sosdata_send() ;
 						else
 						    eventdata_send() ;					    
-#else
-						eventdata_send() ;
-#endif
+
 					    evt_sndcnt += 1 ;
+#endif
 					}
-                    
+				}
+
+				if(!(buzzer_cnt % 60)) // 3초 간격
+                {
 					if(option) // SOS
 					   app_buzz_ctrl(100, 3) ;
 
@@ -326,7 +389,6 @@ static void *THR_evt_buzzer(void *prm)
 	tObj->active = 0;
 		
 	aprintf("exit\n");
-	
 	return NULL;
 }
 
@@ -381,6 +443,14 @@ int app_rec_start(void)
 	return SOK;
 }
 
+int app_sos_send_stop(int etype)
+{
+	dprintf("STOP Sending SOS Packet!!\n");
+	event_send(&irec->kObj, APP_SOS_SEND_STOP, etype, 0); // etype == 0 event, etype == 1 SOS
+	
+	return SOK;
+}
+
 int app_rec_evt(int etype)
 {
 	int start = 1, type = 1; // normal  0, event 1
@@ -400,6 +470,7 @@ int app_rec_evt(int etype)
     app_buzz_ctrl(100, 3);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_EVT, etype, 0);
 	event_send(&irec->bObj, APP_REC_EVT, etype, 0); // etype == 0 event, etype == 1 SOS
+	event_send(&irec->kObj, APP_REC_EVT, etype, 0); // etype == 0 event, etype == 1 SOS
 	
 	return SOK;
 }
@@ -477,6 +548,13 @@ int app_rec_init(void)
 	//#--- create event buzzer thread
 	tObj = &irec->bObj;
 	if(thread_create(tObj, THR_evt_buzzer, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
+		eprintf("create thread\n");
+		return EFAIL;
+	}
+
+	//#--- create sos packet thread for stop
+	tObj = &irec->kObj;
+	if(thread_create(tObj, THR_stop_sos, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
 		eprintf("create thread\n");
 		return EFAIL;
 	}

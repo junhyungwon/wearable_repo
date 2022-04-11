@@ -29,9 +29,9 @@
 #include "app_gui.h"
 #include "app_buzz.h"
 
-#if SYS_CONFIG_VOIP
+
 #include "app_voip.h"
-#endif
+
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -43,16 +43,16 @@
 #define CNT_CHK_VLOW			(TIME_CHK_VLOW/TIME_DATA_CYCLE)
 #define CNT_CHK_VLEVEL			(TIME_CHK_VLEVEL/TIME_DATA_CYCLE)
 
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 #define LOW_POWER_THRES	    	900
 #else
 #define PSW_EVT_LONG			2
 /* 
  * NEXXB and NEXX Common Voltage 
  */
-/* ¾îÅÇÅÍ »ç¿ë ½Ã -> 16V ÀÌ»ó
- * ³»Àå ¹èÅÍ¸® »ç¿ë ½Ã -> ³»Àå ¹èÅÍ¸® Àü¾ĞÀÌ ÃøÁ¤µÊ.
- * ¿ÜÀå ¹èÅÍ¸® »ç¿ë -> ¿ÜÀå ¹èÅÍ¸® Àü¾Ğ ÃøÁ¤µÊ.
+/* ì–´íƒ­í„° ì‚¬ìš© ì‹œ -> 16V ì´ìƒ
+ * ë‚´ì¥ ë°°í„°ë¦¬ ì‚¬ìš© ì‹œ -> ë‚´ì¥ ë°°í„°ë¦¬ ì „ì••ì´ ì¸¡ì •ë¨.
+ * ì™¸ì¥ ë°°í„°ë¦¬ ì‚¬ìš© -> ì™¸ì¥ ë°°í„°ë¦¬ ì „ì•• ì¸¡ì •ë¨.
  */
 #define MBATT_MIN					600
 #define IBATT_MIN		    		620 //590 //#  5.90 V->6.4V, minimum battery voltage
@@ -84,7 +84,7 @@ typedef struct {
 static app_mcu_t mcu_obj;
 static app_mcu_t *imcu=&mcu_obj;
 
-#ifndef NEXX360C
+#if !defined(NEXX360C) && !defined(NEXX360W_CCTV)
 static void delay_3sec_exit(void)
 {
 	struct timeval t1, t2;
@@ -95,7 +95,7 @@ static void delay_3sec_exit(void)
 		gettimeofday(&t2, NULL);
 		tgap = ((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000));
 		if (tgap <= 0) {
-			/* timesync ¿¡ ÀÇÇØ¼­ gettimeofday °ªÀÌ º¯°æµÇ¸é ¹«ÇÑ ·çÇÁ¿¡ ºüÁø´Ù */
+			/* timesync ì— ì˜í•´ì„œ gettimeofday ê°’ì´ ë³€ê²½ë˜ë©´ ë¬´í•œ ë£¨í”„ì— ë¹ ì§„ë‹¤ */
 			gettimeofday(&t1, NULL);
 		}
 		OSA_waitMsecs(5);
@@ -107,7 +107,7 @@ static void delay_3sec_exit(void)
 
 	mic_msg_exit();
 }
-#endif /* #ifndef NEXX360C */
+#endif /* #if !defined(NEXX360C) && !defined(NEXX360W_CCTV) */
 
 void app_mcu_pwr_off(int type)
 {
@@ -118,7 +118,7 @@ void app_mcu_pwr_off(int type)
 	system("/etc/init.d/logging.sh stop");
 	mic_exit_state(type, 0);
 	app_cfg->ste.b.pwr_off = 1;
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 	mic_msg_exit();
 #else	
 	delay_3sec_exit();
@@ -129,11 +129,11 @@ void app_mcu_pwr_off(int type)
 /*----------------------------------------------------------------------------
  check voltage
 -----------------------------------------------------------------------------*/
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 static int c_volt_chk = 0;
 /*
  * Case NEXX_C
- * ³»Àå ¹èÅÍ¸®´Â ½´ÆÛÄ¸ ¿ëµµ·Î »ç¿ëµÊ. ¿ÜÀå Àü¾Ğ¸¸ È®ÀÎÇÏ¿© 9V ÀÌÇÏ·Î ³·¾ÆÁö´Â °æ¿ì Á¾·áÇØ¾ß ÇÔ.
+ * ë‚´ì¥ ë°°í„°ë¦¬ëŠ” ìŠˆí¼ìº¡ ìš©ë„ë¡œ ì‚¬ìš©ë¨. ì™¸ì¥ ì „ì••ë§Œ í™•ì¸í•˜ì—¬ 9V ì´í•˜ë¡œ ë‚®ì•„ì§€ëŠ” ê²½ìš° ì¢…ë£Œí•´ì•¼ í•¨.
  */
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
@@ -142,9 +142,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 	//# low power check
-	//# ebatt¸¦ Ã¼Å©ÇÒ °æ¿ì Å©·¡µé »ç¿ëÀÌ ºÒ°¡´É ÇØ Áø´Ù. µû¶ó¼­ mbatt¸¦ Ã¼Å©ÇÏ¸ç Å©·¡µé »ç¿ë ½Ã 
-	//# mbatt´Â 16VÀÌ»ó, ¿ÜÀå ¹èÅÍ¸® »ç¿ë ½Ã 10VÀÌ»ó ÃøÁ¤µÇ¸ç, ³»Àå ¹èÅÍ¸® »ç¿ë ½Ã 8.4°¡ ÃøÁ¤µÇ¹Ç·Î
-	//# ³»Àå ¹èÅÍ¸®¸¦ »ç¿ëÇÏ´Â °æ¿ì¿¡´Â ½Ã½ºÅÛ Off.
+	//# ebattë¥¼ ì²´í¬í•  ê²½ìš° í¬ë˜ë“¤ ì‚¬ìš©ì´ ë¶ˆê°€ëŠ¥ í•´ ì§„ë‹¤. ë”°ë¼ì„œ mbattë¥¼ ì²´í¬í•˜ë©° í¬ë˜ë“¤ ì‚¬ìš© ì‹œ 
+	//# mbattëŠ” 16Vì´ìƒ, ì™¸ì¥ ë°°í„°ë¦¬ ì‚¬ìš© ì‹œ 10Vì´ìƒ ì¸¡ì •ë˜ë©°, ë‚´ì¥ ë°°í„°ë¦¬ ì‚¬ìš© ì‹œ 8.4ê°€ ì¸¡ì •ë˜ë¯€ë¡œ
+	//# ë‚´ì¥ ë°°í„°ë¦¬ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ì—ëŠ” ì‹œìŠ¤í…œ Off.
 	if (mbatt < LOW_POWER_THRES) {
 		if (c_volt_chk) {
 			c_volt_chk--;
@@ -246,8 +246,8 @@ static int power_on_lv = 1;
  *
  * Others
  * LF External Batt full charge level is 11.7V
- * mbatt´Â Àü¿ø¿¡ µû¶ó¼­ ´Ù¸£°Ô ÃøÁ¤µÊ. ¾îÅÇÅÍ´Â 16V, ¿ÜÀåÀº 9V ¶Ç´Â 11V ³»ÀåÀº 8V
- * ³»Àå max (8.43V), ¿ÜÀå ¹èÅÍ¸® ÃÖ¼Ò 8.75V ÀÌ»ó. 
+ * mbattëŠ” ì „ì›ì— ë”°ë¼ì„œ ë‹¤ë¥´ê²Œ ì¸¡ì •ë¨. ì–´íƒ­í„°ëŠ” 16V, ì™¸ì¥ì€ 9V ë˜ëŠ” 11V ë‚´ì¥ì€ 8V
+ * ë‚´ì¥ max (8.43V), ì™¸ì¥ ë°°í„°ë¦¬ ìµœì†Œ 8.75V ì´ìƒ. 
  */
 static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
@@ -256,9 +256,9 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 	
 #ifdef EXT_BATT_ONLY
 	/* 
-	 * ¿ÜÀå º¸Á¶¹èÅÍ¸®¸¦ »ç¿ëÇÏ´Â °æ¿ì Ç×»ó Àü¾ĞÀÌ °íÁ¤µÅ¼­ Ãâ·ÂµÇ¹Ç·Î
-	 * ¹èÅÍ¸® ´Ü°è¸¦ ÃøÁ¤ÇÒ ¼ö ¾ø´Ù. ¶ÇÇÑ Low Battery·Î ÃøÁ¤ÀÌ ºÒ°¡´É ÇÔ.
-	 * ±×³É ²¨Áü.
+	 * ì™¸ì¥ ë³´ì¡°ë°°í„°ë¦¬ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° í•­ìƒ ì „ì••ì´ ê³ ì •ë¼ì„œ ì¶œë ¥ë˜ë¯€ë¡œ
+	 * ë°°í„°ë¦¬ ë‹¨ê³„ë¥¼ ì¸¡ì •í•  ìˆ˜ ì—†ë‹¤. ë˜í•œ Low Batteryë¡œ ì¸¡ì •ì´ ë¶ˆê°€ëŠ¥ í•¨.
+	 * ê·¸ëƒ¥ êº¼ì§.
 	 */
 	return 0;
 #endif
@@ -385,43 +385,29 @@ static void *THR_micom(void *prm)
 					} else {
 						dprintf("skip power switch event!!!\n");
 					}
-				} else {
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
-					#if SYS_CONFIG_VOIP 
+				} 
+				else 
+				{
 					if (!app_cfg->ste.b.ftp_run) 
-					{    
-#if defined(NEXXB) || defined(NEXXB_ONE)	
-				 		value = app_rec_state() ;
-			            if(value < 2) // REC Off or Event Rec or Normal Rec
-						{
-						    app_rec_evt(OFF) ;
-							sysprint("[APP_MICOM] - Event Record Start ---\n");
+					{
+						value = app_rec_state() ;
+					/*
+					 * return 1-> NORMAL, 2-> SOS
+					 */
+						if (value == 2) { 
+						// value 1, SOS Rec  , Value 1 Normal/Event REc
+							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+							app_sos_send_stop(ON) ;
+							sysprint("[APP_SOS] End SOS Event !! \n");	
+						} 
+						else {
+							//  Rec off or normal/event rec -> SOS ON
+							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
+							app_rec_evt(ON) ;  // SOS REC
+							sysprint("[APP_SOS] Occurs SOS Event !! \n");
 						}
-#else
-						if (app_rec_state()) {
-							app_rec_stop(ON);
-						} else {
-							app_rec_start();
-						}
-#endif
 					}
-					#else
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-				    		change_video_fxn();
-					}
-					#endif
-#elif defined(NEXX360B)
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-				    		change_video_fxn();
-					}
-#elif defined(NEXX360H)
-					if (!app_cfg->ste.b.ftp_run && app_cfg->ste.b.cap) {
-						if (!app_cfg->ste.b.nokey)
-				    		change_video_fxn();
-					}
-#endif
+					dprintf("SOS Short Key Pressed!\n");
 				}
 				break;
 			}
@@ -442,7 +428,7 @@ static void *THR_micom(void *prm)
 
 	return NULL;
 }
-#endif /* #if defined(NEXX360C) */
+#endif /* #if defined(NEXX360C) || defined(NEXX360W_CCTV) */
 
 /*****************************************************************************
 * @brief    micom watchdog function

@@ -26,9 +26,11 @@ endif
 #  NEXXONE_VOIP:
 #    ====> STREAMING: ON, CAM: 1CH, GPS: ON, HDMI: OFF, VOIP: ON
 #  NEXX360W_MUX:
-#    ====> STREAMING: ON, CAM: 4CH, GPS: ON, HDIM: OFF, VOIP: OFF, REC: 1(merged), STREAM :1 (merged)
+#    ====> STREAMING: ON, CAM: 4CH, GPS: ON, HDMI: OFF, VOIP: OFF, REC: 1(merged), STREAM :1 (merged)
 #  NEXX360C: NEXX360 Basic for CCTV
-#    ====> STREAMING: OFF, CAM: 4CH, GPS: OFF, HDIM: OFF, VOIP: OFF
+#    ====> STREAMING: OFF, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF
+#  NEXX360W_CCTV: NEXX360 Wireless for CCTV
+#    ====> STREAMING: ON, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF
 #
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
@@ -39,6 +41,7 @@ SYSTEM_PLATFORM := NEXX360W
 #SYSTEM_PLATFORM := NEXXONE_VOIP
 #SYSTEM_PLATFORM := NEXX360W_MUX
 #SYSTEM_PLATFORM := NEXX360C
+#SYSTEM_PLATFORM := NEXX360W_CCTV
 ######################################################################################
 
 #--- Build Type (debug/release)
@@ -84,8 +87,8 @@ TILER_ENABLE := NO
 #--- Teardown method (YES/NO)
 TEARDOWN_LOAD_UNLOAD := YES
 
-#--- RTMP Publishing feature
-USE_RTMP = NO
+#--- CCTV Platform feature (YES/NO)
+USE_CCTV = YES
 
 ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	#--- Select Wi-Fi method (YES/NO)
@@ -96,6 +99,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	CAM_MANUFACTURER := AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	#--- Select Wi-Fi method (YES/NO)
@@ -106,6 +111,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360H)
 	#--- Select Wi-Fi method (YES/NO)
@@ -116,6 +123,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360H)
 	CAM_MANUFACTURER  = PARTRON
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXB)
 	#--- Select Wi-Fi method (YES/NO)
@@ -126,6 +135,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXXB)
 	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXB_ONE)
 	#--- Select Wi-Fi method (YES/NO)
@@ -136,6 +147,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXXB_ONE)
 	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#--- Select Wi-Fi method (YES/NO)
@@ -146,6 +159,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	CAM_MANUFACTURER  = PARTRON
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	#--- Select Wi-Fi method (YES/NO)
@@ -156,6 +171,8 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = NO
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360C)
 	#--- Select Wi-Fi method (YES/NO)
@@ -163,11 +180,24 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360C)
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP := NO
 	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER := AFO
+	CAM_MANUFACTURER := PARTRON
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = YES
 endif
-
+ifeq ($(SYSTEM_PLATFORM), NEXX360W_CCTV)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select VOIP method (YES/NO)
+	USE_VOIP := NO
+	#---- IMAGE Manufacturer (AFO/PARTRON)
+	CAM_MANUFACTURER := PARTRON
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = YES
+endif
 #---  KCMVP
 USE_KCMVP := NO
 
@@ -363,10 +393,10 @@ export SYSTEM_PLATFORM
 export USE_ISP
 export USE_WIFI
 export USE_VOIP
-export USE_RTMP
 export USE_KCMVP
 export THIRD_PARTY
 export CAM_MANUFACTURER
 export EXTERNAL_PACKAGE
 export EXTERNAL_BATTERY_ONLY
+export USE_CCTV
 export SYSROOT

@@ -50,10 +50,8 @@
 #include "cgi_param.h"
 #include "app_encrypt.h"
 #include "app_decrypt.h"
-
-#ifdef USE_RTMP
 #include "app_rtmp.h"
-#endif
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -83,6 +81,28 @@ static pthread_t  	g_tid;              // uds task id
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+static int check_cval_str(char * o, char * n){
+
+	if( strcmp(o , n) != 0) {
+		strcpy(o, n); return 1;
+	}
+	return 0;
+}
+static int check_cval_int(int * o, int n){
+
+	if( *o != n) {
+		*o =  n; return 1;
+	}
+	return 0;
+}
+static int check_cval_short(short * o, int n){
+
+	if( *o != n) {
+		*o =  n; return 1;
+	}
+	return 0;
+}
+
 static int setStreamVideoQuality( int stm_res, int stm_fps, int stm_bps, int stm_gop)
 {
 	int ch = STM_CH_NUM;
@@ -559,6 +579,24 @@ static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
 	    }
 	}
 
+
+	// ssl vpn
+	isChanged += check_cval_short(&app_set->sslvpn_info.ON_OFF, t->sslvpn.enable);
+
+	if(t->sslvpn.enable) {
+		isChanged += check_cval_short(&app_set->sslvpn_info.vendor, t->sslvpn.vendor); // 0 AXGATE
+		isChanged += check_cval_str( app_set->sslvpn_info.vpn_id, t->sslvpn.vpn_id);
+		isChanged += check_cval_short(&app_set->sslvpn_info.heartbeat_interval,  t->sslvpn.heartbeat_interval);
+		isChanged += check_cval_short(&app_set->sslvpn_info.heartbeat_threshold, t->sslvpn.heartbeat_threshold);
+		isChanged += check_cval_short(&app_set->sslvpn_info.protocol,     t->sslvpn.protocol); // 0 tcp , 1 udp 
+		isChanged += check_cval_short(&app_set->sslvpn_info.port,         t->sslvpn.port);
+		isChanged += check_cval_short(&app_set->sslvpn_info.queue,        t->sslvpn.queue_size);  // queue size
+		isChanged += check_cval_str( app_set->sslvpn_info.key,          t->sslvpn.key);
+		isChanged += check_cval_short(&app_set->sslvpn_info.encrypt_type, t->sslvpn.encrypt_type); // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+		isChanged += check_cval_str( app_set->sslvpn_info.ipaddr,       t->sslvpn.ipaddress);
+		isChanged += check_cval_short(&app_set->sslvpn_info.NI,           t->sslvpn.network_interface); // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
+	}
+
 	if(isChanged>0) {
 		DBG_UDS("isChanged:%d\n", isChanged);
 	}
@@ -776,12 +814,13 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 	return -1;
 }
 
-#if SYS_CONFIG_VOIP
+
 int getVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 {
 	// voip
+	t->enable   = app_set->voip.ON_OFF;
 	t->use_stun = app_set->voip.use_stun;
-	t->port   = app_set->voip.port;
+	t->port     = app_set->voip.port;
 	strcpy(t->ipaddr, app_set->voip.ipaddr);
 	strcpy(t->userid, app_set->voip.userid);
 	strcpy(t->passwd, app_set->voip.passwd);
@@ -798,35 +837,42 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 	int isChanged=0;
 
 	// voip config
-	if(app_set->voip.use_stun != t->use_stun){
-		app_set->voip.use_stun = t->use_stun;
+	if(app_set->voip.ON_OFF != t->enable){
+		app_set->voip.ON_OFF = t->enable;
 		isChanged++;
 	}
-	if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
-		strcpy(app_set->voip.ipaddr,t->ipaddr);
-		isChanged++;
-	}
-	if(app_set->voip.port != t->port){
-		app_set->voip.port = t->port;
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.userid, t->userid)){
-		strcpy(app_set->voip.userid, t->userid);
-		isChanged++;
-	}
-	if(strlen(t->passwd) && strcmp( app_set->voip.passwd,t->passwd)){
-		strcpy(app_set->voip.passwd,t->passwd);
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.peerid, t->peerid)){
-		strcpy(app_set->voip.peerid, t->peerid);
-		isChanged++;
+
+	if(app_set->voip.ON_OFF == ON) {
+		if(app_set->voip.use_stun != t->use_stun){
+			app_set->voip.use_stun = t->use_stun;
+			isChanged++;
+		}
+		if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
+			strcpy(app_set->voip.ipaddr,t->ipaddr);
+			isChanged++;
+		}
+		if(app_set->voip.port != t->port){
+			app_set->voip.port = t->port;
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.userid, t->userid)){
+			strcpy(app_set->voip.userid, t->userid);
+			isChanged++;
+		}
+		if(strlen(t->passwd) && strcmp( app_set->voip.passwd,t->passwd)){
+			strcpy(app_set->voip.passwd,t->passwd);
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.peerid, t->peerid)){
+			strcpy(app_set->voip.peerid, t->peerid);
+			isChanged++;
+		}
 	}
 
 	return isChanged;
 	// 웹에서 apply,누르면 restart는 하는걸로...
 }
-#endif
+
 
 int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 {
@@ -845,6 +891,15 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->fota.serveraddr, app_set->fota_info.ipaddr);
 	strcpy(t->fota.id, app_set->fota_info.id);
 	strcpy(t->fota.pw, app_set->fota_info.pwd);
+
+	// media server(rtmp)
+	t->mediaserver.enable            = app_set->rtmp.ON_OFF;
+	t->mediaserver.use_full_path_url = app_set->rtmp.USE_URL;
+	t->mediaserver.port              = app_set->rtmp.port;
+	strcpy(t->mediaserver.full_path_url, app_set->rtmp.FULL_URL);
+	strcpy(t->mediaserver.serveraddr,    app_set->rtmp.ipaddr);
+	// strcpy(t->mediaserver.id, app_set->fota_info.id);
+	// strcpy(t->mediaserver.pw, app_set->fota_info.pwd);
 
 	// manage server
 	t->ms.enable = app_set->srv_info.ON_OFF;
@@ -877,15 +932,15 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	
 	t->p2p.enable = app_set->sys_info.P2P_ON_OFF;
 
-#if SYS_CONFIG_VOIP
 	// voip
+	t->voip.enable = app_set->voip.ON_OFF;
 	t->voip.port   = app_set->voip.port;
 	t->voip.use_stun = app_set->voip.use_stun;
 	strcpy(t->voip.ipaddr, app_set->voip.ipaddr);
 	strcpy(t->voip.userid, app_set->voip.userid);
 	strcpy(t->voip.passwd, app_set->voip.passwd);
 	strcpy(t->voip.peerid, app_set->voip.peerid);
-#endif
+
 	return 0;
 }
 
@@ -951,6 +1006,42 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 				strcpy(app_set->fota_info.pwd, t->fota.pw);
 				isChanged++;
 			}
+		}
+	}
+
+	//Media Server(rtmp)
+	if(app_set->rtmp.ON_OFF != t->mediaserver.enable){
+		app_set->rtmp.ON_OFF = t->mediaserver.enable;
+		isChanged++;
+	}
+	if(app_set->rtmp.ON_OFF){
+		if(app_set->rtmp.USE_URL != t->mediaserver.use_full_path_url){ 
+			app_set->rtmp.USE_URL = t->mediaserver.use_full_path_url;
+			isChanged++;
+		}
+		if (app_set->rtmp.USE_URL == 1) // full path url
+		{
+			if (strcmp(app_set->rtmp.FULL_URL, t->mediaserver.full_path_url)) {
+				strcpy(app_set->rtmp.FULL_URL, t->mediaserver.full_path_url);
+				isChanged++;
+			}
+		} else {
+			if (strcmp(app_set->rtmp.ipaddr, t->mediaserver.serveraddr)) {
+				strcpy(app_set->rtmp.ipaddr, t->mediaserver.serveraddr);
+				isChanged++;
+			}
+			if(app_set->rtmp.port != t->mediaserver.port){
+				app_set->rtmp.port = t->mediaserver.port;
+				isChanged++;
+			}
+			// if (strcmp(app_set->rtmp.id, t->mediaserver.id)) {
+			// 	strcpy(app_set->rtmp.id, t->mediaserver.id);
+			// 	isChanged++;
+			// }
+			// if (strcmp(app_set->rtmp.pwd, t->mediaserver.pw)) {
+			// 	strcpy(app_set->rtmp.pwd, t->mediaserver.pw);
+			// 	isChanged++;
+			// }
 		}
 	}
 
@@ -1053,33 +1144,39 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	}
 #endif
 
-#if SYS_CONFIG_VOIP
+
 	// voip config
-	if(app_set->voip.use_stun != t->voip.use_stun){
-		app_set->voip.use_stun = t->voip.use_stun;
+	if(app_set->voip.ON_OFF != t->voip.enable){
+		app_set->voip.ON_OFF = t->voip.enable;
 		isChanged++;
 	}
-	if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
-		strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
-		isChanged++;
+	if(app_set->voip.ON_OFF == ON) {
+		if(app_set->voip.use_stun != t->voip.use_stun){
+			app_set->voip.use_stun = t->voip.use_stun;
+			isChanged++;
+		}
+		if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
+			strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
+			isChanged++;
+		}
+		if(app_set->voip.port != t->voip.port){
+			app_set->voip.port = t->voip.port;
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.userid, t->voip.userid)){
+			strcpy(app_set->voip.userid, t->voip.userid);
+			isChanged++;
+		}
+		if(strlen(t->voip.passwd) && strcmp( app_set->voip.passwd,t->voip.passwd)){
+			strcpy(app_set->voip.passwd,t->voip.passwd);
+			isChanged++;
+		}
+		if(strcmp( app_set->voip.peerid, t->voip.peerid)){
+			strcpy(app_set->voip.peerid, t->voip.peerid);
+			isChanged++;
+		}
 	}
-	if(app_set->voip.port != t->voip.port){
-		app_set->voip.port = t->voip.port;
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.userid, t->voip.userid)){
-		strcpy(app_set->voip.userid, t->voip.userid);
-		isChanged++;
-	}
-	if(strlen(t->voip.passwd) && strcmp( app_set->voip.passwd,t->voip.passwd)){
-		strcpy(app_set->voip.passwd,t->voip.passwd);
-		isChanged++;
-	}
-	if(strcmp( app_set->voip.peerid, t->voip.peerid)){
-		strcpy(app_set->voip.peerid, t->voip.peerid);
-		isChanged++;
-	}
-#endif	
+	
 	return isChanged;
 	// restart 후에 적용됨. 2019년 8월 22일, 웹에서 apply,누르면 restart는 하는걸로...
 }
@@ -1352,6 +1449,14 @@ static int getGop(int ch)
 	return gop;
 }
 
+static int setStreamOptions(int enable_audio)
+{
+	if(app_set->stm_info.enable_audio != enable_audio){
+		app_set->stm_info.enable_audio = enable_audio;
+	}
+
+	return 0;
+}
 static int setRecordOptions(int pre_rec,int auto_rec, int audio_rec, int rec_interval, int rec_overwrite)
 {
 	app_set->rec_info.auto_rec   = auto_rec;     // 0:OFF, 1:ON
@@ -1599,8 +1704,7 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-#ifdef USE_RTMP
-		else if (strcmp(rbuf, "ControlRtmp") == 0) {
+		else if (strcmp(rbuf, "ControlRtmp") == 0 && app_set->rtmp.ON_OFF) {
 			sysprint("[APP_UDS] --- ControlRtmp ---\n");
 
 			// 1. send READY
@@ -1630,7 +1734,6 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-#endif
 		else if (strcmp(rbuf, "GetSystemDateAndTime") == 0)
 		{
 			//sysprint("[APP_UDS] --- GetSystemDateAndTime---\n");
@@ -2088,7 +2191,7 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "reload_config") == 0)
 		{
 		}
-		#if SYS_CONFIG_VOIP		
+				
 		else if (strcmp(rbuf, "GetVoipConfiguration") == 0) {
 			sysprint("[APP_UDS] --- GetVoipConfiguration ---\n");
 
@@ -2137,7 +2240,6 @@ void *myFunc(void *arg)
 				perror("failed write: ");
 			}
 		}
-		#endif
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
 			sysprint("[APP_UDS] --- GetServersConfiguration ---\n");
 
@@ -2372,6 +2474,23 @@ void *myFunc(void *arg)
 				t.live_stream_account_enctype = app_set->account_info.enctype;
 				strcpy(t.live_stream_account.id, rtsp_user);
 				strcpy(t.live_stream_account.pw, rtsp_pass);
+
+				// ssl vpn write --- start
+				{
+					t.sslvpn.enable = app_set->sslvpn_info.ON_OFF;
+					t.sslvpn.vendor = app_set->sslvpn_info.vendor;
+					strcpy(t.sslvpn.vpn_id, app_set->sslvpn_info.vpn_id);
+					t.sslvpn.heartbeat_interval  = app_set->sslvpn_info.heartbeat_interval;
+					t.sslvpn.heartbeat_threshold = app_set->sslvpn_info.heartbeat_threshold;
+					t.sslvpn.protocol   = app_set->sslvpn_info.protocol;
+					t.sslvpn.port       = app_set->sslvpn_info.port;
+					t.sslvpn.queue_size = app_set->sslvpn_info.queue;
+					strcpy(t.sslvpn.key, app_set->sslvpn_info.key);
+					t.sslvpn.encrypt_type = app_set->sslvpn_info.encrypt_type;
+					strcpy(t.sslvpn.ipaddress, app_set->sslvpn_info.ipaddr);
+					t.sslvpn.network_interface = app_set->sslvpn_info.NI;
+				}
+				// ssl vpn write --- end
 
 				ret = write(cs_uds, &t, sizeof t);
 				DBG_UDS("sent, ret=%d \n", ret);
@@ -2655,7 +2774,8 @@ void *myFunc(void *arg)
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
 			{
-				sprintf(strOptions, "%d %d %d %d %d %d",
+				sprintf(strOptions, "%d %d %d %d %d %d %d",
+						app_set->stm_info.enable_audio,     // 0:on, 1:off
 						app_set->rec_info.pre_rec,     // 0:on, 1:off
 						app_set->rec_info.auto_rec,    // 0:on, 1:off
 						app_set->rec_info.audio_rec,   // 0:on, 1:off
@@ -2683,15 +2803,18 @@ void *myFunc(void *arg)
 				ret = read(cs_uds, rbuf, sizeof rbuf);
 				DBG_UDS("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
+					int stream_enable_audio = 0;
 					int pre_rec=0, auto_rec=0, audio_rec=0, rec_interval=0, rec_overwrite=0;
 					int display_datetime=0;
-					sscanf(rbuf, "%d %d %d %d %d %d", 
+					sscanf(rbuf, "%d %d %d %d %d %d %d", 
+							&stream_enable_audio,
 							&pre_rec,
 							&auto_rec,
 							&audio_rec,
 							&rec_interval,
 							&rec_overwrite,
 							&display_datetime);
+					setStreamOptions(stream_enable_audio);
 					setRecordOptions(pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite);
 					setDisplayDateTime(display_datetime);
 

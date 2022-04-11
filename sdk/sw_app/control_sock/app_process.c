@@ -61,6 +61,7 @@
 #include "app_process.h"
 #include "app_mcu.h"
 #include "app_sockio.h"
+#include "app_bcall.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -81,7 +82,8 @@ const int GPSREQRCV_SIZE = sizeof(GPSREQRCV) ;
 const int EVENTPACKET_SIZE = sizeof(EVENTPACKET) ;
 const int EVENTREQRCV_SIZE = sizeof(EVENTREQRCV) ;
 const int USERAUTHRES_SIZE = sizeof(USERAUTHRES) ;
-
+const int CALLRES_SIZE = sizeof(CALL_RES) ;
+const int CALLREQ_SIZE = sizeof(CALL_REQ) ;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
@@ -257,6 +259,45 @@ void eventdata_send(void)
     }
 }
 
+void stop_sos_send(void)
+{
+    int sendlen = 0, i;
+    socklen_t lon ;
+	int valopt = 0 ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("STOP SOSdata reached...\n") ;
+#endif
+    EVENTPACKET Sospacket ;
+
+	Sospacket.identifier = htons(IDENTIFIER) ;
+	Sospacket.cmd = htons(CMD_STOP_SOSDATA) ;
+	Sospacket.length = htons(EVENTPACKET_SIZE) ;
+ 
+	sprintf(Sospacket.uid, "%s", app_set->sys_info.uid) ;
+	sprintf(Sospacket.deviceId, "%s", app_set->sys_info.deviceId) ;
+
+	memcpy(m_SendBuffer, &Sospacket, EVENTPACKET_SIZE) ;
+
+	for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+			getsockopt(SystemInfo.Channel[i], SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) ;
+			if(valopt)
+			{
+				CloseNowChannel(i) ;
+			}
+			else
+			{
+				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+    DEBUG_PRI("STOP Sosdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+			}
+		}
+    }
+}
+
 void sosdata_send(void)
 {
     int sendlen = 0, i;
@@ -362,3 +403,152 @@ DEBUG_PRI("Userauth req result = %d\n",result) ;
 
 }
 
+void recv_call_req(int channel, char *data, int len)
+{
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("call req packet reached\n") ;
+#endif
+	CALL_RES Call_res ;
+	int status = 0, sendlen = 0 ;
+
+	status = get_calling_state() ;
+
+    if(status == APP_STATE_NONE)
+	{
+		app_incoming_call() ;
+        Call_res.identifier = htons(IDENTIFIER) ;
+		Call_res.cmd = htons(CMD_CALL_RES) ;
+		Call_res.length = htons(CALLRES_SIZE) ;
+		Call_res.result = htons(CALL_DEFAULT_RES) ;
+		memset(Call_res.Reserved, 0x00, 32) ;
+
+		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+
+		if(SystemInfo.Channel[channel] != 0)
+		{
+ 	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+ 	   DEBUG_PRI("Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+		}
+	}
+	else if(status == APP_STATE_ACCEPT)
+	{
+        Call_res.identifier = htons(IDENTIFIER) ;
+		Call_res.cmd = htons(CMD_CALL_RES) ;
+		Call_res.length = htons(CALLRES_SIZE) ;
+		Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		memset(Call_res.Reserved, 0x00, 32) ;
+
+		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+		set_calling_state(APP_STATE_CALLING) ;
+
+		if(SystemInfo.Channel[channel] != 0)
+		{
+ 	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+ 	   DEBUG_PRI("Callres ACCEPT packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+		}
+	}
+	else  // CALLING or call message send.  
+	{
+        Call_res.identifier = htons(IDENTIFIER) ;
+		Call_res.cmd = htons(CMD_CALL_RES) ;
+		Call_res.length = htons(CALLRES_SIZE) ;
+		Call_res.result = htons(CALL_CONNECT_FAIL) ;
+		memset(Call_res.Reserved, 0x00, 32) ;
+
+		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+
+		if(SystemInfo.Channel[channel] != 0)
+		{
+ 	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+ 	   DEBUG_PRI("Callres FAIL packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+		}
+	}
+
+	    // send result calling..
+
+}
+
+// nexx의 callreq에 대한 응답
+void recv_call_res(int channel, char *data, int len)
+{
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("call res packet reached\n") ;
+#endif
+	CALL_RES *Call_res ;
+	int status = 0, sendlen = 0, res_val ;
+
+    Call_res = (CALL_RES *)data ;
+	res_val = ntohs(Call_res->result) ;
+	switch(res_val)
+	{
+		case CALL_DEFAULT_RES :
+			set_calling_state(APP_STATE_OUTCOMING) ;
+			break ;
+		case CALL_CONNECT_ESTABLISHED :
+			set_calling_state(APP_STATE_CALLING) ;
+			break ;
+		case CALL_CONNECT_FAIL :
+		    set_calling_state(APP_STATE_NONE) ;
+			break ;
+	}
+
+}
+
+// nexx manager로 부터 call_close
+void recv_call_close(int channel, char *data, int len)
+{
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("call close packet reached\n") ;
+#endif
+	int status ;
+
+	status = get_calling_state() ;
+
+    if(status == APP_STATE_CALLING || status == APP_STATE_INCOMING)
+		app_cancel_call() ;
+
+}
+
+void send_call_req()
+{
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("send call req packet reached\n") ;
+#endif
+    int sendlen, i ;
+
+	CALL_REQ Call_req ;
+
+    Call_req.identifier = htons(IDENTIFIER) ;
+	Call_req.cmd = htons(CMD_CALL_REQ) ;
+	Call_req.length = htons(CALLREQ_SIZE) ;
+	sprintf(Call_req.UID, "%s", app_set->sys_info.uid) ;
+	sprintf(Call_req.DeviceId, "%s", app_set->sys_info.deviceId) ;
+	memset(Call_req.Reserved, 0x00, 32) ;
+
+	memcpy(m_SendBuffer, &Call_req, CALLREQ_SIZE) ;
+
+    for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+	       sendlen = send(SystemInfo.Channel[i], m_SendBuffer, CALLREQ_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+		   DEBUG_PRI("Callreq  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+	}
+}
+
+void send_call_close()
+{
+#ifdef NETWORK_DEBUG
+DEBUG_PRI("send call close packet reached\n") ;
+#endif
+
+}

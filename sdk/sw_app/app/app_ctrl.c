@@ -46,10 +46,6 @@
 #include "app_buzz.h"
 #include "app_watchdog.h"
 
-#if SYS_CONFIG_VOIP
-#include "app_voip.h"
-#endif
-
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -63,7 +59,7 @@ static const char *fw_app_name  = "/mmc/app_fitt.out";
 #ifdef EXT_BATT_ONLY
 static const char *fw_mcu_name  = "/mmc/mcu_extb.txt";
 #else
-#if defined(NEXX360C)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 static const char *fw_mcu_name  = "/mmc/mcu_cctv.txt";
 #else
 static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
@@ -471,10 +467,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 
     if(EFAIL == release) // RELEASE Version .. --> update file delete
 	{
-		
-
 		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
-
 		Delete_updatefile() ;	
 
 		return -1;
@@ -487,29 +480,29 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 
 	//# micom version check..
 	_check_micom_update();
-		// check md5sum
-		sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
-		FILE *fp = popen(cmd, "r");
-		if(fp){
-			char line[255]={0};
-			fgets(line, 255, fp);
-			printf("%s\n", line);
+	// check md5sum
+	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
+	FILE *fp = popen(cmd, "r");
+	if(fp){
+		char line[255]={0};
+		fgets(line, 255, fp);
+		printf("%s\n", line);
 
-			if(NULL == strstr(line, " OK")){
+		if(NULL == strstr(line, " OK")){
 
-				//TODO: 실패할 경우, 압축해제한 파일들 처리
-				pclose(fp);
-				return -1;
-			}
-
-			pclose(fp);
-			// OK, ready to firmware upgrade
-		}
-		else {
-			eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
 			//TODO: 실패할 경우, 압축해제한 파일들 처리
+			pclose(fp);
 			return -1;
 		}
+
+		pclose(fp);
+		// OK, ready to firmware upgrade
+	}
+	else {
+		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+		//TODO: 실패할 경우, 압축해제한 파일들 처리
+		return -1;
+	}
 
 #if 0
 		thrRunFWUpdate(NULL);
@@ -1049,17 +1042,12 @@ int ctrl_mmc_check_exfat(unsigned long *size)
 	return ret;
 }
 
-int ctrl_mmc_exfat_format(unsigned long size)
+int ctrl_mmc_exFAT_format(unsigned long size)
 {
     char cmd[256] = {0,};
     int blkid = 0, i;
     DIR *mount_dir = NULL;
 
-    if (dev_disk_check_mount(MMC_MOUNT_POINT)) {
-		dev_disk_mmc_part_unmount(MMC_PART_NAME);
-		/* wait done */
-		app_msleep(300);
-	}
 	/*
 	 * first loop-> changed partition fat32
 	 * second loop-> make mmcblk0p1
@@ -1094,7 +1082,7 @@ int ctrl_mmc_exfat_format(unsigned long size)
 }
 
 /*****************************************************************************
- * @brief    int ctrl_mmc_check_partitions(int *num_part)
+ * @brief    int ctrl_mmc_check_partitions(void)
  * @section  DESC Description
  *   - desc
  *****************************************************************************/
@@ -1134,42 +1122,6 @@ int ctrl_mmc_check_partitions(void)
     fclose(part_f);
 
     return ((count == 2)?0:-1);
-}
-
-/*****************************************************************************
- * @brief    int ctrl_mmc_check_fsck(void)
- * -n : no-op, check non-interactively without changing
- * @section  DESC Description
- *   - desc
- *****************************************************************************/
-int ctrl_mmc_check_fsck(void)
-{
-/*
- * EXIT STATUS
- *   0 : No recoverable errors have been detected.
- *   1 : Recoverable errors have been detected.
- *   2 : Usage error. fsck.fat did not access the filesystem.(required reboot)
- */
-	char *cmd = "/sbin/fsck.fat -n /dev/mmcblk0p1";
-
-	return dev_execlp(cmd);
-}
-
-/*****************************************************************************
- * @brief    int ctrl_mmc_run_fsck(void)
- * -w : write changes to disk immediately
- * -a : automatically repair the filesystem
- * @section  DESC Description
- *   - desc
- *****************************************************************************/
-int ctrl_mmc_run_fsck(void)
-{
-/* -a: Automatically repair the filesystem.
- * -w: Write changes to disk immediately.
- */
-	char *cmd = "/sbin/fsck.fat -a -w /dev/mmcblk0p1";
-
-	return dev_execlp(cmd);
 }
 
 /*****************************************************************************

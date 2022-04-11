@@ -27,51 +27,57 @@
 
 #if defined(NEXX360B)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27B"
+#	define FITT360_SW_VER      		"2.09.39B"
 #	else
-#	define FITT360_SW_VER      		"2.09.27.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360C)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27C"
+#	define FITT360_SW_VER      		"2.09.39C"
 #	else
-#	define FITT360_SW_VER      		"2.09.27.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360W)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27N"
+#	define FITT360_SW_VER      		"2.09.39N"
 #	else
-#	define FITT360_SW_VER      		"2.09.27.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360W_MUX)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27N_MUX"
+#	define FITT360_SW_VER      		"2.09.39N_MUX"
 #	else
-#	define FITT360_SW_VER      		"2.09.27.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXXB)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27"
+#	define FITT360_SW_VER      		"2.09.39"
 #	else
-#	define FITT360_SW_VER      		"2.09.27.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXXB_ONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27"
+#	define FITT360_SW_VER      		"2.09.39"
 #	else
-#	define FITT360_SW_VER      		"2.09.27.D"
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #elif defined(NEXX360H)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"2.09.27H"
+#	define FITT360_SW_VER      		"2.09.39H"
 #	else
-#	define FITT360_SW_VER      		"2.09.27D"
+#	define FITT360_SW_VER      		"2.09.39D"
 #	endif
 #elif defined(NEXXONE)
 #	if SW_RELEASE
-#	define FITT360_SW_VER      		"1.01.27"
+#	define FITT360_SW_VER      		"1.01.39"
 #	else
-#	define FITT360_SW_VER      		"1.01.27.D"
+#	define FITT360_SW_VER      		"1.01.39.D"
+#	endif
+#elif defined(NEXX360W_CCTV)
+#	if SW_RELEASE
+#	define FITT360_SW_VER      		"2.09.39N_CCTV"
+#	else
+#	define FITT360_SW_VER      		"2.09.39.D"
 #	endif
 #endif
 #endif	/* _APP_VERSION_H_ */

@@ -1,6 +1,7 @@
 /*
  * @file  prm.cpp
  * @brief process actions...search, update, delete ...
+ * @etc js_settings.c에 있는 json 파일과 field name들이 다르다. 이 파일의 json들은 curl등을 위한  Web API용이니 헷갈리지 말자!
  */
 
 /*******************************************************************************
@@ -38,7 +39,7 @@ static char out_buf[1024];
 #if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
 	#define MAX_FPS 30
 #elif defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)\
-   || defined(NEXX360B) || defined(NEXX360C)
+   || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 	#define MAX_FPS 15
 #elif defined(FITT360_SECURITY)
 	#define MAX_FPS 15
@@ -124,9 +125,9 @@ int put_json_all_config()
 
 	json_object *all_config;
 	json_object *camera_obj, *recordobj, *streamobj;
-	json_object *operation_obj, *misc_obj, *rec_obj, *p2p_obj;
-	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4];
-	json_object *servers_obj, *bs_obj, *fota_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
+	json_object *operation_obj, *stm_obj, *misc_obj, *rec_obj, *p2p_obj;
+	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4], *sslvpn;
+	json_object *servers_obj, *bs_obj, *fota_obj, *mediaserver_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
 
@@ -148,7 +149,7 @@ int put_json_all_config()
 		// record info
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXX360W_MUX) \
     || defined(NEXXB) || defined(NEXXB_ONE) \
-    || defined(NEXX360B) || defined(NEXX360C)
+    || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		int fpsIdx = p.rec.fps-1;
 		if(fpsIdx < 0 ) fpsIdx = 0;
 		if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1; // fpsIdx is Zero-based number.
@@ -187,7 +188,7 @@ int put_json_all_config()
 		// streaming info
 		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
 #if defined(NEXXONE)|| defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-  || defined(NEXX360B) || defined(NEXX360C)
+  || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 
 		fpsIdx = p.stm.fps-1;
 		if(fpsIdx < 0 ) fpsIdx = 0;
@@ -245,6 +246,7 @@ int put_json_all_config()
 
 	// Operation Settings
 	operation_obj = json_object_new_object();
+	stm_obj  = json_object_new_object();
 	rec_obj  = json_object_new_object();
 	misc_obj = json_object_new_object();
 	{
@@ -253,6 +255,9 @@ int put_json_all_config()
 			ret = -1;
 			goto _FREE_OPERATION_OBJ;
 		}
+
+		json_object_object_add(stm_obj, "enable_audio",    json_object_new_int(p.stm.enable_audio));
+		json_object_object_add(operation_obj, "stream", stm_obj);
 
 		json_object_object_add(rec_obj, "pre_rec",   json_object_new_int(p.rec.pre_rec));
 		json_object_object_add(rec_obj, "auto_rec", json_object_new_int(p.rec.audio_rec));
@@ -274,6 +279,7 @@ int put_json_all_config()
 	wifiap_obj   = json_object_new_object();
 	livestm_obj  = json_object_new_object();
 	wifilist     = json_object_new_array();
+	sslvpn       = json_object_new_object();
 	{
 		T_CGI_NETWORK_CONFIG2 p;memset(&p, 0, sizeof p);
 		if(0>sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&p, sizeof p )){
@@ -317,6 +323,25 @@ int put_json_all_config()
 			json_object_array_add(wifilist, wifiInfo[i]);
 		}
 		json_object_object_add(network_obj, "wifilist", wifilist) ;
+
+
+		// ssl vpn
+		{
+			json_object_object_add(sslvpn, "enable",              json_object_new_int(    p.sslvpn.enable ));
+			json_object_object_add(sslvpn, "vendor",              json_object_new_int(    p.sslvpn.vendor ));
+			json_object_object_add(sslvpn, "vpn_id",              json_object_new_string( p.sslvpn.vpn_id ));
+			json_object_object_add(sslvpn, "heartbeat_interval",  json_object_new_int(    p.sslvpn.heartbeat_interval ));
+			json_object_object_add(sslvpn, "heartbeat_threshold", json_object_new_int(    p.sslvpn.heartbeat_threshold ));
+			json_object_object_add(sslvpn, "protocol",            json_object_new_int(    p.sslvpn.protocol ));
+			json_object_object_add(sslvpn, "port",                json_object_new_int(    p.sslvpn.port ));
+			json_object_object_add(sslvpn, "queue_size",          json_object_new_int(    p.sslvpn.queue_size ));
+			json_object_object_add(sslvpn, "key",                 json_object_new_string( p.sslvpn.key ));
+			json_object_object_add(sslvpn, "encrypt_type",        json_object_new_int(    p.sslvpn.encrypt_type ));
+			json_object_object_add(sslvpn, "ipaddress",           json_object_new_string( p.sslvpn.ipaddress ));
+			json_object_object_add(sslvpn, "network_interface",   json_object_new_int(    p.sslvpn.network_interface ));
+
+			json_object_object_add( network_obj, "sslvpn", sslvpn ) ;
+		}
 	}
 	json_object_object_add(all_config, "network_settings", network_obj);
 
@@ -325,6 +350,7 @@ int put_json_all_config()
 	servers_obj = json_object_new_object();
 	bs_obj      = json_object_new_object();
 	fota_obj    = json_object_new_object();
+	mediaserver_obj    = json_object_new_object();
 	ms_obj      = json_object_new_object();
 	ddns_obj    = json_object_new_object();
 	dns_obj     = json_object_new_object();
@@ -354,6 +380,15 @@ int put_json_all_config()
 		json_object_object_add(fota_obj, "id",          json_object_new_string(p.fota.id));
 		json_object_object_add(fota_obj, "pw",          json_object_new_string(p.fota.pw));
 		json_object_object_add(servers_obj, "fota", fota_obj);
+
+		json_object_object_add(mediaserver_obj, "enable",            json_object_new_int   (p.mediaserver.enable));
+		json_object_object_add(mediaserver_obj, "use_full_path_url", json_object_new_int   (p.mediaserver.use_full_path_url));
+		json_object_object_add(mediaserver_obj, "full_path_url",     json_object_new_string(p.mediaserver.full_path_url));
+		json_object_object_add(mediaserver_obj, "serveraddr",        json_object_new_string(p.mediaserver.serveraddr));
+		json_object_object_add(mediaserver_obj, "port",              json_object_new_int   (p.mediaserver.port));
+		// json_object_object_add(mediaserver_obj, "id",          json_object_new_string(p.mediaserver.id));
+		// json_object_object_add(mediaserver_obj, "pw",          json_object_new_string(p.mediaserver.pw));
+		json_object_object_add(servers_obj, "fota", mediaserver_obj);
 
 		json_object_object_add(ms_obj, "enable",     json_object_new_int   (p.ms.enable));
 		json_object_object_add(ms_obj, "serveraddr", json_object_new_string(p.ms.serveraddr));
@@ -386,7 +421,7 @@ int put_json_all_config()
 		json_object_object_add(servers_obj, "onvif", onvif_obj);
 		
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-  || defined(NEXX360B) || defined(NEXX360C)
+  || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		json_object_object_add(p2p_obj, "p2p_enable",   json_object_new_int(p.p2p.enable));
 		//json_object_object_add(p2p_obj, "p2p_username", json_object_new_string(p.p2p.username));
 		//json_object_object_add(p2p_obj, "p2p_password", json_object_new_string(p.p2p.password));
@@ -395,6 +430,7 @@ int put_json_all_config()
 #endif
 		
 		// voip
+		json_object_object_add(voip_obj, "enable", json_object_new_int(p.voip.enable));
 		json_object_object_add(voip_obj, "use_stun", json_object_new_int(p.voip.use_stun));
 		json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p.voip.ipaddr));
 		json_object_object_add(voip_obj, "port",   json_object_new_int(   p.voip.port));
@@ -442,6 +478,7 @@ _FREE_SYSTEM_OBJ:
 _FREE_SERVERS_OBJ:
 	json_object_put(bs_obj);
 	json_object_put(fota_obj);
+	json_object_put(mediaserver_obj);
 	json_object_put(ms_obj);
 	json_object_put(ddns_obj);
 	json_object_put(dns_obj);
@@ -457,9 +494,11 @@ _FREE_NETWORK_OBJ:
 	json_object_put(livestm_obj);
 	for(i = 0; i < 4 ; i++)json_object_put(wifiInfo[i]);
 	json_object_put(wifilist);
+	json_object_put(sslvpn);
 	json_object_put(network_obj);
 
 _FREE_OPERATION_OBJ:
+	json_object_put(stm_obj);
 	json_object_put(rec_obj);
 	json_object_put(misc_obj);
 	json_object_put(p2p_obj);
@@ -473,7 +512,8 @@ _FREE_CAMERA_OBJ:
 	json_object_put(all_config);
 
 	return ret;
-}
+
+}//put_json_all_config
 
 void put_json_system_info(T_CGI_SYSTEM_INFO *p)
 {
@@ -503,6 +543,7 @@ void put_json_voip_config(T_CGI_VOIP_CONFIG *p)
 	voip_obj     = json_object_new_object();
 
 	json_object_object_add(voip_obj, "model",  json_object_new_string(MODEL_NAME));
+	json_object_object_add(voip_obj, "enable", json_object_new_int(p->enable));
 	json_object_object_add(voip_obj, "use_stun", json_object_new_int(p->use_stun));
 	json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p->ipaddr));
 	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->port));
@@ -582,11 +623,12 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bs_obj, *fota_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
+	json_object *myobj, *bs_obj, *fota_obj, *mediaserver_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
 
 	myobj     = json_object_new_object();
 	bs_obj    = json_object_new_object();
 	fota_obj  = json_object_new_object();
+	mediaserver_obj  = json_object_new_object();
 	msobj     = json_object_new_object();
 	ddnsobj   = json_object_new_object();
 	dnsobj    = json_object_new_object();
@@ -613,6 +655,15 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(fota_obj, "id",          json_object_new_string(p->fota.id));
 	json_object_object_add(fota_obj, "pw",          json_object_new_string(p->fota.pw));
 	json_object_object_add(myobj, "fota", fota_obj);
+
+	json_object_object_add(mediaserver_obj, "enable",            json_object_new_int   (p->mediaserver.enable));
+	json_object_object_add(mediaserver_obj, "use_full_path_url", json_object_new_int   (p->mediaserver.use_full_path_url));
+	json_object_object_add(mediaserver_obj, "full_path_url",     json_object_new_string(p->mediaserver.full_path_url));
+	json_object_object_add(mediaserver_obj, "serveraddr",        json_object_new_string(p->mediaserver.serveraddr));
+	json_object_object_add(mediaserver_obj, "port",              json_object_new_int   (p->mediaserver.port));
+	// json_object_object_add(mediaserver_obj, "id",          json_object_new_string(p->fota.id));
+	// json_object_object_add(mediaserver_obj, "pw",          json_object_new_string(p->fota.pw));
+	json_object_object_add(myobj, "mediaserver", mediaserver_obj);
 
 	json_object_object_add(msobj, "enable",     json_object_new_int(   p->ms.enable));
 	json_object_object_add(msobj, "serveraddr", json_object_new_string(p->ms.serveraddr));
@@ -651,6 +702,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(myobj, "p2p", p2p_obj);
 
 	// voip
+	json_object_object_add(voip_obj, "enable",  json_object_new_int(p->voip.enable));
 	json_object_object_add(voip_obj, "use_stun", json_object_new_int(p->voip.use_stun));
 	json_object_object_add(voip_obj, "ipaddr", json_object_new_string(p->voip.ipaddr));
 	json_object_object_add(voip_obj, "port",   json_object_new_int(   p->voip.port));
@@ -668,6 +720,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	// free
 	json_object_put(bs_obj);
 	json_object_put(fota_obj);
+	json_object_put(mediaserver_obj);
 	json_object_put(msobj);
 	json_object_put(ddnsobj);
 	json_object_put(dnsobj);
@@ -676,7 +729,8 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(p2p_obj);
 	json_object_put(voip_obj);
 	json_object_put(myobj);
-}
+
+}//put_json_servers_config
 
 // deprecate?
 void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
@@ -729,38 +783,41 @@ void put_json_network_config(T_CGI_NETWORK_CONFIG *p)
 	json_object_put(myobj);
 }
 
+// multiple Wifi-AP
 void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 {
 	int i;
-	json_object *myobj, *wirelessobj, *cradleobj, *wifiapobj, *livestmobj, *wifilist;
+	json_object *network, *wirelessobj, *cradleobj, *wifiapobj, *livestmobj, *wifilist;
+	json_object *sslvpn;
     json_object* wifiInfo[4];
 
-	myobj       = json_object_new_object();
+	network     = json_object_new_object();
 	wirelessobj = json_object_new_object();
 	cradleobj   = json_object_new_object();
 	wifiapobj   = json_object_new_object();
 	wifilist    = json_object_new_array();
 	livestmobj  = json_object_new_object();
+	sslvpn      = json_object_new_object();
 
-	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+	json_object_object_add(network, "model", json_object_new_string(MODEL_NAME));
 
-	json_object_object_add(myobj, "wifi_ap_multi", json_object_new_int(p->wifi_ap_multi));
+	json_object_object_add(network, "wifi_ap_multi", json_object_new_int(p->wifi_ap_multi));
 
 	json_object_object_add(wirelessobj, "addr_type", json_object_new_int(p->wireless.addr_type));
 	json_object_object_add(wirelessobj, "ipv4",      json_object_new_string(p->wireless.ipv4));
 	json_object_object_add(wirelessobj, "gateway",   json_object_new_string(p->wireless.gw));
 	json_object_object_add(wirelessobj, "netmask",   json_object_new_string(p->wireless.mask));
-	json_object_object_add(myobj, "wireless", wirelessobj);
+	json_object_object_add(network, "wireless", wirelessobj);
 
 	json_object_object_add(cradleobj, "addr_type", json_object_new_int(p->cradle.addr_type));
 	json_object_object_add(cradleobj, "ipv4",      json_object_new_string(p->cradle.ipv4));
 	json_object_object_add(cradleobj, "gateway",   json_object_new_string(p->cradle.gw));
 	json_object_object_add(cradleobj, "netmask",   json_object_new_string(p->cradle.mask));
-	json_object_object_add(myobj, "cradle", cradleobj);
+	json_object_object_add(network, "cradle", cradleobj);
 
 	json_object_object_add(wifiapobj, "ssid", json_object_new_string(p->wifi_ap.id));
 	json_object_object_add(wifiapobj, "pass",   json_object_new_string(p->wifi_ap.pw));
-	json_object_object_add(myobj, "wifi_ap", wifiapobj);
+	json_object_object_add(network, "wifi_ap", wifiapobj);
 
 	char fname[10];
 	for(i = 0 ; i < 4 ; i++)
@@ -774,19 +831,38 @@ void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 
 		json_object_array_add(wifilist, wifiInfo[i]);
 	}
-	json_object_object_add(myobj, "wifilist", wifilist) ;
+	json_object_object_add(network, "wifilist", wifilist) ;
 
 	json_object_object_add(livestmobj, "enable",  json_object_new_int(   p->live_stream_account_enable));
 	json_object_object_add(livestmobj, "enctype", json_object_new_int(   p->live_stream_account_enctype));
 	json_object_object_add(livestmobj, "id",      json_object_new_string(p->live_stream_account.id));
 	json_object_object_add(livestmobj, "pw",      json_object_new_string(p->live_stream_account.pw));
-	json_object_object_add(myobj, "live_stream_account", livestmobj);
+	json_object_object_add(network,    "live_stream_account", livestmobj);
+
+
+	// ssl vpn
+	{
+		json_object_object_add(sslvpn, "enable",              json_object_new_int(    p->sslvpn.enable ));
+		json_object_object_add(sslvpn, "vendor",              json_object_new_int(    p->sslvpn.vendor ));
+		json_object_object_add(sslvpn, "vpn_id",              json_object_new_string( p->sslvpn.vpn_id ));
+		json_object_object_add(sslvpn, "heartbeat_interval",  json_object_new_int(    p->sslvpn.heartbeat_interval ));
+		json_object_object_add(sslvpn, "heartbeat_threshold", json_object_new_int(    p->sslvpn.heartbeat_threshold ));
+		json_object_object_add(sslvpn, "protocol",            json_object_new_int(    p->sslvpn.protocol ));
+		json_object_object_add(sslvpn, "port",                json_object_new_int(    p->sslvpn.port ));
+		json_object_object_add(sslvpn, "queue_size",          json_object_new_int(    p->sslvpn.queue_size ));
+		json_object_object_add(sslvpn, "key",                 json_object_new_string( p->sslvpn.key ));
+		json_object_object_add(sslvpn, "encrypt_type",        json_object_new_int(    p->sslvpn.encrypt_type ));
+		json_object_object_add(sslvpn, "ipaddress",           json_object_new_string( p->sslvpn.ipaddress ));
+		json_object_object_add(sslvpn, "network_interface",   json_object_new_int(    p->sslvpn.network_interface ));
+
+		json_object_object_add(network, "sslvpn", sslvpn ) ;
+	}
 
 	PUT_CACHE_CONTROL_NOCACHE;
 	PUT_CONTENT_TYPE_JSON;
 	PUT_CRLF;
 
-	PUTSTR("%s\r\n", json_object_to_json_string(myobj));
+	PUTSTR("%s\r\n", json_object_to_json_string(network));
 
 	// free
 	json_object_put(wirelessobj);
@@ -795,18 +871,23 @@ void put_json_network_config2(T_CGI_NETWORK_CONFIG2 *p)
 	for(i = 0 ; i < 4 ; i++) json_object_put(wifiInfo[i]);
 	json_object_put(wifilist);
 	json_object_put(livestmobj);
-	json_object_put(myobj);
+	json_object_put(sslvpn);
+	json_object_put(network);
 }
 
 void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 {
-	json_object *myobj, *misc_obj, *recordobj;
+	json_object *myobj, *streamobj, *misc_obj, *recordobj;
 
 	myobj = json_object_new_object();
+	streamobj = json_object_new_object();
 	recordobj = json_object_new_object();
 	misc_obj  = json_object_new_object();
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
+
+	json_object_object_add(streamobj, "enable_audio",  json_object_new_int(p->stm.enable_audio));
+	json_object_object_add(myobj, "stream", streamobj);
 
 	json_object_object_add(recordobj, "pre_rec", json_object_new_int(p->rec.pre_rec));
 	json_object_object_add(recordobj, "auto_rec", json_object_new_int(p->rec.auto_rec));
@@ -825,6 +906,7 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	printf("%s\r\n", json_object_to_json_string(myobj));
 
 	// free
+	json_object_put(streamobj);
 	json_object_put(recordobj);
 	json_object_put(misc_obj);
 	json_object_put(myobj);
@@ -850,7 +932,7 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 
 	// record info
 #if defined(NEXXONE)|| defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-	|| defined(NEXX360B) || defined(NEXX360C)
+	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 	int fpsIdx = p->rec.fps-1;
 	if(fpsIdx < 0 ) fpsIdx = 0;
 	if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;
@@ -887,7 +969,7 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 	// streaming info
 	json_object_object_add(streamobj, "resolution", json_object_new_int(p->stm.res));
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-	|| defined(NEXX360B) || defined(NEXX360C)
+	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 	fpsIdx = p->stm.fps-1;
 	if(fpsIdx < 0 ) fpsIdx = 0;
 	if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;
@@ -988,6 +1070,7 @@ int do_search(char *pContents)
 					return 0;
 				}
 				else if(!strcmp(prm[i].value, "network_config2")){
+					// Multiple Wifi-ap
 					T_CGI_NETWORK_CONFIG2 t;memset(&t,0, sizeof t);
 					sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&t, sizeof t );
 					put_json_network_config2(&t);

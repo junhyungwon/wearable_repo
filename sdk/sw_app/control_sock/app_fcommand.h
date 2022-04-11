@@ -27,8 +27,13 @@
 #define CMD_EVENTREQ_RCV	(0x1013)
 #define CMD_EVENTDATA_RES	(0x1004)
 #define CMD_SOSDATA_RES		(0x1005)
+#define CMD_STOP_SOSDATA    (0x1015)
 #define CMD_USERAUTH_REQ    (0x1006)
 #define CMD_USERAUTH_RES    (0x1007)
+#define CMD_CALL_REQ		(0x1008)
+#define CMD_CALL_RES		(0x1009)
+#define CMD_CALL_CLOSE		(0x1010)
+
 
 /*----------------------------------------------------------------------------
  Declares variables

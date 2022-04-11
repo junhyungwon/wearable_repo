@@ -33,11 +33,22 @@ typedef struct _tagFotaServer {
 	int  port;
 }T_CGI_FOTA_SERVER;
 
+typedef struct _tagMediaServer {
+	int  enable;
+    int  use_full_path_url;  // 따로 입력할건지, 주소를 통으로 입력할건지
+	char full_path_url[64];
+	char serveraddr[16];
+	int  port;
+	char id[32];
+	char pw[32];
+}T_CGI_MEDIA_SERVER;
+
 typedef struct _tagManageServer {
 	int  enable;
 	char serveraddr[128];				// ref) SERVER_URL_SIZE on app_set.h
 	int  port;
 }T_CGI_MANAGE_SERVER;
+
 typedef struct _tagDdnsInfo {
 	int  enable;
 	char serveraddr[64];
@@ -70,6 +81,7 @@ typedef struct _tagCgiP2pServerConfig {
 
 typedef struct _tagCgiVoipConfig{
     unsigned short private_network_only;
+    int enable;
     int use_stun;
     char ipaddr[16];
     unsigned short  port;
@@ -80,8 +92,9 @@ typedef struct _tagCgiVoipConfig{
 
 typedef struct _tagCgiServersConfig {
 	T_CGI_BACKUP_SERVER bs;    //ftp
-	T_CGI_FOTA_SERVER   fota;  // remote update
-	T_CGI_MANAGE_SERVER ms;
+	T_CGI_FOTA_SERVER   fota;          // remote update
+	T_CGI_MEDIA_SERVER  mediaserver;   // media server(rtmp)
+	T_CGI_MANAGE_SERVER ms;            // manage server
 	T_CGI_DDNS_INFO     ddns;
 	T_CGI_DNS_INFO      dns;
 	T_CGI_NTP_INFO      ntp;
@@ -95,6 +108,10 @@ typedef struct _tagCgiServersConfig {
 }T_CGI_SERVERS_CONFIG;
 /* end of servers settings */
 
+typedef struct _tagCgiStreamingConfig {
+    int enable_audio;      // on,off;
+}T_CGI_STREAMING_CONFIG;
+
 typedef struct _tagCgiRecordingConfig {
     int pre_rec;        // on or off
     int auto_rec;         // enable on startup
@@ -104,6 +121,7 @@ typedef struct _tagCgiRecordingConfig {
 }T_CGI_RECORDING_CONFIG;
 
 typedef struct _tagCgiOperationConfiguration {
+    T_CGI_STREAMING_CONFIG stm;
     T_CGI_RECORDING_CONFIG rec;
     int display_datetime;
     //T_CGI_P2PSERVER_CONFIG p2p;
@@ -157,6 +175,21 @@ typedef struct _tagCgiRtspConfig{
     char pw[128];         // PW
 }T_CGI_RTSP_CONFIG;
 
+typedef struct _tagCgiSslVpnConfig{
+    int  enable;
+    int  vendor;
+    char vpn_id[256];
+    int  heartbeat_interval;
+    int  heartbeat_threshold;
+    int  protocol;
+    int  port;
+    int  queue_size;
+    char key[256];
+    int  encrypt_type;
+    char ipaddress[32];
+    int  network_interface;
+}T_CGI_SSLVPN_CONFIG;
+
 typedef struct _tagCgiNetworkConfiguration {
     T_CGI_NETWORK_INTERFACE wireless;
     T_CGI_NETWORK_INTERFACE cradle;
@@ -174,6 +207,7 @@ typedef struct _tagCgiNetworkConfiguration2 {
     int       live_stream_account_enable;
 	int		  live_stream_account_enctype;
     T_CGI_ACCOUNT live_stream_account;
+    T_CGI_SSLVPN_CONFIG sslvpn;
 }T_CGI_NETWORK_CONFIG2;
 
 typedef struct _tagCgiSystemConfiguration{

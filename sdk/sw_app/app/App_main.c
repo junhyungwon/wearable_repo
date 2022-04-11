@@ -53,14 +53,10 @@
 #include "app_buzz.h"
 #include "app_libuv.h"
 #include "app_watchdog.h"
-
-#ifdef USE_RTMP
 #include "app_rtmp.h"
-#endif
 
-#if SYS_CONFIG_VOIP
 #include "app_voip.h"
-#endif
+#include "app_bcall.h"
 
 #ifdef USE_KCMVP
 #include "mcapi.h"
@@ -218,16 +214,23 @@ int app_main(void)
     sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
-    app_libuv_start();
-#ifdef USE_RTMP
-    app_rtmp_start();
+    if(app_set->sslvpn_info.ON_OFF)
+	{
+		app_sslvpn_start() ;
+	}
+
+
+    if(app_set->rtmp.ON_OFF)
+	{
+    	app_libuv_start();
+	    app_rtmp_start();
 
     // disable SIGPIPE
-    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
+	    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
 
     // enable in default
-    app_rtmp_enable();
-#endif
+	    app_rtmp_enable();
+	}
 
     app_cap_start();
 	app_snd_start(); 
@@ -243,15 +246,17 @@ int app_main(void)
 	if (app_set->srv_info.ON_OFF)
         app_fms_init() ;
 
-	app_rtsptx_start();
+    if(!app_set->rtmp.ON_OFF)
+		app_rtsptx_start();
 
 	//if(app_set->net_info.enable_onvif==1)
+    if(!app_set->rtmp.ON_OFF)
 	{
 		if (app_onvifserver_start() == 0) {
 			app_cfg->ste.b.onvifserver = 1; // have to add this flag....
 		}
 	}
-	
+	app_uds_start();
 	app_web_boot_passwordfile();
 	if (app_web_start_server() ==0) {
         app_cfg->ste.b.web_server = 1; // have to add this flag....
@@ -262,7 +267,7 @@ int app_main(void)
 	if (app_set->ftp_info.ON_OFF)
         app_ftp_init();
 	
-    if (app_set->sys_info.P2P_ON_OFF == ON) 
+    if (app_set->sys_info.P2P_ON_OFF == ON && !app_set->rtmp.ON_OFF) 
 	{
 		#if SYS_CONFIG_WLAN
         add_p2p_account() ;
@@ -270,10 +275,11 @@ int app_main(void)
         app_p2p_init() ;
 		#endif		
     }
+    if(app_set->voip.ON_OFF)
+		app_voip_init();
+    else
+    	app_call_control_init() ;
 
-#if SYS_CONFIG_VOIP	
-	app_voip_init();
-#endif	
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
 #ifdef USE_KCMVP
@@ -330,6 +336,7 @@ int app_main(void)
 #endif
 
 	//if(app_set->net_info.enable_onvif==1)
+    if(!app_set->rtmp.ON_OFF)
 	{
 		if (app_cfg->ste.b.onvifserver) // have to add this flag....
 		{
@@ -338,7 +345,7 @@ int app_main(void)
 		}
 	}
     
-    if(app_set->sys_info.P2P_ON_OFF == ON)
+    if(app_set->sys_info.P2P_ON_OFF == ON && !app_set->rtmp.ON_OFF)
     {
 		#if SYS_CONFIG_WLAN
         app_p2p_exit() ;
@@ -349,15 +356,19 @@ int app_main(void)
     app_snd_stop(); 
     app_cap_stop();
 
-#ifdef USE_RTMP
-    app_rtmp_stop();
-#endif
-    app_libuv_stop();
+    if(app_set->rtmp.ON_OFF)
+	{
+		app_rtmp_stop();
+    	app_libuv_stop();
+	}
 
     if (app_cfg->ste.b.rtsptx) {
         app_rtsptx_stop();
     }
-    
+
+    if(app_set->sslvpn_info.ON_OFF)
+		app_sslvpn_stop() ;
+
 	app_tsync_exit() ;
 	app_netmgr_exit();
 	app_mcu_stop();
@@ -414,8 +425,8 @@ int app_cfg_init(void)
 int main(int argc, char **argv)
 {
 	unsigned long part_size = 0;
-	int ret, mmc_state;
-
+	int ret, mmc_state;	
+	
 	printf("\n--- FITT360 start (v%s) ---\n", FITT360_SW_VER);
 	
 	/* micom ready 신호 전달 */
@@ -428,9 +439,19 @@ int main(int argc, char **argv)
 	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
 	ret = ctrl_mmc_check_exfat(&part_size);
 	if (ret == 1) {
-		ctrl_mmc_exfat_format(part_size);
+		ctrl_mmc_exFAT_format(part_size);
 	}
 	
+	/* SD 카드 fsck 실행 */
+	system("/bin/umount /mmc"); /* umount */
+	app_msleep(100);
+	//# execute to repair
+	system("/sbin/fsck.fat -a -w /dev/mmcblk0p1");
+	//# mount sd card.
+	system("/bin/mount -t vfat /dev/mmcblk0p1 /mmc");
+	//# To remove recovery file!! FSCK****.REC
+	system("/bin/rm -rf /mmc/*.REC");
+		
 	/* mmc prepare: 쓰기 가능한 지 확인 및 log 디렉토리 생성 */
 	mmc_state = __mmc_prepare();
 	if (mmc_state == SOK) {
@@ -442,7 +463,7 @@ int main(int argc, char **argv)
 			return 0;
 		/* remove update files */
 		ctrl_reset_nand_update();
-	} else {	//# mmc error
+	} else {	
 		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
 		app_buzz_ctrl(100, 1);
 		app_msleep(5000);
@@ -455,7 +476,6 @@ int main(int argc, char **argv)
 	//----------  SD 카드 ----------------------------------------------
 	app_set_open();
     app_setdns() ;  // set resolv.conf
-
 	//#--- system init
 	ret = main_thread_init();
 	if (ret < 0) {
@@ -474,7 +494,7 @@ int main(int argc, char **argv)
 	app_dev_init();
     app_tsync_init() ;
 
-    setting_txtbase() ;
+//    setting_txtbase() ;
 
 	if (app_file_init() == SOK) {
 		app_rec_init();
@@ -508,9 +528,11 @@ int main(int argc, char **argv)
         app_ftp_exit();
 
     app_ipins_exit();
-#if SYS_CONFIG_VOIP	
-	app_voip_exit(); /* voip exit */
-#endif
+	if(app_set->voip.ON_OFF)
+		app_voip_exit(); /* voip exit */
+	else
+    	app_call_control_exit() ;
+
 #if SYS_CONFIG_GPS	
 	app_gps_exit();
 #endif	

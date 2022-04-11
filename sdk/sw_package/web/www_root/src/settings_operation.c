@@ -27,6 +27,7 @@ int main()
 	printf("<rec_overwrite_list><value>0</value><name>OFF</name></rec_overwrite_list>\n");
 	printf("<rec_overwrite_list><value>1</value><name>ON</name></rec_overwrite_list>\n");
 
+	printf("<stream_enable_audio>%d</stream_enable_audio>\n", t.stm.enable_audio);				// on off
 	printf("<pre_rec>%d</pre_rec>\n", t.rec.pre_rec);				    // on or off
 	printf("<auto_rec>%d</auto_rec>\n", t.rec.auto_rec);				// enable on startup
 	printf("<audio_rec>%d</audio_rec>\n", t.rec.audio_rec);				// on off

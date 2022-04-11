@@ -333,6 +333,74 @@ Int32 Vps_deviceRawRead8 (UInt32 instId,
     return status;
 }
 
+/* For NEXTCHIP NVP2440H */
+Int32 Vps_nicpRead8 (UInt32 instId, UInt32 devAddr, UInt8 *regValue, UInt8 isResponse)
+{
+    Int32 status;
+    UInt32 regId;
+    PSP_I2cXferParams i2cParams;
+	UInt8 pkt_buf[2] = {0x10, 0x00};
+	UInt8 rBuf[64];
+	UInt8 rSize=0;
+	
+    if (regValue == NULL)
+    {
+        if (gVps_deviceObj.i2cDebugEnable) {
+            Vps_printf(" I2C%d: DEV 0x%02x: Illegal Params ... ERROR !!!\n",
+                instId,
+                devAddr
+            );
+        }
+        return FVID2_EFAIL;
+    }
+
+    status = Vps_deviceI2cLock(instId, TRUE);
+    if (status == FVID2_SOK) {
+        i2cParams.slaveAddr = devAddr;
+        i2cParams.bufLen    = 2;
+        i2cParams.timeout   = VPS_DEVICE_I2C_TIMEOUT;
+		i2cParams.buffer    = (UInt8 *)&pkt_buf[0];
+        i2cParams.flags     = (I2C_WRITE | I2C_MASTER | I2C_START /* | I2C_STOP */ );
+
+		status = PSP_i2cTransfer(gVps_deviceObj.i2cHndl[instId], &i2cParams);
+		if (status != FVID2_SOK) {
+			if (gVps_deviceObj.i2cDebugEnable) {
+				Vps_printf(" I2C%d: NVP2440H RX Packet ERROR !!!\n", instId, devAddr);
+			}
+			
+			Vps_deviceI2cLock(instId, FALSE);
+			return status;
+		}
+		
+		if (isResponse)	rSize = 3; /* packet length + response code + checksum */
+		else			rSize = 4; /* packet length + response code + checksum + data */
+		
+		i2cParams.bufLen = rSize;
+		i2cParams.buffer = rBuf;
+        i2cParams.flags  = (I2C_READ | I2C_MASTER | I2C_START | I2C_STOP | \
+							I2C_IGNORE_BUS_BUSY | I2C_M_IGNORE_NAK);
+
+		status = PSP_i2cTransfer(gVps_deviceObj.i2cHndl[instId], &i2cParams);
+		if (status != FVID2_SOK) {
+			if (gVps_deviceObj.i2cDebugEnable) {
+				Vps_printf(" I2C%d: NVP2440H RX Packet ERROR !!!\n", instId, devAddr);
+			}
+			
+			Vps_deviceI2cLock(instId, FALSE);
+			return status;
+		}
+
+        for (regId=0; regId<rSize; regId++) {
+			/* copy data */
+			regValue[regId] = rBuf[regId];
+        }
+
+        Vps_deviceI2cLock(instId, FALSE);
+    }
+
+    return status;
+}
+
 Int32 Vps_deviceWrite8 (UInt32 instId, UInt32 devAddr,
                         const UInt8 * regAddr,
                         const UInt8 * regValue, UInt32 numRegs)

@@ -27,7 +27,11 @@ static int submit_settings_qcgi()
         T_CGI_VOIP_CONFIG t;
 		memset(&t, 0, sizeof t);
 
-        char * str= req->getstr(req, "voip_use_stun", false);
+        char * str= req->getstr(req, "voip_enable", false);
+        if (str != NULL) {
+            t.enable = atoi(str);
+        }
+        str= req->getstr(req, "voip_use_stun", false);
         if (str != NULL) {
             t.use_stun = atoi(str);
         }

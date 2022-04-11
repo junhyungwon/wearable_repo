@@ -9,10 +9,7 @@ INCLUDE += -I$(APP_DIR)/settings
 INCLUDE += -I$(THIRD_PARTY)/libuv/include/
 INCLUDE += -I$(THIRD_PARTY)/libuv/src/
 INCLUDE += -I$(THIRD_PARTY)/kcmvp/include/
-
-ifeq ($(USE_RTMP), YES)
 INCLUDE += -I$(THIRD_PARTY)/srs-librtmp/src/srs/
-endif
 
 LIBS= $(LIB_DIR)/app_fitt.a $(MCFW_LIBS) $(AUDIO_LIBS) $(CMEM_LIB) $(BLKID_LIBS)
 
@@ -25,10 +22,7 @@ endif
 
 LIBS += $(THIRD_PARTY)/libuv/libuv_a.a
 LIBS += -lpthread
-
-ifeq ($(USE_RTMP), YES)
 LIBS += $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
-endif
 
 LIBS += -L$(TLS_LIBS) -lssl -lcrypto
 

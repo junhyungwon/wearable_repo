@@ -9,8 +9,6 @@
 
 #pragma once
 
-#ifdef USE_RTMP
-
 #include <uv.h>
 #include <stdbool.h>
 
@@ -44,4 +42,3 @@ void app_rtmp_enable(void);
 void app_rtmp_disable(void);
 void app_rtmp_set_endpoint(const char*);
 void app_rtmp_get_endpoint();
-#endif // USE_RTMP

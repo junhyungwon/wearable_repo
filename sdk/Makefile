@@ -274,7 +274,7 @@ uboot:
 	@echo -e "\n--- make uboot done! (`date +'%H:%M:%S'`)---\n"
 
 ubootscr:
-ifeq ($(SYSTEM_PLATFORM),NEXX360C)
+ifeq ($(USE_CCTV),YES)
 	mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n 'Execute Boot Script' -d $(UBOOTDIR)/bootscript_cctv.sh $(UBOOTDIR)/boot.scr
 else
 ifeq ($(EXTERNAL_BATTERY_ONLY),YES)
@@ -334,14 +334,14 @@ lsp_all: lsp_clean lsp
 ##### Wi-Fi Driver BUILD #####
 wlan:
 ifeq ($(USE_WIFI),YES)
-	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver modules
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x1au_driver modules
 	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x2bu_driver modules
 endif
 
 wlan_clean:
 ifeq ($(USE_WIFI), YES)
-	-rm -f $(TARGET_FS)/lib/modules/8821au.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/8821au_driver clean
+	-rm -f $(TARGET_FS)/lib/modules/8811au.ko
+	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x1au_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/88x2bu.ko
 	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x2bu_driver clean
 endif
@@ -449,7 +449,7 @@ endif
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh
 
 ifeq ($(USE_WIFI),YES)
-	sudo /bin/cp $(KMODDIR)/wlan/8821au_driver/8821au.ko $(TARGET_FS)/lib/modules/.
+	sudo /bin/cp $(KMODDIR)/wlan/88x1au_driver/8811au.ko $(TARGET_FS)/lib/modules/.
 	sudo /bin/cp $(KMODDIR)/wlan/88x2bu_driver/88x2bu.ko $(TARGET_FS)/lib/modules/.
 endif
 

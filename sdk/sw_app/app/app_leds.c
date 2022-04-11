@@ -290,7 +290,7 @@ int app_leds_cam_ctrl(int no, int ste)
 	return ret;
 }
 
-#if SYS_CONFIG_VOIP
+
 /*----------------------------------------------------------------------------
  LED VOIP control. (
  *
@@ -307,7 +307,7 @@ int app_leds_voip_ctrl(int ste)
 		return 0;
 	}
 
-#if defined(NEXXB) || defined(NEXXB_ONE)	
+#if defined(NEXXB)	
 	index = LED_IDX_CAM2;
 #else
 	index = LED_IDX_CAM4;
@@ -319,7 +319,7 @@ int app_leds_voip_ctrl(int ste)
 
 	return ret;
 }
-#endif
+
 
 /*----------------------------------------------------------------------------
  LED SD card (insert/remove) control.

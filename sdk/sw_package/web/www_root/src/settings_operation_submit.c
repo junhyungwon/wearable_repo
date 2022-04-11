@@ -37,6 +37,7 @@ static int submit_settings_fitt360()
 	if(cnt>0){
 
 		int  i=0;
+		int  stream_enable_audio =-1;
 		int  pre_rec=-1;
 		int  auto_rec =-1;
 		int  audio_rec =-1;
@@ -47,7 +48,10 @@ static int submit_settings_fitt360()
 		for(;i<cnt;i++) {
 
 			CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
-			if(!strcmp(prm[i].name, "pre_rec")){
+			if(!strcmp(prm[i].name, "stream_enable_audio")){
+				stream_enable_audio = atoi(prm[i].value);
+			} 
+			else if(!strcmp(prm[i].name, "pre_rec")){
 				pre_rec = atoi(prm[i].value);
 			} 
 			else if(!strcmp(prm[i].name, "auto_rec")){
@@ -67,14 +71,25 @@ static int submit_settings_fitt360()
 			}
 		}
 
-		if( pre_rec == -1 || audio_rec == -1 || auto_rec == -1 || rec_interval == -1 || rec_overwrite == -1 
-				|| display_datetime == -1 ){
-			CGI_DBG("Invalid Parameter\n");
+		if( stream_enable_audio == -1 ) {
+			CGI_DBG("Invalid Streaming Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
+		CGI_DBG("stream_enable_audio:%d\n", stream_enable_audio);
 
+		if( pre_rec == -1 || audio_rec == -1 || auto_rec == -1 || rec_interval == -1 || rec_overwrite == -1 ){
+			CGI_DBG("Invalid Recording Parameter\n");
+			return ERR_INVALID_PARAM;
+		}
 		CGI_DBG("pre_rec:%d, auto_rec:%d, audio_rec:%d, rec_interval:%d, rec_overwrite:%d, display_datetime:%d\n", 
 				pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite, display_datetime);
+
+		if( display_datetime == -1 ) {
+			CGI_DBG("Invalid MISC Parameter\n");
+			return ERR_INVALID_PARAM;
+		}
+		CGI_DBG("display_datetime:%d\n", display_datetime);
+
 
 		// Must finish parsing before free.
 		if(isPOST){ free(contents); }
@@ -82,6 +97,7 @@ static int submit_settings_fitt360()
 		// check parameter values
 		T_CGI_OPERATION_CONFIG t;
 		memset(&t, 0, sizeof(t));
+		t.stm.enable_audio = stream_enable_audio;
 		t.rec.pre_rec      = pre_rec;
 		t.rec.auto_rec     = auto_rec;
 		t.rec.audio_rec    = audio_rec;
@@ -128,6 +144,7 @@ static int submit_settings()
 	if(cnt>0){
 
 		int  i=0;
+		int  stream_enable_audio =-1;
 		int  pre_rec=-1;
 		int  auto_rec =-1;
 		int  audio_rec =-1;
@@ -138,6 +155,9 @@ static int submit_settings()
 		for(;i<cnt;i++) {
 
 			CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
+			if(!strcmp(prm[i].name, "stream_enable_audio")){
+				stream_enable_audio = atoi(prm[i].value);
+			} 
 			if(!strcmp(prm[i].name, "pre_rec")){
 				pre_rec = atoi(prm[i].value);
 			} 
@@ -158,14 +178,23 @@ static int submit_settings()
 			}
 		}
 
-		if( pre_rec == -1 || audio_rec == -1 || auto_rec == -1 || rec_interval == -1 || rec_overwrite == -1 
-				|| display_datetime == -1 ){
-			CGI_DBG("Invalid Parameter\n");
+		if( stream_enable_audio == -1 ) {
+			CGI_DBG("Invalid Streaming Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
+		CGI_DBG("stream_enable_audio:%d\n", stream_enable_audio);
 
-		CGI_DBG("pre_rec:%d, auto_rec:%d, audio_rec:%d, rec_interval:%d, rec_overwrite:%d, display_datetime:%d\n", 
-				pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite, display_datetime);
+		if( pre_rec == -1 || audio_rec == -1 || auto_rec == -1 || rec_interval == -1 || rec_overwrite == -1 ){
+			CGI_DBG("Invalid Recording Parameter\n");
+			return ERR_INVALID_PARAM;
+		}
+		CGI_DBG("pre_rec:%d, auto_rec:%d, audio_rec:%d, rec_interval:%d, rec_overwrite:%d\n", 
+				pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite);
+
+		if( display_datetime == -1 ) {
+			CGI_DBG("Invalid MISC Parameter\n");
+			return ERR_INVALID_PARAM;
+		}
 
 		// Must finish parsing before free.
 		if(isPOST){ free(contents); }
@@ -173,12 +202,13 @@ static int submit_settings()
 		// check parameter values
 		T_CGI_OPERATION_CONFIG t;
 		memset(&t, 0, sizeof(t));
+		t.stm.enable_audio  = stream_enable_audio;
 		t.rec.pre_rec       = pre_rec;
 		t.rec.auto_rec      = auto_rec;
 		t.rec.audio_rec     = audio_rec;
 		t.rec.interval      = rec_interval;
 		t.rec.overwrite     = rec_overwrite;
-		t.display_datetime = display_datetime;
+		t.display_datetime  = display_datetime;
 
 		if(0 != sysctl_message(UDS_SET_OPERATION_CONFIG, (void*)&t, sizeof t )) {
 			return SUBMIT_ERR;

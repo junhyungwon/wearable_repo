@@ -93,11 +93,24 @@
 #define FTP_DEV_ETH0			1
 #define FTP_DEV_ETH1			2
 
-#if defined(NEXXB) 
+#if defined(NEXXB) || defined(NEXXB_ONE)
 #define FTP_CUR_DEV				FTP_DEV_ETH1 //#FTP_DEV_ETH1 /* TODO */
 #else
 #define FTP_CUR_DEV				FTP_DEV_ETH0
 #endif
+
+//# app CALL STATUS
+typedef enum {
+	APP_STATE_NONE,
+	//# for thread
+	APP_STATE_INCOMING = 0x01,
+	APP_STATE_ACCEPT,
+    APP_STATE_CALLING,
+	APP_STATE_OUTCOMING,
+
+	MAX_STATE_CMD
+} app_state_e;
+
 
 typedef enum {
 	STE_GPS = 0,
@@ -227,9 +240,13 @@ typedef struct {
     int evt_type;          // distinguish event type shock and others
     char ftp_enable;
     int vid_count ; 
+	int voip_set_ON_OFF ;
 
 	char cfg_mmc_path[MAX_CHAR_128];
 	char cfg_nand_path[MAX_CHAR_128];
+
+	int  stream_enable_audio;
+
 } app_cfg_t;
 
 /*----------------------------------------------------------------------------

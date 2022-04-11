@@ -40,9 +40,9 @@
 #include "app_ctrl.h"
 #include "js_settings.h"
 
-#if SYS_CONFIG_VOIP
+
 #include "app_voip.h"
-#endif
+#include "app_sslvpn.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -128,11 +128,11 @@ static void set_uid()
 	    if(!strncmp(uid, "LFS", 3))
 	    {
             sprintf(app_set->sys_info.uid, "%s", uid); 
-#if SYS_CONFIG_VOIP
+
 	        sprintf(app_set->voip.userid, "%d%d%s", 'A', 1, &uid[12]);
 			if(!strcmp(app_set->voip.peerid, ""))
                 sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
-#endif
+
         }
 	}	
 }
@@ -216,7 +216,6 @@ static void char_memset(void)
     memset(app_set->wifiap.pwd, CHAR_MEMSET, MAX_CHAR_64 + 1) ;
 	app_set->wifiap.stealth = CFG_INVALID ;
     memset(app_set->wifiap.reserved, CFG_INVALID, 72) ;
-
     
 	//# Wifilist information
 	for(i = 0; i < WIFIAP_CNT; i++)
@@ -272,7 +271,6 @@ static void char_memset(void)
     memset(app_set->account_info.reserved, CFG_INVALID, 121) ; // WOW, This is a super TRAP...
     app_set->multi_ap.ON_OFF = CFG_INVALID ;
 
-#if SYS_CONFIG_VOIP
 	// VOIP size : 66 
     app_set->voip.port = CFG_INVALID ;
     memset(app_set->voip.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
@@ -280,12 +278,32 @@ static void char_memset(void)
     memset(app_set->voip.passwd, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->voip.peerid, CHAR_MEMSET, MAX_CHAR_16);
 	app_set->voip.use_stun = 0 ;
-    memset(app_set->voip.reserved, CHAR_MEMSET, 40) ;
-    memset(app_set->reserved, CFG_INVALID, 360) ;
-#else
-    memset(app_set->reserved, CFG_INVALID, 472) ;
-#endif
-//    memset(app_set->reserved, CFG_INVALID, 794) ;
+	app_set->voip.ON_OFF = CFG_INVALID ;
+    memset(app_set->voip.reserved, CFG_INVALID, 38) ;
+
+	app_set->rtmp.ON_OFF = CFG_INVALID ;
+	app_set->rtmp.USE_URL = CFG_INVALID ;
+	app_set->rtmp.port = CFG_INVALID ;
+	memset(app_set->rtmp.ipaddr, CHAR_MEMSET, MAX_CHAR_16) ;
+	memset(app_set->rtmp.FULL_URL, CHAR_MEMSET, MAX_CHAR_64) ;
+
+	app_set->sslvpn_info.ON_OFF = CFG_INVALID ;
+	app_set->sslvpn_info.vendor = CFG_INVALID ;
+	memset(app_set->sslvpn_info.vpn_id, CHAR_MEMSET, MAX_CHAR_32) ;
+	app_set->sslvpn_info.heartbeat_interval = CFG_INVALID ;
+	app_set->sslvpn_info.heartbeat_threshold = CFG_INVALID ;
+    app_set->sslvpn_info.protocol = CFG_INVALID ;
+	app_set->sslvpn_info.port = CFG_INVALID ;
+	app_set->sslvpn_info.queue = CFG_INVALID ;
+	memset(app_set->sslvpn_info.key, CHAR_MEMSET, MAX_CHAR_16) ;
+	app_set->sslvpn_info.encrypt_type = CFG_INVALID ;
+	memset(app_set->sslvpn_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32) ;
+	app_set->sslvpn_info.NI = CFG_INVALID ;
+
+//	memset(app_set->rtmp.userid, CHAR_MEMSET, MAX_CHAR_16) ;
+//	memset(app_set->rtmp.passwd, CHAR_MEMSET, MAX_CHAR_16) ;
+
+//    memset(app_set->reserved, CFG_INVALID, 90) ;
 }
 
 int GetSvrMacAddress(char *mac_address)
@@ -419,6 +437,9 @@ int show_all_cfg(app_set_t* pset)
 
 	printf("\n");
 
+	printf("pset->stm_info.enable_audio = %d\n",pset->stm_info.enable_audio) ;
+	printf("\n");
+
 	printf("pset->rec_info.period_idx = %d\n", pset->rec_info.period_idx);
 	printf("pset->rec_info.overwrite  = %d\n", pset->rec_info.overwrite );
     printf("pset->rec_info.auto_rec = %d\n",pset->rec_info.auto_rec) ;
@@ -456,14 +477,36 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->account_info.onvif.pw = %s\n", pset->account_info.onvif.pw) ;
     printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
 
-#if SYS_CONFIG_VOIP
     printf("pset->voip.ipaddr = %s\n", pset->voip.ipaddr);
     printf("pset->voip.port   = %d\n", pset->voip.port);
     printf("pset->voip.userid = %s\n", pset->voip.userid);
     printf("pset->voip.passwd = %s\n", pset->voip.passwd);
     printf("pset->voip.peerid = %s\n", pset->voip.peerid);
     printf("pset->voip.use_stun = %d\n", pset->voip.use_stun);
-#endif
+    printf("pset->voip.ON_OFF = %d\n", pset->voip.ON_OFF);
+
+    printf("pset->rtmp.ON_OFF = %d\n", pset->rtmp.ON_OFF);
+    printf("pset->rtmp.USE_URL    = %d\n", pset->rtmp.USE_URL);
+    printf("pset->rtmp.ipaddr = %s\n", pset->rtmp.ipaddr);
+    printf("pset->rtmp.FULL_URL = %s\n", pset->rtmp.FULL_URL);
+    printf("pset->rtmp.port   = %d\n", pset->rtmp.port);
+
+	printf("pset->sslvpn_info.ON_OFF = %d\n", pset->sslvpn_info.ON_OFF) ;
+	printf("pset->sslvpn_info.vendor = %d\n", pset->sslvpn_info.vendor) ;
+	printf("pset->sslvpn_info.vpn_id = %s\n", pset->sslvpn_info.vpn_id) ;
+	printf("pset->sslvpn_info.heartbeat_interval = %d\n",pset->sslvpn_info.heartbeat_interval) ;
+	printf("pset->sslvpn_info.heartbeat_threshold = %d\n", pset->sslvpn_info.heartbeat_threshold) ;
+    printf("pset->sslvpn_info.protocol = %d\n", pset->sslvpn_info.protocol) ;
+	printf("pset->sslvpn_info.port = %d\n", pset->sslvpn_info.port) ;
+	printf("pset->sslvpn_info.queue = %d\n", pset->sslvpn_info.queue) ;
+	printf("pset->sslvpn_info.key = %s\n", pset->sslvpn_info.key) ;
+	printf("pset->sslvpn_info.encrypt_type = %d\n", pset->sslvpn_info.encrypt_type) ;
+	printf("pset->sslvpn_info.ipaddr = %s\n", pset->sslvpn_info.ipaddr) ;
+	printf("pset->sslvpn_info.NI = %d\n", pset->sslvpn_info.NI) ;
+
+//    printf("pset->rtmp.userid = %s\n", pset->rtmp.userid);
+//    printf("pset->rtmp.passwd = %s\n", pset->rtmp.passwd);
+
 	printf("\n");
 
     return 0;
@@ -670,7 +713,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->ftp_info.file_type <= CFG_INVALID)
         pset->ftp_info.file_type = OFF ;
 
-
 	//# FOTA information
 	if(pset->fota_info.port <= CFG_INVALID)
 		pset->fota_info.port	= 21;
@@ -694,7 +736,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		sprintf(pset->fota_info.confname,"%s.conf", MODEL_NAME);
 
 	//# Wifi AP information
-
 	if(pset->wifiap.en_key != ON && pset->wifiap.en_key != OFF)
 	    pset->wifiap.en_key = ON;
 
@@ -710,11 +751,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
     #endif
         strcpy(pset->wifiap.pwd,"AP_PASSWORD");
-	
-
 
 	//# Wifilist information
-
 	for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		if(pset->wifilist[i].en_key != ON && pset->wifilist[i].en_key != OFF)
@@ -732,35 +770,22 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		if((int)pset->wifilist[i].pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
 		#endif
 		    memset(pset->wifilist[i].pwd, 0, MAX_CHAR_64);
-
 	}
+
+	if(pset->stm_info.enable_audio != ON && pset->stm_info.enable_audio != OFF)
+	    pset->stm_info.enable_audio = OFF ;
 
 	if(pset->rec_info.period_idx < REC_PERIOD_01 && pset->rec_info.period_idx >= REC_PERIOD_MAX)
 		pset->rec_info.period_idx = REC_PERIOD_01;
 
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
-
-#if defined(NEXXONE)
-	#if SYS_CONFIG_VOIP
-    if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = ON ;
-	#else
-	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = OFF ;
-	#endif	
-#elif defined(NEXX360W) || defined(NEXXB) || defined(NEXXB_ONE)
-	#if SYS_CONFIG_VOIP
-    if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = ON ;
-	#else
-	if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
-	    pset->rec_info.auto_rec = OFF ;
-	#endif
-#elif defined(NEXX360C)
+	
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
-#else //# NEXX360B, NEXX360H, NEXX360W_MUX
+#else 
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXXB/NEXXB_ONE/NEXX360H/NEXXONE
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 #endif		
@@ -808,8 +833,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
         pset->account_info.enctype = 0 ;
 	
-	/* AES¸¦ »ç¿ëÇÏ´Â °æ¿ì ¹®ÀÚ¿­¿¡ µû¶ó¼­ 0xff ¶Ç´Â 0x00À¸·Î ½ÃÀÛÇÏ´Â °æ¿ì°¡ ÀÖ´Ù. */
-	/* µû¶ó¼­ 4byte Å©±â¸¦ ºñ±³ÇÔ */
+	/* AESë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš° ë¬¸ìì—´ì— ë”°ë¼ì„œ 0xff ë˜ëŠ” 0x00ìœ¼ë¡œ ì‹œì‘í•˜ëŠ” ê²½ìš°ê°€ ìˆë‹¤. */
+	/* ë”°ë¼ì„œ 4byte í¬ê¸°ë¥¼ ë¹„êµí•¨ */
 	{
 		int *tmp_buf;
 		int res;
@@ -892,7 +917,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->multi_ap.ON_OFF = OFF ;
 
     printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
-#if SYS_CONFIG_VOIP	
+	
+	//# ----------------- VOIP Parameters Start -----------------------------------------
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
 		strcpy(pset->voip.ipaddr, PBX_SERVER_ADDR);
 
@@ -910,8 +936,74 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->voip.use_stun <= CFG_INVALID)
 		pset->voip.use_stun = 0;
-#endif
-		
+
+#if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)	
+   	if(pset->voip.ON_OFF <= CFG_INVALID)
+		pset->voip.ON_OFF = ON;
+#else
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
+   	if(pset->voip.ON_OFF <= CFG_INVALID)
+		pset->voip.ON_OFF = OFF;
+#endif	
+	app_cfg->voip_set_ON_OFF = pset->voip.ON_OFF ;
+	app_cfg->stream_enable_audio = pset->stm_info.enable_audio;
+
+	//# ----------------- VOIP Parameters End -----------------------------------------
+
+	if(pset->rtmp.ON_OFF <= CFG_INVALID)
+		pset->rtmp.ON_OFF = OFF;
+
+	pset->rtmp.ON_OFF = OFF;
+
+	if(pset->rtmp.USE_URL <= CFG_INVALID)
+		pset->rtmp.USE_URL = OFF;
+
+	if(pset->rtmp.port <= CFG_INVALID)
+		pset->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
+
+	if((int)pset->rtmp.ipaddr[0] == CHAR_INVALID || (int)pset->rtmp.ipaddr[0] == 0)
+		strcpy(pset->rtmp.ipaddr, RTMP_SERVER_ADDR);
+
+	if((int)pset->rtmp.FULL_URL[0] == CHAR_INVALID || (int)pset->rtmp.FULL_URL[0] == 0)
+		strcpy(pset->rtmp.FULL_URL, RTMP_SERVER_URL);
+
+	
+	if(pset->sslvpn_info.ON_OFF <= CFG_INVALID)
+		pset->sslvpn_info.ON_OFF = OFF ;
+
+	if(pset->sslvpn_info.vendor <= CFG_INVALID)
+		pset->sslvpn_info.vendor = OFF ;  // 0 AXGATE VPN
+	
+	if((int)pset->sslvpn_info.vpn_id[0] == CHAR_INVALID || (int)pset->sslvpn_info.vpn_id[0] == 0)
+		strcpy(pset->sslvpn_info.vpn_id, SSLVPN_ID) ;
+
+	if(pset->sslvpn_info.heartbeat_interval <= CFG_INVALID || pset->sslvpn_info.heartbeat_interval > 32767)
+		pset->sslvpn_info.heartbeat_interval = 3000 ;
+	
+	if(pset->sslvpn_info.heartbeat_threshold <= CFG_INVALID || pset->sslvpn_info.heartbeat_threshold > 32767)
+		pset->sslvpn_info.heartbeat_threshold = 3 ;
+
+	if(pset->sslvpn_info.protocol <= CFG_INVALID)
+		pset->sslvpn_info.protocol = OFF; // 0 TCP, 1 UDP
+
+	if((pset->sslvpn_info.port < 1024) || pset->sslvpn_info.port > 49151)
+		pset->sslvpn_info.port = 3900 ;
+
+	if(pset->sslvpn_info.queue <= CFG_INVALID || pset->sslvpn_info.queue > 32767)
+		pset->sslvpn_info.queue = 16384 ;
+	
+	if((int)pset->sslvpn_info.key[0] == CHAR_INVALID || (int)pset->sslvpn_info.key[0] == 0)
+		strcpy(pset->sslvpn_info.key, SSLVPN_KEY) ;
+
+	if(pset->sslvpn_info.encrypt_type <= CFG_INVALID)
+		pset->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+
+	if((int)pset->sslvpn_info.ipaddr[0] == CHAR_INVALID || (int)pset->sslvpn_info.ipaddr[0] == 0)
+		strcpy(pset->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
+	
+	if(pset->sslvpn_info.NI <= CFG_INVALID)
+		pset->sslvpn_info.NI = 2 ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
+
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 }
@@ -1096,7 +1188,7 @@ static void app_set_default(int default_type)
     for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
 		app_set->wifilist[i].en_key = ON;
-		//# 0À¸·Î ÃÊ±âÈ­
+		//# 0ìœ¼ë¡œ ì´ˆê¸°í™”
 		memset(app_set->wifilist[i].ssid, 0, MAX_CHAR_32);
 		memset(app_set->wifilist[i].pwd, 0, MAX_CHAR_64);
 		app_set->wifilist[i].stealth = OFF;
@@ -1117,23 +1209,17 @@ static void app_set_default(int default_type)
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 
     strcpy(app_set->sys_info.p2p_passwd, P2P_DEFAULT_PW) ;
 
+	//# streaming information
+	app_set->stm_info.enable_audio     = OFF ;
+
 	//# rec information
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
 
-#if defined(NEXXONE)	
-    #if SYS_CONFIG_VOIP
-	app_set->rec_info.auto_rec      = ON ;
-	#else
+
+#if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
-	#endif
-#elif defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
-    #if SYS_CONFIG_VOIP
-	app_set->rec_info.auto_rec      = ON ;
-	#else
-	app_set->rec_info.auto_rec      = OFF ;
-	#endif
-#elif defined(NEXX360C)
+#elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
 #else //# NEXX360B, NEXX360H, NEXX360W_MUX
@@ -1197,18 +1283,48 @@ static void app_set_default(int default_type)
 	app_set->account_info.onvif.lv = 0;	// 0:Administrator
 	strcpy(app_set->account_info.onvif.id, ONVIF_DEFAULT_ID); // fixed
 	strcpy(app_set->account_info.onvif.pw, ONVIF_DEFAULT_PW);
-
     app_set->multi_ap.ON_OFF = OFF ; 
-
-#if SYS_CONFIG_VOIP
+	
+	//#------------- VOIP Params Start ---------------------------------------------------
     strcpy(app_set->voip.ipaddr, PBX_SERVER_ADDR);
     app_set->voip.port = PBX_SERVER_PORT;
     strcpy(app_set->voip.passwd, PBX_SERVER_PW);
 	memset((void*)app_set->voip.userid, 0x00, sizeof(app_set->voip.userid));
 	memset((void*)app_set->voip.peerid, 0x00, sizeof(app_set->voip.peerid));
     app_set->voip.use_stun = 0;
-	memset((void*)app_set->voip.reserved, 0x00, 40);
+	
+#if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)	
+    app_set->voip.ON_OFF = ON;
+#else
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
+    app_set->voip.ON_OFF = OFF;
 #endif	
+    
+	app_cfg->voip_set_ON_OFF = app_set->voip.ON_OFF ;
+	app_cfg->stream_enable_audio = app_set->stm_info.enable_audio;
+
+	memset((void*)app_set->voip.reserved, 0x00, 38);
+	//#------------- VOIP Params End ---------------------------------------------------
+
+	app_set->rtmp.ON_OFF = OFF;
+	app_set->rtmp.USE_URL = OFF;
+	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
+	strcpy(app_set->rtmp.ipaddr, RTMP_SERVER_ADDR);
+	strcpy(app_set->rtmp.FULL_URL, RTMP_SERVER_URL);
+
+	app_set->sslvpn_info.ON_OFF = OFF ;
+	app_set->sslvpn_info.vendor = OFF ; // 0 AXGATE
+	strcpy(app_set->sslvpn_info.vpn_id, SSLVPN_ID) ;
+	app_set->sslvpn_info.heartbeat_interval = 3000 ;
+	app_set->sslvpn_info.heartbeat_threshold = 3 ;
+	app_set->sslvpn_info.protocol = OFF ; // 0 tcp , 1 udp 
+	app_set->sslvpn_info.port = 3900 ;
+	app_set->sslvpn_info.queue = 16384 ;
+	strcpy(app_set->sslvpn_info.key, SSLVPN_KEY) ;
+	app_set->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
+	strcpy(app_set->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
+	app_set->sslvpn_info.NI = 2 ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
+
 }
 
 static void app_set_delete_cfg(void)
@@ -1222,7 +1338,7 @@ static void app_set_delete_cfg(void)
 	} else {
 		fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_NAND,
 							strerror(errno));
-		/* TODO ¿¡·¯°¡ ¹ß»ıÇßÀ» °æ¿ì??? */	
+		/* TODO ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ê²½ìš°??? */	
 	} 
 		
 	if (app_cfg->ste.b.mmc) 
@@ -1233,7 +1349,7 @@ static void app_set_delete_cfg(void)
 		} else {
 			fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_MMC, 
 							strerror(errno));
-			/* TODO ¿¡·¯°¡ ¹ß»ıÇßÀ» °æ¿ì??? */
+			/* TODO ì—ëŸ¬ê°€ ë°œìƒí–ˆì„ ê²½ìš°??? */
 		}
 	}
 	sync();
@@ -1266,7 +1382,7 @@ int app_set_open(void)
     if( EFAIL == ret)
 		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
 	
-	// data °Ë»ç..cfg_read ¾Æ·¡ºÎºĞ¿¡ ÀÖ´Â°Å º¹ºÙ..
+	// data ê²€ì‚¬..cfg_read ì•„ë˜ë¶€ë¶„ì— ìˆëŠ”ê±° ë³µë¶™..
 	if(EFAIL != ret){
 	    cfg_param_check_nexx(app_set);
 		app_set_version_read();
@@ -1297,6 +1413,7 @@ int app_set_open(void)
     app_set_delete_cfg(); // another verion setting file
     set_uid() ;  // read uid from nand and then set uid to app_set
 
+    app_set_sslvpnconf() ;
 	app_set_write();
 	printf("done\n");
 
@@ -1363,7 +1480,8 @@ int app_set_write(void)
 		eprintf("couldn't open %s file\n", path);
 	}
 #endif
-
+	
+	dprintf("CFG sync start..\n");
 	sync();
 	aprintf("....exit!\n");
 

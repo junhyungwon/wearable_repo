@@ -12,73 +12,45 @@
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <alsa/asoundlib.h>
 
-#include "dev_snd.h"
 #include "app_comm.h"
 #include "app_main.h"
 #include "app_gmem.h"
 #include "app_cap.h"
 #include "app_snd.h"
 #include "app_set.h"
+#include "app_rtsptx.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define __WAVE_DUMP__		0
+#define SND_AIC3X			"plughw:0,0"
+#define SND_DUMMY			"plughw:1,0"
 
-#if __WAVE_DUMP__
-#define WAV_FILE_NAME		"/mmc/dump.wav"
-#define DUMP_FRAME_CNT		100	
-#define MKTAG(a,b,c,d)		((a) | ((b)<<8) | ((c)<<16) | ((d)<<24))
-#define TAG_RIFF			MKTAG('R','I','F','F')
-#define TAG_WAVE			MKTAG('W','A','V','E')
-#define TAG_DATA			MKTAG('d','a','t','a')
+#define FRAME_PER_BYTES		(APP_SND_CH * APP_SND_PCM_BITS / 8)   /* sound channel */
 
 typedef struct {
-	unsigned int magic;	 /* 'RIFF' */
-	unsigned int length; /* file_len */
-	unsigned int type;	 /* 'WAVE' */
-} wave_header;
-
-struct wav_header {
-	char chunk_id[4];
-	unsigned int chunk_size;
-	char format[4];
-	char subchunk1_id[4];
-	unsigned int subchunk1_size;
-	unsigned short int audio_format;
-	unsigned short int channels;
-	unsigned int sample_rate;
-	unsigned int byte_range;
-	unsigned short int block_align;
-	unsigned short int bits_per_sample;
-	char subchunk2_id[4];
-	unsigned int subchunk2_size;
-};
-
-typedef struct {
-	FILE *f;
-	struct wav_header header;   
+	snd_pcm_t *pcm_t;
 	
-	int wave_frame_cnt;
-	int dump_done;
-} app_wave_t;
-
-#endif /* #if __WAVE_DUMP__ */
-
-#define SND_IN_DEV				"plughw:0,0"
-#define SND_DUP_DEV				"plughw:1,0"  //# --> plughw:1,1
+	int channel;
+	int sample_rate;
+	int num_frames;
+	
+} snd_prm_t;
 
 typedef struct {
 	app_thr_obj cObj;	 //# sound in thread
-	
-	snd_prm_t snd_in;    //# real alsa sound.
-	snd_prm_t snd_dup;   //# duplicate real sound
+	app_thr_obj rObj;	 //# message receive thread
+		
+	snd_pcm_t *aic3x;    //# read sound card.
+	snd_pcm_t *dummy;    //# dummy sound card (virtual)
+	snd_pcm_t *bcsnd;    //# backchannel sound card.
 	
 	g_mem_info_t *imem;
-	int snd_rec_enable;
-	
 } app_snd_t;
 
 /*----------------------------------------------------------------------------
@@ -87,124 +59,93 @@ typedef struct {
 static app_snd_t snd_obj;
 static app_snd_t *isnd=&snd_obj;
 
-#if __WAVE_DUMP__
-static app_wave_t wave_obj;
-static app_wave_t *iwave=&wave_obj;
-#endif
-
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 
-//################## For wave file debugging #####################################
-#if __WAVE_DUMP__
-static int init_wav_file(const char *file_name, int ch, int rate)
+/*****************************************************************************
+* @brief    ALSA Initialize
+*****************************************************************************/
+static snd_pcm_t * __snd_init(const char *pcm_name, int ch, int rate, 
+						int period_frames, int playback)
 {
-	struct wav_header *pHead = &iwave->header;
+	snd_pcm_t *handle = NULL;
+	snd_pcm_hw_params_t *hw_params = NULL;
+
+	snd_pcm_uframes_t buffer_size, period_size;
+	snd_pcm_stream_t pcm_mode;
 	
-	iwave->f = fopen(file_name, "w+");
-	if (iwave->f == NULL) {
-		printf("Failed to open file!\n");
-		return -1;
+	unsigned int freq, nchannels;
+	
+	if (playback) 	pcm_mode = SND_PCM_STREAM_PLAYBACK;
+	else 			pcm_mode = SND_PCM_STREAM_CAPTURE;
+	
+	if (snd_pcm_open(&handle, pcm_name, pcm_mode, 0) < 0) {
+		dprintf("%s: could not open device!\n", pcm_name);
+		goto out;
 	}
 	
-	/* init wave header */
-	memcpy(pHead->chunk_id,"RIFF",4);
-	pHead->chunk_size = 0;
-	memcpy(pHead->format, "WAVE",4);
-	memcpy(pHead->subchunk1_id, "fmt ", 4);
+	snd_pcm_hw_params_alloca(&hw_params);
+	snd_pcm_hw_params_any(handle, hw_params);
+	snd_pcm_hw_params_set_access(handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED);
 
-	pHead->subchunk1_size = 16;
-	pHead->audio_format = 1;
-	pHead->channels = ch;
-	pHead->sample_rate = rate;
-	pHead->bits_per_sample = 16;
+	/* Set sample format */
+	snd_pcm_hw_params_set_format(handle, hw_params, SND_PCM_FORMAT_S16_LE);
+
+	/* Set sample rate. If the exact rate is not supported */
+	freq = (unsigned int)rate;
+	if (snd_pcm_hw_params_set_rate_near(handle, hw_params, &freq, 0) < 0)
+		goto out;
 	
-	pHead->block_align = ch * pHead->bits_per_sample / 8;
-	pHead->byte_range = pHead->sample_rate * pHead->block_align;
-	memcpy(pHead->subchunk2_id, "data", 4);
-	pHead->subchunk2_size = 0;
-
-	fwrite(pHead, sizeof(struct wav_header), 1, iwave->f);
+	nchannels = (unsigned int)ch;
+	snd_pcm_hw_params_set_channels(handle, hw_params, nchannels);
 	
-	return 0;
-}
-
-static int write_wav_file(const char *buf, size_t sz)
-{
-	struct wav_header *pHead = &iwave->header;
-	int res;
-	
-	pHead->subchunk2_size += sz;
-	res = fwrite(buf, sz, 1, iwave->f);
-	
-	return res;
-}
-
-static void close_wav_file(void)
-{
-	struct wav_header *pHead = &iwave->header;
-	
-	/* save rest of the data */
-	pHead->chunk_size = ftell(iwave->f) - 8;
-	fseek(iwave->f, 0, SEEK_SET);
-	fwrite(pHead, sizeof(struct wav_header), 1, iwave->f);
-	fclose(iwave->f);
-	fprintf(stderr, "wave dump done!!\n");
-}
-#endif /* #if __WAVE_DUMP__ */ 
-
-/*----------------------------------------------------------------------------
- audio codec function
------------------------------------------------------------------------------*/
-#if 0
-static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, Int32 bufsize)
-{
-    int i, isNegative;
-    short data;
-    short nOut;
-    short lowByte = 1;
-    int outputSize = bufsize / 2;
-
-    for (i=0; i<outputSize; i++)
-    {
-        data = *(src + i);
-        data >>= 2;
-        isNegative = (data < 0 ? 1 : 0);
-
-        if (isNegative)
-            data = -data;
-
-        if (data <= 1) 			nOut = (char) data;
-        else if (data <= 31) 	nOut = ((data - 1) >> 1) + 1;
-        else if (data <= 95)	nOut = ((data - 31) >> 2) + 16;
-        else if (data <= 223)	nOut = ((data - 95) >> 3) + 32;
-        else if (data <= 479)	nOut = ((data - 223) >> 4) + 48;
-        else if (data <= 991)	nOut = ((data - 479) >> 5) + 64;
-        else if (data <= 2015)	nOut = ((data - 991) >> 6) + 80;
-        else if (data <= 4063)	nOut = ((data - 2015) >> 7) + 96;
-        else if (data <= 7903)	nOut = ((data - 4063) >> 8) + 112;
-        else 					nOut = 127;
-
-        if (isNegative) {
-            nOut = 127 - nOut;
-        } else {
-            nOut = 255 - nOut;
-        }
-
-        // Pack the bytes in a word
-        if (lowByte)
-            *(dst + (i >> 1)) = (nOut & 0x00FF);
-        else
-            *(dst + (i >> 1)) |= ((nOut << 8) & 0xFF00);
-
-        lowByte ^= 0x1;
+	period_size = period_frames;
+	buffer_size = (period_size * 4); //# alsa 표준
+    if (snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0) < 0) {
+        dprintf("%s: Failed to set period size to %ld\n", pcm_name, period_size);
+        goto out;
     }
 
-	return (outputSize);
-}
+    if (snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size) < 0){
+        dprintf("%s: Failed to set buffer size to %ld\n", pcm_name, buffer_size);
+        goto out;
+    }
+
+    /* PCM device and prepare device  */
+    if (snd_pcm_hw_params(handle, hw_params) < 0)
+		goto out;
+
+#if 1	
+	/* returned approximate maximum buffer size in frames  */
+	snd_pcm_hw_params_get_period_size(hw_params, &period_size, 0);
+	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
+	printf(" ALSA Period Size %ld\n", period_size);
+	printf(" ALSA Buffer Size %ld\n", buffer_size);
 #endif
 
+	/* prepare for audio device */
+	if (snd_pcm_prepare(handle) < 0) {
+        dprintf("%s: Could not prepare handle!\n", pcm_name);
+        goto out;
+    }
+	return (snd_pcm_t *)handle;
+	
+out:
+	snd_pcm_hw_params_free(hw_params);
+	eprintf("alsa: init failed!!\n");
+	return NULL;
+}
+
+static void __snd_exit(snd_pcm_t *handle)
+{
+	if (handle != NULL) {
+		snd_pcm_hw_free(handle);
+		snd_pcm_close(handle);
+		handle = NULL;
+	}
+}
+						
 /*****************************************************************************
 * @brief    sound capture thread function
 * @section  [desc]
@@ -213,150 +154,191 @@ static void *THR_snd_cap(void *prm)
 {
 	app_thr_obj *tObj = &isnd->cObj;
 	stream_info_t *ifr;
+	snd_pcm_sw_params_t *sw_params = NULL;
 	
-	int exit=0;
-	int ret, idx;
-	int read_sz = 0;
-	int si_size;
+	int exit=0, idx;
+	size_t pframes = 0; /* alsa read size(frames) */
 	
-	char *addr = NULL;
-
+	char *addr=NULL;
+	char *csampv=NULL; /* capture sound buffer */
+	char *psampv=NULL; /* playback sound buffer */
+	
 	tObj->active = 1;
 	aprintf("enter...\n");
 	
-#if __WAVE_DUMP__	
-	init_wav_file(WAV_FILE_NAME, 1, APP_SND_SRATE);
-#endif	
-	/* get alsa period size (in sec) */
-	read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
-	ret = dev_snd_set_param("aic3x", &isnd->snd_in, SND_PCM_CAP, 
-				APP_SND_CH, APP_SND_SRATE, read_sz);
-#if SYS_CONFIG_VOIP	
-	ret |= dev_snd_set_param("dummy", &isnd->snd_dup, SND_PCM_PLAY, 
-				APP_SND_CH, APP_SND_SRATE, read_sz);
-#endif
-	ret |= dev_snd_open(SND_IN_DEV, &isnd->snd_in);
-
-#if SYS_CONFIG_VOIP
-	ret |= dev_snd_open(SND_DUP_DEV, &isnd->snd_dup);
-#endif
-	if (ret) {
-		eprintf("Failed to init sound device!\n");
+	/* 
+	 * set alsa period size (프레임 단위로 설정함)
+	 * 1초:sample rate = PTIME(ms):x
+	 * 1000(ms):8000(8KHz sampling rate) = 80(ms):x
+	 * x(frame) = samplerate * 80 / 1000
+	 */
+	pframes = APP_SND_SRATE * APP_SND_PTIME / 1000;
+	/* Initialize ALSA MIC */
+	isnd->aic3x = __snd_init(SND_AIC3X, APP_SND_CH, 
+						APP_SND_SRATE, pframes, APP_SND_CAPT_DEV);
+	if (isnd->aic3x == NULL) {
+		eprintf("Failed to init %s device!\n", SND_AIC3X);
 		return NULL;
 	}
 	
-	si_size  = (read_sz * APP_SND_CH * (SND_PCM_BITS / 8));
-	dev_snd_start(&isnd->snd_in);
-#if SYS_CONFIG_VOIP	
-	dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
-#endif
+	/* 
+	 * alloc buffer (byte 단위로 변경해야 한다)
+	 * 1 frame = 1 sample(16bit/8) * channel = 2 * 1 = 2 (만일 2ch일 경우== 4)
+	 */
+	csampv = (char *)malloc(pframes * FRAME_PER_BYTES);
+	if (csampv == NULL) {
+		__snd_exit(isnd->aic3x);
+		return NULL;
+	}
+	
+	/* mic data를 copy해서 baresip 에 전달하기 위한 dummpy sound 장치 
+	 * playback 장치로 설정해야 함. (마지막 인자를 1로 설정)
+	 */
+
+	if (app_cfg->voip_set_ON_OFF) {
+		isnd->dummy = __snd_init(SND_DUMMY, APP_SND_CH, APP_SND_SRATE, 
+								pframes, APP_SND_PLAY_DEV);
+		if (isnd->dummy == NULL) {
+			eprintf("Failed to init %s device!\n", SND_DUMMY);
+			__snd_exit(isnd->aic3x);
+			free(csampv);
+			return NULL;
+		}
+		
+		psampv = (char *)malloc(pframes * FRAME_PER_BYTES);
+		if (psampv == NULL) {
+			__snd_exit(isnd->aic3x);
+			__snd_exit(isnd->dummy);
+			free(csampv);
+			return NULL;
+		}
+	}
+
+    if (app_cfg->voip_set_ON_OFF) {
+		snd_pcm_sw_params_t *sw_params = NULL;
+		
+		snd_pcm_sw_params_alloca(&sw_params);
+		snd_pcm_sw_params_current(isnd->dummy, sw_params);
+		snd_pcm_sw_params_set_avail_min(isnd->dummy, sw_params, pframes);
+		snd_pcm_sw_params_set_start_threshold(isnd->dummy, sw_params, pframes*4);
+	    snd_pcm_sw_params_set_stop_threshold(isnd->dummy, sw_params, pframes*4);
+		snd_pcm_sw_params(isnd->dummy, sw_params);
+	}
+	
+	/* recording device start */
+	snd_pcm_start(isnd->aic3x);
 	while (!exit)
 	{
-		int bytes = 0;
+		snd_pcm_sframes_t r, w;
+		size_t period=0;
 		
-		if (tObj->cmd == APP_CMD_EXIT) {
+		if (tObj->cmd == APP_CMD_EXIT)
 			break;
-		}
-
-		bytes = dev_snd_read(&isnd->snd_in);
-		if(bytes < 0) {
-			eprintf("sound device error!!\n");
-			continue;
-		}
-
-#if SYS_CONFIG_VOIP		
-		//# copy to dup device
-		app_memcpy(isnd->snd_dup.sampv, isnd->snd_in.sampv, bytes);
-		/* VOIP를 사용할 경우에만 copy ?? */
-		dev_snd_write(&isnd->snd_dup, bytes/2); 
-#endif	
-
-#if defined(NEXXONE)	
-		if (isnd->snd_rec_enable)
-		{
+		
+		period = pframes;
+		r = snd_pcm_readi(isnd->aic3x, csampv, period);
+		if (r > 0) {
+			ssize_t bytes=0;
+			/* success. conversion to byte unit */
+			bytes = (r * FRAME_PER_BYTES);
+			if (app_cfg->voip_set_ON_OFF) {
+				//# copy to dup device
+				app_memcpy(psampv, csampv, bytes);
+				/* mic sound copy */
+				/* 묵음 처리 */
+				if (r < period) {
+					snd_pcm_format_set_silence(SND_PCM_FORMAT_S16_LE, (char *)psampv + bytes,
+							(period - r) * APP_SND_CH);
+					r = period;
+				}
+				
+				w = snd_pcm_writei(isnd->dummy, psampv, r);
+				if (w < 0) {
+					if (w == -EAGAIN) {
+						//dprintf("dummy pcm write wait(required 100ms)!!\n");
+						snd_pcm_wait(isnd->dummy, 100);
+					} else if (w == -EPIPE) {
+						//dprintf("dummy pcm write underrun!!\n");
+						snd_pcm_prepare(isnd->dummy);
+					} else if (w == -ESTRPIPE) {
+						//dprintf("dummy pcm write resume!!\n");
+						snd_pcm_resume(isnd->dummy);
+					} else {
+						/* debugging : 이 경우가 발생하면 안됨 */
+						eprintf("sound device write error(%d)!!\n", (int)r);
+					}
+				} else if ((w >= 0) && ((size_t)w < r)) {
+					/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
+					//dprintf("dummy pcm not enough sound data!!\n");
+					snd_pcm_wait(isnd->dummy, 100);
+				}
+			} /* if (app_cfg->voip_set_ON_OFF) */	
+		
 			//# audio codec : g.711
 			addr = g_mem_get_addr(bytes, &idx);
 			if(addr == NULL) {
-				eprintf("audio gmem is null\n");
+				eprintf("audio gmem is null!!\n");
 				continue;
 			}
-
+			
 			ifr = &isnd->imem->ifr[idx];
 			ifr->d_type = CAP_TYPE_AUDIO;
 			ifr->ch = 0;
 			ifr->addr = addr;
 			ifr->offset = (int)addr - g_mem_get_virtaddr();
 			ifr->b_size = bytes;
-			//ifr->t_sec = (Uint32)(captime/1000);
-			//ifr->t_msec = (Uint32)(captime%1000);
-			app_memcpy(addr, isnd->snd_in.sampv, bytes);
+			app_memcpy(addr, csampv, bytes);
 			
-			#if __WAVE_DUMP__
-			if (iwave->wave_frame_cnt >= DUMP_FRAME_CNT) 
-			{
-				if (iwave->dump_done == 0) {
-					iwave->dump_done = 1;
-					close_wav_file();
-				}
-			} else {
-				write_wav_file(addr, bytes);
-				iwave->wave_frame_cnt++;
+			if(!app_cfg->voip_set_ON_OFF) { // BACKCHANNEL AUDIO
+				struct timeval tv;
+				gettimeofday(&tv, NULL) ;
+				long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
+//				printf("app_cfg->ste.b.rtsptx = %d app_cfg->stream_enable_audio = %d\n",app_cfg->ste.b.rtsptx, app_cfg->stream_enable_audio) ;
+				if(app_cfg->ste.b.rtsptx && app_cfg->stream_enable_audio)
+					app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
 			}
-			#endif
-
-#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXXONE
-			struct timeval tv;
-			gettimeofday(&tv, NULL) ;
-			long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
-			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
-#endif// Audio Streaming for NEXXONE
-		}
-#else		
-			//# audio codec : g.711
-		addr = g_mem_get_addr(bytes, &idx);
-		if(addr == NULL) {
-			eprintf("audio gmem is null\n");
+		} else {
+			/* error returned */
+			if (r == 0) {
+				//dprintf("Failed to read sound data!!\n");
+			} else if (r == -EAGAIN) {
+				//dprintf("requied pcm wait!\n", count);
+				snd_pcm_wait(isnd->aic3x, 100);
+			} else if (r == -EPIPE) {
+				//dprintf("pcm overrun!\n");
+				snd_pcm_prepare(isnd->aic3x);
+			} else {
+				/* debugging : 이 경우가 발생하면 안됨 */
+				eprintf("sound device read error(%d)!!\n", (int)r);
+			}
 			continue;
-		}
+		} /* end of if (r > 0) */
+	} /* while (!exit) */
 
-		ifr = &isnd->imem->ifr[idx];
-		ifr->d_type = CAP_TYPE_AUDIO;
-		ifr->ch = 0;
-		ifr->addr = addr;
-		ifr->offset = (int)addr - g_mem_get_virtaddr();
-		ifr->b_size = bytes;
-		//ifr->t_sec = (Uint32)(captime/1000);
-		//ifr->t_msec = (Uint32)(captime%1000);
-		app_memcpy(addr, isnd->snd_in.sampv, bytes);
-
-#if SYS_CONFIG_BACKCHANNEL // Audio Streaming for NEXX 떨...
-		{
-			struct timeval tv;
-			gettimeofday(&tv, NULL);
-			long timestamp = tv.tv_sec + tv.tv_usec * 1000;
-			app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0, 2, timestamp);
-		}
-#endif//SYS_CONFIG_BACKCHANNEL
-
-#endif
-
+	if (app_cfg->voip_set_ON_OFF) {
+		snd_pcm_nonblock(isnd->dummy, 0);
+		/* Stop PCM device after pending frames have been played */
+		snd_pcm_drain(isnd->dummy);
+		//snd_pcm_nonblock(isnd->dummy, 1);
+		__snd_exit(isnd->dummy);
 	}
-
-#if SYS_CONFIG_VOIP
-	dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
-	dev_snd_stop(&isnd->snd_in, SND_PCM_CAP);
-#endif	
-	dev_snd_param_free(&isnd->snd_in);
-#if SYS_CONFIG_VOIP	
-	dev_snd_param_free(&isnd->snd_dup);
-#endif	
+	/* stop mic pcm */
+	__snd_exit(isnd->aic3x);
+	if (csampv != NULL){
+		free(csampv);
+	}
+	if (app_set->voip.ON_OFF) {
+		if (psampv != NULL)
+			free(psampv);
+	}
+	
 	tObj->active = 0;
 	aprintf("...exit\n");
-
 	return NULL;
 }
 
-#if SYS_CONFIG_BACKCHANNEL
+#if SYS_CONFIG_VOIP
+/* VOIP를 사용할 수 있는 board에서만 동작해야 함 */
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -374,8 +356,6 @@ typedef struct {
 	unsigned char sbuf[BCPLAY_RCV_SIZE];
 } bcplay_to_main_msg_t;
 typedef struct {
-	app_thr_obj rObj;		//# message receive thread
-	
 	int qid;
 	int shmid;
 	
@@ -401,7 +381,6 @@ static int bcplay_recv_msg(void)
 
 	return msg.cmd;
 }
-
 
 #define	SIGN_BIT	(0x80)		/* Sign bit for a u-law byte. */
 #define	QUANT_MASK	(0xf)		/* Quantization field mask. */
@@ -437,32 +416,51 @@ static int ulaw2linear(unsigned char u_val)
 
 static void *THR_bc_play(void *prm)
 {
-	int ret, cmd, exit=0;
+	app_thr_obj *tObj = &isnd->rObj;
+	snd_pcm_sw_params_t *sw_params = NULL;
+	
+	int cmd, exit=0;
 	int bytes = 0;
 	short lbuf[2048];
+	size_t pframes = 0;
 	
-	/* get alsa period size (in sec) */
-	int read_sz = APP_SND_SRATE * APP_SND_PTIME / 1000; //# 
-	ret = dev_snd_set_param("aic3x", &isnd->snd_dup, SND_PCM_PLAY, 
-				APP_SND_CH, APP_SND_SRATE, read_sz);
-	aprintf("ret:%d\n", ret);
+	char *sampv=NULL; /* playback sound buffer */
 	
-	ret = dev_snd_open(SND_IN_DEV, &isnd->snd_dup);
-	aprintf("ret:%d\n", ret);
-
-	if (ret) {
-		eprintf("Failed to init sound device for bc play!\n");
+	tObj->active = 1;
+	aprintf("enter...\n");
+	/* 
+	 * set alsa period size (프레임 단위로 설정함)
+	 * 1초:sample rate = PTIME(ms):x
+	 * 1000(ms):8000(8KHz sampling rate) = 80(ms):x
+	 * x(frame) = samplerate * 80 / 1000
+	 */
+	pframes = APP_SND_BC_SRATE * APP_SND_BC_PTIME / 1000;
+	/* Initialize ALSA Speaker */
+	isnd->bcsnd = __snd_init(SND_AIC3X, APP_SND_BC_CH, APP_SND_BC_SRATE, 
+						pframes, APP_SND_PLAY_DEV);
+	if (isnd->bcsnd == NULL) {
+		eprintf("Failed to init %s device!\n", SND_AIC3X);
 		return NULL;
 	}
-
-	dev_snd_set_swparam(&isnd->snd_dup, SND_PCM_PLAY);
-
+	
+	sampv = (char *)malloc(pframes * FRAME_PER_BYTES);
+	if (sampv == NULL) {
+		__snd_exit(isnd->bcsnd);
+		return NULL;
+	}
+	
+	/* set ALSA software params */
+	snd_pcm_sw_params_alloca(&sw_params);
+	snd_pcm_sw_params_current(isnd->bcsnd, sw_params);
+	snd_pcm_sw_params_set_avail_min(isnd->bcsnd, sw_params, pframes);
+	snd_pcm_sw_params_set_start_threshold(isnd->bcsnd, sw_params, pframes*4);
+	snd_pcm_sw_params_set_stop_threshold(isnd->bcsnd, sw_params, pframes*4);
+	snd_pcm_sw_params(isnd->bcsnd, sw_params);
+	
 	//# message queue
 	ibcplay->qid = Msg_Init(BCPLAY_MSG_KEY);
-
 	aprintf("ibcplay->qid:0x%X\n", ibcplay->qid);
 	
-
 	while(!exit){
 		//# wait cmd
 		cmd = bcplay_recv_msg();
@@ -480,41 +478,72 @@ static void *THR_bc_play(void *prm)
 			break;
 		case BCPLAY_CMD_AUD_DATA:
 			{
+				snd_pcm_sframes_t w;
+				int i;
+				
 				bytes = ibcplay->len;
 				//dprintf("received audio data, len=%d\n", bytes);
 
-				if (bytes == 0)
+				if (bytes == 0) 
 				{
 					eprintf("bc sound size error!!\n");
 					continue;
 				}
 				memset(lbuf, 0, sizeof lbuf);
-
-				int i;
 				for(i=0;i<bytes;i++){
-
 					lbuf[i] = ulaw2linear(ibcplay->sbuf[i]);
-
 				}
 
-				//# copy to dup device
-				app_memcpy(isnd->snd_dup.sampv, lbuf, bytes*2);
-				/* VOIP를 사용할 경우에만 copy ?? */
-				ret = dev_snd_write(&isnd->snd_dup, bytes);
-				//aprintf("dev_snd_write ret:%d\n", ret);
+				/*
+				 * copy to alsa buffer
+				 * g.711 -> linear pcm으로 변환. 
+				 * 8bit에서 16bit로 변환되므로 size가 2배가 됨.
+				 */
+				app_memcpy(sampv, lbuf, bytes*2);
+				
+				/* 묵음 처리 */
+				//if (bytes < btime_ms) {
+				//	snd_pcm_format_set_silence(SND_PCM_FORMAT_S16_LE, (char *)sampv + bytes,
+				//			(btime_ms - r) * APP_SND_CH);
+				//	bytes = btime_ms;
+				//}
+				w = snd_pcm_writei(isnd->bcsnd, sampv, bytes);
+				if (w < 0) {
+					if (w == -EAGAIN) {
+						//dprintf("bcsnd pcm write wait(required 100ms)!!\n");
+						snd_pcm_wait(isnd->bcsnd, 100);
+					} else if (w == -EPIPE) {
+						//dprintf("bcsnd pcm write underrun!!\n");
+						snd_pcm_prepare(isnd->bcsnd);
+					} else if (w == -ESTRPIPE) {
+						//dprintf("bcsnd pcm write resume!!\n");
+						snd_pcm_resume(isnd->bcsnd);
+					} else if (w < 0) {
+						eprintf("backchannel sound device write error!!\n");
+					}
+				} else if ((w >= 0) && ((size_t)w < bytes)) {
+					/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
+					//snd_pcm_wait(isnd->bcsnd, 100);
+				}
 			}
 			break;
 		}
-	}
-
-	dev_snd_stop(&isnd->snd_dup, SND_PCM_PLAY);
-	dev_snd_param_free(&isnd->snd_dup);
-
+	} /* while(!exit) */
+	
+	/* Stop PCM device after pending frames have been played */
+	snd_pcm_nonblock(isnd->bcsnd, 0);
+	snd_pcm_drain(isnd->bcsnd);
+	//snd_pcm_nonblock(isnd->bcsnd, 1);
+	__snd_exit(isnd->bcsnd);
+	/* buffer free */
+	if (sampv != NULL)
+		free(sampv);
+		
+	tObj->active = 0;
 	aprintf("...exit\n");
-
 	return NULL;
 }
-#endif // SYS_CONFIG_BACKCHANNEL
+#endif /* end of #if SYS_CONFIG_VOIP */
 
 /*****************************************************************************
 * @brief    sound init/exit function
@@ -522,16 +551,12 @@ static void *THR_bc_play(void *prm)
 *****************************************************************************/
 int app_snd_start(void)
 {
-	g_mem_info_t *imem;
+	g_mem_info_t *imem=NULL;
 	
 	memset(isnd, 0, sizeof(app_snd_t));
-	
-	/* set audio record enable */
-	isnd->snd_rec_enable = app_set->rec_info.audio_rec;
 	/* set capture volume */
 	//# "/usr/bin/amixer cset numid=31 60% > /dev/null"
-	dev_snd_set_volume(SND_VOLUME_C, 60);
-	
+	system("/usr/bin/amixer cset numid=31 60% > /dev/null 2>&1");
 	/* GMEM Address 가져온다 */
 	imem = (g_mem_info_t *)app_cap_get_gmem();
 	isnd->imem = imem;
@@ -541,17 +566,19 @@ int app_snd_start(void)
 		eprintf("create thread\n");
 		return -1;
 	}
-
-#if SYS_CONFIG_BACKCHANNEL
-	//#--- create backchannel play thread bkkim
-	if (thread_create(&isnd->cObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		eprintf("create bc play thread\n");
-		return -1;
+	
+	#if SYS_CONFIG_VOIP
+    /* VOIP를 사용할 수 있는 board에서만 동작 */
+	if(!app_cfg->voip_set_ON_OFF) {
+		//#--- create backchannel play thread bkkim
+		if (thread_create(&isnd->rObj, THR_bc_play, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
+			eprintf("create bc play thread\n");
+			return -1;
+		}
 	}
-#endif//SYS_CONFIG_BACKCHANNEL
+	#endif
 
 	aprintf("... done!\n");
-
 	return 0;
 }
 
@@ -559,8 +586,18 @@ void app_snd_stop(void)
 {
 	app_thr_obj *tObj;
 
-	//#--- stop thread
+	#if SYS_CONFIG_VOIP
+	//#--- stop backchannel audio
+	tObj = &isnd->rObj;
+	event_send(tObj, APP_CMD_EXIT, 0, 0);
+	while(tObj->active) {
+		app_msleep(20);
+	}
+	thread_delete(tObj);
+	#endif
+		
 	tObj = &isnd->cObj;
+	//#--- stop mic capture
 	event_send(tObj, APP_CMD_EXIT, 0, 0);
 	while(tObj->active) {
 		app_msleep(20);

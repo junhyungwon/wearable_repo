@@ -38,6 +38,10 @@ static int submit_settings_qcgi()
 		char live_stream_account_id[32] ={0};
 		char live_stream_account_pw[32] ={0};
 
+		
+        T_CGI_NETWORK_CONFIG2 t;
+		memset(&t, 0, sizeof(t));
+
         char *str= req->getstr(req, "cbo_wireless_ip_type", false);
         if (str != NULL) {
             wireless_iptype = atoi(str);
@@ -118,6 +122,45 @@ static int submit_settings_qcgi()
 		if(str != NULL) {
             sprintf(wifilist_pass[3], "%s", str);
         }
+
+
+		// SSL VPN --- start
+		int  sslvpn_enable = -1;
+		str = req->getstr(req, "sslvpn_enable", false);
+		if(str != NULL) { sslvpn_enable = atoi(str); }
+		if (sslvpn_enable == -1) {
+			CGI_DBG("Invalid SSL VPN Parameter, sslvpn_enable:%d\n", sslvpn_enable);
+			return ERR_INVALID_PARAM;
+		}
+
+		if(sslvpn_enable) {
+			t.sslvpn.enable = sslvpn_enable;
+			str = req->getstr(req, "sslvpn_vendor", false);
+			if(str != NULL) { t.sslvpn.vendor = atoi(str); }
+			str = req->getstr(req, "sslvpn_vpnid", false);
+			if(str != NULL) { sprintf(t.sslvpn.vpn_id, "%s", str); }
+			str = req->getstr(req, "sslvpn_heartbeatinterval", false);
+			if(str != NULL) { t.sslvpn.heartbeat_interval = atoi(str); }
+			str = req->getstr(req, "sslvpn_heartbeatthreshold", false);
+			if(str != NULL) { t.sslvpn.heartbeat_threshold = atoi(str); }
+			str = req->getstr(req, "sslvpn_protocol", false);
+			if(str != NULL) { t.sslvpn.protocol = atoi(str); }
+			str = req->getstr(req, "sslvpn_port", false);
+			if(str != NULL) { t.sslvpn.port = atoi(str); }
+			str = req->getstr(req, "sslvpn_queuesize", false);
+			if(str != NULL) { t.sslvpn.queue_size = atoi(str); }
+			str = req->getstr(req, "sslvpn_key", false);
+			if(str != NULL) { sprintf(t.sslvpn.key, "%s", str); }
+			str = req->getstr(req, "sslvpn_encrypttype", false);
+			if(str != NULL) { t.sslvpn.encrypt_type = atoi(str); }
+			str = req->getstr(req, "sslvpn_ipaddress", false);
+			if(str != NULL) { sprintf(t.sslvpn.ipaddress, "%s", str); }
+			str = req->getstr(req, "sslvpn_networkinterface", false);
+			if(str != NULL) { t.sslvpn.network_interface = atoi(str); }
+		}
+		// SSL VPN --- end
+
+
         CGI_DBG("wireless_iptype:%d, wireless_ipv4:%s, wireless_gw:%s, wireless_mask:%s\n", 
 				wireless_iptype, wireless_ipv4, wireless_gw, wireless_mask);
         CGI_DBG("cradle_iptype:%d, cradle_ipv4:%s, cradle_gw:%s, cradle_mask:%s\n", 
@@ -213,9 +256,6 @@ static int submit_settings_qcgi()
 			return ERR_INVALID_PARAM;
 		}
 #endif
-        // check parameter values
-        T_CGI_NETWORK_CONFIG2 t;
-		memset(&t, 0, sizeof(t));
 
 		t.wifi_ap_multi = wifi_ap_multi;
 

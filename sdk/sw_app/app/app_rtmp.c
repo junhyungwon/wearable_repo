@@ -1,6 +1,3 @@
-#ifdef USE_RTMP
-
-
 #include "app_comm.h"
 #include "app_libuv.h"
 #include "app_rtmp.h"
@@ -35,7 +32,13 @@ struct stream_s {
 
 void app_rtmp_get_endpoint()
 {
-	sprintf(rtmp_endpoint, "rtmp://54.180.141.121:1935/%s/myStream/key", app_set->sys_info.deviceId) ;
+//	sprintf(rtmp_endpoint, "rtmp://111.218.68.122:1935/%s/myStream/key", app_set->sys_info.deviceId) ;  // autobahn 
+//	sprintf(rtmp_endpoint, "rtmp://54.180.141.121:1935/%s/myStream/key", app_set->sys_info.deviceId) ;  // type2
+    if(app_set->rtmp.USE_URL)
+	    sprintf(rtmp_endpoint, "%s",app_set->rtmp.FULL_URL) ;   // FULL URL
+    else
+	    sprintf(rtmp_endpoint, "rtmp://%s:%d/live/%s",app_set->rtmp.ipaddr, app_set->rtmp.port, app_set->sys_info.deviceId) ;   // address type1 = normal
+//	sprintf(rtmp_endpoint, "rtmp://11.93.10.51:1935/live/%s", app_set->sys_info.deviceId) ;     // samsung display
 }
 
 static void _init_queue() {
@@ -74,7 +77,7 @@ static inline int _checkAsyncQueue() {
 }
 
 static int _checkCpuLoad() {
-    if (*procLoad == -1 || *procLoad >= 50) {
+    if (*procLoad == -1 || *procLoad >= 70) {
         fprintf(stderr, "[RTMP] high cpu load(self: %d, total: %d).\n"
             , *procLoad, *cpuLoad);
 
@@ -323,5 +326,3 @@ void app_rtmp_set_endpoint(const char* endpoint)
 	strcpy(rtmp_endpoint, endpoint);
 }
 
-
-#endif // USE_RTMP

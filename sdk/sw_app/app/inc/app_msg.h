@@ -52,6 +52,7 @@ typedef enum {
 	//# event
 	APP_EVT_PWROFF = 0x10,
 	APP_EVT_MMC,
+	APP_SOS_SEND_STOP,
 
 	//# for rec proc
 	APP_REC_START = 0x20,
@@ -69,6 +70,12 @@ typedef enum {
 	APP_KEY_RIGHT,
 	APP_KEY_MENU,
 	APP_KEY_PWR,
+
+    APP_CMD_CALL_START,
+	APP_CMD_CALL_STOP,
+	APP_CMD_CALL_CANCEL,
+	APP_CMD_CALL_CLOSE,
+	APP_CMD_CALL_SEND, // NEXX -> NEXX Manager
 
 	MAX_APP_CMD
 } app_cmd_e;

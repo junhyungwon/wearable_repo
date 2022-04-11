@@ -5,7 +5,213 @@
 #include "js_settings.h"
 #include "board_config.h"
 
-#if SYS_CONFIG_VOIP
+json_object *json_find_obj (json_object * jobj, char *find_key) 
+{ 
+	size_t key_len = strlen(find_key); 
+	json_object_object_foreach(jobj, key, val) 
+	{ 
+		if (strlen(key) == key_len && !memcmp (key, find_key, key_len)) 
+			return val;
+	} 
+	return NULL; // not found
+}
+
+static int	parseSSLvpnInfo(app_set_t* const set, json_object* rootObj)
+{
+	const char* STR_FIELD = "sslvpn_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find sslvpn_info\n");
+		return -1;
+	}
+
+	json_object* tmp ;
+    if(json_find_obj(jobj, "ON_OFF") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ON_OFF");
+		set->sslvpn_info.ON_OFF = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN ON_OFF 항목 없음\n") ;
+		set->sslvpn_info.ON_OFF = -1;
+	}
+
+    if(json_find_obj(jobj, "vendor") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "vendor");
+		set->sslvpn_info.vendor = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN vendor 항목 없음\n") ;
+		set->sslvpn_info.vendor = -1;
+	}
+
+    if(json_find_obj(jobj, "vpn_id") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "vpn_id");
+		sprintf(set->sslvpn_info.vpn_id, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		sprintf(set->sslvpn_info.vpn_id, "%s",  SSLVPN_ID);
+	}
+
+    if(json_find_obj(jobj, "heartbeat_interval") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "heartbeat_interval");
+		set->sslvpn_info.heartbeat_interval = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN heartbeat_interval 항목 없음\n") ;
+		set->sslvpn_info.heartbeat_interval = -1;
+	}
+
+    if(json_find_obj(jobj, "heartbeat_threshold") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "heartbeat_threshold");
+		set->sslvpn_info.heartbeat_threshold = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN heartbeat_threshold 항목 없음\n") ;
+		set->sslvpn_info.heartbeat_threshold = -1;
+	}
+
+    if(json_find_obj(jobj, "protocol") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "protocol");
+		set->sslvpn_info.protocol = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN protocol 항목 없음\n") ;
+		set->sslvpn_info.protocol = -1;
+	}
+
+    if(json_find_obj(jobj, "port") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "port");
+		set->sslvpn_info.port = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN port 항목 없음\n") ;
+		set->sslvpn_info.port = -1;
+	}
+
+    if(json_find_obj(jobj, "queue") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "queue");
+		set->sslvpn_info.queue = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN queue 항목 없음\n") ;
+		set->sslvpn_info.queue = -1;
+	}
+
+    if(json_find_obj(jobj, "key") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "key");
+		sprintf(set->sslvpn_info.key, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		printf("SSLVPN key 항목 없음\n") ;
+		sprintf(set->sslvpn_info.key, "%s", SSLVPN_KEY) ;
+	}
+
+    if(json_find_obj(jobj, "encrypt_type") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "encrypt_type");
+		set->sslvpn_info.encrypt_type = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN encrypt_type 항목 없음\n") ;
+		set->sslvpn_info.encrypt_type = -1;
+	}
+
+    if(json_find_obj(jobj, "ipaddr") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ipaddr");
+		sprintf(set->sslvpn_info.ipaddr, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		printf("SSLVPN ipaddr 항목 없음\n") ;
+		sprintf(set->sslvpn_info.ipaddr, "%s", SSLVPN_IPADDRESS) ;
+	}
+
+    if(json_find_obj(jobj, "NI") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "NI");
+		set->sslvpn_info.NI = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("SSLVPN NI 항목 없음\n") ;
+		set->sslvpn_info.NI = -1;
+	}
+
+	return 0;
+}
+
+static int	parseRtmpInfo(app_set_t* const set, json_object* rootObj)
+{
+	const char* STR_FIELD = "rtmp_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find rtmp_info\n");
+		return -1;
+	}
+	json_object* tmp ;
+    if(json_find_obj(jobj, "ON_OFF") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ON_OFF");
+		set->rtmp.ON_OFF = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("RTMP ON_OFF 항목 없음\n") ;
+		set->rtmp.ON_OFF = -1;
+	}
+
+    if(json_find_obj(jobj, "USE_URL") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "USE_URL");
+		set->rtmp.USE_URL = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("RTMP USE_URL 항목 없음\n") ;
+		set->rtmp.USE_URL = -1;
+	}
+
+    if(json_find_obj(jobj, "FULL_URL") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "FULL_URL");
+		sprintf(set->rtmp.FULL_URL, "%s", json_object_get_string(tmp));
+	}
+	else
+	{
+		printf("RTMP FULL_URL 항목 없음\n") ;
+		sprintf(set->rtmp.FULL_URL, "%s",  RTMP_SERVER_URL);
+	}
+
+	tmp = json_object_object_get(jobj, "ipaddr");
+	sprintf(set->rtmp.ipaddr, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "port");
+	set->rtmp.port = json_object_get_int(tmp);
+
+	return 0;
+}
+
 static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "voip_info";
@@ -28,9 +234,17 @@ static int	parseVoipInfo(app_set_t* const set, json_object* rootObj)
 	tmp = json_object_object_get(jobj, "use_stun");
 	set->voip.use_stun = json_object_get_int(tmp);
 
+    if(json_find_obj(jobj, "ON_OFF") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "ON_OFF");
+		set->voip.ON_OFF = json_object_get_int(tmp);
+	}
+	else
+		set->voip.ON_OFF = -1;
+
 	return 0;
 }
-#endif
+
 static int	parseAccountInfo(app_set_t* const set, json_object* rootObj)
 {
 	size_t dec_size = 0;
@@ -153,6 +367,23 @@ static int	parseDdnsInfo(app_set_t* const set, json_object* rootObj)
 
 	return 0;
 }
+
+static int	parseStmInfo(app_set_t* const set, json_object* rootObj)
+{
+	const char* STR_FIELD = "stm_info";
+	json_object* jobj = json_object_object_get(rootObj, STR_FIELD);
+	int type = json_object_get_type(jobj); // must be json_object
+	if( type != json_type_object) {
+		printf("JSON Parsing Error --- Cannot find stm_info\n");
+		return -1;
+	}
+	json_object* tmp = json_object_object_get(jobj, "enable_audio");
+	set->stm_info.enable_audio = json_object_get_int(tmp);
+
+	return 0;
+
+}
+
 static int	parseRecInfo(app_set_t* const set, json_object* rootObj)
 {
 	const char* STR_FIELD = "rec_info";
@@ -528,9 +759,19 @@ int js_read_settings(app_set_t* const set, const char* fname)
 	parseMultiapInfo(set, rootObject);
 
 	// 15. read voip info
-#if SYS_CONFIG_VOIP
+	
 	parseVoipInfo(set, rootObject);
-#endif
+
+	// 16. read rtmpserver info
+	
+	parseRtmpInfo(set, rootObject);
+
+	// 17. stream info
+	parseStmInfo(set, rootObject);
+
+	// 18. sslvpn info
+	parseSSLvpnInfo(set, rootObject);
+
 
 	// finish
 	json_object_put(rootObject);
@@ -719,17 +960,50 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(multi_ap, "ON_OFF",       json_object_new_int(set->multi_ap.ON_OFF));
     json_object_object_add(rootObject,  "multi_ap", multi_ap);
 
-#if SYS_CONFIG_VOIP
-	// 13. voip information
+
+	// 14. voip information
 	json_object* voip_info = json_object_new_object();
 	json_object_object_add(voip_info, "ipaddr",   json_object_new_string(set->voip.ipaddr));
-	json_object_object_add(voip_info, "port",   json_object_new_int(set->voip.port));
+	json_object_object_add(voip_info, "port",     json_object_new_int(set->voip.port));
 	json_object_object_add(voip_info, "userid",   json_object_new_string(set->voip.userid));
 	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->voip.passwd));
 	json_object_object_add(voip_info, "peerid",   json_object_new_string(set->voip.peerid));
-	json_object_object_add(voip_info, "use_stun",   json_object_new_int(set->voip.use_stun));
-	json_object_object_add(rootObject,  "voip_info", voip_info);
-#endif
+	json_object_object_add(voip_info, "use_stun", json_object_new_int(set->voip.use_stun));
+	json_object_object_add(voip_info, "ON_OFF",   json_object_new_int(set->voip.ON_OFF));
+	json_object_object_add(rootObject, "voip_info", voip_info);
+
+	// 15. rtmp information
+	json_object* rtmp_info = json_object_new_object();
+	json_object_object_add(rtmp_info, "ON_OFF",   json_object_new_int(set->rtmp.ON_OFF));
+	json_object_object_add(rtmp_info, "USE_URL",   json_object_new_int(set->rtmp.USE_URL));
+	json_object_object_add(rtmp_info, "ipaddr",   json_object_new_string(set->rtmp.ipaddr));
+	json_object_object_add(rtmp_info, "FULL_URL",   json_object_new_string(set->rtmp.FULL_URL));
+	json_object_object_add(rtmp_info, "port",     json_object_new_int(set->rtmp.port));	
+//	json_object_object_add(voip_info, "userid",   json_object_new_string(set->rtmp.userid));
+//	json_object_object_add(voip_info, "passwd",   json_object_new_string(set->rtmp.passwd));
+	json_object_object_add(rootObject, "rtmp_info", rtmp_info);
+
+	// 16. streaming information
+	json_object* stm_info = json_object_new_object();
+	json_object_object_add(stm_info, "enable_audio",   json_object_new_int(set->stm_info.enable_audio));
+	json_object_object_add(rootObject, "stm_info", stm_info);
+
+	// 17. sslvpn information
+	json_object* sslvpn_info = json_object_new_object();
+	json_object_object_add(sslvpn_info, "ON_OFF",   json_object_new_int(set->sslvpn_info.ON_OFF));
+	json_object_object_add(sslvpn_info, "vendor",   json_object_new_int(set->sslvpn_info.vendor));
+	json_object_object_add(sslvpn_info, "vpn_id",   json_object_new_string(set->sslvpn_info.vpn_id));
+	json_object_object_add(sslvpn_info, "heartbeat_interval",     json_object_new_int(set->sslvpn_info.heartbeat_interval));	
+	json_object_object_add(sslvpn_info, "heartbeat_threshold",     json_object_new_int(set->sslvpn_info.heartbeat_threshold));	
+	json_object_object_add(sslvpn_info, "protocol",     json_object_new_int(set->sslvpn_info.protocol));	
+	json_object_object_add(sslvpn_info, "port",     json_object_new_int(set->sslvpn_info.port));	
+	json_object_object_add(sslvpn_info, "queue",     json_object_new_int(set->sslvpn_info.queue));	
+	json_object_object_add(sslvpn_info, "key",   json_object_new_string(set->sslvpn_info.key));
+	json_object_object_add(sslvpn_info, "encrypt_type",     json_object_new_int(set->sslvpn_info.encrypt_type));	
+	json_object_object_add(sslvpn_info, "ipaddr",   json_object_new_string(set->sslvpn_info.ipaddr));
+	json_object_object_add(sslvpn_info, "NI",     json_object_new_int(set->sslvpn_info.NI));	
+	json_object_object_add(rootObject, "sslvpn_info", sslvpn_info);
+
 
 	// Finish
 	printf("Write JSON Data\n");
@@ -759,9 +1033,13 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_put(onvif);
 	json_object_put(account_info);
 	json_object_put(multi_ap);
-#if SYS_CONFIG_VOIP
+
 	json_object_put(voip_info);
-#endif
+	json_object_put(rtmp_info);
+
+	json_object_put(stm_info);
+    json_object_put(sslvpn_info) ;
+
 	json_object_put(rootObject);
 
     return ret;

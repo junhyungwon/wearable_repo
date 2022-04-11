@@ -34,4 +34,6 @@ int app_rec_stop(int buzz);
 int app_rec_state(void);
 int app_rec_evt(int etype);
 
+int app_sos_send_stop(int etype);
+
 #endif	/* _APP_REC_H_ */
