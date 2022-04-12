@@ -41,7 +41,7 @@ typedef struct TAG_SYSTEM_INFO
         unsigned long Modnumber[MAXUSER] ;
 		int gps_req[MAXUSER] ;
 		int event_req[MAXUSER] ;
-        int mutex ;
+        int call_status[MAXUSER];
 } SYSTEM_INFO;
 #pragma pack()
 

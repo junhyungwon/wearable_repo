@@ -105,8 +105,8 @@ typedef enum {
 	//# for thread
 	APP_STATE_INCOMING = 0x01,
 	APP_STATE_ACCEPT,
-    APP_STATE_CALLING,
 	APP_STATE_OUTCOMING,
+	APP_STATE_CLOSE,
 
 	MAX_STATE_CMD
 } app_state_e;

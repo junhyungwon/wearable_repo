@@ -113,11 +113,18 @@ typedef struct TAG_CALL_RES{
 #pragma pack()
 
 #pragma pack(1)
-typedef struct TAG_CALL_CLOSE{
+typedef struct TAG_RCALL_RES{
+	unsigned short result ;
+	char Reserved[32] ;
+} RCALL_RES ;
+#pragma pack()
+
+#pragma pack(1)
+typedef struct TAG_CALL_COMMON{
 	unsigned short identifier ;
 	unsigned short cmd ;
 	unsigned short length ;
-} CALL_CLOSE ;
+} CALL_COMMON ;
 #pragma pack()
 
 
@@ -139,7 +146,7 @@ void recv_call_req(int, char*, int) ; // nexx manager -> nexx series
 void recv_call_res(int, char*, int) ; // nexx manager -> nexx series
 void recv_call_close(int, char*, int) ; // nexx manager -> nexx series
 
-void send_call_req() ;
+int send_call_req() ;
 void send_call_close() ;
 
 #endif // _APP_PROCESS_H

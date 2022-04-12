@@ -261,6 +261,7 @@ void Sock_Init(void)
             SystemInfo.Qposition[i] = 0 ;
 			SystemInfo.gps_req[i] = 0 ;
 			SystemInfo.event_req[i] = 0 ;
+            SystemInfo.call_status[i] = 0 ;
             memset(SystemInfo.QBUFF[i],0,BUFFSIZE) ;
         }
     }
@@ -279,6 +280,7 @@ void CloseAllChannel(void)
             SystemInfo.Qposition[i] = 0 ;
 			SystemInfo.gps_req[i] = 0 ;
 			SystemInfo.event_req[i] = 0 ;
+            SystemInfo.call_status[i] = 0 ;
             memset(SystemInfo.QBUFF[i],0,BUFFSIZE) ;
         }
     }
@@ -293,6 +295,7 @@ void CloseNowChannel(int m_NowChno )
         SystemInfo.Qposition[m_NowChno] = 0 ;
 		SystemInfo.gps_req[m_NowChno] = 0 ;
 		SystemInfo.event_req[m_NowChno] = 0 ;
+        SystemInfo.call_status[m_NowChno] = 0 ;
         memset(SystemInfo.QBUFF[m_NowChno],0, BUFFSIZE) ;
     }
 }

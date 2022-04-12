@@ -31,14 +31,22 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-
+#define BACKCHANNEL_DEBUG
 #define CHECK_MSEC        50
+
+#ifdef BACHCHANNEL_DEBUG
+#define DEBUG_PRI(msg, args...) DEBUG_PRI("[BACKCHANNEL] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
+#else
+#define DEBUG_PRI(msg, args...) ((void)0)
+#endif
+
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
 typedef struct {
     app_thr_obj callObj ;
+	int status ;
     OSA_MutexHndl       lock;
 } app_call_t ;
 
@@ -55,7 +63,7 @@ int app_incoming_call(void)
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
-	printf("app_incoming_call send APP_CMD_CALL_START\n") ;
+	DEBUG_PRI("app_incoming_call send APP_CMD_CALL_START\n") ;
     event_send(tObj, APP_CMD_CALL_START, 0, 0) ;
 
     return 0;
@@ -66,7 +74,7 @@ int app_cancel_call()
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
-	printf("app_cancel_call send APP_CMD_CALL_CANCEL\n") ;
+	DEBUG_PRI("app_cancel_call send APP_CMD_CALL_CANCEL\n") ;
     event_send(tObj, APP_CMD_CALL_CANCEL, 0, 0) ;
 
     return 0;
@@ -78,8 +86,8 @@ int app_accept_call()  // ACCEPT CALL(nexx)
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
-	printf("app_accept_call send APP_CMD_CALL_STOP\n") ;
-    event_send(tObj, APP_CMD_CALL_STOP, 0, 0) ;
+	DEBUG_PRI("app_accept_call send APP_CMD_CALL_ACCEPT\n") ;
+    event_send(tObj, APP_CMD_CALL_ACCEPT, 0, 0) ;
 
     return 0;
 }
@@ -89,7 +97,7 @@ int app_close_call()  // Close CALL (nexx)
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
-	printf("app_close_call send APP_CMD_CALL_CLOSE\n") ;
+	DEBUG_PRI("app_close_call send APP_CMD_CALL_CLOSE\n") ;
     event_send(tObj, APP_CMD_CALL_CLOSE, 0, 0) ;
 
     return 0;
@@ -101,7 +109,7 @@ int app_call_send()
 {
 	app_thr_obj *tObj ;
 	tObj = &icall->callObj;
-	printf("app_call_send send APP_CMD_CALL_SEND") ;
+	DEBUG_PRI("app_call_send send APP_CMD_CALL_SEND") ;
 	event_send(tObj, APP_CMD_CALL_SEND, 0, 0) ;
 }
 
@@ -112,7 +120,8 @@ int get_calling_state()
     int CALL_STATUS ;
 
     OSA_mutexLock(&icall->lock) ;
-	CALL_STATUS = tObj->param0  ;
+	CALL_STATUS = icall->status  ;
+	DEBUG_PRI("get_calling_state CALL_STATUS = %d\n", CALL_STATUS) ;
     OSA_mutexUnlock(&icall->lock) ;
 
 	return CALL_STATUS ;
@@ -124,7 +133,8 @@ int set_calling_state(int callvalue)
 	tObj = &icall->callObj;
 
     OSA_mutexLock(&icall->lock) ;
-	tObj->param0 = callvalue ; 
+	icall->status = callvalue ; 
+	DEBUG_PRI("set_calling_state CALL_STATUS = %d\n", icall->status) ;
     OSA_mutexUnlock(&icall->lock) ;
 }
 
@@ -137,8 +147,8 @@ static void *THR_call(void *prm)
 {
     app_thr_obj *tObj = &icall->callObj;
     int exit = 0, ret = 0, cmd, buzzer_interval = 0, buzz_cnt = 0;
-
-	dprintf("enter...\n");
+	int call_state = 0 ;
+	DEBUG_PRI("enter...\n");
     tObj->active = 1;
 
     while (!exit)
@@ -157,40 +167,35 @@ static void *THR_call(void *prm)
 			if (tObj->cmd == APP_CMD_STOP || tObj->cmd == APP_CMD_STOP) {
 				break;
 	        }
-		    if(tObj->cmd == APP_CMD_CALL_START)
+		    if(tObj->cmd == APP_CMD_CALL_START)  // From nexx manager
 			{
-//				CALL_STATUS = APP_STATE_INCOMING ;
-				set_calling_state(APP_STATE_INCOMING);
 				buzzer_interval += 1;
 				if(!(buzzer_interval % 20))
 				{
-					printf("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
-					if(buzz_cnt <= 10 )
+					DEBUG_PRI("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
+					if(buzz_cnt <= 20 )
 					{
+						set_calling_state(APP_STATE_INCOMING);
 						app_buzz_ctrl(100, 2) ;
 						buzz_cnt += 1 ;
 					}
 					else
 					{
-					printf("111 buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
 						buzzer_interval = 0 ;
 						buzz_cnt = 0 ;
 						tObj->cmd = APP_CMD_NONE ;
-//						CALL_STATUS = APP_STATE_NONE ;
 						set_calling_state(APP_STATE_NONE);
 
 						app_cfg->stream_enable_audio = app_set->stm_info.enable_audio ;
 					}
 				}
 
-				if(!(buzzer_interval % 200)) // 10 sec
+				if(!(buzzer_interval % 400)) // 20 sec
 				{
-					printf("222 buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
 					buzzer_interval = 0 ;
 					buzz_cnt = 0 ;
 					tObj->cmd = APP_CMD_NONE ;
 					set_calling_state(APP_STATE_NONE);
-//					CALL_STATUS = APP_STATE_NONE ;
 					app_cfg->stream_enable_audio = app_set->stm_info.enable_audio ;
 				}
 			}
@@ -201,77 +206,92 @@ static void *THR_call(void *prm)
 				buzz_cnt = 0 ;
 				tObj->cmd = APP_CMD_NONE ;
 				app_buzz_ctrl(100, 2) ;
-//				CALL_STATUS = APP_STATE_NONE ;
 				set_calling_state(APP_STATE_NONE);
 				app_cfg->stream_enable_audio = app_set->stm_info.enable_audio ;
 			}
 
-		    if(tObj->cmd == APP_CMD_CALL_STOP)  // NEXX(accept call)
+		    if(tObj->cmd == APP_CMD_CALL_ACCEPT)  // NEXX(accept call) & NEXX Manager
 			{
-				printf("APP_CMD_CALL_STOP\n") ;
+				DEBUG_PRI("APP_CMD_CALL_ACCEPT\n") ;
+				call_state = get_calling_state() ;
 				buzzer_interval = 0 ;
 				buzz_cnt = 0 ;
 				tObj->cmd = APP_CMD_NONE ;
-				if(!app_cfg->stream_enable_audio && (get_calling_state() == APP_STATE_INCOMING))
+				DEBUG_PRI("app_cfg->stream_enable_audio = %d get_calling_state() = %d\n", app_cfg->stream_enable_audio, get_calling_state()) ;
+				if(!app_cfg->stream_enable_audio && (call_state == APP_STATE_INCOMING) || (call_state == APP_STATE_OUTCOMING))
 				{
 					app_cfg->stream_enable_audio = 1 ;
-//					CALL_STATUS = APP_STATE_CALLING ;
-					set_calling_state(APP_STATE_CALLING);
 				}
+				set_calling_state(APP_STATE_ACCEPT);
 			}
 
 		    if(tObj->cmd == APP_CMD_CALL_CLOSE)  // NEXX(Close call)
 			{
-				if(app_cfg->stream_enable_audio && (get_calling_state() == APP_STATE_CALLING || get_calling_state() == APP_STATE_OUTCOMING)) {
+				DEBUG_PRI("APP_CMD_CALL_CLOSE\n") ;
+				call_state = get_calling_state() ;
+				if((call_state == APP_STATE_ACCEPT || call_state == APP_STATE_OUTCOMING)) 
+				{
+//					if(get_calling_state() == APP_STATE_OUTCOMING)
+					{
+						send_call_close() ;
+					}
 					app_buzz_ctrl(100, 2) ;
 					app_cfg->stream_enable_audio = 0 ;
-//					CALL_STATUS = APP_STATE_NONE ;
+					buzzer_interval = 0 ;
+					buzz_cnt = 0 ;
+					tObj->cmd = APP_CMD_NONE ;
 					set_calling_state(APP_STATE_NONE);
 				}
 			}
 
 		    if(tObj->cmd == APP_CMD_CALL_SEND)  // NEXX(send call signal)
 			{
-				if(get_calling_state() == APP_STATE_NONE)
+				call_state = get_calling_state() ;
+				buzzer_interval += 1;
+				if(!(buzzer_interval % 20))
 				{
-//					CALL_STATUS = APP_STATE_OUTCOMING ;
-					set_calling_state(APP_STATE_OUTCOMING);
-					buzzer_interval += 1;
-					if(!(buzzer_interval % 20))
+					if(call_state == APP_STATE_NONE || call_state == APP_STATE_OUTCOMING)
 					{
-						printf("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
-						if(buzz_cnt <= 10 )
+						DEBUG_PRI("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
+						if(buzz_cnt <= 20 )
 						{
-							app_buzz_ctrl(100, 2) ;
-							send_call_req() ;
-							buzz_cnt += 1 ;
+							if(send_call_req())
+							{
+								set_calling_state(APP_STATE_OUTCOMING);
+								app_buzz_ctrl(100, 2) ;
+								buzz_cnt += 1 ;
+							}
+							else
+							{
+								DEBUG_PRI("there is no client to send packet\n") ;
+								tObj->cmd = APP_CMD_NONE ;
+								set_calling_state(APP_STATE_NONE);
+							}
 						}
 						else
 						{
-							printf("111 buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
 							buzzer_interval = 0 ;
 							buzz_cnt = 0 ;
 							tObj->cmd = APP_CMD_NONE ;
-//							CALL_STATUS = APP_STATE_NONE ;
+							send_call_close() ;
 							set_calling_state(APP_STATE_NONE);
 
 							app_cfg->stream_enable_audio = app_set->stm_info.enable_audio ;
 						}
 					}
 
-					if(!(buzzer_interval % 200)) // 10 sec
+					if(!(buzzer_interval % 400)) // 20 sec
 					{
-						printf("222 buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
+						DEBUG_PRI("222 buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
 						buzzer_interval = 0 ;
 						buzz_cnt = 0 ;
 						tObj->cmd = APP_CMD_NONE ;
-//						CALL_STATUS = APP_STATE_NONE ;
+						send_call_close() ;
 						set_calling_state(APP_STATE_NONE);
 						app_cfg->stream_enable_audio = app_set->stm_info.enable_audio ;
 					}
 				}
 			}
-            
 
 		    app_msleep(CHECK_MSEC);
 //			buzzer_interval += 1;
@@ -279,7 +299,7 @@ static void *THR_call(void *prm)
 	}
 
     tObj->active = 0;
-    aprintf("...exit\n");
+    DEBUG_PRI("...exit\n");
 
     return NULL;    
 }
@@ -297,10 +317,10 @@ int app_call_control_init(void)
 
     tObj = &icall->callObj;
     if (thread_create(tObj, THR_call, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-        eprintf("create backchannel call control thread\n");
+        DEBUG_PRI("create backchannel call control thread\n");
         return EFAIL;
     }   
-    aprintf(".done!\n");
+    DEBUG_PRI(".done!\n");
 
     return 0;
 }
@@ -317,5 +337,5 @@ int app_call_control_exit(void)
 
     thread_delete(tObj);
 
-    aprintf(".done!\n") ;
+    DEBUG_PRI(".done!\n") ;
 }

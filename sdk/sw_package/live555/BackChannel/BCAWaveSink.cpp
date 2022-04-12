@@ -190,7 +190,7 @@ void BCAWaveSink::addData(unsigned char const *data, unsigned dataSize,
     // FileSink 상속은 훗날 오디오 녹화파일을 위해 그냥 하자..
     time_t now;
     time(&now);
-    DBG("BCA, dataSize:%d, secs:%ld, q.size:%d\n", dataSize, now - presentationTime.tv_sec, q.size());
+//    DBG("BCA, dataSize:%d, secs:%ld, q.size:%d\n", dataSize, now - presentationTime.tv_sec, q.size());
   }
 
   if (fOutFid != NULL && data != NULL)

@@ -233,10 +233,11 @@ static void *THR_dev(void *prm)
 						app_accept_call() ; // Back channel signal
 						break;
 					case APP_STATE_ACCEPT :
-					    break;
-					case APP_STATE_CALLING :
 						app_close_call() ;
-						break ;
+					    break;
+//					case APP_STATE_CALLING :
+//						app_close_call() ;
+//						break ;
 					case APP_STATE_NONE :
 					    app_call_send() ;
 						break ;
@@ -303,10 +304,11 @@ static void *THR_dev(void *prm)
 					app_accept_call() ; // Back channel signal
 					break;
 				case APP_STATE_ACCEPT :
-				    break;
-				case APP_STATE_CALLING :
 					app_close_call() ;
-					break ;
+				    break;
+//				case APP_STATE_CALLING :
+//					app_close_call() ;
+//					break ;
 				case APP_STATE_NONE :
 				    app_call_send() ;
 					break ;
