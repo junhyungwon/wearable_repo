@@ -31,11 +31,11 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define BACKCHANNEL_DEBUG
+#define BACKCHANNEL_DEBUG  
 #define CHECK_MSEC        50
 
-#ifdef BACHCHANNEL_DEBUG
-#define DEBUG_PRI(msg, args...) DEBUG_PRI("[BACKCHANNEL] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
+#ifdef BACKCHANNEL_DEBUG
+#define DEBUG_PRI(msg, args...) printf("[BACKCHANNEL] - %s(%d):\t%s:" msg, __FILE__, __LINE__, __FUNCTION__, ##args)
 #else
 #define DEBUG_PRI(msg, args...) ((void)0)
 #endif
@@ -63,7 +63,9 @@ int app_incoming_call(void)
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("app_incoming_call send APP_CMD_CALL_START\n") ;
+#endif
     event_send(tObj, APP_CMD_CALL_START, 0, 0) ;
 
     return 0;
@@ -74,7 +76,9 @@ int app_cancel_call()
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("app_cancel_call send APP_CMD_CALL_CANCEL\n") ;
+#endif
     event_send(tObj, APP_CMD_CALL_CANCEL, 0, 0) ;
 
     return 0;
@@ -86,7 +90,9 @@ int app_accept_call()  // ACCEPT CALL(nexx)
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("app_accept_call send APP_CMD_CALL_ACCEPT\n") ;
+#endif
     event_send(tObj, APP_CMD_CALL_ACCEPT, 0, 0) ;
 
     return 0;
@@ -97,7 +103,9 @@ int app_close_call()  // Close CALL (nexx)
     app_thr_obj *tObj;
 
     tObj = &icall->callObj;
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("app_close_call send APP_CMD_CALL_CLOSE\n") ;
+#endif
     event_send(tObj, APP_CMD_CALL_CLOSE, 0, 0) ;
 
     return 0;
@@ -109,7 +117,9 @@ int app_call_send()
 {
 	app_thr_obj *tObj ;
 	tObj = &icall->callObj;
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("app_call_send send APP_CMD_CALL_SEND") ;
+#endif
 	event_send(tObj, APP_CMD_CALL_SEND, 0, 0) ;
 }
 
@@ -121,7 +131,9 @@ int get_calling_state()
 
     OSA_mutexLock(&icall->lock) ;
 	CALL_STATUS = icall->status  ;
-	DEBUG_PRI("get_calling_state CALL_STATUS = %d\n", CALL_STATUS) ;
+#ifdef BACKCHANNEL_DEBUG
+//	DEBUG_PRI("get_calling_state CALL_STATUS = %d\n", CALL_STATUS) ;
+#endif
     OSA_mutexUnlock(&icall->lock) ;
 
 	return CALL_STATUS ;
@@ -134,7 +146,9 @@ int set_calling_state(int callvalue)
 
     OSA_mutexLock(&icall->lock) ;
 	icall->status = callvalue ; 
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("set_calling_state CALL_STATUS = %d\n", icall->status) ;
+#endif
     OSA_mutexUnlock(&icall->lock) ;
 }
 
@@ -148,7 +162,9 @@ static void *THR_call(void *prm)
     app_thr_obj *tObj = &icall->callObj;
     int exit = 0, ret = 0, cmd, buzzer_interval = 0, buzz_cnt = 0;
 	int call_state = 0 ;
+#ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("enter...\n");
+#endif
     tObj->active = 1;
 
     while (!exit)
@@ -172,7 +188,9 @@ static void *THR_call(void *prm)
 				buzzer_interval += 1;
 				if(!(buzzer_interval % 20))
 				{
+#ifdef BACKCHANNEL_DEBUG
 					DEBUG_PRI("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
+#endif
 					if(buzz_cnt <= 20 )
 					{
 						set_calling_state(APP_STATE_INCOMING);
@@ -212,13 +230,17 @@ static void *THR_call(void *prm)
 
 		    if(tObj->cmd == APP_CMD_CALL_ACCEPT)  // NEXX(accept call) & NEXX Manager
 			{
+#ifdef BACKCHANNEL_DEBUG
 				DEBUG_PRI("APP_CMD_CALL_ACCEPT\n") ;
+#endif
 				call_state = get_calling_state() ;
 				buzzer_interval = 0 ;
 				buzz_cnt = 0 ;
 				tObj->cmd = APP_CMD_NONE ;
-				DEBUG_PRI("app_cfg->stream_enable_audio = %d get_calling_state() = %d\n", app_cfg->stream_enable_audio, get_calling_state()) ;
-				if(!app_cfg->stream_enable_audio && (call_state == APP_STATE_INCOMING) || (call_state == APP_STATE_OUTCOMING))
+#ifdef BACKCHANNEL_DEBUG
+				DEBUG_PRI("app_cfg->stream_enable_audio = %d get_calling_state() = %d\n", app_cfg->stream_enable_audio, call_state) ;
+#endif
+				if(!app_cfg->stream_enable_audio && (call_state == APP_STATE_INCOMING || call_state == APP_STATE_OUTCOMING))
 				{
 					app_cfg->stream_enable_audio = 1 ;
 				}
@@ -227,7 +249,9 @@ static void *THR_call(void *prm)
 
 		    if(tObj->cmd == APP_CMD_CALL_CLOSE)  // NEXX(Close call)
 			{
+#ifdef BACKCHANNEL_DEBUG
 				DEBUG_PRI("APP_CMD_CALL_CLOSE\n") ;
+#endif
 				call_state = get_calling_state() ;
 				if((call_state == APP_STATE_ACCEPT || call_state == APP_STATE_OUTCOMING)) 
 				{
@@ -252,7 +276,9 @@ static void *THR_call(void *prm)
 				{
 					if(call_state == APP_STATE_NONE || call_state == APP_STATE_OUTCOMING)
 					{
+#ifdef BACKCHANNEL_DEBUG
 						DEBUG_PRI("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
+#endif
 						if(buzz_cnt <= 20 )
 						{
 							if(send_call_req())
@@ -263,7 +289,9 @@ static void *THR_call(void *prm)
 							}
 							else
 							{
+#ifdef BACKCHANNEL_DEBUG
 								DEBUG_PRI("there is no client to send packet\n") ;
+#endif
 								tObj->cmd = APP_CMD_NONE ;
 								set_calling_state(APP_STATE_NONE);
 							}
@@ -282,7 +310,9 @@ static void *THR_call(void *prm)
 
 					if(!(buzzer_interval % 400)) // 20 sec
 					{
+#ifdef BACKCHANNEL_DEBUG
 						DEBUG_PRI("222 buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
+#endif
 						buzzer_interval = 0 ;
 						buzz_cnt = 0 ;
 						tObj->cmd = APP_CMD_NONE ;
@@ -299,7 +329,9 @@ static void *THR_call(void *prm)
 	}
 
     tObj->active = 0;
+#ifdef BACKCHANNEL_DEBUG
     DEBUG_PRI("...exit\n");
+#endif
 
     return NULL;    
 }
@@ -317,10 +349,14 @@ int app_call_control_init(void)
 
     tObj = &icall->callObj;
     if (thread_create(tObj, THR_call, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
+#ifdef BACKCHANNEL_DEBUG
         DEBUG_PRI("create backchannel call control thread\n");
+#endif
         return EFAIL;
     }   
+#ifdef BACKCHANNEL_DEBUG
     DEBUG_PRI(".done!\n");
+#endif
 
     return 0;
 }
@@ -337,5 +373,7 @@ int app_call_control_exit(void)
 
     thread_delete(tObj);
 
+#ifdef BACKCHANNEL_DEBUG
     DEBUG_PRI(".done!\n") ;
+#endif
 }

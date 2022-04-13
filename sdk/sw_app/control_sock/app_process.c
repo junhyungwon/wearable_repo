@@ -459,7 +459,7 @@ DEBUG_PRI("call req packet reached\n") ;
 	CALL_RES Call_res ;
 	int status = 0, sendlen = 0 ;
 
-	status = get_calling_state() ;
+	status = get_calling_state() ;  // NEXX STATUS
 
     if(status == APP_STATE_NONE )
 	{
@@ -510,7 +510,11 @@ DEBUG_PRI("call req packet reached\n") ;
         Call_res.identifier = htons(IDENTIFIER) ;
 		Call_res.cmd = htons(CMD_CALL_RES) ;
 		Call_res.length = htons(CALLRES_SIZE) ;
-		Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+//		Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		if(getconnection_status(channel))
+			Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		else
+			Call_res.result = htons(CALL_CONNECT_FAIL) ;
 		memset(Call_res.Reserved, 0x00, 32) ;
 
 		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
@@ -558,23 +562,28 @@ DEBUG_PRI("call res packet reached\n") ;
 
     RCall_res = (RCALL_RES *)data ;
 	res_val = ntohs(RCall_res->result) ;
-	printf("recv_call_res packet result = %d length = %d\n",res_val, len) ;
 
 	switch(res_val)
 	{
 		case CALL_DEFAULT_RES :
-			printf("recv CALL_DEFAULT_RES.....\n") ;
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv CALL_DEFAULT_RES.....\n") ;
+#endif
 			status = get_calling_state() ;
 			if(status != APP_STATE_NONE)
 				set_calling_state(APP_STATE_OUTCOMING) ;
 			break ;
 		case CALL_CONNECT_ESTABLISHED :
-			printf("recv CALL_CONNECT_ESTABLISHED.....\n") ;
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv CALL_CONNECT_ESTABLISHED.....\n") ;
+#endif
 			app_accept_call() ;
 			SystemInfo.call_status[channel] = TRUE ;
 			break ;
 		case CALL_CONNECT_FAIL :
-			printf("recv CALL_CONNECT_FAIL.....\n") ;
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv CALL_CONNECT_FAIL.....\n") ;
+#endif
 			app_close_call() ;
 			SystemInfo.call_status[channel] = FALSE ;
 			break ;
