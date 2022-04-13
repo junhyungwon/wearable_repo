@@ -564,8 +564,9 @@ DEBUG_PRI("call res packet reached\n") ;
 	{
 		case CALL_DEFAULT_RES :
 			printf("recv CALL_DEFAULT_RES.....\n") ;
-			set_calling_state(APP_STATE_OUTCOMING) ;
-
+			status = get_calling_state() ;
+			if(status != APP_STATE_NONE)
+				set_calling_state(APP_STATE_OUTCOMING) ;
 			break ;
 		case CALL_CONNECT_ESTABLISHED :
 			printf("recv CALL_CONNECT_ESTABLISHED.....\n") ;
