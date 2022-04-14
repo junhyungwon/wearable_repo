@@ -38,6 +38,7 @@
 
 #include <fcntl.h>
 #include <errno.h>
+#include <resolv.h>
 
 #include "app_comm.h"
 #include "app_ftp.h"
@@ -50,6 +51,7 @@
 #include "app_file.h"
 #include "app_version.h"
 #include "app_ctrl.h"
+
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -565,8 +567,7 @@ static int ftp_connect (char *hostname, int port)
 	fd_set myset;
 	int valopt;
 #endif
-	
-    if ((hp = gethostbyname(hostname)) == 0) 
+    if ((hp = gethostbyname(hostname)) == NULL) 
 	{
 	    perror ("gethostbyname");
 	    return -1;
@@ -574,8 +575,10 @@ static int ftp_connect (char *hostname, int port)
 
     memset (&pin, 0, sizeof(pin));
     pin.sin_family 		= AF_INET;
-    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
+//    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
+    pin.sin_addr = *((struct in_addr *)hp->h_addr);
     pin.sin_port 		= htons(port);
+	bzero(&(pin.sin_zero), 8);
 	
 	//#--- create socket
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -594,7 +597,6 @@ static int ftp_connect (char *hostname, int port)
     tv.tv_usec = 0;
 
     strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
-
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
@@ -1388,7 +1390,7 @@ void app_ftp_state_reset(void)
 static void *THR_ftp(void *prm)
 {
 	app_thr_obj *tObj = &iftp->ftpObj;
-	int cmd, exit = 0, cradle_status = 0, ret = 0;
+	int cmd, exit = 0, cradle_status = 0, ret = 0, rec_state = 0;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -1414,11 +1416,18 @@ static void *THR_ftp(void *prm)
 
             if(iftp->ftp_state == FTP_STATE_NONE)
             {
-				if (app_rec_state())  // rec status
+				rec_state = app_rec_state() ;
+				if (rec_state == 1)  // normal rec status
 				{
 					app_rec_stop(ON);
 					OSA_waitMsecs(200); /* wait for file close */
 					app_cfg->ste.b.prerec_state = 1 ;
+				}
+				else if(rec_state == 2)
+				{
+					app_rec_stop(ON);
+					app_sos_send_stop(ON) ;
+					OSA_waitMsecs(200); /* wait for file close */
 				}
 
 				if(app_set->fota_info.ON_OFF && iftp->fota_state == FOTA_STATE_NONE)

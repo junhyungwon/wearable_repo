@@ -247,9 +247,16 @@ static void *THR_dev(void *prm)
 				}
 			}
 		} else if (rkey == KEY_LONG) {	
-			if (app_rec_state()) {
+			value = app_rec_state() ;
+			if (value == 1) {  // normal record
 				app_rec_stop(ON);
-			} else {
+			}
+			else if(value == 2) // under SOS Event record
+			{
+				app_rec_stop(ON) ;
+				app_sos_send_stop(ON) ;
+			}
+			else {
 				app_rec_start();
 			}
 		}
@@ -318,10 +325,17 @@ static void *THR_dev(void *prm)
 			}
 				
 //			app_voip_event_noty();
-		} else if (rkey == KEY_LONG) {	
-			if (app_rec_state()) {
+		} else if (rkey == KEY_LONG) {
+			value = app_rec_state() ;
+			if (value == 1) {  // normal record
 				app_rec_stop(ON);
-			} else {
+			}
+			else if(value == 2) // under SOS Event record
+			{
+				app_rec_stop(ON) ;
+				app_sos_send_stop(ON) ;
+			}
+			else {
 				app_rec_start();
 			}
 		}

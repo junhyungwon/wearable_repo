@@ -780,7 +780,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
-	
+
 #if defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
@@ -947,13 +947,14 @@ static void cfg_param_check_nexx(app_set_t *pset)
 #endif	
 	app_cfg->voip_set_ON_OFF = pset->voip.ON_OFF ;
 	app_cfg->stream_enable_audio = pset->stm_info.enable_audio;
+	app_cfg->rec_overwrite = pset->rec_info.overwrite ;
 
 	//# ----------------- VOIP Parameters End -----------------------------------------
 
 	if(pset->rtmp.ON_OFF <= CFG_INVALID)
 		pset->rtmp.ON_OFF = OFF;
 
-	pset->rtmp.ON_OFF = OFF;
+//	pset->rtmp.ON_OFF = OFF;
 
 	if(pset->rtmp.USE_URL <= CFG_INVALID)
 		pset->rtmp.USE_URL = OFF;
@@ -1215,6 +1216,7 @@ static void app_set_default(int default_type)
 	//# rec information
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
+	app_cfg->rec_overwrite 	= app_set->rec_info.overwrite;
 
 
 #if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
