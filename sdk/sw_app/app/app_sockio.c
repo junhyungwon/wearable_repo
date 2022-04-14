@@ -46,7 +46,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define SOCKWAIT                30000
-#define DDNS_LOOP_INTERVAL      200// 20 ³Ê¹« ÀÛÀ½..µ¿ÀÛ ¾ÈÇÔ
+#define DDNS_LOOP_INTERVAL      200// 20 ï¿½Ê¹ï¿½ ï¿½ï¿½ï¿½ï¿½..ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 #define SOCK_THRFXN_TSK_PRI     (3)
 
 typedef struct {
@@ -80,9 +80,6 @@ void msg_process(MessageManager* manager)
         msg = get_message(manager, i) ;
         cmd = htons((msg->buff[0]&0xff) | ((msg->buff[1]<<8)&0xff00)) ;
 
-#ifdef NETWORK_DEBUG
-      DEBUG_PRI("cmd = 0x%x\n", cmd) ;
-#endif
         if (msgfunc[cmd])
         {
             (*msgfunc[cmd])(msg->channel, msg->buff+4, msg->len-4) ;

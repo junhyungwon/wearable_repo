@@ -305,9 +305,6 @@ int ReadSocketData(int m_NowReadChannel)
     int m_ReadBuffSize = 0, m_Returnvalue = 0 ;
 
     m_ReadBuffSize = recv(SystemInfo.Channel[m_NowReadChannel], ReadBuffer, BUFFSIZE,0);
-#ifdef NETWORK_DEBUG
-    DEBUG_PRI("logon socket recv......size = %d\n",m_ReadBuffSize) ;
-#endif
 
     if(m_ReadBuffSize < FALSE)
     {
@@ -388,9 +385,6 @@ int ReadSocketQue(int m_NowChannel, int m_BuffSize)
     }
     else
     {
-	#ifdef NETWORK_DEBUG
-        	DEBUG_PRI("ReadSocketQue m_BuffSize = %d\n",m_BuffSize) ;
-	#endif
 
 	if(SystemInfo.Qposition[m_NowChannel] >= BUFFSIZE)
         {
