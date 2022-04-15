@@ -13,9 +13,7 @@ include $(ROOTDIR)/component.mk
 
 app:
 	$(MAKE) libuv
-ifeq ($(USE_RTMP),YES)
 	$(MAKE) librtmp
-endif
 	$(MAKE) -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux
 	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) app
 	@echo -e "\n--- make app done! (`date +'%H:%M:%S'`)---\n"

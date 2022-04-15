@@ -83,7 +83,10 @@ const int EVENTPACKET_SIZE = sizeof(EVENTPACKET) ;
 const int EVENTREQRCV_SIZE = sizeof(EVENTREQRCV) ;
 const int USERAUTHRES_SIZE = sizeof(USERAUTHRES) ;
 const int CALLRES_SIZE = sizeof(CALL_RES) ;
+const int RCALLRES_SIZE = sizeof(RCALL_RES) ;
 const int CALLREQ_SIZE = sizeof(CALL_REQ) ;
+const int CALLCLOSE_SIZE = sizeof(CALL_COMMON) ;
+const int CALLACCEPT_SIZE = sizeof(CALL_COMMON) ;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
@@ -138,8 +141,8 @@ void gpsdata_send(void *data)
 
 	timezone = app_set->time_info.time_zone - 12 ;
 
-//    printf("GPSPACKET_SIZE = %d\n",GPSPACKET_SIZE) ;
-//    printf("GPSDATA_SIZE = %d\n",GPSDATA_SIZE) ;
+//   DEBUG_PRI("GPSPACKET_SIZE = %d\n",GPSPACKET_SIZE) ;
+//   DEBUG_PRI("GPSDATA_SIZE = %d\n",GPSDATA_SIZE) ;
 	GPSPACKET Gpspacket ;
 
 	Gpspacket.identifier = htons(IDENTIFIER) ;
@@ -190,7 +193,7 @@ void eventdatareq(int channel, char *data, int len)
 
 	EVENTREQRCV Eventreqrcv ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("eventdatareq packet receive...\n") ;
+//    DEBUG_PRI("eventdatareq packet receive...\n") ;
 #endif
 	SystemInfo.event_req[channel] = ON ;
 
@@ -212,7 +215,7 @@ void eventdatareq(int channel, char *data, int len)
 			{
 				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTREQRCV_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("eventdatareq res packet sendlen = %d, channel = %d\n",sendlen, i) ;
+//    DEBUG_PRI("eventdatareq res packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
 			}
         }
@@ -226,7 +229,7 @@ void eventdata_send(void)
     socklen_t lon ;
 	int valopt = 0 ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("Eventdata reached...\n") ;
+//    DEBUG_PRI("Eventdata reached...\n") ;
 #endif
     EVENTPACKET Eventpacket ;
 
@@ -252,7 +255,7 @@ void eventdata_send(void)
 			{
 				sendlen = send(SystemInfo.Channel[i], m_SendBuffer, EVENTPACKET_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-    DEBUG_PRI("Eventdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+//    DEBUG_PRI("Eventdata  packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
 			}
 		}
@@ -400,7 +403,52 @@ DEBUG_PRI("Userauth req result = %d\n",result) ;
     DEBUG_PRI("Userauthres packet sendlen = %d, channel = %d\n",sendlen, channel) ;
 #endif
 	}
+}
 
+int getconnection_list()
+{
+	int i, retval = 0, exist ;
+	DEBUG_PRI("getconnection_list called\n") ;
+	for(i = 0; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] !=0)
+		{
+			retval = TRUE ;
+		}
+	}
+	DEBUG_PRI("getconnection_list retval = %d\n",retval) ;
+
+	return retval ;
+}
+
+int getconnection_status(int channel)
+{
+	int i, retval = 0, exist ;
+	DEBUG_PRI("getconnection_status channel = %d\n",channel) ;
+	if(channel)
+	{
+		for(i = 0; i < MAXUSER; i++)
+		{
+			if(SystemInfo.call_status[i])
+			{
+				if(i == channel)
+					retval = TRUE ;
+			}
+		}
+	}
+	else  //check all connection 
+	{
+		for(i = 0; i < MAXUSER; i++)
+		{
+			if(SystemInfo.call_status[i] == 1)
+			{
+				retval = TRUE ;
+			}
+		}
+	}
+	DEBUG_PRI("getconnection_status retval = %d\n",retval) ;
+
+	return retval ;
 }
 
 void recv_call_req(int channel, char *data, int len)
@@ -411,15 +459,40 @@ DEBUG_PRI("call req packet reached\n") ;
 	CALL_RES Call_res ;
 	int status = 0, sendlen = 0 ;
 
-	status = get_calling_state() ;
+	status = get_calling_state() ;  // NEXX STATUS
 
-    if(status == APP_STATE_NONE)
+    if(status == APP_STATE_NONE )
 	{
 		app_incoming_call() ;
+
         Call_res.identifier = htons(IDENTIFIER) ;
 		Call_res.cmd = htons(CMD_CALL_RES) ;
 		Call_res.length = htons(CALLRES_SIZE) ;
 		Call_res.result = htons(CALL_DEFAULT_RES) ;
+		memset(Call_res.Reserved, 0x00, 32) ;
+
+		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+		if(!getconnection_status(0))  
+			SystemInfo.call_status[channel] = TRUE ;
+
+		if(SystemInfo.Channel[channel] != 0)
+		{
+ 	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+ 	   DEBUG_PRI("Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+		}
+	}
+    else if(status == APP_STATE_INCOMING)
+	{
+        Call_res.identifier = htons(IDENTIFIER) ;
+		Call_res.cmd = htons(CMD_CALL_RES) ;
+		Call_res.length = htons(CALLRES_SIZE) ;
+		if(getconnection_status(channel))
+			Call_res.result = htons(CALL_DEFAULT_RES) ;
+		else
+			Call_res.result = htons(CALL_CONNECT_FAIL) ;
+
 		memset(Call_res.Reserved, 0x00, 32) ;
 
 		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
@@ -437,11 +510,15 @@ DEBUG_PRI("call req packet reached\n") ;
         Call_res.identifier = htons(IDENTIFIER) ;
 		Call_res.cmd = htons(CMD_CALL_RES) ;
 		Call_res.length = htons(CALLRES_SIZE) ;
-		Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+//		Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		if(getconnection_status(channel))
+			Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		else
+			Call_res.result = htons(CALL_CONNECT_FAIL) ;
 		memset(Call_res.Reserved, 0x00, 32) ;
 
 		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
-		set_calling_state(APP_STATE_CALLING) ;
+//		set_calling_state(APP_STATE_CALLING) ;
 
 		if(SystemInfo.Channel[channel] != 0)
 		{
@@ -451,7 +528,7 @@ DEBUG_PRI("call req packet reached\n") ;
 #endif
 		}
 	}
-	else  // CALLING or call message send.  
+	else  // in accept status,  sending fail.  
 	{
         Call_res.identifier = htons(IDENTIFIER) ;
 		Call_res.cmd = htons(CMD_CALL_RES) ;
@@ -468,10 +545,10 @@ DEBUG_PRI("call req packet reached\n") ;
  	   DEBUG_PRI("Callres FAIL packet sendlen = %d, channel = %d\n",sendlen, channel) ;
 #endif
 		}
+
+		SystemInfo.call_status[channel] = FALSE ;
 	}
-
 	    // send result calling..
-
 }
 
 // nexx의 callreq에 대한 응답
@@ -480,25 +557,39 @@ void recv_call_res(int channel, char *data, int len)
 #ifdef NETWORK_DEBUG
 DEBUG_PRI("call res packet reached\n") ;
 #endif
-	CALL_RES *Call_res ;
+	RCALL_RES *RCall_res ;
 	int status = 0, sendlen = 0, res_val ;
 
-    Call_res = (CALL_RES *)data ;
-	res_val = ntohs(Call_res->result) ;
+    RCall_res = (RCALL_RES *)data ;
+	res_val = ntohs(RCall_res->result) ;
+
 	switch(res_val)
 	{
 		case CALL_DEFAULT_RES :
-			set_calling_state(APP_STATE_OUTCOMING) ;
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv CALL_DEFAULT_RES.....\n") ;
+#endif
+			status = get_calling_state() ;
+			if(status != APP_STATE_NONE)
+				set_calling_state(APP_STATE_OUTCOMING) ;
 			break ;
 		case CALL_CONNECT_ESTABLISHED :
-			set_calling_state(APP_STATE_CALLING) ;
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv CALL_CONNECT_ESTABLISHED.....\n") ;
+#endif
+			app_accept_call() ;
+			SystemInfo.call_status[channel] = TRUE ;
 			break ;
 		case CALL_CONNECT_FAIL :
-		    set_calling_state(APP_STATE_NONE) ;
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv CALL_CONNECT_FAIL.....\n") ;
+#endif
+			app_close_call() ;
+			SystemInfo.call_status[channel] = FALSE ;
 			break ;
 	}
-
 }
+
 
 // nexx manager로 부터 call_close
 void recv_call_close(int channel, char *data, int len)
@@ -510,19 +601,25 @@ DEBUG_PRI("call close packet reached\n") ;
 
 	status = get_calling_state() ;
 
-    if(status == APP_STATE_CALLING || status == APP_STATE_INCOMING)
+    if(status == APP_STATE_ACCEPT || status == APP_STATE_INCOMING || status == APP_STATE_OUTCOMING)
 		app_cancel_call() ;
 
+	SystemInfo.call_status[channel] = FALSE ;
 }
 
-void send_call_req()
+int send_call_req()
 {
 #ifdef NETWORK_DEBUG
 DEBUG_PRI("send call req packet reached\n") ;
 #endif
-    int sendlen, i ;
+    int sendlen = 0, i ;
 
 	CALL_REQ Call_req ;
+
+	if(!getconnection_list()) 
+	{
+		return FALSE ;
+	}
 
     Call_req.identifier = htons(IDENTIFIER) ;
 	Call_req.cmd = htons(CMD_CALL_REQ) ;
@@ -537,18 +634,40 @@ DEBUG_PRI("send call req packet reached\n") ;
 	{
 		if(SystemInfo.Channel[i] != 0)
 		{
-	       sendlen = send(SystemInfo.Channel[i], m_SendBuffer, CALLREQ_SIZE, 0) ;
+	 	    sendlen = send(SystemInfo.Channel[i], m_SendBuffer, CALLREQ_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
-		   DEBUG_PRI("Callreq  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+		    DEBUG_PRI("Callreq  packet sendlen = %d, channel = %d\n",sendlen, i) ;
 #endif
 		}
 	}
+	return sendlen ; 
 }
+
 
 void send_call_close()
 {
 #ifdef NETWORK_DEBUG
 DEBUG_PRI("send call close packet reached\n") ;
 #endif
+	int sendlen = 0, i ;
 
+	CALL_COMMON Call_close ;
+
+	Call_close.identifier = htons(IDENTIFIER) ;
+	Call_close.cmd = htons(CMD_CALL_CLOSE) ;
+	Call_close.length = htons(CALLCLOSE_SIZE) ;
+
+	memcpy(m_SendBuffer, &Call_close, CALLCLOSE_SIZE) ;
+	
+    for(i = 0 ; i < MAXUSER; i++)
+	{
+		if(SystemInfo.Channel[i] != 0)
+		{
+			SystemInfo.call_status[i] = FALSE ;
+	 	    sendlen = send(SystemInfo.Channel[i], m_SendBuffer, CALLCLOSE_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+		    DEBUG_PRI("Call close  packet sendlen = %d, channel = %d\n",sendlen, i) ;
+#endif
+		}
+	}
 }

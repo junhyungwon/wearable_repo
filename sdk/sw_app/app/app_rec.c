@@ -410,9 +410,17 @@ static int _is_enable_rec_start(int rec_type)
 		return EFAIL;
 	}
 
-	if ((!app_set->rec_info.overwrite) && (app_file_check_disk_free_space() == EFAIL)) {
-		eprintf("Bypass start record!\n");
-		return EFAIL;
+	if ((!app_cfg->rec_overwrite) && (app_file_check_disk_free_space() == EFAIL)) 
+	{
+		if(rec_type)
+		{
+			app_cfg->rec_overwrite = ON ;
+		}
+		else
+		{
+			eprintf("Bypass start record!\n");
+			return EFAIL;
+		}
 	}
 
 	return SOK;
@@ -478,6 +486,10 @@ int app_rec_evt(int etype)
 int app_rec_stop(int prerec_flag)
 {
 	if (irec->rec_state) {
+		if(app_cfg->rec_overwrite != app_set->rec_info.overwrite)
+		{	
+			app_cfg->rec_overwrite = app_set->rec_info.overwrite ;
+		}
 		app_buzz_ctrl(100, 2);	//# buzz: rec stop
 		if (prerec_flag) // record 종료시 이전 record 상태를 유지 종료 후 이전 record 상태로 돌아감 
 		{

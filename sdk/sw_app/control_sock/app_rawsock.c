@@ -261,6 +261,7 @@ void Sock_Init(void)
             SystemInfo.Qposition[i] = 0 ;
 			SystemInfo.gps_req[i] = 0 ;
 			SystemInfo.event_req[i] = 0 ;
+            SystemInfo.call_status[i] = 0 ;
             memset(SystemInfo.QBUFF[i],0,BUFFSIZE) ;
         }
     }
@@ -279,6 +280,7 @@ void CloseAllChannel(void)
             SystemInfo.Qposition[i] = 0 ;
 			SystemInfo.gps_req[i] = 0 ;
 			SystemInfo.event_req[i] = 0 ;
+            SystemInfo.call_status[i] = 0 ;
             memset(SystemInfo.QBUFF[i],0,BUFFSIZE) ;
         }
     }
@@ -293,6 +295,7 @@ void CloseNowChannel(int m_NowChno )
         SystemInfo.Qposition[m_NowChno] = 0 ;
 		SystemInfo.gps_req[m_NowChno] = 0 ;
 		SystemInfo.event_req[m_NowChno] = 0 ;
+        SystemInfo.call_status[m_NowChno] = 0 ;
         memset(SystemInfo.QBUFF[m_NowChno],0, BUFFSIZE) ;
     }
 }
@@ -302,9 +305,6 @@ int ReadSocketData(int m_NowReadChannel)
     int m_ReadBuffSize = 0, m_Returnvalue = 0 ;
 
     m_ReadBuffSize = recv(SystemInfo.Channel[m_NowReadChannel], ReadBuffer, BUFFSIZE,0);
-#ifdef NETWORK_DEBUG
-    DEBUG_PRI("logon socket recv......size = %d\n",m_ReadBuffSize) ;
-#endif
 
     if(m_ReadBuffSize < FALSE)
     {
@@ -385,9 +385,6 @@ int ReadSocketQue(int m_NowChannel, int m_BuffSize)
     }
     else
     {
-	#ifdef NETWORK_DEBUG
-        	DEBUG_PRI("ReadSocketQue m_BuffSize = %d\n",m_BuffSize) ;
-	#endif
 
 	if(SystemInfo.Qposition[m_NowChannel] >= BUFFSIZE)
         {

@@ -105,8 +105,8 @@ typedef enum {
 	//# for thread
 	APP_STATE_INCOMING = 0x01,
 	APP_STATE_ACCEPT,
-    APP_STATE_CALLING,
 	APP_STATE_OUTCOMING,
+	APP_STATE_CLOSE,
 
 	MAX_STATE_CMD
 } app_state_e;
@@ -245,7 +245,8 @@ typedef struct {
 	char cfg_mmc_path[MAX_CHAR_128];
 	char cfg_nand_path[MAX_CHAR_128];
 
-	int  stream_enable_audio;
+	int stream_enable_audio;
+	int rec_overwrite ;
 
 } app_cfg_t;
 

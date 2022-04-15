@@ -109,8 +109,8 @@ static void _check_threshold_size(app_file_t *pInfo)
 {
 	disk_info_t idisk;
 
-	/* SD Ä«µå ¿À·ù ½Ã ¸¶¿îÆ®°¡ ¾ÈµÅ¼­ ÀÚµ¿À¸·Î ¸®ºÎÆÃ µÊ. 
-	 * µû¶ó¼­ error°¡ ¹ß»ýÇÏÁö ¾ÊÀ¸¹Ç·Î ¸®ÅÏ°ª Ã¼Å©ÇÏ´Â ºÎºÐ »èÁ¦
+	/* SD Ä«ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ÈµÅ¼ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½. 
+	 * ï¿½ï¿½ï¿½ï¿½ errorï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ Ã¼Å©ï¿½Ï´ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½
 	 */
 	util_disk_info(&idisk, SD_MOUNT_PATH);
 	
@@ -563,7 +563,7 @@ static void *THR_file_mng(void *prm)
 			app_file_update_disk_usage();
 			capacity_full = (app_file_check_disk_free_space() == 0) ? 0 : 1;
 
-			if (app_set->rec_info.overwrite) {
+			if (app_cfg->rec_overwrite) {
 				if (capacity_full) {
 					ifile->file_state = FILE_STATE_OVERWRITE;
 					OSA_mutexLock(&ifile->mutex_file);
@@ -583,6 +583,7 @@ static void *THR_file_mng(void *prm)
 				}
 			} else {
 				if (capacity_full) {
+					printf("REC_OVERWRITE Capacity_full\n") ;
 					app_rec_stop(OFF); /* buzzer off */
 					ifile->file_state = FILE_STATE_FULL;
 				} else {
@@ -715,7 +716,7 @@ int app_file_init(void)
 		}
 	}
 	
-	//# default LED »óÅÂ¿Í ¿ë·®À» Ã¼Å© (overwrite ¸ðµå ÇØÁ¦ÇÏ¸é ³ìÈ­ ¾ÈµÊ)
+	//# default LED ï¿½ï¿½ï¿½Â¿ï¿½ ï¿½ë·®ï¿½ï¿½ Ã¼Å© (overwrite ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½È­ ï¿½Èµï¿½)
 	_check_threshold_size(ifile);
 	app_file_update_disk_usage();
 	
@@ -760,9 +761,9 @@ void app_file_exit(void)
 		OSA_waitMsecs(20);
 	thread_delete(tObj);
 	
-	/* overwrite ¸ðµåÀÏ ¶§ file thread°¡ Á¾·áµÇÁö ¾ÊÀ¸¸é ¸®½ºÆ® °»½Å ÈÄ delete µÇ´Â ÆÄÀÏ·Î 
-	 * ÀÎÇØ¼­ ½ÇÁ¦ ÆÄÀÏ ÀúÀå °¹¼ö¿Í ¸®½ºÆ®ÀÇ °¹¼ö°¡ ÀÏÄ¡µÇÁö ¾ÊÀ½.
-	 * ¿©±â·Î º¯°æ.
+	/* overwrite ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ file threadï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ delete ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½Ï·ï¿½ 
+	 * ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
+	 * ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	 */
 	__save_file_list();
 	status = OSA_mutexDelete(&(ifile->mutex_file));

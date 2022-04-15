@@ -54,7 +54,7 @@
 #define DEV_PWR_OFF			0x10
 #define DEV_R_STATE			0x20
 
-#define WRITE_RETRY_CNT		5
+#define WRITE_RETRY_CNT		10
 #define PLL_DELAY			200		//# ms
 
 #define SZ_720				0
