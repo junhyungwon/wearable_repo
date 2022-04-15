@@ -428,7 +428,7 @@ int app_onvif_init_config()
 #elif defined(FITT360_SECURITY)
 		fputs("			<framerate>15</framerate>\n", fp);
 #endif
-		fputs("			<bitrate_limit>8000</bitrate_limit>\n", fp);
+		fputs("			<bitrate_limit>1000</bitrate_limit>\n", fp);
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
 		fputs("			<encoding>H264</encoding>\n", fp);
 		fputs("			<h264>\n", fp);
@@ -481,7 +481,7 @@ int app_onvif_init_config()
 #elif defined(FITT360_SECURITY)
 		fputs("			<framerate>15</framerate>\n", fp);
 #endif
-		fputs("			<bitrate_limit>4000</bitrate_limit>\n", fp);
+		fputs("			<bitrate_limit>1000</bitrate_limit>\n", fp);
 		fputs("			<quality>5</quality>\n", fp);
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
 #if 0 // H264
