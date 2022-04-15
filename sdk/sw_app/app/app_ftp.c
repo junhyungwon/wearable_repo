@@ -354,12 +354,12 @@ static int createDataSock(char * host, int port)
 
     setsockopt (sd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof (keepalive)) ;
     setsockopt (sd, IPPROTO_TCP, SO_KEEPALIVE, &keepalive, sizeof (keepalive)) ;
-//    setsockopt (sd, SOL_SOCKET, SO_LINGER, &stLinger, sizeof(stLinger)) ;
+    setsockopt (sd, SOL_SOCKET, SO_LINGER, &stLinger, sizeof(stLinger)) ;
 
 
 	if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
 		perror("connect");
-		close(sd); //close the socket
+//		close(sd); //close the socket
 		return -1;
 	}
 
@@ -652,7 +652,8 @@ static int ftp_connect (char *hostname, int port)
 	}
 
 ftp_err:
-	close(sd);
+//	close(sd);
+	shutdown(sd, SHUT_RDWR);
 	return -1;
 }
 
@@ -1493,7 +1494,6 @@ static void *THR_ftp(void *prm)
 					app_cfg->ste.b.prerec_state = 0 ;
 				}
 			} 
-			
 		}
 		else
 		{	
