@@ -40,7 +40,6 @@
 #include "app_ctrl.h"
 #include "js_settings.h"
 
-
 #include "app_voip.h"
 #include "app_sslvpn.h"
 
@@ -940,11 +939,18 @@ static void cfg_param_check_nexx(app_set_t *pset)
 #if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)	
    	if(pset->voip.ON_OFF <= CFG_INVALID)
 		pset->voip.ON_OFF = ON;
+
+	if(pset->voip.ON_OFF != ON) // Backchannel audio
+		pset->stm_info.enable_audio = ON ;
+	else // voip
+		pset->stm_info.enable_audio = OFF ;
+
 #else
 	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
    	if(pset->voip.ON_OFF <= CFG_INVALID)
 		pset->voip.ON_OFF = OFF;
 #endif	
+
 	app_cfg->voip_set_ON_OFF = pset->voip.ON_OFF ;
 	app_cfg->stream_enable_audio = pset->stm_info.enable_audio;
 	app_cfg->rec_overwrite = pset->rec_info.overwrite ;
