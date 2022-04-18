@@ -54,16 +54,11 @@
 #define DEV_PWR_OFF			0x10
 #define DEV_R_STATE			0x20
 
-#define WRITE_RETRY_CNT		10
+#define WRITE_RETRY_CNT		5
 #define PLL_DELAY			200		//# ms
 
 #define SZ_720				0
 #define SZ_480				1
-
-struct regval_list {
-	unsigned char reg;	//# register address
-	unsigned char val;	//# register value
-};
 
 typedef struct {
 	char pwr;		//# camer module power

@@ -38,7 +38,9 @@ ifeq ($(STATIC),)
 
 $(MOD)$(MOD_SUFFIX): $($(MOD)_OBJS)
 	@echo "  LD [M]  $@"
-	$(HIDE)$(LD) $(LFLAGS) $(SH_LFLAGS) $(MOD_LFLAGS) \
+# changed by rupy
+#	$(HIDE)$(LD) $(LFLAGS) $(SH_LFLAGS) $(MOD_LFLAGS)
+	$(HIDE)$(LD) $(LFLAGS) $(SH_LFLAGS) \
 		$($(basename $@)_OBJS) \
 		$($(basename $@)_LFLAGS) -L$(LIBRE_SO) -lre -o $@
 
