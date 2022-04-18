@@ -45,9 +45,6 @@ extern "C" {
 /** \brief Driver object state - IN USE and IDLE. */
 #define VPS_NVP2440H_OBJ_STATE_IDLE      (1u)
 
-#define TERM	0xFF
-#define DELAY	0xFE
-
 /*
  * NVP2440H Register Offsets.
  */
