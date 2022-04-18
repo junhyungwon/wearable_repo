@@ -253,7 +253,7 @@ static void *THR_call(void *prm)
 				DEBUG_PRI("APP_CMD_CALL_CLOSE\n") ;
 #endif
 				call_state = get_calling_state() ;
-				if((call_state == APP_STATE_ACCEPT || call_state == APP_STATE_OUTCOMING)) 
+				if((call_state == APP_STATE_ACCEPT || call_state == APP_STATE_OUTCOMING) || call_state == APP_STATE_INCOMING) 
 				{
 //					if(get_calling_state() == APP_STATE_OUTCOMING)
 					{

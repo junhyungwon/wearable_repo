@@ -222,6 +222,9 @@ static void *THR_dev(void *prm)
 		/* record key --> call function */
 		rkey = chk_input_key(REC_KEY);
 		if (rkey == KEY_SHORT) {
+			if(app_rec_state() == 2)  // Do not run audio under SOS operation 
+				continue ;
+
 			if(app_cfg->voip_set_ON_OFF)
 				app_voip_event_noty();
 			else

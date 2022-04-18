@@ -221,6 +221,11 @@ static void __call_unregister_handler(void)
 	send_msg(SIPC_CMD_SIP_UNREGISTER_UA, NULL);
 }
 
+static void __call_close(void)
+{
+	send_msg(SIPC_CMD_SIP_STOP, NULL);
+}
+
 static void __call_event_handler(void)
 {
 	int action = ivoip->st.call_ste;
@@ -357,7 +362,10 @@ static void *THR_voip_main(void *prm)
 			__call_event_handler();
 		} else if (cmd == APP_CMD_STOP) {
 			__call_unregister_handler();
-		} 
+		} else if (cmd == APP_CMD_CALL_CLOSE) {
+			__call_close() ;
+		}
+
 	}
 	
 	tObj->active = 0;
@@ -540,6 +548,21 @@ void app_voip_event_noty(void)
 	}
 	__call_send_cmd(APP_CMD_NOTY);
 }
+
+/*****************************************************************************
+* @brief    
+*   - desc
+*       : voip call 상태에 관계 없이 call 종료. - event 발생 시 종료를 위한 function
+*****************************************************************************/
+void app_voip_event_call_close(void)
+{
+    if (!ivoip->st.call_reg) {
+        eprintf("Not registered!\n");
+        return;
+    }
+    __call_send_cmd(APP_CMD_CALL_CLOSE);
+}
+
 
 /*****************************************************************************
 * @brief    

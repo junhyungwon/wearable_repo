@@ -28,8 +28,6 @@
 #include "app_ctrl.h"
 #include "app_gui.h"
 #include "app_buzz.h"
-
-
 #include "app_voip.h"
 
 
@@ -390,6 +388,17 @@ static void *THR_micom(void *prm)
 				{
 					if (!app_cfg->ste.b.ftp_run) 
 					{
+						if(!app_set->voip.ON_OFF)  // Backchannel
+						{
+							if(get_calling_state() != APP_STATE_NONE) // audio call close
+								app_close_call() ;	
+						}
+						else  // VOIP 
+						{
+							if(app_cfg->ste.b.voip)
+								app_voip_event_call_close() ;
+						}
+
 						value = app_rec_state() ;
 					/*
 					 * return 1-> NORMAL, 2-> SOS

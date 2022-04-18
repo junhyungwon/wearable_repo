@@ -29,6 +29,7 @@ void app_voip_start(int net_type, int enable_stun, short server_port, const char
 			const char *passwd, const char *peer, const char *stun_server);
 void app_voip_stop(void);
 void app_voip_event_noty(void);
+void app_voip_event_call_close(void);
 int app_voip_is_registered(void);
 
 #endif	/* __APP_VOIP_H__ */
