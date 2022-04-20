@@ -38,7 +38,6 @@
 
 #include <fcntl.h>
 #include <errno.h>
-#include <resolv.h>
 
 #include "app_comm.h"
 #include "app_ftp.h"
@@ -51,7 +50,6 @@
 #include "app_file.h"
 #include "app_version.h"
 #include "app_ctrl.h"
-
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -354,12 +352,12 @@ static int createDataSock(char * host, int port)
 
     setsockopt (sd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof (keepalive)) ;
     setsockopt (sd, IPPROTO_TCP, SO_KEEPALIVE, &keepalive, sizeof (keepalive)) ;
-    setsockopt (sd, SOL_SOCKET, SO_LINGER, &stLinger, sizeof(stLinger)) ;
+//    setsockopt (sd, SOL_SOCKET, SO_LINGER, &stLinger, sizeof(stLinger)) ;
 
 
 	if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
 		perror("connect");
-//		close(sd); //close the socket
+		close(sd); //close the socket
 		return -1;
 	}
 
@@ -567,7 +565,8 @@ static int ftp_connect (char *hostname, int port)
 	fd_set myset;
 	int valopt;
 #endif
-    if ((hp = gethostbyname(hostname)) == NULL) 
+	
+    if ((hp = gethostbyname(hostname)) == 0) 
 	{
 	    perror ("gethostbyname");
 	    return -1;
@@ -575,10 +574,8 @@ static int ftp_connect (char *hostname, int port)
 
     memset (&pin, 0, sizeof(pin));
     pin.sin_family 		= AF_INET;
-//    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
-    pin.sin_addr = *((struct in_addr *)hp->h_addr);
+    pin.sin_addr.s_addr = ((struct in_addr *) (hp->h_addr))->s_addr;
     pin.sin_port 		= htons(port);
-	bzero(&(pin.sin_zero), 8);
 	
 	//#--- create socket
 	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -597,6 +594,7 @@ static int ftp_connect (char *hostname, int port)
     tv.tv_usec = 0;
 
     strncpy(interface.ifr_ifrn.ifrn_name, FTP_DEV_NAME, IFNAMSIZ);
+
     setsockopt (sd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) ;
     setsockopt (sd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof (reuse)) ;
@@ -691,12 +689,9 @@ void SSL_Create()
 	char *str ;
 	// Register the error strings for libcrypto &libssl
 	SSL_load_error_strings() ;
-
 	SSLeay_add_ssl_algorithms();
 	SSL_load_error_strings() ;
-
 	// Register the available ciphers and digests
-
 	// New context saying we are a client, and using SSL 2 or 3
 
 	iftp->lsslContext = SSL_CTX_new(SSLv23_client_method()) ;
@@ -706,7 +701,6 @@ void SSL_Create()
 	// Disabling SSLv2 will leaave v3 and TLSv1 for negotiation
 
 	SSL_CTX_set_options(iftp->lsslContext, SSL_OP_NO_SSLv2) ;
-
 	SSL_CTX_set_info_callback(iftp->lsslContext, ssl_info_callback) ;
 	if(SSL_CTX_use_certificate_file(iftp->lsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0)
 	{
@@ -740,7 +734,6 @@ void SSL_Create()
 	// Connect the SSL struct to our connection 
 	if(!SSL_set_fd(iftp->lsslHandle, iftp->lsdFtp))
 		ERR_print_errors_fp(stderr);
-
 	// Initiate SSL handshake
 	if(SSL_connect(iftp->lsslHandle) != 1)
 	{
@@ -1358,13 +1351,16 @@ static void ftp_send(void)
 
 		if(file_cnt == 0)
 		{
+			ftp_dbg(" \n[ftp] send file Done --\n");
             app_leds_backup_state_ctrl(LED_FTP_OFF);
             app_leds_eth_status_ctrl(LED_FTP_OFF);
 		    iftp->ftp_state = FTP_STATE_SEND_DONE;
             ftp_close(iftp->lsdFtp);
+			ctrl_sys_halt(1) ;
 		}
 		else
 		{
+			ftp_dbg(" \n[ftp] File left after sending file --\n");
             app_leds_eth_status_ctrl(LED_FTP_ERROR);
             app_leds_backup_state_ctrl(LED_FTP_ERROR);
             iftp->ftp_state = FTP_STATE_NONE ;
@@ -1471,6 +1467,7 @@ static void *THR_ftp(void *prm)
 						iftp->ftp_state = FTP_STATE_SEND_DONE ;
 						app_leds_backup_state_ctrl(LED_FTP_OFF);
 						app_leds_eth_status_ctrl(LED_FTP_OFF);
+					
 					}  
 				}
 				else
@@ -1494,6 +1491,7 @@ static void *THR_ftp(void *prm)
 					app_cfg->ste.b.prerec_state = 0 ;
 				}
 			} 
+			
 		}
 		else
 		{	

@@ -29,6 +29,7 @@ int app_cancel_call(void);
 int app_accept_call(void);
 int app_close_call(void);
 int get_calling_state(void);
+int set_calling_state(int) ;
 int app_call_control_init(void);
 int app_call_control_exit(void);
 

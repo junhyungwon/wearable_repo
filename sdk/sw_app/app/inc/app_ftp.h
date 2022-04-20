@@ -82,13 +82,15 @@ typedef struct {
 	char path[MAX_CHAR_128];
 } app_ftp_t;
 
-//#define CLIENT_CERTF  "/mmc/linkflow.com.crt"
-//#define CLIENT_KEYF   "/mmc/linkflow.com.key"
-//#define CLIENT_CA_CERTF  "/mmc/linkflow.com.crt"
 
-#define CLIENT_CERTF  "/mmc/server.crt"
-#define CLIENT_KEYF   "/mmc/server.key"
-#define CLIENT_CA_CERTF  "/mmc/server.crt"
+//#define CLIENT_CERTF  "/mmc/server.crt"
+//#define CLIENT_KEYF   "/mmc/server.key"
+//#define CLIENT_CA_CERTF  "/mmc/server.crt"
+
+#define CLIENT_CERTF "/mmc/certificate.crt"
+#define CLIENT_KEYF "/mmc/certificate.crt"
+#define CLIENT_CA_CERTF "/mmc/certificate.crt"
+
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype

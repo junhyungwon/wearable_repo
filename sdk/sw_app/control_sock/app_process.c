@@ -61,6 +61,7 @@
 #include "app_process.h"
 #include "app_mcu.h"
 #include "app_sockio.h"
+#include "app_decrypt.h"
 #include "app_bcall.h"
 
 /*----------------------------------------------------------------------------
@@ -407,7 +408,7 @@ DEBUG_PRI("Userauth req result = %d\n",result) ;
 
 int getconnection_list()
 {
-	int i, retval = 0, exist ;
+	int i, retval = 0;
 	DEBUG_PRI("getconnection_list called\n") ;
 	for(i = 0; i < MAXUSER; i++)
 	{
@@ -423,7 +424,7 @@ int getconnection_list()
 
 int getconnection_status(int channel)
 {
-	int i, retval = 0, exist ;
+	int i, retval = 0;
 	DEBUG_PRI("getconnection_status channel = %d\n",channel) ;
 	if(channel)
 	{
@@ -460,6 +461,29 @@ DEBUG_PRI("call req packet reached\n") ;
 	int status = 0, sendlen = 0 ;
 
 	status = get_calling_state() ;  // NEXX STATUS
+
+#if defined(NEXXONE)
+    if(app_set->voip.ON_OFF)
+	{
+		Call_res.result = htons(NOT_SUPPORTED_PROTOCOL) ;
+    	Call_res.identifier = htons(IDENTIFIER) ;
+		Call_res.cmd = htons(CMD_CALL_RES) ;
+		Call_res.length = htons(CALLRES_SIZE) ;
+		memset(Call_res.Reserved, 0x00, 32) ;
+
+		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+		if(!getconnection_status(0))  
+			SystemInfo.call_status[channel] = TRUE ;
+
+		if(SystemInfo.Channel[channel] != 0)
+		{
+	        sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+	 	   	DEBUG_PRI("Callres Not supported protocol packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+		}
+		return ;
+	}
 
     if(status == APP_STATE_NONE )
 	{
@@ -548,6 +572,27 @@ DEBUG_PRI("call req packet reached\n") ;
 
 		SystemInfo.call_status[channel] = FALSE ;
 	}
+#else
+
+	Call_res.result = htons(NOT_SUPPORTED_DEVICE) ;
+    Call_res.identifier = htons(IDENTIFIER) ;
+	Call_res.cmd = htons(CMD_CALL_RES) ;
+	Call_res.length = htons(CALLRES_SIZE) ;
+	memset(Call_res.Reserved, 0x00, 32) ;
+
+	memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+	if(!getconnection_status(0))  
+		SystemInfo.call_status[channel] = TRUE ;
+
+	if(SystemInfo.Channel[channel] != 0)
+	{
+    	sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+		DEBUG_PRI("Callres Not supported device/protocol packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+	
+	}
+#endif
 	    // send result calling..
 }
 
@@ -558,7 +603,7 @@ void recv_call_res(int channel, char *data, int len)
 DEBUG_PRI("call res packet reached\n") ;
 #endif
 	RCALL_RES *RCall_res ;
-	int status = 0, sendlen = 0, res_val ;
+	int status = 0, res_val ;
 
     RCall_res = (RCALL_RES *)data ;
 	res_val = ntohs(RCall_res->result) ;
@@ -573,6 +618,7 @@ DEBUG_PRI("call res packet reached\n") ;
 			if(status != APP_STATE_NONE)
 				set_calling_state(APP_STATE_OUTCOMING) ;
 			break ;
+
 		case CALL_CONNECT_ESTABLISHED :
 #ifdef NETWORK_DEBUG
 			DEBUG_PRI("recv CALL_CONNECT_ESTABLISHED.....\n") ;
@@ -580,9 +626,26 @@ DEBUG_PRI("call res packet reached\n") ;
 			app_accept_call() ;
 			SystemInfo.call_status[channel] = TRUE ;
 			break ;
+
 		case CALL_CONNECT_FAIL :
 #ifdef NETWORK_DEBUG
 			DEBUG_PRI("recv CALL_CONNECT_FAIL.....\n") ;
+#endif
+			app_close_call() ;
+			SystemInfo.call_status[channel] = FALSE ;
+			break ;
+
+		case NOT_SUPPORTED_DEVICE :
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv NOT SUPPORTED DEVICE.....\n") ;
+#endif
+			app_close_call() ;
+			SystemInfo.call_status[channel] = FALSE ;
+			break;
+
+		case NOT_SUPPORTED_PROTOCOL :
+#ifdef NETWORK_DEBUG
+			DEBUG_PRI("recv NOT SUPPORTED PROTOCOL.....\n") ;
 #endif
 			app_close_call() ;
 			SystemInfo.call_status[channel] = FALSE ;
