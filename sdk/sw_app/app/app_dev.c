@@ -307,7 +307,8 @@ static void *THR_dev(void *prm)
 		/* record key --> call function */
 		rkey = chk_input_key(REC_KEY);
 		if (rkey == KEY_SHORT) {
-			call_state = get_calling_state() ;		
+// backchannel 
+/*			call_state = get_calling_state() ;		
 			switch(call_state)
 			{
 				case APP_STATE_INCOMING :
@@ -316,9 +317,6 @@ static void *THR_dev(void *prm)
 				case APP_STATE_ACCEPT :
 					app_close_call() ;
 				    break;
-//				case APP_STATE_CALLING :
-//					app_close_call() ;
-//					break ;
 				case APP_STATE_NONE :
 				    app_call_send() ;
 					break ;
@@ -326,7 +324,7 @@ static void *THR_dev(void *prm)
 					app_close_call() ;
 					break ;
 			}
-				
+*/				
 //			app_voip_event_noty();
 		} else if (rkey == KEY_LONG) {
 			value = app_rec_state() ;
