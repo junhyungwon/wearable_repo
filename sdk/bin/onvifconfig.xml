@@ -62,12 +62,12 @@
 			<quality>4</quality>
 			<session_timeout>10</session_timeout>			
 			<framerate>25</framerate>
-			<encoding_interval>50</encoding_interval>
+			<encoding_interval>1</encoding_interval>
 			<bitrate_limit>2048</bitrate_limit>
 			<encoding>H264</encoding>
 			<h264>
 				<gov_length>30</gov_length>
-				<h264_profile>Hight</h264_profile>
+				<h264_profile>High</h264_profile>
 			</h264>
 		</video_encoder>
 		<audio_source></audio_source>
@@ -82,7 +82,7 @@
 	<scope>onvif://www.onvif.org/Profile/G</scope>
 	<scope>onvif://www.onvif.org/location/country/korea</scope>
 	<scope>onvif://www.onvif.org/type/video_encoder</scope>
-	<scope>onvif://www.onvif.org/name/NEXX Series</scope>
+	<scope>onvif://www.onvif.org/name/NEXX</scope>
 	<scope>onvif://www.onvif.org/hardware/Wearable360' Camera</scope>	
 	<event>
 		<renew_interval>60</renew_interval>	

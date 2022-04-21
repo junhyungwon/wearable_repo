@@ -442,6 +442,9 @@ endif
 	sudo /bin/cp -f $(TFTP_HOME)/onvifserver $(EXEC_DIR)/bin/
 	sudo /bin/cp -f $(TFTP_HOME)/onvifconfig.xml $(EXEC_DIR)/bin/
 	sudo /bin/cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/
+	sudo /bin/cp -f $(TFTP_HOME)/server.crt $(EXEC_DIR)/
+	sudo /bin/cp -f $(TFTP_HOME)/server.key $(EXEC_DIR)/
+	sudo /bin/cp -f $(TFTP_HOME)/server.pem $(EXEC_DIR)/
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh

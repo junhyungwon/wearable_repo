@@ -359,7 +359,7 @@ int app_onvif_init_config()
         sprintf(str,"     <server_port>%d</server_port>\n",app_set->net_info.onvif_port) ; 
 		fputs(str, fp);
 		fputs("	<http_max_users>16</http_max_users>\n", fp);
-		fputs("	<https_enable>0</https_enable>\n", fp);
+		fputs("	<https_enable>1</https_enable>\n", fp);
 		fputs("	<need_auth>1</need_auth>\n", fp);
 		fputs("	<log_enable>0</log_enable>\n", fp); // debug log file. ipsee.txt
 
