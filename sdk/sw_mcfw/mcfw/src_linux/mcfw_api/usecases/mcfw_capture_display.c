@@ -80,7 +80,7 @@ static void	capture_link_params_init(CaptureLink_CreateParams *capturePrm, int n
 		pCaptureInstPrm->numOutput			= 1;
 
 		pCaptureOutPrm						= &pCaptureInstPrm->outParams[0];
-		/* NEXX 4ch ÀÏ °æ¿ì¿¡´Â SYSTEM_DF_YUV422I_YUYV*/
+		/* NEXX 4ch ì¼ ê²½ìš°ì—ëŠ” SYSTEM_DF_YUV422I_YUYV*/
 		pCaptureOutPrm->dataFormat			= SYSTEM_DF_YUV420SP_UV;
 		pCaptureOutPrm->scEnable			= FALSE;
 		pCaptureOutPrm->scOutWidth			= 1280;
