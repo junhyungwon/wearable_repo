@@ -127,16 +127,27 @@ static int ftpRecvResponse(int sock, char * buf, int length)
     int valopt = 0 ;
 	int i, len;
 
+	ftp_dbg("ftpRecvResponse Reached.. length = %d\n",length) ;
+
     getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
+	ftp_dbg("ftpRecvResponse Reached.. valopt = %d\n",valopt) ;
     if(valopt)
     {
         return -1 ;
     }
 
+		
+#if defined(USE_SSL)
+	if(!length)
+		len = SSL_read(iftp->lsslHandle, (void *)buf, RSIZE) ;
+	else
+		len = SSL_read(iftp->lsslHandle, (void *)buf, length) ;
+#else
 	if(!length)
 		len = recv(sock, buf, RSIZE, 0);
 	else
 		len =recv(sock, buf, length, 0) ;
+#endif 
 
 	if (len == -1) {//receive the data
 		perror("recv");
@@ -159,6 +170,7 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
 {
     socklen_t lon ;
     int valopt = 0 ;
+    char tmpbuf[16384] ;
 
 	strcpy(buf,cmd);
 
@@ -181,13 +193,15 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
     else
     {
 #if defined(USE_SSL)
-	    if (SSL_write(iftp->lsslHandle, buf, strlen(buf)) == -1) {
+	    if (SSL_write(iftp->lsslHandle, (void *)buf, strlen(buf)) == -1) {
 #else
 	    if (send(sock, buf, strlen(buf), 0) == -1) {
 #endif
 		    perror("send");
 		    return -1;
 	    }
+		else
+			ftp_dbg("SSL_WRITE .......\n") ;
     }  
 
 	//clear the buffer
@@ -694,7 +708,8 @@ void SSL_Create()
 	// Register the available ciphers and digests
 	// New context saying we are a client, and using SSL 2 or 3
 
-	iftp->lsslContext = SSL_CTX_new(SSLv23_client_method()) ;
+//	iftp->lsslContext = SSL_CTX_new(SSLv23_client_method()) ;
+	iftp->lsslContext = SSL_CTX_new(TLSv1_2_client_method()) ;
 	if(iftp->lsslContext == NULL)
 		ERR_print_errors_fp (stderr) ;
 
@@ -1068,7 +1083,12 @@ int fota_proc()
 			iftp->fota_state = FOTA_STATE_NONE;
 			break;
 		}
-		iftp->lsdFtp = ftp_connect(app_set->fota_info.ipaddr, app_set->fota_info.port);
+
+		if(app_set->fota_info.type) // use manual input ipaddress
+			iftp->lsdFtp = ftp_connect(app_set->fota_info.ipaddr, app_set->fota_info.port);
+		else
+			iftp->lsdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
+
 		if(iftp->lsdFtp != -1)
 		{
 		 //read result

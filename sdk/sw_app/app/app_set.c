@@ -200,7 +200,7 @@ static void char_memset(void)
 
 	//# FOTA information
     app_set->fota_info.port = CFG_INVALID ;
-    app_set->fota_info.svr_info = CFG_INVALID ;
+    app_set->fota_info.svr_info = CFG_INVALID ;  // manual input or use ftp ipaddress
     memset(app_set->fota_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32);
     memset(app_set->fota_info.id, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->fota_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
