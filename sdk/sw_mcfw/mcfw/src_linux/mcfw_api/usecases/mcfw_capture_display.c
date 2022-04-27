@@ -179,7 +179,7 @@ static void	enc_link_params_init(EncLink_CreateParams *encPrm)
 
 	EncLink_CreateParams_Init(encPrm);
 
-	encPrm->numCh = gVsysModuleContext.vsysConfig.numChs + 3;
+	encPrm->numCh = gVsysModuleContext.vsysConfig.numChs + 2;
 
 	encPrm->numBufPerCh[0]	= NUM_ENCODE_BUFFERS;
 
