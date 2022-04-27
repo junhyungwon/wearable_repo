@@ -29,7 +29,7 @@
 #define NVP2440H_MIRRO_V					2
 #define NVP2440H_MIRRO_HV					3 /* rotate */
 
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+#if defined(LF_SYS_NEXXONE_VOIP)
 #define NVP2440H_I2C_ADDR_CC	0x66 //# 1-bit shift => 0xCC
 #define NVP2440H_I2C_ADDR_FE	0x7F //# 1-bit shift => 0xFE
 #else
@@ -396,7 +396,7 @@ static int nvp2440h_check_sensor(int idx)
 	return locked;
 }
 
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H)
+#if defined(LF_SYS_NEXXONE_VOIP)
 static UInt8 __get_i2c_address(void)
 {
 	Int32 count=0, ret;

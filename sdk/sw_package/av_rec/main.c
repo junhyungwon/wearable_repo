@@ -58,7 +58,7 @@ typedef struct {
 	char deviceId[32];
 	char fname[256];
 	
-	#if defined(NEXX360B) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360C) || defined(NEXX360W_CCTV)
+	#if defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 	int ch2_keyframe;
 	int ch3_keyframe;
 	int ch4_keyframe;
@@ -611,7 +611,7 @@ static void *THR_rec_evt(void *prm)
 				
 				if (irec->fevt != NULL) 
 				{
-					#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
+					#if defined(NEXXONE) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)
 					/* ch=1 스트리밍 채널이 gmem에 기록되어 있으므로 avi 저장 시 이를 막아야 함 */
 					if (ifr->ch < 1) {
 						ret = evt_file_write(ifr, irec->en_snd);

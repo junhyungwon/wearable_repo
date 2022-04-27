@@ -59,8 +59,8 @@
 #define MODEL_NAME "NEXXB"
 #elif defined(NEXXB_ONE)
 #define MODEL_NAME "NEXXB_ONE"
-#elif defined(NEXX360H)
-#define MODEL_NAME "NEXX360H"
+#elif defined(NEXX360M)
+#define MODEL_NAME "NEXX360M"
 #elif defined(NEXXONE_VOIP)
 #define NEXXONE
 #define MODEL_NAME "NEXXONE"

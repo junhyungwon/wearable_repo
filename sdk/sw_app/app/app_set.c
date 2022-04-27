@@ -536,7 +536,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		{
 			if(ich == MODEL_CH_NUM)
 			{
-#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE)
 		        pset->ch[ich].framerate	= DEFAULT_FPS/2;
 #else
 		        pset->ch[ich].framerate	= DEFAULT_FPS;
@@ -784,7 +784,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
 #else 
-	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXXB/NEXXB_ONE/NEXX360H/NEXXONE
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXXB/NEXXB_ONE/NEXX360M/NEXXONE
     if(pset->rec_info.auto_rec != ON && pset->rec_info.auto_rec != OFF)
 	    pset->rec_info.auto_rec = OFF ;
 #endif		
@@ -1099,7 +1099,7 @@ static void app_set_default(int default_type)
 
 		if(ich == MODEL_CH_NUM) // streaming channel
 		{
-#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)	
+#if defined(NEXXONE) || defined(NEXXB_ONE)	
 		    app_set->ch[ich].framerate	= DEFAULT_FPS/2;  // 15fps
 #else
 		    app_set->ch[ich].framerate	= DEFAULT_FPS;    // 15fps
@@ -1230,7 +1230,7 @@ static void app_set_default(int default_type)
 #elif defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
-#else //# NEXX360B, NEXX360H, NEXX360W_MUX
+#else //# NEXX360B, NEXX360M, NEXX360W_MUX
     app_set->rec_info.auto_rec      = OFF ;
 #endif
 

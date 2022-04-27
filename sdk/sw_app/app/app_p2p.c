@@ -106,8 +106,6 @@ int app_p2p_start(void)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #elif defined(NEXX360W_MUX)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W_MUX", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
-#elif defined(NEXX360H)
-					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360H", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #elif defined(NEXXB)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXB", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #elif defined(NEXXB_ONE)

@@ -61,7 +61,7 @@
 #	else
 #	define FITT360_SW_VER      		"2.10.00.D"
 #	endif
-#elif defined(NEXX360H)
+#elif defined(NEXX360M)
 #	if SW_RELEASE
 #	define FITT360_SW_VER      		"2.10.00H"
 #	else
