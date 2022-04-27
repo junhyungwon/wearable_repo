@@ -888,7 +888,7 @@ static int gui_test_main(void *thr)
    // Inforeq packet transmission immediately after system booting is completed	
 	send_sysinfo((char*)&Inforeq) ;   
 
-#if defined(NEXXONE) || defined(NEXX360H)
+#if defined(NEXXONE)
     test_snd(tObj) ;
 #endif
 

@@ -36,10 +36,10 @@ static char out_buf[1024];
 #define PUTSTR printf
 #endif
 
-#if defined(NEXXONE) || defined(NEXX360H) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE)
 	#define MAX_FPS 30
 #elif defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)\
-   || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
+   || defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 	#define MAX_FPS 15
 #elif defined(FITT360_SECURITY)
 	#define MAX_FPS 15
@@ -147,7 +147,7 @@ int put_json_all_config()
 		}
 
 		// record info
-#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXX360W_MUX) \
+#if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360M) || defined(NEXX360W_MUX) \
     || defined(NEXXB) || defined(NEXXB_ONE) \
     || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		int fpsIdx = p.rec.fps-1;
@@ -187,7 +187,7 @@ int put_json_all_config()
 
 		// streaming info
 		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
-#if defined(NEXXONE)|| defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
+#if defined(NEXXONE)|| defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
   || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 
 		fpsIdx = p.stm.fps-1;

@@ -45,6 +45,7 @@ static app_buzz_t *ibuzz = &t_buzz;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
+#if SYS_CONFIG_BUZZER
 static void __buzzer_set__(int en)
 {
 	int fd = ibuzz->fd;
@@ -55,6 +56,7 @@ static void __buzzer_set__(int en)
 		write(fd, "0", 2);
 	}		
 }
+#endif
 
 /*****************************************************************************
 * @brief    buzzer control
@@ -62,6 +64,7 @@ static void __buzzer_set__(int en)
 *****************************************************************************/
 void app_buzz_ctrl(int time, int cnt)
 {
+#if SYS_CONFIG_BUZZER	
 	OSA_mutexLock(&ibuzz->b_lock);		
 	//# buzzer active
 	while (1)
@@ -76,6 +79,10 @@ void app_buzz_ctrl(int time, int cnt)
 		app_msleep(time);
 	}
 	OSA_mutexUnlock(&ibuzz->b_lock);
+#else
+	/* For buzzer off */
+	return;
+#endif	
 }
 
 /*****************************************************************************

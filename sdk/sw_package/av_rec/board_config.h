@@ -35,10 +35,10 @@
 #	define NEXX360B
 #	define REC_CH_NUM					4
 #	define MAX_FPS						15	
-#elif defined(LF_SYS_NEXX360H)
-#	define NEXX360H
-#	define REC_CH_NUM					1
-#	define MAX_FPS						30
+#elif defined(LF_SYS_NEXX360M)
+#	define NEXX360M
+#	define REC_CH_NUM					4
+#	define MAX_FPS						15
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
 #	define REC_CH_NUM					1

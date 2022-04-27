@@ -224,6 +224,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 	}
 }
 
+#if SYS_CONFIG_WLAN
 static void __netmgr_rndis_event_handler(int ste)
 {
 	/*
@@ -270,6 +271,7 @@ static void __netmgr_usb2eth_event_handler(int ste)
 		send_msg(NETMGR_CMD_USB2ETH_STOP);
 	}
 }
+#endif
 
 static void __netmgr_cradle_eth_event_handler(int ste)
 {

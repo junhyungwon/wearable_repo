@@ -155,7 +155,7 @@ static int submit_settings()
 				return ERR_INVALID_PARAM;
 			}
 		}
-#elif defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360H) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
+#elif defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
 	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
 		live_stream_account_enable=1; // FIXED
 		if(live_stream_account_enctype  == -1) {

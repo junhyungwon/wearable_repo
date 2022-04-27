@@ -351,7 +351,7 @@ Int32 Vsys_init(VSYS_PARAMS_S * pContext);
 
     \return ERROR_NONE on success
 */
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXX360H) || defined(LF_SYS_NEXXB_ONE)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
 Int32 Vsys_create(void);
 #else
 /* nexx360-->fitt360-->1 */

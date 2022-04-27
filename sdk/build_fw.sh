@@ -15,6 +15,7 @@ function fmenu()
  echo "6. NEXX360 Wireless Mux                   "
  echo "7. NEXX360 Basic for CCTV                 "
  echo "8. NEXX360 Wireless for CCTV              "
+ echo "9. NEXX360 Basic for Military             "
  echo "=========================================="
 }
 
@@ -92,6 +93,11 @@ do
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
 			break;;
+		"9" )
+			echo " "
+			echo "select NEXX360 Basic for Military "
+			FW_PREFIX="NEXX360M"
+			break;;
 		"8" )
 			echo " "
 			echo "select NEXX360 Wireless for CCTV "
@@ -142,6 +148,9 @@ ver_name="$ver1.$ver2.$ver3"
 fw_name=""$FW_PREFIX"_"$ver_name"_full.dat"
 
 if [ "$FW_PREFIX" == "NEXX360B" ]
+then
+ver4="B"
+elif [ "$FW_PREFIX" == "NEXX360M" ]
 then
 ver4="B"
 else
