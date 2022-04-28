@@ -410,16 +410,20 @@ static int _is_enable_rec_start(int rec_type)
 		return EFAIL;
 	}
 
-	if ((!app_cfg->rec_overwrite) && (app_file_check_disk_free_space() == EFAIL)) 
+//	if ((!app_cfg->rec_overwrite) && (app_file_check_disk_free_space() == EFAIL)) 
+	if ((!app_set->rec_info.overwrite)) 
 	{
 		if(rec_type)
 		{
 			app_cfg->rec_overwrite = ON ;
 		}
-		else
+		else 
 		{
-			eprintf("Bypass start record!\n");
-			return EFAIL;
+			if(app_file_check_disk_free_space() == EFAIL)
+			{
+				eprintf("Bypass start record!\n");
+				return EFAIL;
+			}
 		}
 	}
 
@@ -485,6 +489,7 @@ int app_rec_evt(int etype)
 
 int app_rec_stop(int prerec_flag)
 {
+	printf("app_rec_stop call reached app_rec.c\n") ;
 	if (irec->rec_state) {
 		if(app_cfg->rec_overwrite != app_set->rec_info.overwrite)
 		{	

@@ -584,6 +584,9 @@ static void *THR_file_mng(void *prm)
 			} else {
 				if (capacity_full) {
 					printf("REC_OVERWRITE Capacity_full\n") ;
+					if(app_rec_state() == 2) // SOS 
+						app_sos_send_stop(ON) ; // send sos stop packet to client
+
 					app_rec_stop(OFF); /* buzzer off */
 					ifile->file_state = FILE_STATE_FULL;
 				} else {
@@ -631,7 +634,7 @@ static void *THR_file_led_mng(void *prm)
 		//# file state check for beep -- per 1 sec
 		if (b_cycle >= CNT_BEEP_CHECK) 
 		{
-			state = get_write_status();
+			state = get_write_status(); 
 			if (state == FILE_STATE_OVERWRITE) {
 				f_cycle = 0;
 				if (!once_over_beep) {
@@ -646,6 +649,8 @@ static void *THR_file_led_mng(void *prm)
 						app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 						once_over_beep = 0;
 					}
+					else
+						app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
 				}
 			} else if (state == FILE_STATE_FULL) {
 				if (f_cycle >= CNT_BEEP_FULL) {
@@ -656,9 +661,9 @@ static void *THR_file_led_mng(void *prm)
 					f_cycle++;
 				
 				if (app_cfg->ste.b.disk_full == OFF) {
-					app_leds_mmc_ctrl(LED_MMC_RED_ON);
 					app_cfg->ste.b.disk_full = ON;
 				}
+					app_leds_mmc_ctrl(LED_MMC_RED_ON);
 			} else {
 				//# normal record state.
 				f_cycle = 0;
@@ -670,8 +675,8 @@ static void *THR_file_led_mng(void *prm)
 				
 				if (app_cfg->ste.b.disk_full == ON) {
 					app_cfg->ste.b.disk_full = OFF;
-					app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 				}
+					app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 			}
 			b_cycle = 0;
 		} else {
