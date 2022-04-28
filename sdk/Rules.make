@@ -95,8 +95,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP := NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER := AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -107,8 +105,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = YES
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -119,8 +115,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360M)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -131,8 +125,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXXB)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = YES
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -143,8 +135,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXXB_ONE)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = YES
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -155,8 +145,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = YES
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = PARTRON
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -167,8 +155,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP = NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER  = AFO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -179,8 +165,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360C)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP := NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER := PARTRON
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -191,8 +175,6 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360W_CCTV)
 	USE_WIFI = YES
 	#--- Select VOIP method (YES/NO)
 	USE_VOIP := NO
-	#---- IMAGE Manufacturer (AFO/PARTRON)
-	CAM_MANUFACTURER := PARTRON
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -395,7 +377,6 @@ export USE_WIFI
 export USE_VOIP
 export USE_KCMVP
 export THIRD_PARTY
-export CAM_MANUFACTURER
 export EXTERNAL_PACKAGE
 export EXTERNAL_BATTERY_ONLY
 export USE_CCTV
