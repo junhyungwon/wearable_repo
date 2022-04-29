@@ -151,7 +151,8 @@ typedef struct
     UInt32 decoderD1;
 
     UInt32 serdesEQ;	//# ph3100k equalizer/preemphasis level
-
+	
+	Bool enableIpcframes;
 } VSYS_PARAMS_S;
 
 typedef enum {

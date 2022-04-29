@@ -79,7 +79,8 @@ Int32 Vsys_params_init(VSYS_PARAMS_S * pContext)
     pContext->enableMjpeg  = FALSE;
     pContext->enableLcd  = FALSE;
     pContext->systemUseCase = VSYS_USECASE_MAX;
-
+	pContext->enableIpcframes = FALSE;
+	
     return 0;
 }
 

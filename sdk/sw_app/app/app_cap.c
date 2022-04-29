@@ -36,6 +36,7 @@
 #include "app_web.h"
 #include "app_gps.h"
 #include "app_rtmp.h"
+#include "app_ipc_frames.h"
 
 #define H264_DUMP  0
 #define JPEG_DUMP  0
@@ -512,7 +513,8 @@ int app_cap_start(void)
 	vsysParams.captMode = CAPT_MODE_720P;
 
 	vsysParams.numChs = MODEL_CH_NUM + EXCHANNEL;
-
+	
+	vsysParams.enableIpcframes = FALSE;
 
 	app_cfg->wd_tot |= WD_ENC; /* Fixed */
 	app_cfg->num_ch = vsysParams.numChs;
@@ -527,7 +529,12 @@ int app_cap_start(void)
 	Vcap_init(&vcapParams);
 	Venc_init(&vencParams);
 	Vdis_init(&vdisParams);
-
+	
+	if (vsysParams.enableIpcframes) {
+		/* required ipcFramesStop */
+		ipcFramesInit(); 
+	}
+	
 	vid_cap_start();
 
 	//#--- start component
