@@ -56,7 +56,7 @@
 #define PBX_SERVER_PORT         	6060
 #define PBX_SERVER_PW           	"9999"
 
-#define RTMP_SERVER_URL            "rtmp://<ipaddress>:<port>/live/<streamname>"
+#define RTMP_SERVER_URL            "rtmp://<ipaddress>:<port>/live/<deviceID>"
 #define RTMP_SERVER_ADDR            "192.168.1.252"
 #define RTMP_SERVER_PORT            1935
 
@@ -147,7 +147,7 @@ typedef struct{
 typedef struct {
 	short ON_OFF ;
     short type ; // transfer type . ftp, ftps
-    short port ;
+    unsigned short port ;
 	short svr_info ;
 	char ipaddr[MAX_CHAR_32] ;
 	char id[MAX_CHAR_16]  ;            
@@ -171,10 +171,10 @@ typedef struct{
     char dns_server1[MAX_CHAR_16] ;
     char dns_server2[MAX_CHAR_16] ;
 
-    short http_port ;
-    short https_port ;
-    short rtsp_port ;
-    short onvif_port ;
+    unsigned short http_port ;
+    unsigned short https_port ;
+    unsigned short rtsp_port ;
+    unsigned short onvif_port ;
 
     char rtsp_name[6] ;
     short wtype ;			// wireless
@@ -291,7 +291,7 @@ typedef struct {
 #pragma pack(1)
 typedef struct {
     char  ipaddr[MAX_CHAR_16];
-    short port ;
+    unsigned short port ;
     char  userid[MAX_CHAR_16] ;
     char  passwd[MAX_CHAR_16] ;
     char  peerid[MAX_CHAR_16] ;
@@ -306,7 +306,7 @@ typedef struct {
 typedef struct {
 	short ON_OFF ;
     short USE_URL ;
-    short port ;
+    unsigned short port ;
     char  ipaddr[MAX_CHAR_16];
     char  FULL_URL[MAX_CHAR_64] ;
 //    char  passwd[MAX_CHAR_16] ;
