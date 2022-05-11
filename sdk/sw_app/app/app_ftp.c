@@ -127,27 +127,24 @@ static int ftpRecvResponse(int sock, char * buf, int length)
     int valopt = 0 ;
 	int i, len;
 
-	ftp_dbg("ftpRecvResponse Reached.. length = %d\n",length) ;
-
     getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
-	ftp_dbg("ftpRecvResponse Reached.. valopt = %d\n",valopt) ;
     if(valopt)
     {
         return -1 ;
     }
-
-		
+/*		
 #if defined(USE_SSL)
 	if(!length)
 		len = SSL_read(iftp->lsslHandle, (void *)buf, RSIZE) ;
 	else
 		len = SSL_read(iftp->lsslHandle, (void *)buf, length) ;
 #else
+*/
 	if(!length)
 		len = recv(sock, buf, RSIZE, 0);
 	else
 		len =recv(sock, buf, length, 0) ;
-#endif 
+//#endif 
 
 	if (len == -1) {//receive the data
 		perror("recv");
@@ -700,14 +697,18 @@ static int get_netdev_link_status(void)
 
 void SSL_Create()
 {
+	int ret = 0 ;
 	char *str ;
 	// Register the error strings for libcrypto &libssl
+
 	SSL_load_error_strings() ;
 	SSLeay_add_ssl_algorithms();
+//	OpenSSL_add_all_algorithms() ;
 	SSL_load_error_strings() ;
 	// Register the available ciphers and digests
 	// New context saying we are a client, and using SSL 2 or 3
 
+//	iftp->lsslContext = SSL_CTX_new(SSLv3_client_method()) ;
 //	iftp->lsslContext = SSL_CTX_new(SSLv23_client_method()) ;
 	iftp->lsslContext = SSL_CTX_new(TLSv1_2_client_method()) ;
 	if(iftp->lsslContext == NULL)
@@ -716,13 +717,14 @@ void SSL_Create()
 	// Disabling SSLv2 will leaave v3 and TLSv1 for negotiation
 
 	SSL_CTX_set_options(iftp->lsslContext, SSL_OP_NO_SSLv2) ;
+//	SSL_CTX_set_options(iftp->lsslContext, SSL_OP_ALL | SSL_OP_NO_TLSv1_2 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_TLSv1);
 	SSL_CTX_set_info_callback(iftp->lsslContext, ssl_info_callback) ;
-	if(SSL_CTX_use_certificate_file(iftp->lsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0)
+	if(SSL_CTX_use_certificate_file(iftp->lsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0) // 공개키 ?
 	{
 		ERR_print_errors_fp(stderr) ;
 		exit(3) ;
 	}
-	if(SSL_CTX_use_PrivateKey_file(iftp->lsslContext, CLIENT_KEYF, SSL_FILETYPE_PEM) <= 0)
+	if(SSL_CTX_use_PrivateKey_file(iftp->lsslContext, CLIENT_KEYF, SSL_FILETYPE_PEM) <= 0) // 개인키(RSA)
 	{
 		ERR_print_errors_fp(stderr) ;
 		exit(4) ;
@@ -733,7 +735,8 @@ void SSL_Create()
 		fprintf(stderr, "Private key does not match the cerificate public key\n") ;
 		exit(5) ;
 	}
-	if(!SSL_CTX_load_verify_locations(iftp->lsslContext, CLIENT_CA_CERTF, NULL))
+	
+	if(!SSL_CTX_load_verify_locations(iftp->lsslContext, CLIENT_CA_CERTF, NULL))  // 공인인증서(CA = .crt 파일)
 	{
 		ERR_print_errors_fp(stderr) ;
 		exit(1) ;
@@ -749,13 +752,20 @@ void SSL_Create()
 	// Connect the SSL struct to our connection 
 	if(!SSL_set_fd(iftp->lsslHandle, iftp->lsdFtp))
 		ERR_print_errors_fp(stderr);
+
 	// Initiate SSL handshake
-	if(SSL_connect(iftp->lsslHandle) != 1)
+//	if(SSL_connect(iftp->lsslHandle) != 1)
+	ret = SSL_connect(iftp->lsslHandle) ;
+    if(ret != 1)
 	{
+		ftp_dbg("SSL_connect.. FAIL ret = %d\n",ret);
+		int error = SSL_get_error(iftp->lsslHandle, ret) ;
+		printf("SSL_connect error no = %d\n",error) ;
 		ERR_print_errors_fp(stderr);
 	}
 	else
 	{
+		ftp_dbg("SSL_connect.. OK");
 		printf("SSL_connect.. OK\n") ;
 		printf("SSL connection using %s\n", SSL_get_cipher(iftp->lsslHandle)) ;
 		printf("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->lsslHandle)));
@@ -1094,7 +1104,11 @@ int fota_proc()
 		 //read result
 			while(1)
 			{
-		        ret = ftp_login(iftp->lsdFtp, app_set->fota_info.id, app_set->fota_info.pwd);
+				if(app_set->fota_info.type) // use manual input ipaddress
+		        	ret = ftp_login(iftp->lsdFtp, app_set->fota_info.id, app_set->fota_info.pwd);
+				else
+				    ret = ftp_login(iftp->lsdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
+
 	            if(ret == 0)
                 {
 			        iftp->fota_state = FOTA_STATE_RECEIVE_INFO;
