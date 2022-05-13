@@ -45,7 +45,8 @@
 #include "app_p2p.h"
 #include "app_web.h"
 #include "app_encrypt.h"
-#include "app_snd.h"
+#include "app_snd_capt.h"
+#include "app_snd_play.h"
 #include "app_fms.h"
 #include "app_gps.h"
 #include "app_netmgr.h"
@@ -219,21 +220,21 @@ int app_main(void)
 		app_sslvpn_start() ;
 	}
 
-
     if(app_set->rtmp.ON_OFF)
 	{
     	app_libuv_start();
 	    app_rtmp_start();
 
     // disable SIGPIPE
-	    sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
+	sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
 
     // enable in default
 	    app_rtmp_enable();
 	}
 
     app_cap_start();
-	app_snd_start(); 
+	app_snd_capt_init();
+	app_snd_iplay_init();
 	app_netmgr_init();
 	
     if (!app_set->sys_info.osd_set)
@@ -353,7 +354,8 @@ int app_main(void)
 		#endif
     }
     app_rec_stop(OFF);
-    app_snd_stop(); 
+    app_snd_capt_exit();
+	app_snd_iplay_exit();
     app_cap_stop();
 
     if(app_set->rtmp.ON_OFF)
