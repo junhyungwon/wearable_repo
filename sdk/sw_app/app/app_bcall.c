@@ -26,6 +26,8 @@
 #include "app_set.h"
 #include "app_comm.h"
 #include "app_decrypt.h"
+#include "app_buzz.h"
+#include "app_process.h"
 #include "app_bcall.h"
 
 /*----------------------------------------------------------------------------
@@ -82,7 +84,6 @@ int app_cancel_call()
     event_send(tObj, APP_CMD_CALL_CANCEL, 0, 0) ;
 
     return 0;
-
 }
 
 int app_accept_call()  // ACCEPT CALL(nexx)
@@ -110,7 +111,6 @@ int app_close_call()  // Close CALL (nexx)
 
     return 0;
 }
-
 
 // nexx --> nexx manager
 int app_call_send()
@@ -150,6 +150,8 @@ int set_calling_state(int callvalue)
 	DEBUG_PRI("set_calling_state CALL_STATUS = %d\n", icall->status) ;
 #endif
     OSA_mutexUnlock(&icall->lock) ;
+	
+	return 0;
 }
 
 /*****************************************************************************
@@ -376,4 +378,6 @@ int app_call_control_exit(void)
 #ifdef BACKCHANNEL_DEBUG
     DEBUG_PRI(".done!\n") ;
 #endif
+	
+	return 0;
 }

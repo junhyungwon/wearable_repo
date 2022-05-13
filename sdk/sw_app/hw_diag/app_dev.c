@@ -314,8 +314,6 @@ void get_gpsdata(char *data)
 	return ;
 }
 
-
-
 /*****************************************************************************
 * @brief	device thread function
 * @section  [desc] check hotplug
