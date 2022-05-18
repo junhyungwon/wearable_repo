@@ -26,7 +26,7 @@
 #include "app_main.h"
 #include "app_gmem.h"
 #include "app_ctrl.h"
-#include "app_snd.h"
+#include "app_snd_capt.h"
 #include "app_cap.h"
 #include "app_dev.h"
 #include "app_rtsptx.h"

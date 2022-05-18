@@ -21,7 +21,7 @@
 #include "app_set.h"
 #include "app_file.h"
 #include "app_util.h"
-#include "app_snd.h"
+#include "app_snd_capt.h"
 #include "app_buzz.h"
 #include "app_process.h"
 
@@ -540,9 +540,9 @@ int app_rec_init(void)
 	memset((void *)irec, 0x0, sizeof(app_rec_t));
 	
 	//# set default sound param
-	irec->snd_rate = APP_SND_SRATE;
-	irec->snd_ch = APP_SND_CH;
-	irec->snd_btime = APP_SND_SRATE * APP_SND_PTIME / 1000;
+	irec->snd_rate = APP_SND_CAPT_SRATE;
+	irec->snd_ch = APP_SND_CAPT_CH;
+	irec->snd_btime = APP_SND_CAPT_SRATE * APP_SND_CAPT_PTIME / 1000;
 	
 	/* start rec process */
 	snprintf(cmd, sizeof(cmd), "/opt/fit/bin/av_rec.out %x &", (int)g_mem_get_phyaddr());
