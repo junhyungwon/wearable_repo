@@ -140,6 +140,7 @@ static app_snd_iplay_t *isnd_info=&snd_info_obj;
 /*****************************************************************************
 * @brief    ALSA Initialize
 *****************************************************************************/
+#define SND_PLAY_DEVNAME		"pasymed" //"plughw:0,0"
 static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
 {
 	snd_pcm_t *handle = NULL;
@@ -149,7 +150,7 @@ static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
 	
 	unsigned int freq, nchannels;
 	
-	if (snd_pcm_open(&handle, "plughw:0,0", SND_PCM_STREAM_PLAYBACK, 0) < 0) {
+	if (snd_pcm_open(&handle, SND_PLAY_DEVNAME, SND_PCM_STREAM_PLAYBACK, 0) < 0) {
 		dprintf("could not open aix3x play device!\n");
 		goto out;
 	}
