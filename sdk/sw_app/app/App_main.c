@@ -234,6 +234,7 @@ int app_main(void)
 
     app_cap_start();
 	app_snd_capt_init();
+	app_snd_bcplay_init();
 	app_snd_iplay_init();
 	app_netmgr_init();
 	
@@ -356,6 +357,7 @@ int app_main(void)
     app_rec_stop(OFF);
     app_snd_capt_exit();
 	app_snd_iplay_exit();
+	app_snd_bcplay_exit();
     app_cap_stop();
 
     if(app_set->rtmp.ON_OFF)
