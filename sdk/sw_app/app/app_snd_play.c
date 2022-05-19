@@ -384,6 +384,7 @@ static void *THR_snd_bcplay_main(void *prm)
 					
 					/* g.711 -> linear pcm으로 변환.  */
 					memset(sampv, 0, BC_SAMPLE_BUFFER_SZ);
+
 					for(i=0;i<bytes;i++){
 						sampv[i] = ulaw2linear(isnd_bc->sbuf[i]);
 					}
@@ -561,7 +562,7 @@ static void *THR_snd_iplay_main(void *prm)
 			while (repeat > 0)
 			{
 				cmd = tObj->cmd;
-				if (cmd == APP_CMD_EXIT) {
+				if (cmd == APP_CMD_EXIT || cmd == APP_CMD_STOP) {
 					break;
 				}
 				
@@ -617,7 +618,7 @@ int app_snd_iplay_stop(void)
 {
 	if (isnd_info->so_init) 
 	{
-		event_send(&isnd_info->iObj, APP_CMD_EXIT, 0, 0);
+		event_send(&isnd_info->iObj, APP_CMD_STOP, 0, 0);
 		OSA_waitMsecs(1);
 
 		//# wait close sound

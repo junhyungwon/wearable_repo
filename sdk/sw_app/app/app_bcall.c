@@ -69,6 +69,7 @@ int app_incoming_call(void)
 	DEBUG_PRI("app_incoming_call send APP_CMD_CALL_START\n") ;
 #endif
     event_send(tObj, APP_CMD_CALL_START, 0, 0) ;
+	app_snd_iplay_start("/usr/baresip/ring.wav", 30) ;
 
     return 0;
 }
@@ -83,6 +84,9 @@ int app_cancel_call()
 #endif
     event_send(tObj, APP_CMD_CALL_CANCEL, 0, 0) ;
 
+	app_snd_iplay_stop() ;
+	app_snd_iplay_start("/usr/baresip/audio_end.wav", 1) ;
+
     return 0;
 }
 
@@ -95,7 +99,9 @@ int app_accept_call()  // ACCEPT CALL(nexx)
 	DEBUG_PRI("app_accept_call send APP_CMD_CALL_ACCEPT\n") ;
 #endif
     event_send(tObj, APP_CMD_CALL_ACCEPT, 0, 0) ;
-
+	app_snd_iplay_stop() ;
+	app_snd_iplay_start("/usr/baresip/audio_end.wav", 1) ;
+    
     return 0;
 }
 
@@ -109,6 +115,9 @@ int app_close_call()  // Close CALL (nexx)
 #endif
     event_send(tObj, APP_CMD_CALL_CLOSE, 0, 0) ;
 
+	app_snd_iplay_stop() ;
+	app_snd_iplay_start("/usr/baresip/audio_end.wav", 1) ;
+
     return 0;
 }
 
@@ -121,6 +130,7 @@ int app_call_send()
 	DEBUG_PRI("app_call_send send APP_CMD_CALL_SEND") ;
 #endif
 	event_send(tObj, APP_CMD_CALL_SEND, 0, 0) ;
+	app_snd_iplay_start("/usr/baresip/ringback.wav", 30) ;
 }
 
 int get_calling_state()
