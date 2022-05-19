@@ -30,6 +30,12 @@
 -----------------------------------------------------------------------------*/
 #if SYS_CONFIG_SND_OUT
 
+//#define DBG_SND_DUMP					1
+
+#ifdef DBG_SND_DUMP
+#define SND_DUMP_MAX_FRAMES				100
+#endif
+
 #define APP_SND_PCM_BITS				16
 
 /* PLAYBACK (BACKCHANNEL) SOUND PARAM */
@@ -64,6 +70,24 @@
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
+#ifdef DBG_SND_DUMP
+struct dwav_header {
+	char chunk_id[4];
+	unsigned int chunk_size;
+	char format[4];
+	char subchunk1_id[4];
+	unsigned int subchunk1_size;
+	unsigned short int audio_format;
+	unsigned short int channels;
+	unsigned int sample_rate;
+	unsigned int byte_range;
+	unsigned short int block_align;
+	unsigned short int bits_per_sample;
+	char subchunk2_id[4];
+	unsigned int subchunk2_size;
+};
+#endif
+
 typedef struct {
 	app_thr_obj mObj;	 //# message receive thread
 	
@@ -238,7 +262,7 @@ static int __snd_out_write(snd_pcm_t *handle, void *buf, int data_size)
 		}
 		
 		if (w > 0) {
-			buf += (w * FRAME_PER_BYTES);
+			data += (w * FRAME_PER_BYTES);
 			data_size -= (w * FRAME_PER_BYTES);
 		}
 	}
@@ -317,7 +341,7 @@ static int bcplay_recv_msg(void)
 	return msg.cmd;
 }
 
-#define BC_SAMPLE_BUFFER_SZ		8192 
+#define BC_SAMPLE_BUFFER_SZ		4096 
 static void *THR_snd_bcplay_main(void *prm)
 {
 	app_thr_obj *tObj = &isnd_bc->mObj;
@@ -325,9 +349,14 @@ static void *THR_snd_bcplay_main(void *prm)
 	
 	int cmd, exit=0;
 	size_t pframes = 0;
+	unsigned short *sampv=NULL; /* playback sound buffer */
 	
-	char *sampv=NULL; /* playback sound buffer */
-	
+#ifdef DBG_SND_DUMP
+	struct dwav_header header;
+	FILE *file = NULL;
+	int dump_cnt=0;
+#endif		
+
 	tObj->active = 1;
 	aprintf("enter...\n");
 	
@@ -346,11 +375,36 @@ static void *THR_snd_bcplay_main(void *prm)
 	}
 	
 	__snd_set_swparam(h_pcm, pframes);
-	sampv = (char *)malloc(BC_SAMPLE_BUFFER_SZ); //# 최대 크기로 가정함.
+	sampv = (unsigned short *)malloc(BC_SAMPLE_BUFFER_SZ); //# 최대 크기로 가정함.
 	if (sampv == NULL) {
 		__snd_out_exit(h_pcm);
 		return NULL;
 	}
+
+#ifdef DBG_SND_DUMP
+	file = fopen("/mmc/record.wav", "w+");
+	if (file == NULL) {
+		fprintf(stderr, "Failed to open file!\n");
+	}
+	
+	/* init wave header */
+	memcpy(header.chunk_id,"RIFF",4);
+	header.chunk_size = 0;
+	memcpy(header.format, "WAVE",4);
+	memcpy(header.subchunk1_id, "fmt ", 4);
+
+	header.subchunk1_size = 16;
+	header.audio_format = 1;
+	header.channels = APP_SND_BC_CH;
+	header.sample_rate = APP_SND_BC_SRATE;
+	header.bits_per_sample = 16;
+	header.block_align = header.channels * header.bits_per_sample / 8;
+	header.byte_range = header.sample_rate * header.block_align;
+	memcpy(header.subchunk2_id, "data", 4);
+	header.subchunk2_size = 0;
+
+	fwrite(&header, sizeof(struct dwav_header), 1, file);
+#endif	
 	
 	//# message queue
 	isnd_bc->qid = Msg_Init(BCPLAY_MSG_KEY);
@@ -386,9 +440,30 @@ static void *THR_snd_bcplay_main(void *prm)
 					memset(sampv, 0, BC_SAMPLE_BUFFER_SZ);
 
 					for(i=0;i<bytes;i++){
-						sampv[i] = ulaw2linear(isnd_bc->sbuf[i]);
+						sampv[i] = (unsigned short)ulaw2linear(isnd_bc->sbuf[i]);
 					}
-
+					
+					#ifdef DBG_SND_DUMP
+					if (file != NULL) {
+						header.subchunk2_size += bytes*FRAME_PER_BYTES;
+						fwrite(sampv, bytes*FRAME_PER_BYTES, 1, file);
+						dump_cnt++;
+					}
+					
+					if (dump_cnt > SND_DUMP_MAX_FRAMES) {
+						if (file != NULL) {
+							/* save rest of the data */
+							header.chunk_size = ftell(file) - 8;
+							fseek(file, 0, SEEK_SET);
+							fwrite(&header, sizeof(struct dwav_header), 1, file);
+							fclose(file);
+							file = NULL;
+							sync();
+							fprintf(stderr, "wave dump done!!\n");
+						}
+					}
+					#endif
+					
 					/* sound out */
 					__snd_out_write(h_pcm, (void *)sampv, bytes*FRAME_PER_BYTES);
 				}
