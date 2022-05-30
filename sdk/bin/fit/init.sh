@@ -10,19 +10,6 @@ insmod ./kermod/cmemk.ko phys_start=${CMEM_ADDR_START} phys_end=${CMEM_ADDR_END}
 
 ./bin/linux_prcm_ipcam.out p
 
-#pdflush is 1%
-echo 1 > /proc/sys/vm/dirty_background_ratio
-#pdflush is 10s
-#echo 1000 > /proc/sys/vm/dirty_expire_centisecs
-
-# Disable ARP for Virtual IP address
-echo 1 > /proc/sys/net/ipv4/conf/all/arp_ignore
-echo 2 > /proc/sys/net/ipv4/conf/all/arp_announce
-
-# free vfs cache
-sysctl -w vm.vfs_cache_pressure=10000
-sysctl -w vm.min_free_kbytes=8192
-
 # initialize alsa mixer 
 amixer cset numid=32 off > /dev/null 2>&1 # PGA Capture Switch off
 amixer cset numid=90 off > /dev/null 2>&1 # Left PGA Mixer Line1L Swtch off 

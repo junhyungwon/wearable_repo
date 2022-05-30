@@ -234,8 +234,11 @@ int app_main(void)
 
     app_cap_start();
 	app_snd_capt_init();
+	
+#if SYS_CONFIG_SND_OUT	
 	app_snd_bcplay_init();
 	app_snd_iplay_init();
+#endif	
 	app_netmgr_init();
 	
     if (!app_set->sys_info.osd_set)
@@ -356,8 +359,11 @@ int app_main(void)
     }
     app_rec_stop(OFF);
     app_snd_capt_exit();
+
+#if SYS_CONFIG_SND_OUT	
 	app_snd_iplay_exit();
 	app_snd_bcplay_exit();
+#endif	
     app_cap_stop();
 
     if(app_set->rtmp.ON_OFF)
