@@ -604,7 +604,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		strcpy(pset->net_info.dns_server2, "168.154.160.4");  // Microsoft dns
         
     if(pset->net_info.type < NET_TYPE_STATIC || pset->net_info.type > NET_TYPE_DHCP)
-        pset->net_info.type = NET_TYPE_DHCP ;
+        pset->net_info.type = NET_TYPE_DHCP;
 
     if(pset->net_info.http_port <= 0 || pset->net_info.http_port >= 65535)
         pset->net_info.http_port = 80 ;
@@ -627,7 +627,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->net_info.http_enable <= CFG_INVALID || pset->net_info.http_enable > 1 ) 
 		pset->net_info.http_enable   = 1;
 	if(pset->net_info.https_enable <= CFG_INVALID ||pset->net_info.https_enable > 1) 
-		pset->net_info.https_enable = 0; // not supported
+		pset->net_info.https_enable = 0; 
 	if(pset->net_info.rtsp_enable <= CFG_INVALID || pset->net_info.rtsp_enable > 1)
 		pset->net_info.rtsp_enable   = 1;
 	if(pset->net_info.enable_onvif <= CFG_INVALID || pset->net_info.enable_onvif > 1) 
@@ -1158,7 +1158,7 @@ static void app_set_default(int default_type)
     app_set->net_info.wtype = NET_TYPE_DHCP ;  // wifi dhcp(from tethering of phone or from AP) or static
 
     app_set->net_info.http_enable  = 1;
-    app_set->net_info.https_enable = 0;			// not supported
+    app_set->net_info.https_enable = 0;
     app_set->net_info.rtsp_enable  = 1;
     app_set->net_info.enable_onvif = 1;
     app_set->net_info.dnsFromDHCP  = 0;

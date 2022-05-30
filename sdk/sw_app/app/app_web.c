@@ -87,8 +87,32 @@ int app_web_stop_server()
 	return 0;
 }
 
+int app_web_ssl_setup()
+{
+	char *filepath = "/etc/lighttpd/conf.d/ssl.conf";
+
+	FILE *fp = fopen(filepath, "w");
+	if(fp) {
+		char str[255];
+		// onvif와 https_port가 공유되고 있음, 분리가 필요한 상황
+		//sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", app_set->net_info.https_port);
+		sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", 443);
+		fputs(str, fp);
+		sprintf(str, "ssl.pemfile = \"/opt/fit/server.pem\"\n");
+		fputs(str, fp);
+		sprintf(str, "ssl.engine = \"%s\"\n", app_set->net_info.https_enable?"enable":"disable");
+		fputs(str, fp);
+		fputs("}\n", fp);
+
+		fclose(fp);
+	}
+
+}
+
 int app_web_start_server()
 {
+	app_web_ssl_setup();
+
 	char *cmd = "/opt/fit/bin/S50lighttpd start";
 #if USE_POPEN
 	FILE *fp = popen(cmd, "w");
@@ -103,6 +127,8 @@ int app_web_start_server()
 
 int app_web_restart_server()
 {
+	app_web_ssl_setup();
+
 	char *cmd = "/opt/fit/bin/S50lighttpd restart";
 #if USE_POPEN
 	FILE *fp = popen(cmd, "w");

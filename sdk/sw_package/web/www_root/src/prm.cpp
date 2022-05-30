@@ -127,7 +127,8 @@ int put_json_all_config()
 	json_object *camera_obj, *recordobj, *streamobj;
 	json_object *operation_obj, *stm_obj, *misc_obj, *rec_obj, *p2p_obj;
 	json_object *network_obj, *wireless_obj, *cradle_obj, *wifiap_obj, *livestm_obj, *wifilist, *wifiInfo[4], *sslvpn;
-	json_object *servers_obj, *bs_obj, *fota_obj, *mediaserver_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj, *onvif_obj, *voip_obj;
+	json_object *servers_obj, *bs_obj, *fota_obj, *mediaserver_obj, *ms_obj, *ddns_obj, *dns_obj, *ntp_obj;
+	json_object *https_obj, *onvif_obj, *voip_obj;
 	json_object *system_obj;
 	json_object *user_obj;
 
@@ -355,6 +356,7 @@ int put_json_all_config()
 	ddns_obj    = json_object_new_object();
 	dns_obj     = json_object_new_object();
 	ntp_obj     = json_object_new_object();
+	https_obj   = json_object_new_object();
 	onvif_obj   = json_object_new_object();
 	p2p_obj     = json_object_new_object();
 	voip_obj    = json_object_new_object();
@@ -413,6 +415,10 @@ int put_json_all_config()
 		json_object_object_add(servers_obj, "timezone",       json_object_new_int(p.time_zone));
 		json_object_object_add(servers_obj, "timezone_abbr",  json_object_new_string(p.time_zone_abbr));
 		json_object_object_add(servers_obj, "daylightsaving", json_object_new_int(p.daylight_saving));
+
+		// https server settings
+		json_object_object_add(https_obj,   "enable",  json_object_new_int(p.https.enable));
+		json_object_object_add(servers_obj, "https", https_obj);
 
 		// onvif server settings
 		json_object_object_add(onvif_obj,   "enable",  json_object_new_int(p.onvif.enable));
@@ -483,6 +489,7 @@ _FREE_SERVERS_OBJ:
 	json_object_put(ddns_obj);
 	json_object_put(dns_obj);
 	json_object_put(ntp_obj);
+	json_object_put(https_obj);
 	json_object_put(onvif_obj);
 	json_object_put(voip_obj);
 	json_object_put(servers_obj);
@@ -623,7 +630,8 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
-	json_object *myobj, *bs_obj, *fota_obj, *mediaserver_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj, *onvif_obj, *p2p_obj, *voip_obj;
+	json_object *myobj, *bs_obj, *fota_obj, *mediaserver_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj;
+	json_object *https_obj, *onvif_obj, *p2p_obj, *voip_obj;
 
 	myobj     = json_object_new_object();
 	bs_obj    = json_object_new_object();
@@ -633,6 +641,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	ddnsobj   = json_object_new_object();
 	dnsobj    = json_object_new_object();
 	ntpobj    = json_object_new_object();
+	https_obj = json_object_new_object();
 	onvif_obj = json_object_new_object();
 	p2p_obj   = json_object_new_object();
 	voip_obj  = json_object_new_object();
@@ -691,6 +700,10 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(myobj, "timezone_abbr",  json_object_new_string(p->time_zone_abbr));
 	json_object_object_add(myobj, "daylightsaving", json_object_new_int(p->daylight_saving));
 
+	// https server settings
+	json_object_object_add(https_obj, "enable",  json_object_new_int   (p->https.enable));
+	json_object_object_add(myobj, "https", https_obj);
+
 	// onvif server settings
 	json_object_object_add(onvif_obj, "enable",  json_object_new_int   (p->onvif.enable));
 	json_object_object_add(onvif_obj, "id",      json_object_new_string(p->onvif.id));
@@ -725,6 +738,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_put(ddnsobj);
 	json_object_put(dnsobj);
 	json_object_put(ntpobj);
+	json_object_put(https_obj);
 	json_object_put(onvif_obj);
 	json_object_put(p2p_obj);
 	json_object_put(voip_obj);
