@@ -925,6 +925,9 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->time_zone_abbr, app_set->time_info.time_zone_abbr);
 	t->daylight_saving = app_set->time_info.daylight_saving;
 
+	// https 
+	t->https.enable = app_set->net_info.https_enable;
+
 	// onvifserver
 	t->onvif.enable = app_set->net_info.enable_onvif;
 	strcpy(t->onvif.id, app_set->account_info.onvif.id); // max 32
@@ -1119,6 +1122,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 	if(strcmp(app_set->time_info.time_zone_abbr, t->time_zone_abbr)){
 		strcpy(app_set->time_info.time_zone_abbr, t->time_zone_abbr); // 6
+		isChanged++;
+	}
+
+	// https
+	if(app_set->net_info.https_enable != t->https.enable){
+		app_set->net_info.https_enable = t->https.enable;
 		isChanged++;
 	}
 

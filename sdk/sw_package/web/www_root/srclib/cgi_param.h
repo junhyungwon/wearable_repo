@@ -65,6 +65,11 @@ typedef struct _tagNtpInfo {
 	char serveraddr[32];
 }T_CGI_NTP_INFO;
 
+typedef struct _tagCgiHttpsConfig {
+    int  enable; // 1:enable, 0:disable
+	int  port;   // 443
+}T_CGI_HTTPS_CONFIG;
+
 typedef struct _tagCgiOnvifConfig {
     int  enable; // 1:enable, 0:disable
 	int  lv;
@@ -101,6 +106,7 @@ typedef struct _tagCgiServersConfig {
 	int					time_zone;
     char 				time_zone_abbr[6] ; // timezone 문자열...
 	int					daylight_saving;
+	T_CGI_HTTPS_CONFIG  https;
 	T_CGI_ONVIF_CONFIG  onvif;
     T_CGI_P2PSERVER_CONFIG p2p;
     T_CGI_VOIP_CONFIG voip;
