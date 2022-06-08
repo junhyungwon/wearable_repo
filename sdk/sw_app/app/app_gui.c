@@ -25,10 +25,8 @@
 #include "app_rtsptx.h"
 #include "app_netmgr.h"
 #include "app_buzz.h"
-
-
 #include "app_voip.h"
-
+#include "app_file.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -75,7 +73,6 @@ static void *THR_gui(void *prm)
 {
 	app_thr_obj *tObj = &igui->uObj;
 	int cmd, res, exit=0;
-	char msg[MAX_CHAR_128];
 
 	aprintf("enter...\n");
 	tObj->active = 1;

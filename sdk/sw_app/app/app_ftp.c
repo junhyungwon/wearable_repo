@@ -167,10 +167,8 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
 {
     socklen_t lon ;
     int valopt = 0 ;
-    char tmpbuf[16384] ;
 
 	strcpy(buf,cmd);
-
     if(strcmp(cmd, "CDUP"))
     {
 	    if (strlen(param) > 0) {

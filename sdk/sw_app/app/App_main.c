@@ -55,6 +55,7 @@
 #include "app_libuv.h"
 #include "app_watchdog.h"
 #include "app_rtmp.h"
+#include "app_uds.h"
 
 #include "app_voip.h"
 #include "app_bcall.h"

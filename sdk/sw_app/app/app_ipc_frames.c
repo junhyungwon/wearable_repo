@@ -179,11 +179,11 @@ void *dataProcessFxn(void *prm)
 				}
 			#else
 			if(!(skipcnt%(15*20)))
-				printf("%s: addr 0x%x(%dx%d)\n", __func__, &frame_que->buf, frame_que->width, frame_que->height);
+				printf("%s: addr 0x%p(%dx%d)\n", __func__, &frame_que->buf, frame_que->width, frame_que->height);
 			#endif
 
 			//dprintf("frame_que 0x%x\n", frame_que);
-			OSA_quePut(&tObj->bufQFreeBufs, frame_que, OSA_TIMEOUT_NONE);
+			OSA_quePut(&tObj->bufQFreeBufs, (Int32)frame_que, OSA_TIMEOUT_NONE);
 		}
 		else
 		{

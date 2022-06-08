@@ -251,7 +251,6 @@ static void *THR_stop_sos(void *prm)
 	app_thr_obj *tObj = &irec->kObj;
 	int cmd = 0, loop_cnt = 0, evt_sndcnt = 0, option = 0;
 	int exit = 0;
-	int status = 0, i = 0 ;
 	
 	aprintf("enter...\n");
 	tObj->active = 1;
@@ -465,8 +464,7 @@ int app_sos_send_stop(int etype)
 
 int app_rec_evt(int etype)
 {
-	int start = 1, type = 1; // normal  0, event 1
-	unsigned long sz;
+	int type = 1; // normal  0, event 1
 
 	//# Check the status of recording.
 	if (_is_enable_rec_start(type) == EFAIL)

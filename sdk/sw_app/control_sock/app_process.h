@@ -15,14 +15,11 @@
 /*----------------------------------------------------------------------------
   Defines referenced header files
 -----------------------------------------------------------------------------*/
-
 #define CALL_DEFAULT_RES			0x00
 #define CALL_CONNECT_ESTABLISHED    0x01 
 #define CALL_CONNECT_FAIL           0x63 // 99
 #define NOT_SUPPORTED_DEVICE        0x64 // 100
 #define NOT_SUPPORTED_PROTOCOL		0x65 // 101
-
-
 
 /*----------------------------------------------------------------------------
   Definitions and macro
@@ -128,7 +125,6 @@ typedef struct TAG_CALL_COMMON{
 	unsigned short length ;
 } CALL_COMMON ;
 #pragma pack()
-
 
 /*----------------------------------------------------------------------------
  Declares variables
