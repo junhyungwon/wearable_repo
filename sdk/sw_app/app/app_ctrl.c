@@ -54,30 +54,39 @@
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
-static const char *fw_app_name  = "/mmc/app_fitt.out";
-
-#ifdef EXT_BATT_ONLY
-static const char *fw_mcu_name  = "/mmc/mcu_extb.txt";
-#else
-#if defined(NEXX360C) || defined(NEXX360W_CCTV)
-static const char *fw_mcu_name  = "/mmc/mcu_cctv.txt";
-#else
-static const char *fw_mcu_name  = "/mmc/mcu_fitt.txt";
-#endif /* #if defined(NEXX360C) */
-#endif
-	
-/*----------------------------------------------------------------------------
- Declares a function prototype
------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------
  firmware update
 -----------------------------------------------------------------------------*/
-#define FW_FILE_NUM 		8
-#define FW_TYPE     		0   //# "release" or "debug"
-#define DEV_MODEL			1	//# "NEXXONE"
-#define F_RELEASE   		"release"
-#define FW_DIR      		"/mmc/fw_version.txt"
-#define FW_UBIFS			"/mmc/rfs_fit.ubifs"
+#define FW_FILE_NUM 			8
+#define FW_TYPE     			0   //# "release" or "debug"
+#define DEV_MODEL				1	//# "NEXXONE"
+#define F_RELEASE   			"release"
+
+#define FW_DIR      			SD_MOUNT_PATH //# "mmc"
+#define FW_BOOTSCR_FNAME		"boot.scr"
+#define FW_MLO_FNAME			"MLO"
+#define FW_UBOOTMIN_FNAME		"u-boot_fit.min.nand"
+#define FW_UBOOT_FNAME			"u-boot_fit.bin"
+#define FW_VINFO_FNAME			"fw_version.txt"
+#define FW_KERNEL_FNAME			"uImage_fit"
+#define FW_APP_FNAME			"app_fitt.out"
+
+#ifdef EXT_BATT_ONLY
+#define FW_MICOM_FNAME			"mcu_extb.txt"
+#else
+#if defined(NEXX360C) || defined(NEXX360W_CCTV)
+#define FW_MICOM_FNAME			"mcu_cctv.txt"
+#else
+#define FW_MICOM_FNAME			"mcu_fitt.txt"
+#endif /* #if defined(NEXX360C) || defined(NEXX360W_CCTV) */
+#endif /* #ifdef EXT_BATT_ONLY */
+
+#define FW_UBIFS_FNAME			"rfs_fit.ubifs"
+#define FW_UBIFSMD5_FNAME		"rfs_fit.ubifs.md5"
+
+/*----------------------------------------------------------------------------
+ Declares a function prototype
+-----------------------------------------------------------------------------*/
 
 typedef struct {
     char item[8];
@@ -89,9 +98,11 @@ static int _is_firmware_for_release(void)
 {
     fw_version_t fw[FW_FILE_NUM];
     FILE *F_fw;
-    F_fw = fopen(FW_DIR, "r");
-    int i=0, ret = FALSE;
-
+	char path[256]={0,};
+	int i=0, ret = FALSE;
+	
+	snprintf(path, sizeof(path), "%s/%s", FW_DIR, FW_VINFO_FNAME);
+    F_fw = fopen(path, "r"); //# /mmc/fw_version.txt
     if (F_fw != NULL) {
         while (!feof(F_fw)) {
             fscanf(F_fw,"%s %s", fw[i].item, fw[i].value);
@@ -147,19 +158,19 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	char buf[256]={0,};
 	int ret = SOK;
 	
-	sprintf(buf, "tar xvf %s -C %s", pFile, root);
+	sprintf(buf, "/bin/tar xvf %s -C %s", pFile, root);
 	system(buf);
 	sync();
-	/* change 3--> 1*/
-	sleep(1/*3*/);
-
-	if(-1 == access(FW_DIR, 0)) {
-		sysprint("Failed to read %s!!!\n", FW_DIR);
+	sleep(1); /* wait for sync complate */
+	
+	memset(buf, 0, sizeof(buf));
+	snprintf(buf, sizeof(buf), "%s/%s", FW_DIR, FW_VINFO_FNAME);
+	if(-1 == access(buf, 0)) {
+		sysprint("Failed to read %s!!!\n", buf);
 		return EFAIL;
 	}
 
 	*release = _is_firmware_for_release();
-	
 	//# *release TRUE = release(normal). *release == EFAIL (model name is not matched). release == FALSE (factory release)
 	if (*release == EFAIL) 
 		ret = EFAIL;
@@ -170,13 +181,15 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 /* check mcu firmware and delete */
 static void _check_micom_update(void)
 {
-	FILE *f = NULL;
 	char cmd[256]={0,};
+	char path[256]={0,};
+	FILE *f = NULL;
 	
 	unsigned int byte1, byte2;
 	int ret = 0, mcu_ver;
 	
-	f = fopen(fw_mcu_name, "r");
+	snprintf(path, sizeof(path), "%s/%s", FW_DIR, FW_MICOM_FNAME);
+	f = fopen(path, "r");
 	if (f != NULL) 
 	{
 		/*
@@ -195,15 +208,15 @@ static void _check_micom_update(void)
 		
 		mcu_ver = ctrl_get_mcu_version(NULL);
 		if ((ret > 0) && (ret == mcu_ver)) {
-			if (access(fw_mcu_name, F_OK)==0) {
-				remove(fw_mcu_name);
+			if (access(path, F_OK)==0) {
+				remove(path);
 				//# update 함수 마지막에 sync() 가 호출됨
 				//sync();
-				//printf("remove %s\n", fw_mcu_name);
+				//printf("remove %s\n", path);
 			}
 		}
 	} else {
-		eprintf("Failed to open %s\n", fw_mcu_name);
+		eprintf("Failed to open %s\n", path);
 	}
 }
 
@@ -213,14 +226,12 @@ static int __app_only_replace(void)
 	char path[64] = {0, };
 	char cmd[255] = {0, };
 	
-	memset(path, 0, sizeof(path));
-	sprintf(path, fw_app_name);
-	
+	snprintf(path, sizeof(path), "%s/%s", FW_DIR,  FW_APP_FNAME);
 	if (0 == access(path, 0)) { // existence only
 		dprintf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
-		sprintf(cmd, "cp %s /opt/fit/bin/.", path);
+		sprintf(cmd, "/bin/cp %s /opt/fit/bin/.", path);
 		util_sys_exec(cmd);
-		sprintf(cmd, "rm %s", path);
+		sprintf(cmd, "/bin/rm %s", path);
 		util_sys_exec(cmd);
 		sync();
 		//# wait for safe
@@ -245,7 +256,7 @@ static int __normal_update(void)
 	
 	/* firmware update 시 종료키 이벤트 skip */
 	app_cfg->ste.b.busy = 1;
-	pFile = _findFirmware(SD_MOUNT_PATH);
+	pFile = _findFirmware(FW_DIR); //# /mmc
 	if (pFile == NULL) {
 		sysprint("Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
@@ -255,7 +266,7 @@ static int __normal_update(void)
 	//# unpack fw file and type check, release/debug and update full or binary only
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc
-	if (_unpack_N_check((const char *)pFile, (const char *)SD_MOUNT_PATH, &release) == EFAIL) {
+	if (_unpack_N_check((const char *)pFile, (const char *)FW_DIR, &release) == EFAIL) {
 		sysprint("It is not match model name in firmware file !!!\n");
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
@@ -303,7 +314,7 @@ static int __emergency_update(void)
 	app_buzz_ctrl(50, 3);
 	
 	/* unpack firmware */
-	sprintf(cmd, "tar xvf %s -C %s", pFile, SD_MOUNT_PATH);
+	sprintf(cmd, "/bin/tar xvf %s -C %s", pFile, FW_DIR);
 	system(cmd);
 	sync();
 	/* wait untar done! */
@@ -321,7 +332,7 @@ static int __emergency_update(void)
 	
 	//# delete update files.
 	memset(cmd, 0, sizeof(cmd));
-	sprintf(cmd, "rm -rf %s", pFile);
+	sprintf(cmd, "/bin/rm -rf %s", pFile);
 	system(cmd);
 	sync();
 	//# wait for safe
@@ -335,34 +346,41 @@ static int Delete_updatefile()
     char cmd[MAX_CHAR_255] = {0,};
     int i;
 	char *full_upfiles[FW_FILE_NUM-1] = {
-		"boot.scr", "u-boot_fit.min.nand", "u-boot_fit.bin", "MLO", "fw_version.txt",
-		"uImage_fit", "rfs_fit.ubifs"};
+		FW_BOOTSCR_FNAME, 
+		FW_UBOOTMIN_FNAME, 
+		FW_UBOOT_FNAME, 
+		FW_MLO_FNAME, 
+		FW_VINFO_FNAME,
+		FW_KERNEL_FNAME, 
+		FW_UBIFS_FNAME
+	};
 	
 	//# remove micom firmware,-->(-1) 
 	for (i = 0; i < FW_FILE_NUM-1; i++)
 	{
-		sprintf(cmd, "rm -rf %s/%s", SD_MOUNT_PATH, full_upfiles[i]);
+		sprintf(cmd, "/bin/rm -rf %s/%s", FW_DIR, full_upfiles[i]);
 		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
 		util_sys_exec(cmd);
 	}
 
-	// delete rfs_fit.ubifs.md5
+	//# delete "/mmc/rfs_fit.ubifs.md5"
 	memset(cmd, 0, sizeof(cmd));
-	snprintf(cmd, sizeof(cmd), "/mmc/rfs_fit.ubifs.md5");
+	snprintf(cmd, sizeof(cmd), "%s/%s", FW_DIR, FW_UBIFSMD5_FNAME); 
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
 		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
 	
-	// delete mcu_fitt.txt
+	//# delete micom firmware
 	memset(cmd, 0, sizeof(cmd));
-	snprintf(cmd, sizeof(cmd), "/mmc/mcu_fitt.txt");
+	snprintf(cmd, sizeof(cmd), "%s/%s", FW_DIR, FW_MICOM_FNAME);
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
 		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
 	
-	// delete mcu_extb.txt
+#if 1 //# ???	
+	//# delete mcu_extb.txt
 	memset(cmd, 0, sizeof(cmd));
 	snprintf(cmd, sizeof(cmd), "/mmc/mcu_extb.txt");
 	if (access(cmd, F_OK) == 0) {
@@ -377,7 +395,7 @@ static int Delete_updatefile()
 		remove(cmd);
 		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
-	
+#endif	
 	return 0 ;
 }
 
@@ -401,7 +419,7 @@ curl -v -u admin:1111 --http1.0 -F 'fw=@bin/fitt_firmware_full_N.dat' http://192
 */
 int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 {
-	char cmd[256];
+	char cmd[256]={0,};
 	int ret, release;
 	
 	/* recording stop */
@@ -411,23 +429,23 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		app_rec_stop(OFF);
 		sleep(1); /* wait for file close */
 	}
-	
 
 	// check tar content list	
 #if 1
 	{
-		sprintf(cmd, "tar tf %s > /tmp/fw.list", fwpath);
+		sprintf(cmd, "/bin/tar tf %s > /tmp/fw.list", fwpath);
 		printf("cmd:%s\n", cmd);
 		system(cmd);
+		
 		FILE *fp = fopen("/tmp/fw.list", "r");
 		if (!fp)
 		{
-			printf("failed tar tf %s > /tmp/fw.list\n", fwpath);
+			printf("failed /bin/tar tf %s > /tmp/fw.list\n", fwpath);
 			return -1;
 		}
+		
 		char line[255] = {0};
 		while(fgets(line, 255, fp)){
-
 			int len = strlen(line);
 			if (len > 1)
 			{
@@ -435,20 +453,20 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 				if (line[len - 1] == '\n')
 					line[len - 1] = '\0';
 
-				if(strcmp(line, "boot.scr")==0){
-					printf("checked boot.scr\n");
+				if(strcmp(line, FW_BOOTSCR_FNAME)==0){
+					printf("checked %s\n", FW_BOOTSCR_FNAME);
 				}
-				else if(strcmp(line, "MLO")==0){
-					printf("checked MLO\n");
+				else if(strcmp(line, FW_MLO_FNAME)==0){
+					printf("checked %s\n", FW_MLO_FNAME);
 				}
-				else if(strcmp(line, "fw_version.txt")==0){
-					printf("checked fw_version.txt\n");
+				else if(strcmp(line, FW_VINFO_FNAME)==0){
+					printf("checked %s\n", FW_VINFO_FNAME);
 				}
-				else if(strcmp(line, "rfs_fit.ubifs")==0){
-					printf("checked %s\n", "rfs_fit.ubifs");
+				else if(strcmp(line, FW_UBIFS_FNAME)==0){
+					printf("checked %s\n", FW_UBIFS_FNAME);
 				}
-				else if(strcmp(line, "rfs_fit.ubifs.md5")==0){
-					printf("checked rfs_fit.ubifs.md5\n");
+				else if(strcmp(line, FW_UBIFSMD5_FNAME)==0){
+					printf("checked %s\n", FW_UBIFSMD5_FNAME);
 				}
 			}
 		}
@@ -457,19 +475,17 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 #endif
 
 #if 1 // untar
-	sprintf(cmd, "tar xvf %s -C %s", fwpath, disk);
+	sprintf(cmd, "/bin/tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
 	printf("fwupdate cmd:%s\n", cmd);
 	system(cmd);
 	sync();
 #endif
     release = _is_firmware_for_release() ; 
-
     if(EFAIL == release) // RELEASE Version .. --> update file delete
 	{
 		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
 		Delete_updatefile() ;	
-
 		return -1;
     }
 	else // release or factory release version
@@ -481,7 +497,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	//# micom version check..
 	_check_micom_update();
 	// check md5sum
-	sprintf(cmd, "cd %s && md5sum -c rfs_fit.ubifs.md5",disk);
+	sprintf(cmd, "cd %s && md5sum -c %s", disk, FW_UBIFSMD5_FNAME);
 	FILE *fp = popen(cmd, "r");
 	if(fp){
 		char line[255]={0};
@@ -499,7 +515,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		// OK, ready to firmware upgrade
 	}
 	else {
-		eprintf("Failed popen(md5sum -c rfs_fit.ubifs.md5) , please check firmware file!!\n");
+		eprintf("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
 		//TODO: 실패할 경우, 압축해제한 파일들 처리
 		return -1;
 	}
@@ -1258,7 +1274,6 @@ int ctrl_is_live_process(const char *process_name)
             fgets(buff, 128, fp);
             fclose(fp);
         
-//            if(strstr(buff, P2P_NAME))   
             if(strstr(buff, process_name))   
             {
                 is_live = 1;
@@ -1272,7 +1287,6 @@ int ctrl_is_live_process(const char *process_name)
     }
 
     closedir(pdir);
-
     return is_live;
 }
 
@@ -1281,7 +1295,7 @@ int ctrl_is_live_process(const char *process_name)
  */
 int ctrl_update_firmware_by_cgi(char *fwpath)
 {
-	int ret = temp_ctrl_update_fw_by_bkkim(fwpath, SD_MOUNT_PATH);
+	int ret = temp_ctrl_update_fw_by_bkkim(fwpath, FW_DIR);
 	if (ret < 0)
 	{
         if(app_cfg->ste.b.prerec_state)

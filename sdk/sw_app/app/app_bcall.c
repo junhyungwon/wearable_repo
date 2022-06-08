@@ -29,6 +29,7 @@
 #include "app_buzz.h"
 #include "app_process.h"
 #include "app_bcall.h"
+#include "app_snd_play.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -146,7 +147,7 @@ int app_call_send()
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_start(RING_BACK_WAV, 30) ;
 #endif 
-
+	return 0;
 }
 
 int get_calling_state()

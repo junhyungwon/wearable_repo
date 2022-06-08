@@ -61,10 +61,9 @@ static void get_wd_name(char *name)
 static void *THR_watchdog(void *prm)
 {
 	app_thr_obj *tObj = &iwatch->wObj;
-	int cmd, res, exit=0;
+	int cmd, exit=0;
 	int wd_cycle = 0, wd_detect=0, pre_wd = 0;
 	char wd_name[MAX_CHAR_64], msg[MAX_CHAR_128];
-	int sd_err_tmr = 0; 
 	
 	aprintf("enter...\n");
 	tObj->active = 1;

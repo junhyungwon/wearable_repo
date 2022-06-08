@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <libgen.h>
 #include <sys/types.h>
 
 #include "app_main.h"
@@ -31,16 +32,16 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define P2P_SERVER 		"/opt/fit/bin/P2PTunnelServer_ti"
-
-#define P2P_NAME   		"P2PTunnelServer"  // name size of process in /proc/../status is 16
-#define CHECK_MSEC        1000
+//# name size of process in /proc/../status is 16 (--> '_' 기호 때문에 _ti 가 무시됨 )
+#define P2P_NAME   		"P2PTunnelServer"
+#define CHECK_MSEC       1000
 
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
 typedef struct {
-    app_thr_obj p2pObj ;
-    OSA_MutexHndl       mutex;
+    app_thr_obj p2pObj;
+    OSA_MutexHndl mutex;
 } app_p2p_t ;
 
 static app_p2p_t t_p2p;
@@ -124,10 +125,13 @@ int app_p2p_start(void)
 
 int app_p2p_stop(void)
 {
-    int ret = 0 ;
     char p2p_cmd[MAX_CHAR_128] = {0, } ;
+	char *p2p_bname=NULL;
+	int ret = 0;
 	
-    sprintf(p2p_cmd, "killall -9 %s", P2P_SERVER) ;
+	//# P2P_PATH = /opt/fit/bin/P2PTunnelServer_ti
+	p2p_bname = basename(P2P_SERVER);
+    sprintf(p2p_cmd, "killall -9 %s", p2p_bname);
 	printf("%s !\n", p2p_cmd) ;
     ret = system(p2p_cmd) ;
 
@@ -143,9 +147,9 @@ static void *THR_p2p(void *prm)
 {
     app_thr_obj *tObj = &ip2p->p2pObj;
     int exit = 0, ret = 0, cmd;
-
+	
 	dprintf("enter...\n");
-    tObj->active = 1;
+	tObj->active = 1;
 	
     while (!exit)
     {
@@ -154,7 +158,8 @@ static void *THR_p2p(void *prm)
         if (cmd == APP_CMD_STOP) {
             break;
         }
-
+		
+		/* P2PTunnelServer_ti--> _ 인식안됨 (P2PTunnelServer로 확인됨) */
         ret = ctrl_is_live_process((const char *)P2P_NAME);
         if (!ret) {
             app_p2p_start();

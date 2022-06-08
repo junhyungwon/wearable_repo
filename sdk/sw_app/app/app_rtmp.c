@@ -105,11 +105,10 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
 
         QUEUE *q = QUEUE_HEAD(&queue);
         QUEUE_REMOVE(q);
-        int length = --queue_lenth;
+       // int length = --queue_lenth;
         uv_mutex_unlock(&mutex);
 
         // fprintf(stderr, "[RTMP] dequeue. length : %d.\n", length);
-
         // fixme : imem will be in a short time.
         stream = QUEUE_DATA(q, struct stream_s, node);
         stream_info_t *ifr = stream->ifr;
@@ -128,8 +127,8 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
 
         if (isFirst == 1 && rtmp_ready) {
             char* data = ifr->addr;
-            auto size = ifr->b_size;
-            int nb_start_code = 0;
+            int size = ifr->b_size;
+            //int nb_start_code = 0;
 
              timestamp = ifr->t_sec * 1000 + ifr->t_msec;
              dts = timestamp;
@@ -179,7 +178,7 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
         rtmp_ready = false;
 
         fprintf(stderr, "[RTMP] the cpu load is too high.\n");
-        int r = uv_async_send(async_rtmp_disconnect);
+        uv_async_send(async_rtmp_disconnect);
         return;
     }
 
@@ -190,7 +189,7 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
             return;
         }
 
-        int r = uv_async_send(async_rtmp_connect);
+        uv_async_send(async_rtmp_connect);
     }
 }
 
@@ -273,13 +272,12 @@ void app_rtmp_publish_video(stream_info_t *ifr)
     if (rtmp_enabled == false  || rtmp_ready == false)
         return;
 
-    int r;
     if (_checkAsyncQueue() == FAILURE) {
         // disable rtmp_ready in advanced.
         rtmp_ready = false;
 
         // disconect in the next eventloop.
-        r = uv_async_send(async_rtmp_disconnect);
+        uv_async_send(async_rtmp_disconnect);
         return;
     }
 
@@ -288,14 +286,14 @@ void app_rtmp_publish_video(stream_info_t *ifr)
     QUEUE_INIT(&stream->node);
 
     uv_mutex_lock(&mutex);
-    int length = ++queue_lenth;
+   // int length = ++queue_lenth;
     QUEUE_INSERT_TAIL(&queue, &stream->node);
     uv_mutex_unlock(&mutex);
 
     // fprintf(stderr, "[RTMP] enqueue. length : %d.\n", length);
 
     // fire async_cb in loop_video
-    r = uv_async_send(async_rtmp_publish);
+    uv_async_send(async_rtmp_publish);
 }
 
 void app_rtmp_enable(void)
