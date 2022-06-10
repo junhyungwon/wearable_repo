@@ -171,6 +171,16 @@ typedef struct{
     char dns_server1[MAX_CHAR_16] ;
     char dns_server2[MAX_CHAR_16] ;
 
+
+    // for self signed certificate
+    char ssc_C[MAX_CHAR_64];           // Country
+    char ssc_ST[MAX_CHAR_64];          // State or Province
+    char ssc_L[MAX_CHAR_64];           // Location
+    char ssc_O[MAX_CHAR_64];           // Organization
+    char ssc_OU[MAX_CHAR_64];          // Organization Unit
+    char ssc_CN[MAX_CHAR_64];          // Common Name
+    char ssc_Email[MAX_CHAR_64];       // Email 
+
     unsigned short http_port ;
     unsigned short https_port ;
     unsigned short rtsp_port ;

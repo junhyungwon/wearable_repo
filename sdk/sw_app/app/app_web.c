@@ -100,6 +100,11 @@ int app_web_ssl_setup()
 		fputs(str, fp);
 		sprintf(str, "ssl.pemfile = \"/opt/fit/server.pem\"\n");
 		fputs(str, fp);
+
+		if( access("/opt/fit/ca-bundle.pem", F_OK)==0) {
+			sprintf(str, "ssl.ca-file = \"/opt/fit/ca-bundle.pem\"\n"); // Optional... 실행해봐야할듯
+			fputs(str, fp);
+		}
 		sprintf(str, "ssl.engine = \"%s\"\n", app_set->net_info.https_enable?"enable":"disable");
 		fputs(str, fp);
 		fputs("}\n", fp);

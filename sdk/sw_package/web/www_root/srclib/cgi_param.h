@@ -65,9 +65,19 @@ typedef struct _tagNtpInfo {
 	char serveraddr[32];
 }T_CGI_NTP_INFO;
 
+/*
+  The reason for 64 Length, in ssl.conf
+*/
 typedef struct _tagCgiHttpsConfig {
     int  enable; // 1:enable, 0:disable
 	int  port;   // 443
+    char C[64];    // Country
+    char ST[64];   // State or Province
+    char L[64];    // Location
+    char O[64];    // Organization(Company)
+    char OU[64];   // Organization Unit
+    char CN[64];   // Common Name
+    char Email[64];  
 }T_CGI_HTTPS_CONFIG;
 
 typedef struct _tagCgiOnvifConfig {

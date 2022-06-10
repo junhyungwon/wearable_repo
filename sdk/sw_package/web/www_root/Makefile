@@ -61,6 +61,7 @@ install:
 
 	@echo ""
 	@echo "---copying html, cgi, script and remove old *.js files."
+	sudo cp -a $(WWW_DEV_DIR)/www_root/html      $(WWW_DEV_DIR)/www_root/nexx360-settings/
 	sudo cp -a $(WWW_DEV_DIR)/www_root/srclib/libLFCGI.so $(TARGET_PATH)/usr/lib/
 	sudo cp -a $(WWW_DEV_DIR)/www_root/src/cgi-bin      $(WWW_DEV_DIR)/www_root/nexx360-settings/
 	sudo cp -a $(WWW_DEV_DIR)/www_root/default/cgi-bin  $(WWW_DEV_DIR)/www_root/nexx360-settings/default/

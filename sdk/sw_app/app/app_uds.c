@@ -1355,6 +1355,54 @@ static int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 	return isChanged;
 }
 
+static int getHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
+{
+	sprintf(t->C,  "%s", app_set->net_info.ssc_C );
+	sprintf(t->ST, "%s", app_set->net_info.ssc_ST);
+	sprintf(t->L,  "%s", app_set->net_info.ssc_L );
+	sprintf(t->O,  "%s", app_set->net_info.ssc_O );
+	sprintf(t->OU, "%s", app_set->net_info.ssc_OU);
+	sprintf(t->CN, "%s", app_set->net_info.ssc_CN);
+	sprintf(t->Email, "%s", app_set->net_info.ssc_Email);
+
+	return 0;
+}
+
+static int setHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
+{
+	int isChanged=0;
+	if(strlen(t->C) > 0 && 0!=strcmp(t->C, app_set->net_info.ssc_C)) {
+		sprintf(app_set->net_info.ssc_C, "%s", t->C);
+		isChanged++;
+	}
+	if(strlen(t->ST) > 0 && 0!=strcmp(t->ST, app_set->net_info.ssc_ST)) {
+		sprintf(app_set->net_info.ssc_ST, "%s", t->ST);
+		isChanged++;
+	}
+	if(strlen(t->L) > 0 && 0!=strcmp(t->L, app_set->net_info.ssc_L)) {
+		sprintf(app_set->net_info.ssc_L, "%s", t->L);
+		isChanged++;
+	}
+	if(strlen(t->O) > 0 && 0!=strcmp(t->O, app_set->net_info.ssc_O)) {
+		sprintf(app_set->net_info.ssc_O, "%s", t->O);
+		isChanged++;
+	}
+	if(strlen(t->OU) > 0 && 0!=strcmp(t->OU, app_set->net_info.ssc_OU)) {
+		sprintf(app_set->net_info.ssc_OU, "%s", t->OU);
+		isChanged++;
+	}
+	if(strlen(t->CN) > 0 && 0!=strcmp(t->CN, app_set->net_info.ssc_CN)) {
+		sprintf(app_set->net_info.ssc_CN, "%s", t->CN);
+		isChanged++;
+	}
+	if(strlen(t->Email) > 0 && 0!=strcmp(t->Email, app_set->net_info.ssc_Email)) {
+		sprintf(app_set->net_info.ssc_Email, "%s", t->Email);
+		isChanged++;
+	}
+
+	return isChanged;
+}
+
 unsigned long prefix2mask(int prefix)
 {
 	struct in_addr mask;
@@ -2382,6 +2430,50 @@ void *myFunc(void *arg)
 				DBG_UDS("Read, size=%d\n", ret);
 				if(ret > 0){
 					ret = setSystemConfiguration(&t);
+
+					char strOptions[128] = "OK";
+					if(ret == 0)
+						sprintf(strOptions, "%s", "NO CHANGE");
+					else if(ret < 0){
+						// maybe does not occur
+						sprintf(strOptions, "%s", "ERROR");
+					}
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed read: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
+		else if (strcmp(rbuf, "GetHttpsConfiguration") == 0) {
+			sysprint("[APP_UDS] --- GetHttpsConfiguration ---\n");
+
+			T_CGI_HTTPS_CONFIG t;memset(&t,0, sizeof t);
+			if(0 == getHttpsConfiguration(&t)){
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+				if (ret > 0) {
+					// TODO something...
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
+			}
+		}
+		else if (strcmp(rbuf, "SetHttpsConfiguration") == 0) {
+			sysprint("[APP_UDS] --- SetHttpsConfiguration ---\n");
+
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+			if(ret > 0){
+				T_CGI_HTTPS_CONFIG t; memset(&t, 0, sizeof t);
+				ret = read(cs_uds, &t, sizeof(T_CGI_HTTPS_CONFIG));
+				DBG_UDS("Read, size=%d\n", ret);
+				if(ret > 0){
+					ret = setHttpsConfiguration(&t);
 
 					char strOptions[128] = "OK";
 					if(ret == 0)
