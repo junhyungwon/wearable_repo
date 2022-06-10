@@ -664,7 +664,7 @@ static void *THR_snd_iplay_main(void *prm)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-int app_snd_iplay_start(const char *fname, int count)
+void app_snd_iplay_start(const char *fname, int count)
 {
 	if (count <= 0)
 		return -1;
@@ -674,14 +674,15 @@ int app_snd_iplay_start(const char *fname, int count)
 	strcpy(&isnd_info->filename[0], fname);
 	
 	event_send(&isnd_info->iObj, APP_CMD_NOTY, count, 0);
-	OSA_waitMsecs(1);
-
+//	OSA_waitMsecs(1);
+/*
 	if (count == 1) {		//# wait
 		while (isnd_info->so_init)	//# wait close sound
-			OSA_waitMsecs(20);
+			OSA_waitMsecs(10);
 	}
+*/
 
-	return 0;
+	return ;
 }
 
 /*****************************************************************************
@@ -689,19 +690,22 @@ int app_snd_iplay_start(const char *fname, int count)
 * @section  DESC Description
 *   - desc
 *****************************************************************************/
-int app_snd_iplay_stop(void)
+void app_snd_iplay_stop(void)
 {
 	if (isnd_info->so_init) 
 	{
 		event_send(&isnd_info->iObj, APP_CMD_STOP, 0, 0);
-		OSA_waitMsecs(1);
-
+//		OSA_waitMsecs(1);
+/*
 		//# wait close sound
 		while (isnd_info->so_init)
-			OSA_waitMsecs(20);
+		{
+			OSA_waitMsecs(10);
+		}
+*/
 	}
 
-	return 0;
+	return ;
 }
 
 /*****************************************************************************

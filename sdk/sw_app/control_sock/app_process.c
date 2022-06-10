@@ -503,7 +503,7 @@ DEBUG_PRI("call req packet reached\n") ;
 		{
  	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
- 	   DEBUG_PRI("Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+ 	   DEBUG_PRI("APP_STATE_NONE Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
 #endif
 		}
 	}
@@ -525,7 +525,7 @@ DEBUG_PRI("call req packet reached\n") ;
 		{
  	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
- 	   DEBUG_PRI("Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+ 	   	    DEBUG_PRI("APP_STATE_INCOMING Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
 #endif
 		}
 	}
@@ -662,9 +662,9 @@ DEBUG_PRI("call close packet reached\n") ;
 #endif
 	int status ;
 
-	status = get_calling_state() ;
+//	status = get_calling_state() ;
 
-    if(status == APP_STATE_ACCEPT || status == APP_STATE_INCOMING || status == APP_STATE_OUTCOMING)
+//    if(status == APP_STATE_ACCEPT || status == APP_STATE_INCOMING || status == APP_STATE_OUTCOMING)
 		app_cancel_call() ;
 
 	SystemInfo.call_status[channel] = FALSE ;
