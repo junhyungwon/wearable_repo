@@ -54,6 +54,7 @@
 typedef struct {
     app_thr_obj callObj ;
 	int status ;
+	long sec ;
     OSA_MutexHndl       lock;
 } app_call_t ;
 
@@ -65,7 +66,7 @@ static app_call_t *icall=&t_call;
  Declares a function prototype
 -----------------------------------------------------------------------------*/
 
-int app_incoming_call(void)
+void app_incoming_call(void)
 {
     app_thr_obj *tObj;
 
@@ -74,33 +75,39 @@ int app_incoming_call(void)
 	DEBUG_PRI("app_incoming_call send APP_CMD_CALL_START\n") ;
 #endif
     event_send(tObj, APP_CMD_CALL_START, 0, 0) ;
-
+/*
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_start(RING_WAV, 30) ;
 #endif
-
-    return 0;
+*/
+    return ;
 }
 
-int app_cancel_call()
+void app_cancel_call()
 {
     app_thr_obj *tObj;
+	int status ;
 
     tObj = &icall->callObj;
 #ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("app_cancel_call send APP_CMD_CALL_CANCEL\n") ;
 #endif
-    event_send(tObj, APP_CMD_CALL_CANCEL, 0, 0) ;
+    status = get_calling_state() ;
 
+    if(status == APP_STATE_INCOMING)
+    	event_send(tObj, APP_CMD_CALL_CANCEL, 1, 0) ; 
+	else
+    	event_send(tObj, APP_CMD_CALL_CANCEL, 0, 0) ;  // communicate, none, outcoming...
+/*
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_stop() ;
 	app_snd_iplay_start(AUDIO_END_WAV, 1) ;
 #endif
-
-    return 0;
+*/
+    return ;
 }
 
-int app_accept_call()  // ACCEPT CALL(nexx)
+void app_accept_call()  // ACCEPT CALL(nexx)
 {
     app_thr_obj *tObj;
 
@@ -109,15 +116,15 @@ int app_accept_call()  // ACCEPT CALL(nexx)
 	DEBUG_PRI("app_accept_call send APP_CMD_CALL_ACCEPT\n") ;
 #endif
     event_send(tObj, APP_CMD_CALL_ACCEPT, 0, 0) ;
-
+/*
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_stop() ;
 #endif 
-
-    return 0;
+*/
+    return ;
 }
 
-int app_close_call()  // Close CALL (nexx)
+void app_close_call()  // Close CALL (nexx)
 {
     app_thr_obj *tObj;
 
@@ -126,59 +133,84 @@ int app_close_call()  // Close CALL (nexx)
 	DEBUG_PRI("app_close_call send APP_CMD_CALL_CLOSE\n") ;
 #endif
     event_send(tObj, APP_CMD_CALL_CLOSE, 0, 0) ;
-
+/*
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_stop() ;
 	app_snd_iplay_start(AUDIO_END_WAV, 1) ;
 #endif 
-
-    return 0;
+*/
+    return;
 }
 
 // nexx --> nexx manager
-int app_call_send()
+void app_call_send()
 {
 	app_thr_obj *tObj ;
 	tObj = &icall->callObj;
 #ifdef BACKCHANNEL_DEBUG
-	DEBUG_PRI("app_call_send send APP_CMD_CALL_SEND") ;
+	DEBUG_PRI("app_call_send send APP_CMD_CALL_SEND\n") ;
 #endif
 	event_send(tObj, APP_CMD_CALL_SEND, 0, 0) ;
+/*	
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_start(RING_BACK_WAV, 30) ;
 #endif 
-	return 0;
+*/
+    return ;
+
 }
 
 int get_calling_state()
 {
 	app_thr_obj *tObj ;
+	struct timeval tv ;
+    long sec = 0 ;
+
 	tObj = &icall->callObj;
     int CALL_STATUS ;
 
     OSA_mutexLock(&icall->lock) ;
 	CALL_STATUS = icall->status  ;
+	gettimeofday(&tv, NULL) ;
+	sec = tv.tv_sec ; 
+
+	if(CALL_STATUS == APP_STATE_CANCEL)
+	{
+//  	    if((abs(sec - icall->sec)) > 1)
+	    {
+			icall->status = APP_STATE_NONE ;
+			CALL_STATUS = APP_STATE_NONE ;
+    	}
+	}
+
+
 #ifdef BACKCHANNEL_DEBUG
-//	DEBUG_PRI("get_calling_state CALL_STATUS = %d\n", CALL_STATUS) ;
+	DEBUG_PRI("get_calling_state CALL_STATUS = %d\n", CALL_STATUS) ;
 #endif
     OSA_mutexUnlock(&icall->lock) ;
 
 	return CALL_STATUS ;
 }
 
-int set_calling_state(int callvalue)
+void set_calling_state(int callvalue)
 {
 	app_thr_obj *tObj ;
+	struct timeval tv ;
+
 	tObj = &icall->callObj;
 
     OSA_mutexLock(&icall->lock) ;
+
 	icall->status = callvalue ; 
+	gettimeofday(&tv, NULL) ;
+	icall->sec = tv.tv_sec ;
+
 #ifdef BACKCHANNEL_DEBUG
 	DEBUG_PRI("set_calling_state CALL_STATUS = %d\n", icall->status) ;
 #endif
     OSA_mutexUnlock(&icall->lock) ;
 	
-	return 0;
+	return ;
 }
 
 /*****************************************************************************
@@ -225,6 +257,9 @@ static void *THR_call(void *prm)
 						set_calling_state(APP_STATE_INCOMING);
 						app_buzz_ctrl(100, 2) ;
 						buzz_cnt += 1 ;
+#if SYS_CONFIG_SND_OUT
+	app_snd_iplay_start(RING_WAV, 1) ;
+#endif
 					}
 					else
 					{
@@ -253,8 +288,16 @@ static void *THR_call(void *prm)
 				buzz_cnt = 0 ;
 				tObj->cmd = APP_CMD_NONE ;
 				app_buzz_ctrl(100, 2) ;
-				set_calling_state(APP_STATE_NONE);
+				if(tObj->param0)
+					set_calling_state(APP_STATE_CANCEL);
+				else
+					set_calling_state(APP_STATE_NONE);
+
 				app_cfg->stream_enable_audio = app_set->stm_info.enable_audio ;
+#if SYS_CONFIG_SND_OUT
+//	app_snd_iplay_stop() ;
+	app_snd_iplay_start(AUDIO_END_WAV, 1) ;
+#endif 
 			}
 
 		    if(tObj->cmd == APP_CMD_CALL_ACCEPT)  // NEXX(accept call) & NEXX Manager
@@ -274,6 +317,9 @@ static void *THR_call(void *prm)
 					app_cfg->stream_enable_audio = 1 ;
 				}
 				set_calling_state(APP_STATE_ACCEPT);
+#if SYS_CONFIG_SND_OUT
+	app_snd_iplay_stop() ;
+#endif 
 			}
 
 		    if(tObj->cmd == APP_CMD_CALL_CLOSE)  // NEXX(Close call)
@@ -282,7 +328,7 @@ static void *THR_call(void *prm)
 				DEBUG_PRI("APP_CMD_CALL_CLOSE\n") ;
 #endif
 				call_state = get_calling_state() ;
-				if((call_state == APP_STATE_ACCEPT || call_state == APP_STATE_OUTCOMING) || call_state == APP_STATE_INCOMING) 
+				if((call_state == APP_STATE_ACCEPT || call_state == APP_STATE_OUTCOMING) || call_state == APP_STATE_INCOMING || call_state == APP_STATE_CANCEL) 
 				{
 //					if(get_calling_state() == APP_STATE_OUTCOMING)
 					{
@@ -294,16 +340,22 @@ static void *THR_call(void *prm)
 					buzz_cnt = 0 ;
 					tObj->cmd = APP_CMD_NONE ;
 					set_calling_state(APP_STATE_NONE);
+
+#if SYS_CONFIG_SND_OUT
+//	app_snd_iplay_stop() ;
+	app_snd_iplay_start(AUDIO_END_WAV, 1) ;
+#endif 
+
 				}
 			}
 
 		    if(tObj->cmd == APP_CMD_CALL_SEND)  // NEXX(send call signal)
 			{
-				call_state = get_calling_state() ;
 				buzzer_interval += 1;
 				if(!(buzzer_interval % 20))
 				{
-					if(call_state == APP_STATE_NONE || call_state == APP_STATE_OUTCOMING)
+					call_state = get_calling_state() ;
+					if(call_state == APP_STATE_NONE || call_state == APP_STATE_OUTCOMING  || call_state == APP_STATE_CANCEL )
 					{
 #ifdef BACKCHANNEL_DEBUG
 						DEBUG_PRI("buzz_cnt = %d buzzer_interval = %d\n",buzz_cnt, buzzer_interval) ;
@@ -315,6 +367,9 @@ static void *THR_call(void *prm)
 								set_calling_state(APP_STATE_OUTCOMING);
 								app_buzz_ctrl(100, 2) ;
 								buzz_cnt += 1 ;
+#if SYS_CONFIG_SND_OUT
+	app_snd_iplay_start(RING_BACK_WAV, 1) ;
+#endif
 							}
 							else
 							{
