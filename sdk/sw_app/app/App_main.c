@@ -59,6 +59,7 @@
 
 #include "app_voip.h"
 #include "app_bcall.h"
+#include "app_sslvpn.h"
 
 #ifdef USE_KCMVP
 #include "mcapi.h"

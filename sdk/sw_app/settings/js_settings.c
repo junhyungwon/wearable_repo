@@ -16,7 +16,7 @@ json_object *json_find_obj (json_object * jobj, char *find_key)
 	return NULL; // not found
 }
 
-char * js_base64_decode_str(json_object *jobj, int * dec_size)
+char * js_base64_decode_str(json_object *jobj, size_t * dec_size)
 {
 	char * tmp = (char*)json_object_get_string(jobj);
 	char * ret = base64_decode(tmp, strlen(tmp), dec_size);

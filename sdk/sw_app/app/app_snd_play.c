@@ -667,7 +667,7 @@ static void *THR_snd_iplay_main(void *prm)
 void app_snd_iplay_start(const char *fname, int count)
 {
 	if (count <= 0)
-		return -1;
+		return;
 		
 	/* copy filename */
 	memset(&isnd_info->filename[0], 0, 256);

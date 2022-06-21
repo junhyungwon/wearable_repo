@@ -29,7 +29,7 @@
 #include "app_gui.h"
 #include "app_buzz.h"
 #include "app_voip.h"
-
+#include "app_bcall.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
