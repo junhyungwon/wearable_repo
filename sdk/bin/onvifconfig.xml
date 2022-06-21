@@ -34,11 +34,11 @@
 			<quality>4</quality>
 			<session_timeout>10</session_timeout>			
 			<framerate>25</framerate>
-			<encoding_interval>1</encoding_interval>
+			<encoding_interval>50</encoding_interval>
 			<bitrate_limit>2048</bitrate_limit>
 			<encoding>H264</encoding>
 			<h264>
-				<gov_length>30</gov_length>
+				<gov_length>50</gov_length>
 				<h264_profile>Main</h264_profile>
 			</h264>
 		</video_encoder>

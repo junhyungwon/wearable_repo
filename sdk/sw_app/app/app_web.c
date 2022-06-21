@@ -121,7 +121,7 @@ int app_web_ssl_setup()
 
 		fclose(fp);
 	}
-
+	return 0;
 }
 
 int app_web_start_server()

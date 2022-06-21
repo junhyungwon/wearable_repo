@@ -178,9 +178,9 @@ librtmp:
 librtmp_clean:
 	rm -rf $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
 
-app_pkg: libavi wlan_scan live555
+app_pkg: libavi live555
 
-app_pkg_clean: libavi_clean wlan_scan_clean live555_clean
+app_pkg_clean: libavi_clean live555_clean
 
 ##### MCFW BUILD #####
 mcfw: hdvpss m3 app
