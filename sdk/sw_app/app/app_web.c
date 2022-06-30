@@ -113,12 +113,10 @@ int app_web_ssl_setup()
 		//sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", app_set->net_info.https_port);
 		sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", 443);
 		fputs(str, fp);
-		sprintf(str, " ssl.pemfile = \"/opt/fit/server.pem\"\n");
+		sprintf(str, "ssl.pemfile = \"/opt/fit/server.pem\"\n");
 		fputs(str, fp);
-		sprintf(str, " ssl.engine = \"%s\"\n", app_set->net_info.https_enable?"enable":"disable");
+		sprintf(str, "ssl.engine = \"%s\"\n", app_set->net_info.https_enable?"enable":"disable");
 		fputs(str, fp);
-		//# required for lighttpd 1.4.54..
-		fprintf(fp, " ssl.openssl.ssl-conf-cmd = (\"Protocol\" => \"-ALL, TLSv1.2, TLSv1.3\")\n");
 		fputs("}\n", fp);
 
 		fclose(fp);
