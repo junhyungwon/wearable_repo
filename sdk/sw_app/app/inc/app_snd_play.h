@@ -31,7 +31,7 @@ void app_snd_bcplay_exit(void);
 
 int app_snd_iplay_init(void);
 void app_snd_iplay_exit(void);
-int app_snd_iplay_start(const char *fname, int count);
-int app_snd_iplay_stop(void);
+void app_snd_iplay_start(const char *fname, int count);
+void app_snd_iplay_stop(void);
 
 #endif	/* _APP_SND_PLAY_H_ */

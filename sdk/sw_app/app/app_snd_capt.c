@@ -214,8 +214,8 @@ static void *THR_snd_capt_main(void *prm)
 {
 	app_thr_obj *tObj = &isnd_capt->cObj;
 	stream_info_t *ifr;
-	snd_pcm_t *h_pcm_capt;
-	snd_pcm_t *h_pcm_dummy;
+	snd_pcm_t *h_pcm_capt=NULL;
+	snd_pcm_t *h_pcm_dummy=NULL;
 	
 	int exit=0, idx;
 	size_t pframes = 0; /* alsa read size(frames) */

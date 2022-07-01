@@ -42,7 +42,6 @@ LD_OPTS=-lpthread -lstdc++ -lm
 DEFINE += $(IPNC_RDK_CFLAGS)
 DEFINE += -DLF_SYS_$(SYSTEM_PLATFORM)
 
-
 ifeq ($(USE_KCMVP), YES)
 DEFINE += -DUSE_KCMVP
 endif

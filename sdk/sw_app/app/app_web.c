@@ -1,6 +1,21 @@
+/******************************************************************************
+ * FITT Board
+ *---------------------------------------------------------------------------*/
+ /**
+ * @file    app_web.c
+ * @brief   
+ * @author  
+ * @section MODIFY history
+ */
+/*****************************************************************************/
+
+/*----------------------------------------------------------------------------
+ Defines referenced header files
+-----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <unistd.h>
 
+#include "app_main.h"
 #include "app_web.h"
 #include "app_set.h"
 
@@ -112,7 +127,7 @@ int     app_web_boot_passwordfile()
 	return 0;
 }
 
-int     app_web_make_passwordfile(char *id, char *pw, int lv, int authtype)
+int app_web_make_passwordfile(char *id, char *pw, int lv, int authtype)
 {
 	char strcmd[128]={0};
 	char stropt[8]={0};
@@ -231,6 +246,7 @@ if(app_set->net_info.https_mode == 1) {
 
 		fclose(fp);
 	}
+	return 0;
 }
 
 int app_web_start_server()
@@ -265,12 +281,12 @@ int app_web_restart_server()
 	return 0;
 }
 
-int     app_web_is_passwordfile()
+int app_web_is_passwordfile()
 {
 	return (0 == access(PATH_WEB_AUTH_FILE, F_OK));
 }
 
-int		app_telnetd_enable(int en)
+int app_telnetd_enable(int en)
 {
 	char *cmd[] = { "killall telnetd",
 		            "/usr/sbin/telnetd -l /bin/sh",
