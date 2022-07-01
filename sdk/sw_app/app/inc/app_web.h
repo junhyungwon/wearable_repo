@@ -37,4 +37,6 @@ int     app_web_start_server();
 int     app_web_stop_server();
 int     app_web_restart_server();
 int		app_telnetd_enable(int en);
+
+int     app_web_https_create_ssc();
 #endif//_APP_WEB_H_

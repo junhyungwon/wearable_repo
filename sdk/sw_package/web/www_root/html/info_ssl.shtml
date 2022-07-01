@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.wapforum.org/DTD/xhtml-mobile12.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
+<title>SSL Dates Information -- Linkflow Security</title>
+<script type="text/javascript" src="/script/utils.js"></script>
+</head>
+<body>
+
+
+<pre>
+
+<!-- openssl connect 이후로 응답없음, cgi에서 app쪽으로 명령내리고 결과를 받는 식으로 구현해야할듯 -->
+
+<!-- 얘는 뭔가 있는 빈 공백을 출력 -->
+<!--include virtual="/var/www/html/info_ssl.sh" -->
+
+<!-- 얘는 (none) 출력 -->
+<!--echo var="openssl s_client -connect localhost:443 < /dev/null 2>&1 | openssl x509 -noout -enddate" -->
+
+<!-- 얘는 홀딩=>타임아웃 -->
+<!--exec cmd="echo | openssl s_client -connect localhost:443 < /dev/null 2>&1 | openssl x509 -noout -enddate" -->
+
+<!-- 마지막 후보 -->
+<!--#exec cmd="/etc/ssl/misc/c_info /opt/fit/server.crt  | grep notAfter" -->
+
+</pre>
+
+<a href="/">Home</a>
+
+</body>
+</html>

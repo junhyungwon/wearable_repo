@@ -69,7 +69,8 @@ typedef struct _tagNtpInfo {
   The reason for 64 Length, in ssl.conf
 */
 typedef struct _tagCgiHttpsConfig {
-    int  enable; // 1:enable, 0:disable
+    int  enable;     // 1:enable, 0:disable, It will be deprecated...
+    char https_mode; // 0:http only, 1:self signed, 2; ca
 	int  port;   // 443
     char C[64];    // Country
     char ST[64];   // State or Province
@@ -78,6 +79,12 @@ typedef struct _tagCgiHttpsConfig {
     char OU[64];   // Organization Unit
     char CN[64];   // Common Name
     char Email[64];  
+
+    char cert_name[64];
+    char crt_file[64];
+    char key_file[64];
+    char ca_file[64];
+
 }T_CGI_HTTPS_CONFIG;
 
 typedef struct _tagCgiOnvifConfig {

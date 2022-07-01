@@ -9,10 +9,10 @@
 <body>
 
 <pre>
-<!--#exec cmd="cat /mmc/log/ulog_00000001.log" -->
+<!--#exec cmd="cat /mmc/log/message.log" -->
 </pre>
 
-<a href="/index.html">Home</a>
+<a href="/">Home</a>
 
 </body>
 </html>

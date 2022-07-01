@@ -1357,6 +1357,7 @@ static int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 
 static int getHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
 {
+	t->https_mode = app_set->net_info.https_mode;
 	sprintf(t->C,  "%s", app_set->net_info.ssc_C );
 	sprintf(t->ST, "%s", app_set->net_info.ssc_ST);
 	sprintf(t->L,  "%s", app_set->net_info.ssc_L );
@@ -1370,34 +1371,57 @@ static int getHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
 
 static int setHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
 {
-	int isChanged=0;
-	if(strlen(t->C) > 0 && 0!=strcmp(t->C, app_set->net_info.ssc_C)) {
-		sprintf(app_set->net_info.ssc_C, "%s", t->C);
+	int isChanged=0; // web 에서 변화된 element가 있는지 확인 용도.
+
+	if(t->https_mode != app_set->net_info.https_mode) {
+		app_set->net_info.https_mode = t->https_mode;
 		isChanged++;
 	}
-	if(strlen(t->ST) > 0 && 0!=strcmp(t->ST, app_set->net_info.ssc_ST)) {
-		sprintf(app_set->net_info.ssc_ST, "%s", t->ST);
-		isChanged++;
+
+	// self signed
+	if (t->https_mode == 1)
+	{
+		if (strlen(t->C) > 0 && 0 != strcmp(t->C, app_set->net_info.ssc_C))
+		{
+			sprintf(app_set->net_info.ssc_C, "%s", t->C);
+			isChanged++;
+		}
+		if (strlen(t->ST) > 0 && 0 != strcmp(t->ST, app_set->net_info.ssc_ST))
+		{
+			sprintf(app_set->net_info.ssc_ST, "%s", t->ST);
+			isChanged++;
+		}
+		if (strlen(t->L) > 0 && 0 != strcmp(t->L, app_set->net_info.ssc_L))
+		{
+			sprintf(app_set->net_info.ssc_L, "%s", t->L);
+			isChanged++;
+		}
+		if (strlen(t->O) > 0 && 0 != strcmp(t->O, app_set->net_info.ssc_O))
+		{
+			sprintf(app_set->net_info.ssc_O, "%s", t->O);
+			isChanged++;
+		}
+		if (strlen(t->OU) > 0 && 0 != strcmp(t->OU, app_set->net_info.ssc_OU))
+		{
+			sprintf(app_set->net_info.ssc_OU, "%s", t->OU);
+			isChanged++;
+		}
+		if (strlen(t->CN) > 0 && 0 != strcmp(t->CN, app_set->net_info.ssc_CN))
+		{
+			sprintf(app_set->net_info.ssc_CN, "%s", t->CN);
+			isChanged++;
+		}
+		if (strlen(t->Email) > 0 && 0 != strcmp(t->Email, app_set->net_info.ssc_Email))
+		{
+			sprintf(app_set->net_info.ssc_Email, "%s", t->Email);
+			isChanged++;
+		}
+
+		app_web_https_create_ssc(); // thread, 결과는 페이지 로딩 후 잘 생성되었는지 다시 확인하자
+
 	}
-	if(strlen(t->L) > 0 && 0!=strcmp(t->L, app_set->net_info.ssc_L)) {
-		sprintf(app_set->net_info.ssc_L, "%s", t->L);
-		isChanged++;
-	}
-	if(strlen(t->O) > 0 && 0!=strcmp(t->O, app_set->net_info.ssc_O)) {
-		sprintf(app_set->net_info.ssc_O, "%s", t->O);
-		isChanged++;
-	}
-	if(strlen(t->OU) > 0 && 0!=strcmp(t->OU, app_set->net_info.ssc_OU)) {
-		sprintf(app_set->net_info.ssc_OU, "%s", t->OU);
-		isChanged++;
-	}
-	if(strlen(t->CN) > 0 && 0!=strcmp(t->CN, app_set->net_info.ssc_CN)) {
-		sprintf(app_set->net_info.ssc_CN, "%s", t->CN);
-		isChanged++;
-	}
-	if(strlen(t->Email) > 0 && 0!=strcmp(t->Email, app_set->net_info.ssc_Email)) {
-		sprintf(app_set->net_info.ssc_Email, "%s", t->Email);
-		isChanged++;
+	// normal ssl https mode
+	else if ( t->https_mode == 2) {
 	}
 
 	return isChanged;

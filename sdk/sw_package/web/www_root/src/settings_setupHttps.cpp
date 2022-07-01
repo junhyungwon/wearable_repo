@@ -19,11 +19,11 @@ int main()
 	T_CGI_HTTPS_CONFIG t;memset(&t,0, sizeof t);
 	sysctl_message(UDS_GET_HTTPS_CONFIG, (void*)&t, sizeof t );
 
-
 	// 굳이 저장할 필요가 있을까?일회성으로 사용될 경우가 많을듯
 	printf("<setupHttps>\n");
-	printf("<enable>%s</enable>\n", t.enable);
-	printf("<port>%s</port>\n", t.port);
+	printf("<https_mode>%d</https_mode>\n", t.https_mode);
+	printf("<enable>%d</enable>\n", t.enable);
+	printf("<port>%d</port>\n", t.port);
 	printf("<C>%s</C>\n",   t.C);
 	printf("<ST>%s</ST>\n", t.ST);
 	printf("<L>%s</L>\n",   t.L);
@@ -31,6 +31,7 @@ int main()
 	printf("<OU>%s</OU>\n", t.OU);
 	printf("<CN>%s</CN>\n", t.CN);
 	printf("<Email>%s</Email>\n", t.Email);
+	printf("<cert_name>%s</cert_name>\n", t.cert_name);
 	printf("</setupHttps>\n");
 
 	printf("<model_name>%s</model_name>\n", MODEL_NAME);

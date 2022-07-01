@@ -248,4 +248,3 @@ int send_response(int errnum)
 
 }
 
-

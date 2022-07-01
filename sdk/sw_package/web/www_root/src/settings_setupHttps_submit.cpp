@@ -4,6 +4,7 @@
 
 #include "cgi.h"
 #include "cgi_param.h"
+#include "qdecoder.h"
 
 #define REDIRECT_CGI_PATH "/"
 #define CGI_FORM_PATH "settings_setupHttps.cgi"
@@ -11,91 +12,70 @@
 
 #define PASS_RETURNS_TO_VUEJS 0
 
-static int submit_settings()
+int https_mode = 0;
+
+static int submit_settings_qcgi()
 {
-    int ret, isPOST = 0;
-    T_CGIPRM prm[128];
+    int ret=SUBMIT_NO_CHANGE;
 
-    char *method = getenv("REQUEST_METHOD");
-	if(method == NULL) return ERR_INVALID_METHOD;
-    CGI_DBG("method : %s\n", method);
+    qentry_t *req = qcgireq_parse(NULL, Q_CGI_POST);
+    if (req)
+    {
+        https_mode = -1;
 
-    char *contents=NULL;
-    if(0 == strcmp(method, "POST")){
-        contents = get_cgi_contents();
-        isPOST = TRUE;
-    }
-    else {
-        contents = getenv("QUERY_STRING");
-        isPOST = FALSE;
-    }
+        char *str = req->getstr(req, "https_mode", false);
+        if(str != NULL) { https_mode = atoi(str);}
 
-	if(contents == NULL) return ERR_INVALID_PARAM;
-    CGI_DBG("contents:%s\n", contents);
-
-    int cnt = parseContents(contents, prm);
-    CGI_DBG("cnt:%d\n", cnt);
-
-    if(cnt>0){
+        if( https_mode == -1) {
+            return ERR_INVALID_PARAM;
+        }
 
         T_CGI_HTTPS_CONFIG t;
 		memset(&t, 0, sizeof t);
+        t.https_mode = https_mode;
 
-        for(int i=0;i<cnt;i++) {
+        if(https_mode == 1) {
+            // 이 값들로 Self Signed Certificate 생성
+            str = req->getstr(req, "txt_C", false);
+            if(str != NULL) { sprintf(t.C, "%s", str); }
+            str = req->getstr(req, "txt_ST", false);
+            if(str != NULL) { sprintf(t.ST, "%s", str); }
+            str = req->getstr(req, "txt_L", false);
+            if(str != NULL) { sprintf(t.L, "%s", str); }
+            str = req->getstr(req, "txt_O", false);
+            if(str != NULL) { sprintf(t.O, "%s", str); }
+            str = req->getstr(req, "txt_OU", false);
+            if(str != NULL) { sprintf(t.OU, "%s", str); }
+            str = req->getstr(req, "txt_CN", false);
+            if(str != NULL) { sprintf(t.CN, "%s", str); }
+            str = req->getstr(req, "txt_Email", false);
+            if(str != NULL) { sprintf(t.Email, "%s", str); }
 
-            CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
-            if(!strcmp(prm[i].name, "txt_C")){
-                sprintf(t.C, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_ST")){
-                sprintf(t.ST, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_L")){
-                sprintf(t.L, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_O")){
-                sprintf(t.O, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_OU")){
-                sprintf(t.OU, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_CN")){
-                sprintf(t.CN, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_Email")){
-                sprintf(t.Email, "%s", prm[i].value);
-            }
         }
-		
-		// if( strlen(t.C) < 1) {
-		// 	CGI_DBG("DEVICEID Invalid Parameter\n");
-		// 	return ERR_INVALID_PARAM;
-		// }
-
-        // Must finish parsing before free.
-        if(isPOST){ free(contents); }
+        else if (https_mode == 2) {
+            // pem 생성 및 경로 저장
+        }
 
         ret = sysctl_message(UDS_SET_HTTPS_CONFIG, (void*)&t, sizeof t );
+        CGI_DBG("ret:%d\n", ret);
         if(0 > ret) {
             return SUBMIT_ERR;
-        } else if(0 == ret) {
-            return SUBMIT_NO_CHANGE;
         }
+		else if( ret == ERR_NO_CHANGE) {
+			return SUBMIT_NO_CHANGE;
+		}
 
         return SUBMIT_OK;
     }
-    else {
-        return SUBMIT_ERR;
-    }
 
+    return SUBMIT_ERR;
 }
-
 
 int main(int argc, char *argv[])
 {
 	int nError;
 
-	nError = submit_settings();
+	nError = submit_settings_qcgi();
 
     // for VUEJS
 #if PASS_RETURNS_TO_VUEJS
@@ -106,7 +86,10 @@ int main(int argc, char *argv[])
 		// 1. show ok window
 		// 2. and restart webserver
 
-		wait_redirect(REDIRECT_CGI_PATH, 3);
+        if (https_mode == 1)
+            wait_redirect(REDIRECT_CGI_PATH, 20); // SSC 만들때 시간이 좀 필요합니다
+        else 
+            wait_redirect(REDIRECT_CGI_PATH, 3);
 	}
 	else{
 		// return home
