@@ -46,11 +46,29 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+/**
+ * @brief 기본값 검사 매크로
+ * @param orless : 이하
+ * @param above:   초과
+ * @param default: 기본값
+ * @param prm:     검사할 변수
+ */
+#define CHECK_PARAM_MIN_MAX(orless, above, default, prm) { if ( prm <= orless || prm > above ) prm = default; }
+#define MAX_HTTPS_MODE       2
+#define MAX_ONVIF_ENABLE     1
+#define MAX_HTTP_ENABLE      1
+#define MAX_HTTPS_ENABLE     1
+#define DEFAULT_HTTPS_MODE   0
+#define DEFAULT_ONVIF_ENABLE 1
+#define DEFAULT_HTTP_ENABLE  1
+#define DEFAULT_HTTPS_ENABLE 0
+
 typedef enum{
 	CFG_NAND=0,
 	CFG_MMC,
 	CFG_MAX
 } app_cfg_e;
+
 
 const char* const RTSP_DEFAULT_ID   = "admin";
 const char* const RTSP_DEFAULT_PW   = "admin";
@@ -179,6 +197,17 @@ static void char_memset(void)
     app_set->net_info.enable_onvif = CFG_INVALID;
     app_set->net_info.dnsFromDHCP  = CFG_INVALID;
     app_set->net_info.ntpFromDHCP  = CFG_INVALID;
+    app_set->net_info.https_mode   = CFG_INVALID;
+
+	memset(app_set->net_info.ssc_C,  CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_ST, CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_L,  CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_O,  CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_OU, CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_CN, CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_Email, CHAR_MEMSET, MAX_CHAR_64);
+	memset(app_set->net_info.cert_name, CHAR_MEMSET, MAX_CHAR_64);
+
     memset(app_set->net_info.reserved, CFG_INVALID, 73);
     
 	//# Server information
@@ -380,6 +409,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->net_info.rtsp_name[6] = %s\n", pset->net_info.rtsp_name   );
     printf("pset->net_info.wtype        = %d\n", pset->net_info.wtype       );
     printf("pset->net_info.http_enable  = %d\n", pset->net_info.http_enable );
+    printf("pset->net_info.https_mode   = %d\n", pset->net_info.https_mode  );
     printf("pset->net_info.https_enable = %d\n", pset->net_info.https_enable);
     printf("pset->net_info.rtsp_enable  = %d\n", pset->net_info.rtsp_enable );
     printf("pset->net_info.enable_onvif = %d\n", pset->net_info.enable_onvif);
@@ -624,14 +654,13 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->net_info.wtype <= CFG_INVALID)
         pset->net_info.wtype = NET_TYPE_DHCP ;
 
-	if(pset->net_info.http_enable <= CFG_INVALID || pset->net_info.http_enable > 1 ) 
-		pset->net_info.http_enable   = 1;
-	if(pset->net_info.https_enable <= CFG_INVALID ||pset->net_info.https_enable > 1) 
-		pset->net_info.https_enable = 0; 
+	CHECK_PARAM_MIN_MAX(CFG_INVALID, MAX_HTTP_ENABLE,  DEFAULT_HTTP_ENABLE,  pset->net_info.http_enable );
+	CHECK_PARAM_MIN_MAX(CFG_INVALID, MAX_HTTPS_MODE,   DEFAULT_HTTPS_MODE,   pset->net_info.https_mode  );
+	CHECK_PARAM_MIN_MAX(CFG_INVALID, MAX_HTTPS_ENABLE, DEFAULT_HTTPS_ENABLE, pset->net_info.https_enable);
+	CHECK_PARAM_MIN_MAX(CFG_INVALID, MAX_ONVIF_ENABLE, DEFAULT_ONVIF_ENABLE, pset->net_info.enable_onvif);
+
 	if(pset->net_info.rtsp_enable <= CFG_INVALID || pset->net_info.rtsp_enable > 1)
 		pset->net_info.rtsp_enable   = 1;
-	if(pset->net_info.enable_onvif <= CFG_INVALID || pset->net_info.enable_onvif > 1) 
-		pset->net_info.enable_onvif = 1;
 	if(pset->net_info.dnsFromDHCP <= CFG_INVALID || pset->net_info.dnsFromDHCP > 1) 
 		pset->net_info.dnsFromDHCP = 0;
 	if(pset->net_info.ntpFromDHCP <= CFG_INVALID || pset->net_info.ntpFromDHCP > 1) 
@@ -1163,6 +1192,17 @@ static void app_set_default(int default_type)
     app_set->net_info.enable_onvif = 1;
     app_set->net_info.dnsFromDHCP  = 0;
     app_set->net_info.ntpFromDHCP  = 0;
+
+    app_set->net_info.https_mode   = 0;
+	memset(app_set->net_info.ssc_C,  0, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_ST, 0, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_L,  0, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_O,  0, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_OU, 0, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_CN, 0, MAX_CHAR_64);
+	memset(app_set->net_info.ssc_Email, 0, MAX_CHAR_64);
+	memset(app_set->net_info.cert_name, 0, MAX_CHAR_64);
+
 	/******************** end of net_info ********************/
 
 	//# Meta Server information

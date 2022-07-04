@@ -26,6 +26,9 @@
 #define STR_MSG_SET_NETWORK_CONFIG   "SetNetworkConfiguration"
 #define STR_MSG_GET_NETWORK_CONFIG2   "GetNetworkConfiguration2"
 #define STR_MSG_SET_NETWORK_CONFIG2   "SetNetworkConfiguration2"
+#define STR_MSG_GET_HTTPS_CONFIG     "GetHttpsConfiguration"
+#define STR_MSG_SET_HTTPS_CONFIG     "SetHttpsConfiguration"
+#define STR_MSG_INSTALL_CERT_FILE    "InstallCertFile"
 #define STR_MSG_GET_SERVERS_CONFIG   "GetServersConfiguration"
 #define STR_MSG_SET_SERVERS_CONFIG   "SetServersConfiguration"
 #define STR_MSG_GET_SYSTEM_CONFIG    "GetSystemConfiguration"
@@ -69,9 +72,12 @@ enum _enumUdsCmd {
     UDS_SET_OPERATION_CONFIG,
     UDS_GET_NETWORK_CONFIG,
     UDS_SET_NETWORK_CONFIG,
-    UDS_GET_SERVERS_CONFIG,
+    UDS_GET_HTTPS_CONFIG,
+    UDS_SET_HTTPS_CONFIG,
+    UDS_INSTALL_CERT_FILE,
     UDS_GET_NETWORK_CONFIG2,
     UDS_SET_NETWORK_CONFIG2,
+    UDS_GET_SERVERS_CONFIG,
     UDS_SET_SERVERS_CONFIG,
     UDS_GET_SYSTEM_CONFIG,
     UDS_SET_SYSTEM_CONFIG,

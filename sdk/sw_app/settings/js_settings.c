@@ -618,8 +618,6 @@ static int	parseNetworkDev(app_set_t* const set, json_object* rootObj)
 	sprintf(set->net_info.dns_server2, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "http_port");
 	set->net_info.http_port = json_object_get_int(tmp);
-	tmp = json_object_object_get(jobj, "https_port");
-	set->net_info.https_port = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "rtsp_port");
 	set->net_info.rtsp_port = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "onvif_port");
@@ -630,8 +628,6 @@ static int	parseNetworkDev(app_set_t* const set, json_object* rootObj)
 	set->net_info.wtype = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "http_enable");
 	set->net_info.http_enable = json_object_get_int(tmp);
-	tmp = json_object_object_get(jobj, "https_enable");
-	set->net_info.https_enable = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "rtsp_enable");
 	set->net_info.rtsp_enable = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "enable_onvif");
@@ -642,6 +638,31 @@ static int	parseNetworkDev(app_set_t* const set, json_object* rootObj)
 	set->net_info.ntpFromDHCP= json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "hostnameFromDHCP");
 	set->net_info.hostnameFromDHCP= json_object_get_int(tmp);
+
+	// https setup -- start
+	tmp = json_object_object_get(jobj, "https_enable");
+	set->net_info.https_enable = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "https_port");
+	set->net_info.https_port = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "https_mode");
+	set->net_info.https_mode = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "ssc_C");
+	if(tmp) sprintf(set->net_info.ssc_C, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "ssc_ST");
+	if(tmp) sprintf(set->net_info.ssc_ST, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "ssc_L");
+	if(tmp) sprintf(set->net_info.ssc_L, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "ssc_O");
+	if(tmp) sprintf(set->net_info.ssc_O, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "ssc_OU");
+	if(tmp) sprintf(set->net_info.ssc_OU, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "ssc_CN");
+	if(tmp) sprintf(set->net_info.ssc_CN, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "ssc_Email");
+	if(tmp) sprintf(set->net_info.ssc_Email, "%s", json_object_get_string(tmp));
+	tmp = json_object_object_get(jobj, "cert_name");
+	if(tmp) sprintf(set->net_info.cert_name, "%s", json_object_get_string(tmp));
+	// https setup -- end
 
 	return 0;
 }
@@ -832,18 +853,31 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(network_dev, "dns_server1", json_object_new_string(set->net_info.dns_server1));
 	json_object_object_add(network_dev, "dns_server2", json_object_new_string(set->net_info.dns_server2));
 	json_object_object_add(network_dev, "http_port", json_object_new_int(set->net_info.http_port));
-	json_object_object_add(network_dev, "https_port", json_object_new_int(set->net_info.https_port));
 	json_object_object_add(network_dev, "rtsp_port", json_object_new_int(set->net_info.rtsp_port));
 	json_object_object_add(network_dev, "onvif_port", json_object_new_int(set->net_info.onvif_port));
 	json_object_object_add(network_dev, "rtsp_name", json_object_new_string(set->net_info.rtsp_name));
 	json_object_object_add(network_dev, "wtype", json_object_new_int(set->net_info.wtype));
 	json_object_object_add(network_dev, "http_enable", json_object_new_int(set->net_info.http_enable));
-	json_object_object_add(network_dev, "https_enable", json_object_new_int(set->net_info.https_enable));
 	json_object_object_add(network_dev, "rtsp_enable", json_object_new_int(set->net_info.rtsp_enable));
 	json_object_object_add(network_dev, "enable_onvif", json_object_new_int(set->net_info.enable_onvif));
 	json_object_object_add(network_dev, "dnsFromDHCP", json_object_new_int(set->net_info.dnsFromDHCP));
 	json_object_object_add(network_dev, "ntpFromDHCP", json_object_new_int(set->net_info.ntpFromDHCP));
 	json_object_object_add(network_dev, "hostnameFromDHCP", json_object_new_int(set->net_info.hostnameFromDHCP));
+
+	// https setup -- start
+	json_object_object_add(network_dev, "https_enable", json_object_new_int   (set->net_info.https_enable));
+	json_object_object_add(network_dev, "https_port",   json_object_new_int   (set->net_info.https_port));
+	json_object_object_add(network_dev, "https_mode",   json_object_new_int   (set->net_info.https_mode));
+	json_object_object_add(network_dev, "ssc_C",        json_object_new_string(set->net_info.ssc_C));
+	json_object_object_add(network_dev, "ssc_ST",       json_object_new_string(set->net_info.ssc_ST));
+	json_object_object_add(network_dev, "ssc_L",        json_object_new_string(set->net_info.ssc_L));
+	json_object_object_add(network_dev, "ssc_O",        json_object_new_string(set->net_info.ssc_O));
+	json_object_object_add(network_dev, "ssc_OU",       json_object_new_string(set->net_info.ssc_OU));
+	json_object_object_add(network_dev, "ssc_CN",       json_object_new_string(set->net_info.ssc_CN));
+	json_object_object_add(network_dev, "ssc_Email",    json_object_new_string(set->net_info.ssc_Email));
+	json_object_object_add(network_dev, "cert_name",    json_object_new_string(set->net_info.cert_name));
+	// https setup -- end
+
 	json_object_object_add(rootObject, "net_info", network_dev);
 
 	// 4. server network information

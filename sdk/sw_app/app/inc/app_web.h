@@ -22,6 +22,21 @@
 
 #define STR_WEB_DIGEST_REALM MODEL_NAME // this is from Rules.make
 
+#define PATH_HTTPS_SSL "/mmc/ssl"
+#define PATH_SSL_ROOT  PATH_HTTPS_SSL
+
+// SSC == Self Signed Certificate
+#define PATH_HTTPS_SS_KEY 	PATH_HTTPS_SSL"/_ssc_private.key"
+#define PATH_HTTPS_SS_CRT 	PATH_HTTPS_SSL"/_ssc_certificate.crt"
+#define PATH_HTTPS_SS_PEM 	PATH_HTTPS_SSL"/_ssc_server.pem"
+
+// Normal SSLs
+#define PATH_HTTPS_KEY 	PATH_HTTPS_SSL"/private.key"
+#define PATH_HTTPS_CRT 	PATH_HTTPS_SSL"/certificate.crt"
+#define PATH_HTTPS_CA  	PATH_HTTPS_SSL"/ca-bundle.crt"
+#define PATH_HTTPS_PEM 	PATH_HTTPS_SSL"/server.pem"
+
+
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -37,4 +52,6 @@ int     app_web_start_server();
 int     app_web_stop_server();
 int     app_web_restart_server();
 int		app_telnetd_enable(int en);
+
+int     app_web_https_create_ssc();
 #endif//_APP_WEB_H_
