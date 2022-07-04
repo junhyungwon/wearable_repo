@@ -111,12 +111,15 @@ int app_web_ssl_setup()
 		char str[255];
 		// onvif와 https_port가 공유되고 있음, 분리가 필요한 상황
 		//sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", app_set->net_info.https_port);
+		fprintf(fp, "server.modules += ( \"mod_openssl\" )\n");
+		fprintf(fp, "ssl.disable-client-renegotiation = \"enable\"\n");
 		sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", 443);
 		fputs(str, fp);
 		sprintf(str, "ssl.pemfile = \"/opt/fit/server.pem\"\n");
 		fputs(str, fp);
 		sprintf(str, "ssl.engine = \"%s\"\n", app_set->net_info.https_enable?"enable":"disable");
 		fputs(str, fp);
+		fprintf(fp, "ssl.openssl.ssl-conf-cmd = (\"Protocol\" => \"-ALL, TLSv1.2, TLSv1.3\")\n");
 		fputs("}\n", fp);
 
 		fclose(fp);
