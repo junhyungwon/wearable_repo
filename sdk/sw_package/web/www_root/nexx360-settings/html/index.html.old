@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
+<LINK REL="stylesheet" TYPE="text/css" HREF="/css/css.css" /> 	
+<title>FITT360 Security - Linkflow Security</title>
+<script type="text/javascript" src="/script/utils.js"></script>
+<style>
+body:after {
+	background-image:url('/image/fitt360-security-62x48.png');
+    background-size:100%;
+    opacity:0.5;
+    filter:alpha(opacity=50);
+    z-index:-1;
+    content:"";
+    width:100%;
+    height:100%;
+}
+</style>
+<script type="text/javascript">
+function onApply() {
+	if(confirm('The system will restart. Do you want to process it?')){
+		location.href="/cgi/cmd.cgi?action=sysmng&param=restart";
+		return true;
+	}else {
+		return false;
+	}
+}	
+</script>
+</head>
+
+<body>
+
+
+<font size="5">
+<table align="center" width="360" border="0" cellpadding="0" cellspacing="0">
+    <tr align="center"><td height="10" colspan="2"></td></tr>
+	<tr align="center"><td valign="top">FITT360&#160;Security</font></td></tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr bgcolor="#E6E6E6"><td align="center" height="1" colspan="2" bgcolor="#EDEDED"></td></tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr align="center"><td><a href="/cgi/settings_camera.cgi">Camera Settings</a></td></tr>
+    <tr align="center"><td><a href="/cgi/settings_operation.cgi">Operation Settings</a></td></tr>
+    <tr align="center"><td><a href="/cgi/settings_network.cgi">Network Settings</a></td></tr>
+    <tr align="center"><td><a href="/cgi/settings_servers.cgi">Servers Settings</a></td></tr>
+    <tr align="center"><td><a href="/cgi/settings_system.cgi">System Settings</a></td></tr>
+    <tr align="center"><td><a href="/cgi/settings_user.cgi">User Settings</a></td></tr>
+    <tr align="center"><td><a href="/html/preview.html">JPEG Preview</a></td></tr>
+    <tr align="center"><td><a href="#" onclick="onApply();">Apply(Restart)</a></td></tr>
+    <tr align="center"><td>About...</td></tr>
+	<tr align="center"><td>&nbsp;</td>
+    <tr><td></td></tr>
+    <tr><td>&nbsp;</td></tr>
+</table>
+</font>
+
+<table align="center" cellspacing="3">
+	<tr align="center">
+		<td valign="top">
+			<a href="https://www.linkflow.co.kr/" target="_top"><img src="/image/linkflow-252x30.png"/></a>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<a href="https://www.onvif.org/profiles/profile-s/" target="_top"><img width="30%" src="/image/onvif-logo-profile-s.jpg"/></a>
+		</td>
+	</tr>
+</table>
+<table align="center">
+	<tr align="center"><td>&nbsp;</td></tr>
+	<tr align="center">
+		<td>
+			<img src="/image/fitt360-security.png" width="360px"></image>
+		</td>
+	</tr>
+</table>
+
+</body>
+</html>

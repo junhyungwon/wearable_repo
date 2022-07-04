@@ -417,7 +417,17 @@ int put_json_all_config()
 		json_object_object_add(servers_obj, "daylightsaving", json_object_new_int(p.daylight_saving));
 
 		// https server settings
-		json_object_object_add(https_obj,   "enable",  json_object_new_int(p.https.enable));
+		json_object_object_add(https_obj,   "enable",     json_object_new_int   (p.https.enable));
+		json_object_object_add(https_obj,   "https_mode", json_object_new_int   (p.https.https_mode));
+		json_object_object_add(https_obj,   "port",       json_object_new_int   (p.https.port));
+		json_object_object_add(https_obj,   "C",          json_object_new_string(p.https.C));
+		json_object_object_add(https_obj,   "ST",         json_object_new_string(p.https.ST));
+		json_object_object_add(https_obj,   "L",          json_object_new_string(p.https.L));
+		json_object_object_add(https_obj,   "O",          json_object_new_string(p.https.O));
+		json_object_object_add(https_obj,   "OU",         json_object_new_string(p.https.OU));
+		json_object_object_add(https_obj,   "CN",         json_object_new_string(p.https.CN));
+		json_object_object_add(https_obj,   "Email",      json_object_new_string(p.https.Email));
+		json_object_object_add(https_obj,   "cert_name",  json_object_new_string(p.https.cert_name));
 		json_object_object_add(servers_obj, "https", https_obj);
 
 		// onvif server settings
@@ -625,6 +635,39 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 	// free
 	json_object_put(systemobj);
+	json_object_put(myobj);
+}
+
+void put_json_https_config(T_CGI_HTTPS_CONFIG *p)
+{
+	json_object *myobj, *https_obj;
+
+	myobj     = json_object_new_object();
+	https_obj = json_object_new_object();
+
+	// https server settings
+	json_object_object_add(https_obj, "https_mode", json_object_new_int   (p->https_mode));
+	json_object_object_add(https_obj, "enable",     json_object_new_int   (p->enable));
+	json_object_object_add(https_obj, "port",       json_object_new_int   (p->port));
+	json_object_object_add(https_obj, "C",          json_object_new_string(p->C));
+	json_object_object_add(https_obj, "ST",         json_object_new_string(p->ST));
+	json_object_object_add(https_obj, "L",          json_object_new_string(p->L));
+	json_object_object_add(https_obj, "O",          json_object_new_string(p->O));
+	json_object_object_add(https_obj, "OU",         json_object_new_string(p->OU));
+	json_object_object_add(https_obj, "CN",         json_object_new_string(p->CN));
+	json_object_object_add(https_obj, "Email",      json_object_new_string(p->Email));
+
+	json_object_object_add(https_obj, "cert_name",  json_object_new_string(p->cert_name));
+
+	json_object_object_add(myobj, "https", https_obj);
+
+	PUT_CACHE_CONTROL_NOCACHE;
+	PUT_CONTENT_TYPE_JSON;
+	PUT_CRLF;
+	PUTSTR("%s\r\n", json_object_to_json_string(myobj));
+
+	// free
+	json_object_put(https_obj);
 	json_object_put(myobj);
 }
 
@@ -1088,6 +1131,12 @@ int do_search(char *pContents)
 					T_CGI_NETWORK_CONFIG2 t;memset(&t,0, sizeof t);
 					sysctl_message(UDS_GET_NETWORK_CONFIG2, (void*)&t, sizeof t );
 					put_json_network_config2(&t);
+					return 0;
+				}
+				else if(!strcmp(prm[i].value, "https_config")){
+					T_CGI_HTTPS_CONFIG t;memset(&t,0, sizeof t);
+					sysctl_message(UDS_GET_HTTPS_CONFIG, (void*)&t, sizeof t );
+					put_json_https_config(&t);
 					return 0;
 				}
 				else if(!strcmp(prm[i].value, "servers_config")){

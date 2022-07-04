@@ -1355,6 +1355,151 @@ static int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 	return isChanged;
 }
 
+static int getHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
+{
+	t->https_mode = app_set->net_info.https_mode;
+	sprintf(t->C,  "%s", app_set->net_info.ssc_C );
+	sprintf(t->ST, "%s", app_set->net_info.ssc_ST);
+	sprintf(t->L,  "%s", app_set->net_info.ssc_L );
+	sprintf(t->O,  "%s", app_set->net_info.ssc_O );
+	sprintf(t->OU, "%s", app_set->net_info.ssc_OU);
+	sprintf(t->CN, "%s", app_set->net_info.ssc_CN);
+	sprintf(t->Email, "%s", app_set->net_info.ssc_Email);
+	sprintf(t->cert_name, "%s", app_set->net_info.cert_name);
+
+	return 0;
+}
+
+static int setHttpsConfiguration(T_CGI_HTTPS_CONFIG *t)
+{
+	int isChanged=0; // web 에서 변화된 element가 있는지 확인 용도.
+
+	if(t->https_mode != app_set->net_info.https_mode) {
+		app_set->net_info.https_mode = t->https_mode;
+		isChanged++;
+	}
+
+	// self signed
+	if (t->https_mode == 1)
+	{
+		if (strlen(t->C) > 0 && 0 != strcmp(t->C, app_set->net_info.ssc_C))
+		{
+			sprintf(app_set->net_info.ssc_C, "%s", t->C);
+			isChanged++;
+		}
+		if (strlen(t->ST) > 0 && 0 != strcmp(t->ST, app_set->net_info.ssc_ST))
+		{
+			sprintf(app_set->net_info.ssc_ST, "%s", t->ST);
+			isChanged++;
+		}
+		if (strlen(t->L) > 0 && 0 != strcmp(t->L, app_set->net_info.ssc_L))
+		{
+			sprintf(app_set->net_info.ssc_L, "%s", t->L);
+			isChanged++;
+		}
+		if (strlen(t->O) > 0 && 0 != strcmp(t->O, app_set->net_info.ssc_O))
+		{
+			sprintf(app_set->net_info.ssc_O, "%s", t->O);
+			isChanged++;
+		}
+		if (strlen(t->OU) > 0 && 0 != strcmp(t->OU, app_set->net_info.ssc_OU))
+		{
+			sprintf(app_set->net_info.ssc_OU, "%s", t->OU);
+			isChanged++;
+		}
+		if (strlen(t->CN) > 0 && 0 != strcmp(t->CN, app_set->net_info.ssc_CN))
+		{
+			sprintf(app_set->net_info.ssc_CN, "%s", t->CN);
+			isChanged++;
+		}
+		if (strlen(t->Email) > 0 && 0 != strcmp(t->Email, app_set->net_info.ssc_Email))
+		{
+			sprintf(app_set->net_info.ssc_Email, "%s", t->Email);
+			isChanged++;
+		}
+
+		app_web_https_create_ssc(); // thread, 결과는 페이지 로딩 후 잘 생성되었는지 다시 확인하자
+
+	}
+	// normal ssl https mode
+	else if ( t->https_mode == 2) {
+	}
+
+	return isChanged;
+}
+
+static int InstallCertFile(T_CGI_HTTPS_CONFIG *t)
+{
+	int isChanged=0; // web 에서 변화된 element가 있는지 확인 용도.
+
+	if(t->https_mode != app_set->net_info.https_mode) {
+		app_set->net_info.https_mode = t->https_mode;
+		isChanged++;
+	}
+
+	if (strlen(t->cert_name) > 0 && 0 != strcmp(t->cert_name, app_set->net_info.cert_name))
+	{
+		sprintf(app_set->net_info.cert_name, "%s", t->cert_name);
+		isChanged++;
+	}
+
+	DBG_UDS("https_mode:%d, operation:%d\n", t->https_mode, t->cert_operation);
+
+	//  CA Signed
+	if (t->https_mode == 2)
+	{
+		char cmd[255];
+
+		if(t->cert_operation == 1) // Install
+		{
+			sprintf(cmd, "cp -rf %s %s", t->crt_file, PATH_HTTPS_CRT);
+			system(cmd);
+
+			sprintf(cmd, "cp -rf %s %s", t->key_file, PATH_HTTPS_KEY);
+			system(cmd);
+
+			sprintf(cmd, "cp -rf %s %s", t->ca_file, PATH_HTTPS_CA);
+			system(cmd);
+
+			// make pem file for lighttpd
+			sprintf(cmd, "cat %s %s > %s", PATH_HTTPS_KEY, PATH_HTTPS_CRT, PATH_HTTPS_PEM);
+			printf("Make PEM file for HTTPS CA, cmd:%s\n", cmd);
+			system(cmd);
+
+			if (access(PATH_HTTPS_PEM, R_OK) != 0)
+			{
+
+				printf("Failed to create PEM file for CA\n");
+				return -1;
+			}
+		}
+		else // Delete
+		{
+			sprintf(cmd, "rm -f %s %s %s", PATH_HTTPS_CRT, PATH_HTTPS_KEY, PATH_HTTPS_CA);
+			system(cmd);
+
+			// delete pem file for lighttpd
+			sprintf(cmd, "rm -f %s", PATH_HTTPS_PEM);
+			system(cmd);
+			DBG_UDS("Delete PEM file for HTTPS CA, cmd:%s\n", cmd);
+
+			if (access(PATH_HTTPS_PEM, R_OK) == 0)
+			{
+				DBG_UDS("Failed to Delete PEM file for CA\n");
+				return -1;
+			}
+
+			// HTTP 모드로 변경
+			app_set->net_info.https_mode = 0;
+
+		}
+
+		isChanged++;
+	}
+
+	return isChanged;
+}
+
 unsigned long prefix2mask(int prefix)
 {
 	struct in_addr mask;
@@ -2398,6 +2543,79 @@ void *myFunc(void *arg)
 			} else {
 				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
 				perror("failed write: ");
+			}
+		}
+		else if (strcmp(rbuf, "GetHttpsConfiguration") == 0) {
+			sysprint("[APP_UDS] --- GetHttpsConfiguration ---\n");
+
+			T_CGI_HTTPS_CONFIG t;memset(&t,0, sizeof t);
+			if(0 == getHttpsConfiguration(&t)){
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+				if (ret > 0) {
+					// TODO something...
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
+			}
+		}
+		else if (strcmp(rbuf, "SetHttpsConfiguration") == 0) {
+			sysprint("[APP_UDS] --- SetHttpsConfiguration ---\n");
+
+			sprintf(wbuf, "READY");
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+			if(ret > 0){
+				T_CGI_HTTPS_CONFIG t; memset(&t, 0, sizeof t);
+				ret = read(cs_uds, &t, sizeof(T_CGI_HTTPS_CONFIG));
+				DBG_UDS("Read, size=%d\n", ret);
+				if(ret > 0){
+					ret = setHttpsConfiguration(&t);
+
+					char strOptions[128] = "OK";
+					if(ret == 0)
+						sprintf(strOptions, "%s", "NO CHANGE");
+					else if(ret < 0){
+						// maybe does not occur
+						sprintf(strOptions, "%s", "ERROR");
+					}
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed read: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("failed write: ");
+			}
+		}
+		else if (strcmp(rbuf, "InstallCertFile") == 0) {
+			sysprint("[APP_UDS] --- InstallCertFile ---\n");
+
+			sprintf(wbuf, "READY"); // This means Send ack
+			ret = write(cs_uds, wbuf, sizeof wbuf);
+			if(ret > 0){
+				T_CGI_HTTPS_CONFIG t; memset(&t, 0, sizeof t);
+				ret = read(cs_uds, &t, sizeof(T_CGI_HTTPS_CONFIG));
+				DBG_UDS("Read T_CGI_HTTPS_CONFIG, size=%d\n", ret);
+				if(ret > 0){
+					ret = InstallCertFile(&t);
+
+					char strOptions[128] = "OK";
+					if(ret == 0)
+						sprintf(strOptions, "%s", "NO CHANGE");
+					else if(ret < 0){
+						// maybe does not occur
+						sprintf(strOptions, "%s", "ERROR");
+					}
+					ret = write(cs_uds, strOptions, sizeof strOptions);
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("Failed read T_CGI_HTTPS_CONFIG: ");
+				}
+			} else {
+				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+				perror("Failed write ACK: ");
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkConfiguration2") == 0)

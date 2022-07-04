@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.wapforum.org/DTD/xhtml-mobile12.dtd">
+<!-- 엠에스 인터넷 익스플로러에서는 동작안하네요 -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko">
+<head>
+    <META NAME="viewport" CONTENT="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
+    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8" />
+	<META HTTP-EQUIV="EXPIRES" CONTENT="0" />
+	<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE" />
+	<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE" />
+</head>
+<title>LINKFLOW</title>
+<script>
+var isSubmit;
+var isUpdating;
+var g_timer_interval = 0;
+
+function OnCreate()
+{
+	isSubmit = false;
+    isUpdating = false;
+}
+
+// Check Model Name
+function check_fwfile_prefix()
+{
+	var filepath = document.getElementById('fw').value;
+
+	if(filepath == null)
+		return false;
+
+    return true;
+		
+    /*
+	var fw_prefix = document.getElementById('fw_prefix').value;
+	var isMatch = filepath.search(fw_prefix);
+
+	//alert( fw_prefix +":"+ filepath +":"+ isMatch);
+
+	if(isMatch != -1)
+		return true;
+    */
+	
+	return false;
+	
+}
+
+function wait_progress() {
+	var node = document.getElementById('progressbar');
+	var w = node.style.width.match(/\d+/);
+	if(w >= 300){	
+		clearTimeout(g_timer_progressbar_id);
+    	//location.href(window.location.host+"/index.html");
+    	alert("Complete!!!");
+        isSubmit = false;
+        isUpdating = false;
+    	location.reload(false);
+	}
+	else {
+		node.style.width = parseInt(w) + 2 + 'px';
+		g_timer_progressbar_id = setTimeout(wait_progress, 1000);
+	}
+}
+
+
+function clear_update_state_timer(){
+
+	if(0 != g_timer_interval){
+    	//clearInterval( g_timer_interval );
+    	clearTimeout( g_timer_interval );
+	}
+}
+
+
+function go_fwupdate_no_progress() 
+{
+    // check running fw update
+	if(isSubmit == true){
+		alert('running setup');
+		return;
+	} 
+
+	//check file name...
+	if(false == check_fwfile_prefix()){
+		alert('invalid fw file');
+		return;
+	}
+	
+	var str = 'Are you sure?';
+
+	if( confirm(str) ) {
+
+        var msgbox = document.getElementById('wait_msg_box');
+        msgbox.style.display = "block";
+
+		form = document.fw_update;
+		
+		isSubmit = true;
+        isUpdating = true;
+		document.body.style.cursor = 'wait';
+
+        ////////////////////////////////////////////////////////////////////////////////
+		clear_update_state_timer();
+        //document.execCommand('Stop');
+        window.stop();
+		
+        var upgrade_msg = document.getElementById('upgrade_msg');
+
+		while(upgrade_msg.hasChildNodes()){
+			upgrade_msg.removeChild(upgrade_msg.firstChild);
+		}
+		
+		var p_empty = document.createElement("p");
+		p_empty.appendChild(document.createTextNode(" "));
+		upgrade_msg.appendChild(p_empty);
+
+		var p = document.createElement("p");
+		p.appendChild(document.createTextNode("Please, Wait for system reboot."));
+		upgrade_msg.appendChild(p);
+
+		var prog_obj = document.getElementById('progress_obj');
+		prog_obj.style.display = "block";
+		
+		g_timer_progressbar_id = setTimeout(wait_progress, 100);
+        ///////////////////////////////////////////////////////////////////////////////////
+
+		{
+			var ifr_update; //  global variable...?
+			ifr_update = document.getElementById("hidden_update_receiver");
+			if (ifr_update === null)
+			{
+				ifr_update = document.createElement('iframe');
+
+				ifr_update.id   = "hidden_update_receiver";
+				ifr_update.name = "hidden_update_receiver";
+				ifr_update.style.width  = '0px';
+				ifr_update.style.height = '0px';
+				ifr_update.style.display = 'none';
+				ifr_update.style.visibility = 'hidden';
+
+				document.body.appendChild(ifr_update);
+				ifr_update.onload = function(e) {
+					document.body.removeChild(ifr_update);
+					ifr_update = null;
+				}
+			}
+
+			if(ifr_update){
+				ifr_update.src = "";
+				form.target="hidden_update_receiver";
+				form.submit();
+			}
+		}
+
+	}
+}
+
+function fwupdate() 
+{
+    // 업데이트 상태 실시간 통신해가며...
+    //go_fwupdate_with_progress();
+
+    // 중간 상태 통신없이 
+    go_fwupdate_no_progress();
+}
+
+</script>
+
+<body onload="OnCreate()">
+<form method="post" action="/cgi/upload.cgi" name="fw_update" id="fw_update" enctype="multipart/form-data">
+    <table align="center" width="100%" border="0" cellpadding="2" cellspacing="0" bgcolor="#FFFFFF" >
+        <tr height="30px">
+            <td width="100%" align="center">Update firmware</td>
+        </tr>
+    <tr align="center" bgcolor="#E6E6E6">
+        <td height="1" colspan="2" bgcolor="#EDEDED"></td>
+    </tr>
+        <tr height="30px">
+            <td width="100%" align="center"><input type="file" name="fw" id="fw" />
+        </tr>
+    <tr align="center" bgcolor="#E6E6E6">
+        <td height="1" colspan="2" bgcolor="#EDEDED"></td>
+    </tr>
+    <tr height="30px">
+        <td width="100%" align="center">
+            <input type="button" value="update" onclick="fwupdate()" style="width:80px" />
+        </td>
+    </tr>
+    <tr >
+        <td width="100%" align="center">
+            <a href="../index.html">Home</a>
+        </td>
+    </tr>
+    </table>
+</form>
+
+<div id="wait_msg_box" style="display:none">
+    <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF" >
+        <tr>
+            <td align="left" valign="middle" bgcolor="#FFFFFF"> running setup wait for a time
+            </td>
+        </tr>
+        <tr>
+            <td id="upgrade_msg" name="upgrade_msg">		   
+                <p>&#160;</p>
+            </td>
+        </tr>
+        <tr>
+            <td align="left">
+                <div id="progress_obj" style="border: 1px solid black; width:300px; height:5px; display:none"> 
+                    <div id="progressbar" style="height:5px; width:0px; background-color:blue;" /> 
+                </div> 						    
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>
+

@@ -224,6 +224,99 @@ int sysctl_message(
 				}
 			}
 			break;
+
+		case UDS_GET_HTTPS_CONFIG:
+		{
+			// 1. write command
+			sprintf(wbuf, "%s", STR_MSG_GET_HTTPS_CONFIG);
+			ret = write(cs, wbuf, sizeof wbuf);
+			CGI_DBG("Sent CMD:%s\n", wbuf);
+
+			// wait response and read sizeof T_CGI_SERVERS_CONFIG bytes
+			ret = read(cs, (T_CGI_HTTPS_CONFIG *)data, sizeof(T_CGI_HTTPS_CONFIG));
+			CGI_DBG("Read, size:%d\n", ret);
+
+			if (ret > 0)
+			{
+				close(cs);
+				return 0;
+			}
+		}
+		break;
+
+		case UDS_SET_HTTPS_CONFIG:
+		{
+			// 1. write command
+			sprintf(wbuf, "%s", STR_MSG_SET_HTTPS_CONFIG);
+			ret = write(cs, wbuf, sizeof wbuf);
+			CGI_DBG("Sent CMD : %s\n", wbuf);
+
+			// 2. check ready
+			ret = read(cs, rbuf, sizeof rbuf);
+			CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+
+			// 3. write data
+			ret = write(cs, data, sizeof(T_CGI_HTTPS_CONFIG));
+			CGI_DBG("Sent Data, written len = %d\n", ret);
+
+			// 4. wait response and read 256 bytes
+			ret = read(cs, rbuf, sizeof rbuf);
+			CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+			if (ret > 0)
+			{
+
+				// check return value
+				if (strcmp(rbuf, "OK") == 0)
+				{
+					ret = ERR_NO_ERROR;
+				}
+				else if (strcmp(rbuf, "NO CHANGE") == 0)
+				{
+					ret = ERR_NO_CHANGE;
+				}
+
+				close(cs);
+				return ret;
+			}
+		}
+		break;
+
+		case UDS_INSTALL_CERT_FILE:
+		{
+			// 1. write command
+			sprintf(wbuf, "%s", STR_MSG_INSTALL_CERT_FILE);
+			ret = write(cs, wbuf, sizeof wbuf);
+			CGI_DBG("Sent CMD:%s\n", wbuf);
+
+			// 2. check ready
+			ret = read(cs, rbuf, sizeof rbuf);
+			CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+
+			// 3. write data
+			ret = write(cs, data, sizeof(T_CGI_HTTPS_CONFIG));
+			CGI_DBG("Sent Data, written len = %d\n", ret);
+
+			// 4. wait response and read 256 bytes
+			ret = read(cs, rbuf, sizeof rbuf);
+			CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+			if (ret > 0)
+			{
+				// check return value
+				if (strcmp(rbuf, "OK") == 0)
+				{
+					ret = ERR_NO_ERROR;
+				}
+				else if (strcmp(rbuf, "NO CHANGE") == 0)
+				{
+					ret = ERR_NO_CHANGE;
+				}
+
+				close(cs);
+				return ret;
+			}
+		}
+		break;
+
 		case UDS_GET_SERVERS_CONFIG:
 			{
 				// 1. write command

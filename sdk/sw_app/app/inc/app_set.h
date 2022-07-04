@@ -171,13 +171,27 @@ typedef struct{
     char dns_server1[MAX_CHAR_16] ;
     char dns_server2[MAX_CHAR_16] ;
 
-    unsigned short http_port ;
-    unsigned short https_port ;
-    unsigned short rtsp_port ;
-    unsigned short onvif_port ;
 
-    char rtsp_name[6] ;
-    short wtype ;			// wireless
+    // https connection mode, 0:http only(https disable), 1:https self signed, 2: https signed(ca)
+    char https_mode;                     
+
+    // for self signed certificate
+    char ssc_C[MAX_CHAR_64];           // Country
+    char ssc_ST[MAX_CHAR_64];          // State or Province
+    char ssc_L[MAX_CHAR_64];           // Location
+    char ssc_O[MAX_CHAR_64];           // Organization
+    char ssc_OU[MAX_CHAR_64];          // Organization Unit
+    char ssc_CN[MAX_CHAR_64];          // Common Name
+    char ssc_Email[MAX_CHAR_64];       // Email
+    char cert_name[MAX_CHAR_64];       // cert_name, e.g. nickname
+
+    unsigned short http_port;
+    unsigned short https_port;
+    unsigned short rtsp_port;
+    unsigned short onvif_port;
+
+    char rtsp_name[6];
+    short wtype;			// wireless
 
     char  http_enable;		// onvif device-2.1.34 mandatory
     char  https_enable;		// onvif device-2.1.34 mandatory
