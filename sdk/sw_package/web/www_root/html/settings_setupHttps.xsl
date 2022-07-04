@@ -97,8 +97,8 @@ function goHome() {
     window.location.href='/';
 }
 
-function OnCertsInstall() {
-
+function OnCertsInstall() 
+{
     var form = document.form_install_cert;
 
     var alphaExp = /^[0-9a-zA-Z]+$/;    
@@ -121,22 +121,26 @@ function OnCertsInstall() {
         return;
     }
 
-    /* Optional...Let's take it out for now
     if (form.ca_file.value.length == 0) {
         alert("Please select root CA file!");
         return;
     }
-    */
 
     form.submit();
 }
 
 function OnCertsDelete()
 {
+	if(confirm('Are you sure you want to delete the certificate?')){
+        // OK..continue
+	}else {
+		return false;
+	}
+
     var form = document.form_install_cert;
     
     form.cert_operation.value = 0;     // delete
-    form.cert_https_mode.value = document.setupHttps.http_mode.value;
+    form.cert_https_mode.value = document.setupHttps.https_mode.value;
     form.submit();
 }
 

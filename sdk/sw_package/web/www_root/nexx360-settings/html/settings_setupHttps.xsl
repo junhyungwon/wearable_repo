@@ -31,7 +31,6 @@ function init()
     SetMode(form.https_mode.value);
 
     document.form_install_cert.txt_cert_name.value = form.cert_name.value;
-
 }
 
 function onCreate() {
@@ -98,14 +97,16 @@ function goHome() {
     window.location.href='/';
 }
 
-function OnCertsInstall() {
-
-    var form = document.form_cert_install;
+function OnCertsInstall() 
+{
+    var form = document.form_install_cert;
 
     var alphaExp = /^[0-9a-zA-Z]+$/;    
     var form = document.form_install_cert;
-    form.cert_operation.value = 1;     // install or delete
+    form.cert_operation.value = 1;     // install:1 or delete:0
     form.cert_https_mode.value = document.setupHttps.https_mode.value;
+
+    // check valid cert name
     if (!form.txt_cert_name.value.match(alphaExp)) {
         alert("Please, enter valid certification name, you can input alphanumeric characters.");
         form.txt_cert_name.focus();
@@ -120,22 +121,26 @@ function OnCertsInstall() {
         return;
     }
 
-    /* Optional...
     if (form.ca_file.value.length == 0) {
         alert("Please select root CA file!");
         return;
     }
-    */
 
     form.submit();
 }
 
 function OnCertsDelete()
 {
-    var form = document.form_cert_install;
+	if(confirm('Are you sure you want to delete the certificate?')){
+        // OK..continue
+	}else {
+		return false;
+	}
+
+    var form = document.form_install_cert;
     
     form.cert_operation.value = 0;     // delete
-    form.cert_https_mode.value = document.setupHttps.http_mode.value;
+    form.cert_https_mode.value = document.setupHttps.https_mode.value;
     form.submit();
 }
 
@@ -360,7 +365,7 @@ function SetMode(https_mode){
                 </td>
             </tr>
             <tr>
-                <td><font size="3" color="gray">CA File</font></td>
+                <td><font size="3" color="gray">CA File(Optional)</font></td>
                 <td colspan="2">
                     <input type="file" name="ca_file" />
                 </td>

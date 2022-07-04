@@ -81,6 +81,11 @@ static int get_error_str(int err, char* out)
 		case ERR_NOT_SUPPORT:
 			sprintf(out, "%s", GetCgiStr("not_supported"));
 			break;
+
+		case SUBMIT_ERR:
+			sprintf(out, "%s", "Submit Error.");
+			break;
+
 		default:
 			return FALSE;
 	}

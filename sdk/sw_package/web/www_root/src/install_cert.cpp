@@ -87,6 +87,7 @@ static int submit_settings_qcgi()
 {
     int ret=SUBMIT_NO_CHANGE;
     qentry_t *req = NULL;
+    char fname[256];
 
     CGI_DBG("install_cert.cgi...\n");
 
@@ -106,7 +107,7 @@ static int submit_settings_qcgi()
         goto install_cert_out; 
     }
 
-    req = qcgireq_parse(req, 0);
+    req = qcgireq_parse(req, Q_CGI_ALL);
     if (req == NULL) {
         CGI_DBG("Can't parse req..\n");
         goto install_cert_out; 
@@ -125,14 +126,52 @@ static int submit_settings_qcgi()
         }
         strcpy(t.cert_name, str);
 
-        ret = sysctl_message(UDS_SET_HTTPS_CONFIG, (void*)&t, sizeof t );
+        str = req->getstr(req, "cert_operation", false);
+        if (str == NULL) {
+            CGI_DBG("Invalid paramter. cert_operation\n");
+            goto install_cert_out; 
+        }
+
+        t.cert_operation = atoi(str); // 1: install, 0:delete
+        CGI_DBG("cert_operation = %d\n", t.cert_operation);
+
+        str = req->getstr(req, "cert_https_mode", false);
+        if (str == NULL) {
+            CGI_DBG("Invalid paramter. cert_https_mode\n");
+            goto install_cert_out; 
+        }
+        int cert_https_mode = atoi(str);
+        CGI_DBG("cert_https_mode = %d\n", cert_https_mode);
+
+        // get uploaded files
+        if( t.cert_operation == 1 )
+        {
+            sprintf(fname, "%s", req->getstr(req, "cert_file", false));
+            rename(fname, TMP_SVR_CRT);
+            sprintf(fname, "%s", req->getstr(req, "key_file", false));
+            rename(fname, TMP_SVR_KEY);
+            sprintf(fname, "%s", req->getstr(req, "ca_file", false));
+            rename(fname, TMP_SVR_CA);
+
+            if (verify_crt(TMP_SVR_CRT, TMP_SVR_KEY, TMP_SVR_CA) < 0)
+            {
+                CGI_DBG("Invalid crt/key.\n");
+                goto install_cert_out;
+            }
+
+            sprintf(t.crt_file, "%s", TMP_SVR_CRT);
+            sprintf(t.key_file, "%s", TMP_SVR_KEY);
+            sprintf(t.ca_file,  "%s", TMP_SVR_CA);
+        }
+
+        t.https_mode = cert_https_mode;
+
+        ret = sysctl_message(UDS_INSTALL_CERT_FILE, (void*)&t, sizeof t );
+
         CGI_DBG("ret:%d\n", ret);
         if(0 > ret) {
             return SUBMIT_ERR;
         }
-		else if( ret == ERR_NO_CHANGE) {
-			return SUBMIT_NO_CHANGE;
-		}
 
         return SUBMIT_OK;
     }
@@ -146,23 +185,14 @@ install_cert_out:
 
 int main(int argc, char *argv[])
 {
-	int nError;
-
-	nError = submit_settings_qcgi();
+	int nError = submit_settings_qcgi();
 
     // for VUEJS
 #if PASS_RETURNS_TO_VUEJS
 	send_response(nError);
 #else 
 	if(nError == SUBMIT_OK){
-		// Must restart web server with new admin's password.
-		// 1. show ok window
-		// 2. and restart webserver
-
-        if (https_mode == 1)
-            wait_redirect(REDIRECT_CGI_PATH, 20); // SSC 만들때 시간이 좀 필요합니다
-        else 
-            wait_redirect(REDIRECT_CGI_PATH, 3);
+        wait_redirect(REDIRECT_CGI_PATH, 3);
 	}
 	else{
 		// return home
@@ -172,3 +202,5 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+// EOF

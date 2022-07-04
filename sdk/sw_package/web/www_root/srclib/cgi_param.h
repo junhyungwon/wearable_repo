@@ -80,6 +80,7 @@ typedef struct _tagCgiHttpsConfig {
     char CN[64];   // Common Name
     char Email[64];  
 
+    int  cert_operation;     // 1:install, 0:delete
     char cert_name[64];
     char crt_file[64];
     char key_file[64];
