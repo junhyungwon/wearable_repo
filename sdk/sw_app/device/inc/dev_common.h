@@ -134,6 +134,9 @@ int dev_board_uid_init(void);
 int dev_board_uid_read(char *data, int length);
 int dev_board_uid_write(const char *data, int length);
 
+int dev_board_cert_file_store(const char *fname);
+int dev_board_cert_file_load(const char *fname);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

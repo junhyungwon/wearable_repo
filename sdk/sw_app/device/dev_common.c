@@ -111,8 +111,6 @@ struct mtd_dev_info {
 #define PRETTY_ROW_SIZE 16
 #define PRETTY_BUF_LEN 80
 
-static char pagebuf[MTD_PAGESIZE];
-
 /****************************************************
  * NAME : int dev_input_get_bus_num(const char *dev_name)
  ****************************************************/
@@ -1017,7 +1015,7 @@ static int mtd_write(const struct mtd_dev_info *mtd, int fd, int eb,
 	return 0;
 }
 
-static int mtd_nand_read(char *data, int start, int length)
+static int mtd_nand_read_page(char *data, int start, int length)
 {
 	struct mtd_dev_info mtd;
 	
@@ -1211,15 +1209,20 @@ static int mtd_nand_write_page(const char *data, int start, int length)
  ******************************************************/
 int dev_board_serial_init(void)
 {
+	char *pagebuf = NULL;
 	char tmpbuf[16];
 	char strbuf[16];
 	
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+		
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
 	memset(tmpbuf, 0, 16);
 	memset(strbuf, 0, 16);
 	
 	/* Dump the 1 page contents 1st block, page 0 */
-	mtd_nand_read(pagebuf, 0, MTD_PAGESIZE);
+	mtd_nand_read_page(pagebuf, 0, MTD_PAGESIZE);
 	/* 4byte copy and compare AA55 */
 	memcpy(tmpbuf, pagebuf, 4);
 	snprintf(strbuf, sizeof(strbuf), "%s", tmpbuf); 
@@ -1238,61 +1241,53 @@ int dev_board_serial_init(void)
 		
 		mtd_nand_write_page(pagebuf, 0, 16);	
 	} 
-		
+	free(pagebuf);
+	
 	return 0;
 }
 
 int dev_board_serial_read(char *data, int length)
 {
+	char *pagebuf = NULL;
 	char *tmpbuf;
-	char strbuf[16];
 	
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+		
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
-	memset(strbuf, 0, 16);
-	
 	/* Dump the 1 page contents 1st block, page 0 */
-	mtd_nand_read(pagebuf, 0, MTD_PAGESIZE);
-	
+	mtd_nand_read_page(pagebuf, 0, MTD_PAGESIZE);
 	tmpbuf = pagebuf + 4; //# except magic code AA55
 	memcpy(data, tmpbuf, 16);
+	free(pagebuf);
 	
 	return 0;
 }
 
 int dev_board_serial_write(const char *data, int length)
 {
+	char *pagebuf = NULL;
 	char *tmpbuf;
-	char pretty_buf[PRETTY_BUF_LEN];
 	
 	if (length > MTD_PAGESIZE) {
 		dev_err("invalid length (< 2048)\n");
 		return -1;
 	}
-		
+	
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+			
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
-	
-	/* data copy */
 	strcpy(pagebuf, MTD_MAGIC);
-	
 	tmpbuf = pagebuf + 4;
 	memcpy(tmpbuf, data, length);
-	
 	/* erase block /dev/mtd7 block 0 ~ 4 */
 	system("/usr/sbin/flash_erase /dev/mtd7 0 5");
 	sleep(1);
-	
-	if (0) 
-	{
-		int i;
-		
-		for (i = 0; i < MTD_PAGESIZE; i += PRETTY_ROW_SIZE) {
-			pretty_dump_to_buffer((const unsigned char *)tmpbuf + i, PRETTY_ROW_SIZE,
-					pretty_buf, PRETTY_BUF_LEN, true, true, i);
-			write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
-		}
-	}
-		
 	mtd_nand_write_page(pagebuf, 0, (length + 4));
+	free(pagebuf);
 		
 	return 0;
 }
@@ -1304,15 +1299,20 @@ int dev_board_serial_write(const char *data, int length)
  ******************************************************/
 int dev_board_uid_init(void)
 {
+	char *pagebuf = NULL;
 	char tmpbuf[16];
 	char strbuf[16];
 	
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+		
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
 	memset(tmpbuf, 0, 16);
 	memset(strbuf, 0, 16);
 	
 	/* Dump the 1 page contents page 0xA0000 */
-	mtd_nand_read(pagebuf, 0xA0000, MTD_PAGESIZE);
+	mtd_nand_read_page(pagebuf, 0xA0000, MTD_PAGESIZE);
 	/* 4byte copy and compare AA55 */
 	memcpy(tmpbuf, pagebuf, 4);
 	snprintf(strbuf, sizeof(strbuf), "%s", tmpbuf); 
@@ -1323,69 +1323,180 @@ int dev_board_uid_init(void)
 		system("/usr/sbin/flash_erase /dev/mtd7 0xA0000 5");
 		/* wait erase done!! */
 		sleep(1);
-		
 		/* write magic code aa55 */
 		memset(pagebuf, 0xff, MTD_PAGESIZE);
 		strcpy(pagebuf, MTD_MAGIC);
 		strcpy(pagebuf+4, "empty");
-		
 		mtd_nand_write_page(pagebuf, 0xA0000, 16);	
 	} 
+	free(pagebuf);
 		
 	return 0;
 }
 
 int dev_board_uid_read(char *data, int length)
 {
+	char *pagebuf = NULL;
 	char *tmpbuf;
-	char strbuf[16];
 	
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+		
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
-	memset(strbuf, 0, 16);
-	
 	/* Dump the 1 page contents 1st block, page 0 */
-	mtd_nand_read(pagebuf, 0xA0000, MTD_PAGESIZE);
-	
+	mtd_nand_read_page(pagebuf, 0xA0000, MTD_PAGESIZE);
 	tmpbuf = pagebuf + 4; //# except magic code AA55
 	memcpy(data, tmpbuf, 16);
+	free(pagebuf);
 	
 	return 0;
 }
 
 int dev_board_uid_write(const char *data, int length)
 {
+	char *pagebuf = NULL;
 	char *tmpbuf;
-	char pretty_buf[PRETTY_BUF_LEN];
 	
 	if (length > MTD_PAGESIZE) {
 		dev_err("invalid length (< 2048)\n");
 		return -1;
 	}
-		
+	
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+			
 	memset(pagebuf, 0xff, MTD_PAGESIZE);
-	
-	/* data copy */
 	strcpy(pagebuf, MTD_MAGIC);
-	
 	tmpbuf = pagebuf + 4;
 	memcpy(tmpbuf, data, length);
-	
 	/* erase block /dev/mtd7 block 0 ~ 4 */
 	system("/usr/sbin/flash_erase /dev/mtd7 0xA0000 5");
 	sleep(1);
-	
-	if (0) 
-	{
-		int i;
-		
-		for (i = 0; i < MTD_PAGESIZE; i += PRETTY_ROW_SIZE) {
-			pretty_dump_to_buffer((const unsigned char *)tmpbuf + i, PRETTY_ROW_SIZE,
-					pretty_buf, PRETTY_BUF_LEN, true, true, i);
-			write(STDOUT_FILENO, pretty_buf, strlen(pretty_buf));
-		}
-	}
-		
 	mtd_nand_write_page(pagebuf, 0xA0000, (length + 4));
+	free(pagebuf);
 		
+	return 0;
+}
+
+/******************************************************
+ * NAME : int dev_board_cert_file_store(const char *fname)
+ * MTD7 block 10 ~ Block 20
+ ******************************************************/
+int dev_board_cert_file_store(const char *fname)
+{
+	char *pagebuf = NULL;
+	FILE *f;
+	unsigned int size;
+	int offset = 0;
+	
+	/* allocate big buffer */
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+	
+	f = fopen(fname, "r");
+	if (f == NULL) {
+		free(pagebuf);
+		return -1;
+	}
+	
+	fseek(f, 0, SEEK_END);
+	size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	
+	if (size > (512*1024)) {
+		/* big file size */
+		free(pagebuf);
+		fclose(f);
+		return -1;
+	}
+	
+	/* erase block /dev/mtd7 block 10 ~ 20 */
+	system("/usr/sbin/flash_erase /dev/mtd7 0x140000 11");
+	sleep(1);
+	
+	/* write file size */
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	memcpy(pagebuf, &size, 4);
+	mtd_nand_write_page(pagebuf, 0x140000, MTD_PAGESIZE);
+	
+	offset = 0x160000; //# 11th block
+	while (size > 0)
+	{
+		memset(pagebuf, 0xff, MTD_PAGESIZE);
+		
+		if (size >= MTD_PAGESIZE) {
+			fread(pagebuf, MTD_PAGESIZE, 1, f);
+			mtd_nand_write_page(pagebuf, offset, MTD_PAGESIZE);
+			offset += MTD_PAGESIZE;
+			size = size - MTD_PAGESIZE;
+		} 
+		else {
+			fread(pagebuf, size, 1, f);
+			mtd_nand_write_page(pagebuf, offset, MTD_PAGESIZE);
+			size = 0; //# break
+		}
+		
+	}
+	
+	free(pagebuf);
+	fclose(f);
+	
+	return 0;
+}
+
+/******************************************************
+ * NAME : int dev_board_cert_file_load(const char *fname)
+ * MTD7 block 10 ~ Block 20
+ ******************************************************/
+int dev_board_cert_file_load(const char *fname)
+{
+	char *pagebuf = NULL;
+	FILE *f;
+	unsigned int *size;
+	unsigned int r = 0;
+	int offset = 0;
+	
+	/* allocate big buffer */
+	pagebuf = (char *)malloc(MTD_PAGESIZE);
+	if (pagebuf == NULL)
+		return -1;
+	
+	f = fopen(fname, "w+");
+	if (f == NULL) {
+		free(pagebuf);
+		return -1;
+	}
+	
+	memset(pagebuf, 0xff, MTD_PAGESIZE);
+	/* Dump the 1 page contents 1st block, page 0 */
+	mtd_nand_read_page(pagebuf, 0x140000, MTD_PAGESIZE);
+	size = (unsigned int *)pagebuf;
+	r = *size;
+	fprintf(stderr, "read size %u\n", *size);
+	
+	offset = 0x160000; //# 11th block
+	while (r > 0)
+	{
+		memset(pagebuf, 0xff, MTD_PAGESIZE);
+		if (r >= MTD_PAGESIZE) {
+			mtd_nand_read_page(pagebuf, offset, MTD_PAGESIZE);
+			fwrite(pagebuf, MTD_PAGESIZE, 1, f);
+			offset += MTD_PAGESIZE;
+			r = r - MTD_PAGESIZE;
+		} 
+		else {
+			mtd_nand_read_page(pagebuf, offset, MTD_PAGESIZE);
+			fwrite(pagebuf, r, 1, f);
+			r = 0; //# break
+		}
+		
+	}
+	
+	free(pagebuf);
+	fclose(f);
+	
 	return 0;
 }
