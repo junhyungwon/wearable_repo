@@ -25,8 +25,8 @@ VAR_RUN_DIR = $(TARGET_PATH)/var/run
 HAVE_VAR_RUN_DIR = $(shell if [ -e $(VAR_RUN_DIR) ]; then echo 1; else echo 0; fi;)
 ifeq ($(HAVE_VAR_RUN_DIR),0)
 $(shell sudo mkdir -p $(VAR_RUN_DIR))
-endif 
- 
+endif
+
 # file system의 /opt/fit/bin directory 생성, 여기서 할 일은 아닌것 같은데...
 OPT_BIN_DIR = $(TARGET_PATH)/opt/fit/bin
 HAVE_OPT_BIN_DIR = $(shell if [ -e $(OPT_BIN_DIR) ]; then echo 1; else echo 0; fi;)
@@ -36,7 +36,7 @@ else
 #$(info *********** INFO $(OPT_BIN_DIR) exist.)
 endif
 
-#모델명 첵크 
+#모델명 첵크
 all:
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root/srclib
 	$(MAKE) -fMakefile -C $(EXTERNAL_PACKAGE)/web/www_root/default
@@ -55,7 +55,6 @@ install:
 #	sudo chown -R $(UID).$(UID) $(TARGET_PATH)/var/www/*
 	@echo "--- copying lighttpd configurations and tools..."
 	sudo cp -a $(WWW_DEV_DIR)/server/bin/* $(TARGET_PATH)/opt/fit/bin/
-	sudo cp -a $(WWW_DEV_DIR)/server/lib/* $(TARGET_PATH)/usr/lib/
 	sudo cp -a $(WWW_DEV_DIR)/server/lighttpd/* $(TARGET_PATH)/etc/lighttpd/
 	sudo ln -sf /tmp/lighttpd.user $(TARGET_PATH)/etc/lighttpd/lighttpd.user
 
