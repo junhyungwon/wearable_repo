@@ -13,12 +13,12 @@
  Defines referenced header files
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "app_main.h"
 #include "app_web.h"
 #include "app_set.h"
-
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -33,6 +33,8 @@ int deleteSelfSignedCertificate()
 	unlink(PATH_HTTPS_SS_PEM);
 
 	printf("Deleted SSC files\n");
+	
+	return 0;
 }
 
 int createSelfSignedCertificate(char *path_key, char* path_crt)
@@ -40,7 +42,7 @@ int createSelfSignedCertificate(char *path_key, char* path_crt)
 	char cmd[256];
 
 	if( access(PATH_SSL_ROOT , F_OK) != 0) {
-		mkdir(PATH_SSL_ROOT);
+		mkdir(PATH_SSL_ROOT, 0775);
 	}
 
 	// 입력된 정보가 올바르지 않을때, 기본으로 생성함
@@ -88,7 +90,6 @@ int createSelfSignedCertificate(char *path_key, char* path_crt)
 	}
 
 	printf("Succeed, create SS PEM\n");
-
 
 	return 0;
 }
