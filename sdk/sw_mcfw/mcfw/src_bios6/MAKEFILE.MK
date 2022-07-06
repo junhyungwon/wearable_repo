@@ -7,7 +7,6 @@ XDC_BUILD_PKG_LIST_M3      += $(XDC_BUILD_PKG_LIST_COMMON)
 FIRMWARE_OUT_PATH=$(TARGET_MCFW_DIR)/firmware/
 XEM3_IN_PATH=$(DEST_ROOT)/ipnc_rdk/bin/$(PLATFORM)/
 
-
 #---------------------------------------------------------------------
 m3vpss:
 	$(MAKE) -C $(MCFW_ROOT_PATH)/mcfw/src_bios6 CORE=m3vpss

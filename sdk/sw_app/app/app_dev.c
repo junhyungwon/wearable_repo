@@ -36,6 +36,7 @@
 #include "app_buzz.h"
 #include "app_bcall.h"
 #include "app_voip.h"
+#include "dev_common.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
