@@ -36,7 +36,7 @@ static int submit_settings_qcgi()
 		int  ddns_enable=-1;
 		int  ntp_enable=-1;
 		int  daylight_saving=-1;
-		int  enable_https=-1;
+		//int  enable_https=-1;
 		int  enable_onvif=-1;
 		int  time_zone=-99;
 		int  enable_p2p=1; // 무조건 1...
@@ -126,8 +126,8 @@ static int submit_settings_qcgi()
         if (str != NULL) { sprintf(t.time_zone_abbr, "%s", str); }
 
         // HTTPS
-        str= req->getstr(req, "enable_https", false);
-        if (str != NULL) { enable_https = atoi(str); }
+        //str= req->getstr(req, "enable_https", false);
+        //if (str != NULL) { enable_https = atoi(str); }
 
         // ONVIF
         str= req->getstr(req, "enable_onvif", false);
@@ -180,8 +180,8 @@ static int submit_settings_qcgi()
 
         //req->free(req);
 
-        CGI_DBG("bs_enable:%d, fota_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_https:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
-				bs_enable, fota_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_https, enable_onvif, time_zone, t.onvif.id, t.onvif.pw);
+        CGI_DBG("bs_enable:%d, fota_enable:%d, ms_enable:%d, ddns_enable:%d, ntp_enable:%d, daylight_saving:%d, enable_onvif:%d, time_zone:%d, onvif.id:%s, onvif.pw:%s\n", 
+				bs_enable, fota_enable, ms_enable, ddns_enable, ntp_enable, daylight_saving, enable_onvif, time_zone, t.onvif.id, t.onvif.pw);
 
 		if( bs_enable == -1 || fota_enable == -1 || ms_enable == -1 
 			|| ddns_enable == -1 || ntp_enable == -1 
@@ -191,10 +191,10 @@ static int submit_settings_qcgi()
 			return ERR_INVALID_PARAM;
 		}
 
-        if( enable_https == -1) {
-			CGI_DBG("Invalid Parameter HTTPS Enable variable\n");
-			return ERR_INVALID_PARAM;
-        }
+        //if( enable_https == -1) {
+	//		CGI_DBG("Invalid Parameter HTTPS Enable variable\n");
+	//		return ERR_INVALID_PARAM;
+        //}
 
         if( mediaserver_enable == -1) {
 			CGI_DBG("Invalid Parameter Media Server Enable variable\n");
@@ -229,7 +229,7 @@ static int submit_settings_qcgi()
 		t.daylight_saving = daylight_saving;
 		//t.time_zone = time_zone+12; // Device 에서는 +12 한값을 사용한다.
 		t.time_zone = time_zone;      // A value of +12 is only device.
-		t.https.enable = enable_https;
+		t.https.enable = 0;//enable_https;
 		t.onvif.enable = enable_onvif;
 		t.p2p.enable = enable_p2p; // FIXED 1.. 사용자 편의성을 위해서, 나중에 다시 풀라고 할지도 모름..-_-;;;
 
