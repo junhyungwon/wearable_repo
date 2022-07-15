@@ -82,14 +82,15 @@ typedef struct {
 	char path[MAX_CHAR_128];
 } app_ftp_t;
 
+/*
+#define CLIENT_CERTF  "/mmc/server.crt"
+#define CLIENT_KEYF   "/mmc/server.crt"
+#define CLIENT_CA_CERTF  "/mmc/server.crt"
+*/
 
-//#define CLIENT_CERTF  "/mmc/server.crt"
-//#define CLIENT_KEYF   "/mmc/server.key"
-//#define CLIENT_CA_CERTF  "/mmc/server.crt"
-
-#define CLIENT_CERTF "/mmc/certificate.crt"
-#define CLIENT_KEYF "/mmc/certificate.crt"
-#define CLIENT_CA_CERTF "/mmc/certificate.crt"
+#define CLIENT_CERTF "/mmc/my_pub_key.pem"
+#define CLIENT_KEYF "/mmc/my_priv_key.pem"
+#define CLIENT_CA_CERTF "/mmc/my_cert.pem"
 
 
 /*----------------------------------------------------------------------------
