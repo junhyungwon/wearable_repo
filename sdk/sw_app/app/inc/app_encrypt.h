@@ -33,6 +33,7 @@ extern "C"
 #endif
 
 int encrypt_aes(const char *src, char *dst, int len) ;
+char *SHA256_process(char *string) ;
 
 #ifdef __cplusplus
 }

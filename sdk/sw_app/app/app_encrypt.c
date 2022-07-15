@@ -24,6 +24,11 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdint.h>
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/aes.h>
+#include <openssl/sha.h>
 
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 #define Nb 4
@@ -305,4 +310,20 @@ int encrypt_aes(const char *src, char *dst, int length)
 
     printf("\n\n");
     return 0;
+}
+
+
+char *SHA256_process(char *string)
+{
+    int i = 0 ;
+	unsigned char digest[SHA256_DIGEST_LENGTH];
+	char mdString[SHA256_DIGEST_LENGTH*2 + 1] ;
+
+	SHA256((unsigned char*)&string, strlen(string), (unsigned char *)&digest);
+
+	for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
+		sprintf(&mdString[i*2],"%02x",(unsigned int)digest[i]) ;
+	printf("SHA256 digest: %s\n",mdString) ;
+
+    return mdString ;
 }
