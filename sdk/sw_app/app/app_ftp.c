@@ -67,7 +67,7 @@
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 #define RSIZE 1024
-//#define USE_SSL             
+#define USE_SSL             
 
 X509* server_cert ;
 X509_NAME *certname = NULL ;
@@ -296,7 +296,7 @@ static int ftp_transfer_file(int sd, char *filename)
 	FILE *in;
 	char buf[MSIZE];
 	size_t len;
-    int retval = 0, valopt = 0 ;
+    int retval = 0, valopt = 0, ret = 0 ;
     socklen_t lon ;
 
 	in = fopen(filename, "rb");
@@ -320,14 +320,41 @@ static int ftp_transfer_file(int sd, char *filename)
         {
 
 #if defined(USE_SSL)
-	    	if (SSL_write(iftp->dsslHandle, (void *)buf, len) == -1) {
+	    	ret = SSL_write(iftp->dsslHandle, (void *)buf, len) ; 
+	    	if (ret <= 0) {
+				switch(SSL_get_error(iftp->dsslHandle, ret))
+				{
+					case SSL_ERROR_NONE :
+						ftp_dbg("SSL_ERROR_NONE\n");
+						break ;
+					case SSL_ERROR_WANT_READ : 
+						ftp_dbg("SSL_ERROR_WANT_READ\n") ;
+						break ;
+					case SSL_ERROR_WANT_X509_LOOKUP :
+					    ftp_dbg("SSL_ERROR_WANT_X509_LOOKUP\n") ; 
+						break ;
+					case SSL_ERROR_WANT_WRITE :
+						ftp_dbg("SSL_ERROR_WANT_WRITE\n") ;
+						break ;
+					case SSL_ERROR_ZERO_RETURN :
+						ftp_dbg("SSL_ERROR_ZERO_RETURN\n") ;
+						break ;
+					case SSL_ERROR_SYSCALL :
+						ftp_dbg("SSL_ERROR_SYSCALL\n") ;
+						break ;
+
+				}
+				perror("send using SSL") ;
+				retval = -1 ;
+				break ;
+			}
 #else
-			if (send(sd, buf, len, MSG_NOSIGNAL) == -1) {
-#endif        
+			if (send(sd, buf, len, MSG_NOSIGNAL) == -1) {        
 	 		 	perror("send");
   	          	retval = -1 ;
   	          	break ;
 			}
+#endif			
 		}
 		
         OSA_waitMsecs(5) ;
@@ -715,12 +742,27 @@ static int ftp_close(int sd)
 		printf("FTP OK.\n");
 	}
 
-	close(sd); //close the socket
-
+#if defined(USE_SSL)
+	SSL_free(iftp->lsslHandle) ;
 	iftp->lsdFtp = -1 ;
+	SSL_CTX_free(iftp->dsslContext) ;
+#endif
+
+	close(sd); //close the socket
 	return 0;
 }
 
+static int ftp_data_close(int sd)
+{
+#if defined(USE_SSL)
+	SSL_free(iftp->dsslHandle) ;
+	iftp->dsdFtp = -1 ;
+	SSL_CTX_free(iftp->dsslContext) ;
+#endif
+	close(sd) ;
+    return 0 ;
+
+}
 static int get_netdev_link_status(void)
 {
 #if (FTP_CUR_DEV == FTP_DEV_ETH0)	
@@ -738,6 +780,9 @@ void SSL_Create(int sock_type)
 	int ret = 0 ;
 	char *str ;
 	// Register the error strings for libcrypto &libssl
+
+    signal(SIGPIPE, SIG_IGN) ;
+
 	if(!sock_type)
 	{
 	 	SSL_library_init() ;
@@ -804,6 +849,9 @@ void SSL_Create(int sock_type)
 			int error = SSL_get_error(iftp->lsslHandle, ret) ;
 			printf("SSL_connect error no = %d\n",error) ;
 			ERR_print_errors_fp(stderr);
+			SSL_free(iftp->lsslHandle) ;
+			SSL_CTX_free(iftp->lsslContext) ;
+			close(iftp->lsdFtp) ;
 		}
 		else
 		{
@@ -842,7 +890,10 @@ void SSL_Create(int sock_type)
 
 			}
 			else
+			{
 				printf("Server certificated fail..\n") ;
+				SSL_free(iftp->lsslHandle) ;
+			}
 		}
 	}
 	else
@@ -1241,6 +1292,10 @@ int fota_proc()
 
 		if(iftp->lsdFtp != -1)
 		{
+#if defined(USE_SSL)
+			SSL_Create(0) ;
+			connection_check(iftp->lsdFtp) ;
+#endif
 		 //read result
 			while(1)
 			{
@@ -1353,6 +1408,7 @@ int fota_proc()
 
 		// rm confile, firmware file
 		ftp_close(iftp->lsdFtp) ;
+		ftp_data_close(iftp->dsdFtp) ;
 		iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
 	}
 
@@ -1532,6 +1588,7 @@ static void ftp_send(void)
             app_leds_eth_status_ctrl(LED_FTP_OFF);
 		    iftp->ftp_state = FTP_STATE_SEND_DONE;
             ftp_close(iftp->lsdFtp);
+			ftp_data_close(iftp->dsdFtp) ;
 			ctrl_sys_halt(1) ;
 		}
 		else
