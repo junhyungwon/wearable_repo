@@ -29,7 +29,6 @@
 #	define SYS_CONFIG_VOIP				0        /* VOIP */
 #	define SYS_CONFIG_WLAN				1        /* Wi-Fi */  
 #	define SYS_CONFIG_GPS				1        /* GPS */
-#	define SYS_CONFIG_BUZZER			1        /* BUZZER */
 #	define SYS_CONFIG_SND_OUT			0        /* SOUND Output */
 #	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360B)          //# NEXX360 Basic
@@ -42,7 +41,6 @@
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				0
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			0
 #	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360M)          //# NEXX360 Basic + Military
@@ -55,7 +53,6 @@
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				0
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BUZZER			0
 #	define SYS_CONFIG_SND_OUT			0
 #	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXXB)
@@ -68,7 +65,6 @@
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			1
 #	define SYS_MCU_VER					0x0010
 #elif defined(LF_SYS_NEXXB_ONE)
@@ -81,7 +77,6 @@
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			1
 #	define SYS_MCU_VER					0x0010
 #elif defined(LF_SYS_NEXXONE_VOIP)
@@ -94,7 +89,6 @@
 #	define SYS_CONFIG_VOIP				1
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			1
 #	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360W_MUX)
@@ -107,7 +101,6 @@
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				1
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			0
 #	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360C)          //# NEXX360 CCTV (based on nexx360 basic + external battery)
@@ -120,7 +113,6 @@
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				0
 #	define SYS_CONFIG_GPS				0
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			0
 #	define SYS_MCU_VER					0x0020
 #elif defined(LF_SYS_NEXX360W_CCTV)     //# NEXX360 Wireless CCTV (external battery)
@@ -133,7 +125,6 @@
 #	define SYS_CONFIG_VOIP				0
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
-#	define SYS_CONFIG_BUZZER			1
 #	define SYS_CONFIG_SND_OUT			0
 #	define SYS_MCU_VER					0x0020
 #else

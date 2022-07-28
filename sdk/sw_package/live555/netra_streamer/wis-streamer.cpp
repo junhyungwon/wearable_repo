@@ -408,6 +408,7 @@ int main(int argc, char** argv) {
 	  }
 	  else
           authDB->addUserRecord(rtsp_username, rtsp_password); // replace these with real strings  
+//          authDB->addUserRecord(rtsp_username, NULL); // Do not use.. id/password   
   }
 //      authDB->addUserRecord("linkflow", "1"); // replace these with real strings  
    
@@ -415,7 +416,8 @@ int main(int argc, char** argv) {
   RTSPServer* rtspServer = NULL;
   // Normal case: Streaming from a built-in RTSP server:
   
-  rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
+  rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, NULL);
+//  rtspServer = RTSPServer::createNew(*env, rtspServerPortNum, authDB);
   if (rtspServer == NULL) {
     *env << "Failed to create RTSP server: " << env->getResultMsg() << "\n";
     exit(1);

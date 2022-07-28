@@ -260,6 +260,7 @@ static void char_memset(void)
     memset(app_set->sys_info.hw_ver, CHAR_MEMSET, MAX_CHAR_32);
     memset(app_set->sys_info.deviceId, CHAR_MEMSET, MAX_CHAR_32);
     app_set->sys_info.osd_set = CFG_INVALID; 
+    app_set->sys_info.beep_sound = CFG_INVALID; 
     app_set->sys_info.P2P_ON_OFF = CFG_INVALID; 
     memset(app_set->sys_info.p2p_id, CHAR_MEMSET, MAX_CHAR_32); 
     memset(app_set->sys_info.p2p_passwd, CHAR_MEMSET, MAX_CHAR_32); 
@@ -458,6 +459,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->sys_info.hw_ver   = %s\n", pset->sys_info.hw_ver);
     printf("pset->sys_info.deviceId = %s\n", pset->sys_info.deviceId); 
     printf("pset->sys_info.osd_set  = %d\n", pset->sys_info.osd_set); 
+    printf("pset->sys_info.beep_sound  = %d\n", pset->sys_info.beep_sound); 
     printf("pset->sys_info.P2P_ON_OFF  = %d\n", pset->sys_info.P2P_ON_OFF); 
     
     printf("pset->sys_info.p2p_id  = %s\n", pset->sys_info.p2p_id); 
@@ -691,6 +693,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->sys_info.osd_set < OFF || pset->sys_info.osd_set > ON)
         pset->sys_info.osd_set = ON ; 
 
+    if(pset->sys_info.beep_sound < OFF || pset->sys_info.beep_sound > ON)
+        pset->sys_info.beep_sound = ON ; 
 //    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)  
     pset->sys_info.P2P_ON_OFF = ON ;  // Ignore previous version values, Always ON
 
@@ -1251,6 +1255,7 @@ static void app_set_default(int default_type)
     }
 
     app_set->sys_info.osd_set = ON ;
+    app_set->sys_info.beep_sound = ON ;
     app_set->sys_info.P2P_ON_OFF = ON ;
 	app_set->sys_info.dev_cam_ch = MODEL_CH_NUM;
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 

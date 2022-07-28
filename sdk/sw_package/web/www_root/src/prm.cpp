@@ -268,6 +268,7 @@ int put_json_all_config()
 		json_object_object_add(operation_obj, "record", rec_obj);
 
 		json_object_object_add(misc_obj, "display_datetime", json_object_new_int(p.display_datetime));
+		json_object_object_add(misc_obj, "beep_sound", json_object_new_int(p.beep_sound));
 		json_object_object_add(operation_obj, "misc", misc_obj);
 
 	}
@@ -954,6 +955,7 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	json_object_object_add(myobj, "record", recordobj);
 
 	json_object_object_add(misc_obj, "display_datetime", json_object_new_int(p->display_datetime));
+	json_object_object_add(misc_obj, "beep_sound", json_object_new_int(p->beep_sound));
 	json_object_object_add(myobj, "misc", misc_obj);
 
 	PUT_CACHE_CONTROL_NOCACHE;

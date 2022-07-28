@@ -470,6 +470,7 @@ int main(int argc, char **argv)
 	if (mmc_state == SOK) {
 		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 		/* copy app_fitt.out or full update */
+		app_set_open();
 		ctrl_firmware_update();
 		/* app_mcu_pwr_off() 에서 종료 시 1로 만든다. */
 		if (app_cfg->ste.b.pwr_off)
@@ -487,7 +488,6 @@ int main(int argc, char **argv)
 	}
 	
 	//----------  SD 카드 ----------------------------------------------
-	app_set_open();
     app_setdns() ;  // set resolv.conf
 	//#--- system init
 	ret = main_thread_init();

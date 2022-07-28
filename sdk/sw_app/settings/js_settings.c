@@ -432,6 +432,8 @@ static int	parseSystemInfo(app_set_t* const set, json_object* rootObj)
 	sprintf(set->sys_info.deviceId, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "osd_set");
 	set->sys_info.osd_set = json_object_get_int(tmp);
+	tmp = json_object_object_get(jobj, "beep_sound");
+	set->sys_info.beep_sound = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "P2P_ON_OFF");
 	set->sys_info.P2P_ON_OFF = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "p2p_id");
@@ -942,6 +944,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 	json_object_object_add(sys_info, "hw_ver",     json_object_new_string(set->sys_info.hw_ver));
 	json_object_object_add(sys_info, "deviceId",   json_object_new_string(set->sys_info.deviceId));
 	json_object_object_add(sys_info, "osd_set",    json_object_new_int(set->sys_info.osd_set));
+	json_object_object_add(sys_info, "beep_sound",    json_object_new_int(set->sys_info.beep_sound));
 	json_object_object_add(sys_info, "P2P_ON_OFF", json_object_new_int(set->sys_info.P2P_ON_OFF));
 	json_object_object_add(sys_info, "p2p_id",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->sys_info.p2p_id, MAX_CHAR_32, &enc_size)));
 	json_object_object_add(sys_info, "p2p_passwd", json_object_new_string((const char*)base64_encode((const unsigned char*)set->sys_info.p2p_passwd, MAX_CHAR_32, &enc_size)));

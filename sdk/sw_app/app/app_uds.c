@@ -1648,6 +1648,14 @@ static int setDisplayDateTime(int display_datetime)
 
 	return 0;
 }
+
+static int setBeepsound(int beep_sound)
+{
+	if(app_set->sys_info.beep_sound != beep_sound){
+		app_set->sys_info.beep_sound = beep_sound;
+	}
+	return 0 ;
+}
 #if 0
 static int setP2PServer(int p2p_enable, char *username, char *password)
 {
@@ -3001,14 +3009,15 @@ void *myFunc(void *arg)
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
 			{
-				sprintf(strOptions, "%d %d %d %d %d %d %d",
+				sprintf(strOptions, "%d %d %d %d %d %d %d %d",
 						app_set->stm_info.enable_audio,     // 0:on, 1:off
 						app_set->rec_info.pre_rec,     // 0:on, 1:off
 						app_set->rec_info.auto_rec,    // 0:on, 1:off
 						app_set->rec_info.audio_rec,   // 0:on, 1:off
 						app_set->rec_info.period_idx,  // 0:1MIN, 1:5MIN
 						app_set->rec_info.overwrite,
-						app_set->sys_info.osd_set);
+						app_set->sys_info.osd_set,
+						app_set->sys_info.beep_sound);
 			}
 			ret = write(cs_uds, strOptions, sizeof strOptions);
 			if (ret > 0) {
@@ -3032,18 +3041,20 @@ void *myFunc(void *arg)
 				if(ret > 0){
 					int stream_enable_audio = 0;
 					int pre_rec=0, auto_rec=0, audio_rec=0, rec_interval=0, rec_overwrite=0;
-					int display_datetime=0;
-					sscanf(rbuf, "%d %d %d %d %d %d %d", 
+					int display_datetime=0, beep_sound = 0;
+					sscanf(rbuf, "%d %d %d %d %d %d %d %d", 
 							&stream_enable_audio,
 							&pre_rec,
 							&auto_rec,
 							&audio_rec,
 							&rec_interval,
 							&rec_overwrite,
-							&display_datetime);
+							&display_datetime,
+							&beep_sound);
 					setStreamOptions(stream_enable_audio);
 					setRecordOptions(pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite);
 					setDisplayDateTime(display_datetime);
+					setBeepsound(beep_sound) ;
 
 					char strOptions[128] = "OK";
 					ret = write(cs_uds, strOptions, sizeof strOptions);

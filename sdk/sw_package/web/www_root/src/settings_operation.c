@@ -34,6 +34,7 @@ int main()
 	printf("<rec_interval>%d</rec_interval>\n", t.rec.interval);
 	printf("<rec_overwrite>%d</rec_overwrite>\n", t.rec.overwrite);
 	printf("<display_datetime>%d</display_datetime>\n", t.display_datetime);
+	printf("<beep_sound>%d</beep_sound>\n", t.beep_sound);
 
 	printf("<model_name>%s</model_name>\n", MODEL_NAME);
 

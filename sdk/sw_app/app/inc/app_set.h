@@ -231,7 +231,8 @@ typedef struct {
     char p2p_passwd[MAX_CHAR_32] ;
 	char uid[MAX_CHAR_32];
 	short dev_cam_ch;		//# NEXXONE: 1, Any others: 4
-	char reserved[26];
+    short beep_sound ;
+	char reserved[24];
 } app_system_t;
 //} __attribute__((packed)) app_system_t;
 

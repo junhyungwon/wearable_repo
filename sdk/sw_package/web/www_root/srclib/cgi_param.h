@@ -148,6 +148,7 @@ typedef struct _tagCgiOperationConfiguration {
     T_CGI_STREAMING_CONFIG stm;
     T_CGI_RECORDING_CONFIG rec;
     int display_datetime;
+    int beep_sound;
     //T_CGI_P2PSERVER_CONFIG p2p;
 }T_CGI_OPERATION_CONFIG;
 
