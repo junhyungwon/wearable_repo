@@ -67,7 +67,7 @@
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 #define RSIZE 1024
-#define USE_SSL             
+//#define USE_SSL             
 
 X509* server_cert ;
 X509_NAME *certname = NULL ;
