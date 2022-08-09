@@ -21,7 +21,7 @@
  *
  *   You should have received a copy of the GNU Lesser General Public
  *   License along with this library; if not, write to the Free Software
- *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
 
@@ -97,17 +97,7 @@ extern struct snd_dlsym_link *snd_dlsym_start;
 /** \brief Returns the version of a dynamic symbol as a string. */
 #define SND_DLSYM_VERSION(version) __STRING(version)
 
-/* RTLD_NOW and RTLD_GLOBAL (used for 'mode' in snd_dlopen) are not defined
- * on all arches (e.g. blackfin), so provide a dummy definition here. */
-#ifndef RTLD_NOW
-#define RTLD_NOW 0
-#endif
-
-#ifndef RTLD_GLOBAL
-#define RTLD_GLOBAL 0
-#endif
-
-void *snd_dlopen(const char *file, int mode);
+void *snd_dlopen(const char *file, int mode, char *errbuf, size_t errbuflen);
 void *snd_dlsym(void *handle, const char *name, const char *version);
 int snd_dlclose(void *handle);
 

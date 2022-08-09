@@ -482,7 +482,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	sync();
 #endif
     release = _is_firmware_for_release() ; 
-    if(EFAIL == release) // RELEASE Version .. --> update file delete
+    if((EFAIL == release) || (FALSE == release)) // RELEASE Version .. --> update file delete
 	{
 		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
 		Delete_updatefile() ;	
@@ -535,8 +535,9 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		pthread_detach(tid_fw);
 	}
 #endif
-    if(FALSE == release)
-	    Delete_updatefile() ;
+    // 파일 삭제를 하면 업데이트가 안됨.
+	//if(FALSE == release)
+	//    Delete_updatefile() ;
 	
 	return 0;
 }
