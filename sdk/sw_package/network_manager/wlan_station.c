@@ -821,6 +821,7 @@ static void *THR_wlan_cli_main(void *prm)
 				netmgr_set_shm_ip_info(NETMGR_DEV_TYPE_WIFI, i_cli->ip, i_cli->mask, i_cli->gw);
 				netmgr_event_hub_dhcp_noty(NETMGR_DEV_TYPE_WIFI);
 				i_cli->stage = __STAGE_CLI_CONNECT_STATS;
+				//dprintf("__cli dhcp notify!!\n");
 				break;
 			
 			case __STAGE_CLI_DHCP_VERIFY:
@@ -834,6 +835,7 @@ static void *THR_wlan_cli_main(void *prm)
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 				}
+				//dprintf("__cli dhcp verify!!\n");
 				break;
 					
 			case __STAGE_CLI_SET_IP:
@@ -841,9 +843,11 @@ static void *THR_wlan_cli_main(void *prm)
 					netmgr_set_ip_static(cli_dev_name, i_cli->ip, i_cli->mask, i_cli->gw);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_CONNECT_STATS;
+					//dprintf("__cli set static ip!!\n");
 				} else { 
 					netmgr_udhcpc_start(cli_dev_name);
 					i_cli->stage = __STAGE_CLI_DHCP_VERIFY;
+					//dprintf("__cli dhcp start!!\n");
 				}
 				break;
 					
@@ -859,6 +863,7 @@ static void *THR_wlan_cli_main(void *prm)
 						i_cli->stage = __STAGE_CLI_ERROR_STOP;
 					}
 				}
+				//dprintf("__cli wait for auth!!\n");
 				break;
 				
 			case __STAGE_CLI_AUTH_START:
@@ -866,6 +871,7 @@ static void *THR_wlan_cli_main(void *prm)
 				__cli_start(i_cli->item.ssid, i_cli->item.passwd, i_cli->item.en_key);
 				i_cli->stage = __STAGE_CLI_WAIT_AUTH;
 				i_cli->cli_timer = 0;
+				//dprintf("__cli auth start!!\n");
 				break;
 			
 			case __STAGE_CLI_CHECK_ESSID:
@@ -876,6 +882,7 @@ static void *THR_wlan_cli_main(void *prm)
 				else {
 					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 				}
+				//dprintf("__cli check for essid!\n");
 				break;
 			
 			case __STAGE_CLI_WAIT_ACTIVE:
@@ -884,6 +891,7 @@ static void *THR_wlan_cli_main(void *prm)
 					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
 					i_cli->cli_timer = 0;	
 				}
+				//dprintf("__cli wait for active!\n");
 				break;
 					
 			case __STAGE_CLI_ERROR_STOP:
