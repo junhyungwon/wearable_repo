@@ -70,7 +70,7 @@ static struct omap2_hsmmc_info mmc[] = {
 	{
 		.mmc		= 1,
 		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_NEEDS_POLL,
-		.gpio_cd	= GPIO_TO_PIN(1, 6), /* Dedicated pins for CD and WP */
+		.gpio_cd        = -EINVAL, /* check setup_mmc2_pin_mux() */
 		.gpio_wp	= -EINVAL,
 		.ocr_mask	= MMC_VDD_33_34,
 	},
@@ -346,8 +346,8 @@ static const struct i2c_device_id pcf8575_video_id[] = {
 static struct i2c_client *pcf8575_1_client;
 static unsigned char pcf8575_1_port[2] = {0x4F, 0x7F};
 
-#define VPS_PCF8575_PIN0                (0x10)
-#define VPS_PCF8575_PIN1                (0x20)
+#define VPS_PCF8575_PIN0                (0x20)
+#define VPS_PCF8575_PIN1                (0x10)
 #define VPS_PCF8575_PIN2                (0x4)
 #define VPS_PCF8575_PIN3                (0x8)
 #define VPS_PCF8575_PIN4                (0x2)
@@ -545,8 +545,8 @@ static struct snd_platform_data dm385_evm_snd_data = {
 	.serial_dir	= dm385_iis_serializer_direction,
 	.asp_chan_q	= EVENTQ_2,
 	.version	= MCASP_VERSION_2,
-	.txnumevt	= 1,
-	.rxnumevt	= 1,
+	.txnumevt	= 64,
+	.rxnumevt	= 64,
 };
 
 /* NOR Flash partitions */
@@ -704,6 +704,7 @@ static void __init dm385_evm_init_irq(void)
 static struct snd_hdmi_platform_data dm385_snd_hdmi_pdata = {
 	.dma_addr = TI81xx_HDMI_WP + HDMI_WP_AUDIO_DATA,
 	.channel = 53,
+	.dma_chan_q = EVENTQ_0,
 	.data_type = 4,
 	.acnt = 4,
 	.fifo_level = 0x20,
@@ -756,6 +757,13 @@ void __init ti813x_hdmi_clk_init(void)
 }
 #endif
 
+static int setup_mmc2_pin_mux(void)
+{
+	return omap_mux_init_signal("spi0_cs1.gpio1_6",
+				TI814X_PIN_INPUT_PULL_UP);
+}
+
+
 static void __init dm385_evm_init(void)
 {
 	int bw; /* bus-width */
@@ -766,21 +774,12 @@ static void __init dm385_evm_init(void)
 	ti814x_evm_i2c_init();
 	ti81xx_register_mcasp(0, &dm385_evm_snd_data);
 
+	setup_mmc2_pin_mux();
 	omap2_hsmmc_init(mmc);
 
 	/* nand initialisation */
-	if (cpu_is_ti814x()) {
-		u32 *control_status = TI81XX_CTRL_REGADDR(0x40);
-		if (*control_status & (1<<16))
-			bw = 2; /*16-bit nand if BTMODE BW pin on board is ON*/
-		else
-			bw = 0; /*8-bit nand if BTMODE BW pin on board is OFF*/
-
-		board_nand_init(ti814x_nand_partitions,
-			ARRAY_SIZE(ti814x_nand_partitions), 0, bw);
-	} else
-		board_nand_init(ti814x_nand_partitions,
-		ARRAY_SIZE(ti814x_nand_partitions), 0, NAND_BUSWIDTH_16);
+    board_nand_init(ti814x_nand_partitions,
+		ARRAY_SIZE(ti814x_nand_partitions), 0, NAND_OMAP_BUS_16);
 
 	/* initialize usb */
 	usb_musb_init(&musb_board_data);

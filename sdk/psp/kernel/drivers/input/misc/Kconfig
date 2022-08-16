@@ -448,43 +448,4 @@ config INPUT_ADXL34X_SPI
 	  To compile this driver as a module, choose M here: the
 	  module will be called adxl34x-spi.
 
-config INPUT_BMA150
-	tristate "Triaxial Acceleration Sensor"
-	depends on INPUT_POLLDEV
-	default n
-	---help---
-	  Triaxial Acceleration Sensor device driver.
-
-config INPUT_KXCJ9 
-	tristate "KXCJ9 Triaxial Acceleration Sensor"
-	depends on INPUT_POLLDEV
-	default n
-	---help---
-	  Triaxial Acceleration Sensor device driver.
-
-config INPUT_KXCJ9_POLLED_MODE
-	tristate "KXCJ9 Polling Mode"
-	depends on INPUT_KXCJ9
-	default n
-	---help---
-	  KXCJ9 Polling Mode without irq.
-
-config INPUT_TMP105
-	tristate "Texas Instruments TMP421 and compatible"
-	depends on INPUT_POLLDEV
-	default n
-	help
-	  If you say yes here you get support for Texas Instruments TMP105
-	  temperature sensor chips.
-
-	  This driver can also be built as a module.  If so, the module
-	  will be called tmp105.
-	  	 
-config INPUT_UBX_RC
-	bool "UBX Remote Controller support"
-	depends on VIDEO_IR
-	default n
-	---help---
-	  Enables Remote Controller support on UBX.
-	  	  
 endif
