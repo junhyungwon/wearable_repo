@@ -629,21 +629,6 @@ config TOUCHSCREEN_TOUCHIT213
 	  To compile this driver as a module, choose M here: the
 	  module will be called touchit213.
 
-config TOUCHSCREEN_TSC2046
-	tristate "TSC2046 based touchscreens"
-	depends on SPI_MASTER
-	help
-	  Say Y here if you have a touchscreen interface using the
-	  TI TSC 2046 controller, and your board-specific initialization
-	  code includes that in its table of SPI devices.  Also make
-	  sure the proper SPI controller is selected.
-	
-	  If unsure, say N (but it's safe to say "Y").
-	
-	  To compile this driver as a module, choose M here: the
-	  module will be called tsc2046.
-	
-
 config TOUCHSCREEN_TSC2007
 	tristate "TSC2007 based touchscreens"
 	depends on I2C

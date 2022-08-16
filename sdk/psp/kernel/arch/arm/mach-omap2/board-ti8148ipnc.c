@@ -27,6 +27,7 @@
 #include <linux/i2c/at24.h>
 #include <linux/regulator/machine.h>
 #include <linux/mfd/tps65910.h>
+#include <linux/wl12xx.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
@@ -69,8 +70,24 @@ static struct omap_board_mux board_mux[] __initdata = {
 
 static struct omap2_hsmmc_info mmc[] = {
        {
-               .mmc            = 1,
-               .caps           = MMC_CAP_4_BIT_DATA,
+#ifdef CONFIG_WL12XX_PLATFORM_DATA
+/* WLAN_EN is GP2[22] */
+#define GPIO_WLAN_EN	((2 * 32) + 22)
+/* WLAN_IRQ is GP2[24] */
+#define GPIO_WLAN_IRQ	((2 * 32) + 24)
+		.mmc		= 1,
+		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_POWER_OFF_CARD,
+		.gpio_cd	= -EINVAL,
+		.gpio_wp	= -EINVAL,
+		.ocr_mask	= MMC_VDD_165_195,
+		.nonremovable	= true,
+	},
+	{
+		.mmc            = 2,
+#else
+		.mmc		= 1,
+#endif
+		.caps		= MMC_CAP_4_BIT_DATA,
                .gpio_cd        = 79,/* Dedicated pins for CD and WP */
                .gpio_wp        = 80,
                .ocr_mask       = MMC_VDD_33_34,
@@ -301,9 +318,10 @@ static struct snd_platform_data ti8148_evm_snd_data = {
 	.serial_dir	= ti8148_iis_serializer_direction,
 	.asp_chan_q	= EVENTQ_2,
 	.version	= MCASP_VERSION_2,
-	.txnumevt	= 1,
-	.rxnumevt	= 1,
+	.txnumevt	= 64,
+	.rxnumevt	= 64,
 };
+
 
 /* NAND flash information */
 static struct mtd_partition ti814x_nand_partitions[] = {
@@ -311,39 +329,67 @@ static struct mtd_partition ti814x_nand_partitions[] = {
 	{
 		.name           = "U-Boot-min",
 		.offset         = 0,    /* Offset = 0x0 */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 1 * SZ_256K,
+#else
 		.size           = SZ_128K,
+#endif
 	},
 	{
 		.name           = "U-Boot",
-		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x0 + 128K */
+		.offset         = MTDPART_OFS_APPEND,/* Offset = 0x0 + 128K */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 8 * SZ_256K,
+#else
 		.size           = 18 * SZ_128K,
+#endif
 	},
 	{
 		.name           = "U-Boot Env",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x260000 */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 1 * SZ_256K,
+#else
 		.size           = 1 * SZ_128K,
+#endif
 	},
 	{
 		.name           = "Kernel",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x280000 */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 17 * SZ_256K,
+#else
 		.size           = 34 * SZ_128K,
+#endif
 	},
 	{
 		.name           = "File System",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x6C0000 */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 420 * SZ_256K,
+#else
 		.size           = 840 * SZ_128K,
+#endif
 	},
-	{	
+	{
 		.name           = "Data",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x55C0000 */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 48 * SZ_256K,
+#else
 		.size           = 96 * SZ_128K,
+#endif
 	},
 	{
 		.name           = "File System2",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x61C0000 */
+#ifdef CONFIG_MTD_NAND_OMAP_ECC_BCH16_CODE_HW
+		.size           = 212 * SZ_256K,
+#else
 		.size           = 424 * SZ_128K,
+#endif
 	},
-	{	
+	{
 		.name           = "Reserved",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xB0C0000 */
 		.size           = MTDPART_SIZ_FULL,
@@ -376,8 +422,8 @@ static struct omap_musb_board_data musb_board_data = {
 #elif defined(CONFIG_USB_GADGET_MUSB_HDRC)
 	.mode           = MUSB_PERIPHERAL,
 #endif
-	.power			= 500,
-	.instances              = 1,
+	.power		= 500,
+	.instances	= 1,
 };
 
 #ifdef CONFIG_HAVE_PWM
@@ -406,6 +452,7 @@ static void __init ti8148_ipnc_init_irq(void)
 static struct snd_hdmi_platform_data ti8148_snd_hdmi_pdata = {
 	.dma_addr = TI81xx_HDMI_WP + HDMI_WP_AUDIO_DATA,
 	.channel = 53,
+	.dma_chan_q = EVENTQ_0,
 	.data_type = 4,
 	.acnt = 4,
 	.fifo_level = 0x20,
@@ -475,30 +522,134 @@ static int ti8148_evm_lsi_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
+static int setup_mmc2_pin_mux(void)
+{
+	return omap_mux_init_signal("spi0_cs1.gpio1_6",
+				TI814X_PIN_INPUT_PULL_UP);
+}
+
+#ifdef CONFIG_WL12XX_PLATFORM_DATA
+
+static struct wl12xx_platform_data wlan_data __initdata = {
+	.irq = OMAP_GPIO_IRQ(GPIO_WLAN_IRQ),
+	/* COM6 (127x) uses FREF */
+	.board_ref_clock = WL12XX_REFCLOCK_38_XTAL,
+	/* COM7 (128x) uses TCXO */
+	.board_tcxo_clock = WL12XX_TCXOCLOCK_26,
+};
+
+static int wl12xx_set_power(struct device *dev, int slot, int power_on,
+			    int vdd)
+{
+	static bool power_state;
+
+	pr_debug("Powering %s wl12xx", power_on ? "on" : "off");
+
+	if (power_on == power_state)
+		return 0;
+	power_state = power_on;
+
+	if (power_on) {
+		/* Power up sequence required for wl127x devices */
+		gpio_set_value(GPIO_WLAN_EN, 1);
+		usleep_range(15000, 15000);
+		gpio_set_value(GPIO_WLAN_EN, 0);
+		usleep_range(1000, 1000);
+		gpio_set_value(GPIO_WLAN_EN, 1);
+		msleep(70);
+	} else {
+		gpio_set_value(GPIO_WLAN_EN, 0);
+	}
+
+	return 0;
+}
+
+static void __init ti814x_wl12xx_wlan_init(void)
+{
+	struct device *dev;
+	struct omap_mmc_platform_data *pdata;
+	int ret;
+
+	/* Set up mmc0 muxes */
+	omap_mux_init_signal("mmc0_clk", TI814X_INPUT_EN | TI814X_PULL_UP);
+	omap_mux_init_signal("mmc0_cmd", TI814X_INPUT_EN | TI814X_PULL_UP);
+	omap_mux_init_signal("mmc0_dat0", TI814X_INPUT_EN | TI814X_PULL_UP);
+	omap_mux_init_signal("mmc0_dat1", TI814X_INPUT_EN | TI814X_PULL_UP);
+	omap_mux_init_signal("mmc0_dat2", TI814X_INPUT_EN | TI814X_PULL_UP);
+	omap_mux_init_signal("mmc0_dat3", TI814X_INPUT_EN | TI814X_PULL_UP);
+
+    /* Set up the WLAN_EN and WLAN_IRQ muxes */
+    //gpio1_15_mux1 is good for application daughter board
+    omap_mux_init_signal("gpio2_22", TI814X_PULL_DIS);
+    omap_mux_init_signal("gpio2_24", TI814X_INPUT_EN | TI814X_PULL_DIS);
+
+	/* Pass the wl12xx platform data information to the wl12xx driver */
+	if (wl12xx_set_platform_data(&wlan_data)) {
+		pr_err("Error setting wl12xx data\n");
+		return;
+	}
+
+	/*
+	 * The WLAN_EN gpio has to be toggled without using a fixed regulator,
+	 * as the omap_hsmmc does not enable/disable regulators on the TI814X.
+	 */
+	ret = gpio_request_one(GPIO_WLAN_EN, GPIOF_OUT_INIT_LOW, "wlan_en");
+	if (ret) {
+		pr_err("Error requesting wlan enable gpio: %d\n", ret);
+		return;
+	}
+
+	/*
+	 * Set our set_power callback function which will be called from
+	 * set_ios. This is requireq since, unlike other omap2+ platforms, a
+	 * no-op set_power function is registered. Thus, we cannot use a fixed
+	 * regulator, as it will never be toggled.
+	 * Moreover, even if this was not the case, we're on mmc0, for which
+	 * omap_hsmmc' set_power functions do not toggle any regulators.
+	 * TODO: Consider modifying omap_hsmmc so it would enable/disable a
+	 * regulator for ti814x/mmc0.
+	 */
+	dev = mmc[0].dev;
+	if (!dev) {
+		pr_err("wl12xx mmc device initialization failed\n");
+		return;
+	}
+
+	pdata = dev->platform_data;
+	if (!pdata) {
+		pr_err("Platform data of wl12xx device not set\n");
+		return;
+	}
+
+	pdata->slots[0].set_power = wl12xx_set_power;
+}
+
+static void __init ti814x_wl12xx_init(void)
+{
+	ti814x_wl12xx_wlan_init();
+}
+
+#else /* CONFIG_WL12XX_PLATFORM_DATA */
+
+static void __init ti814x_wl12xx_init(void) { }
+
+#endif
+
 static void __init ti8148_ipnc_init(void)
 {
-	int bw; /* bus-width */
 
 	ti814x_mux_init(board_mux);
 	omap_serial_init();
 	ti814x_evm_i2c_init();
 	ti81xx_register_mcasp(0, &ti8148_evm_snd_data);
 
+	setup_mmc2_pin_mux();
 	omap2_hsmmc_init(mmc);
 
 	/* nand initialisation */
-	if (cpu_is_ti814x()) {
-		u32 *control_status = TI81XX_CTRL_REGADDR(0x40);
-		if (*control_status & (1<<16))
-			bw = 2; /*16-bit nand if BTMODE BW pin on board is ON*/
-		else
-			bw = 0; /*8-bit nand if BTMODE BW pin on board is OFF*/
+	board_nand_init(ti814x_nand_partitions,
+		ARRAY_SIZE(ti814x_nand_partitions), 0, NAND_OMAP_BUS_16);
 
-		board_nand_init(ti814x_nand_partitions,
-			ARRAY_SIZE(ti814x_nand_partitions), 0, bw);
-	} else
-		board_nand_init(ti814x_nand_partitions,
-		ARRAY_SIZE(ti814x_nand_partitions), 0, NAND_BUSWIDTH_16);
 	/* initialize usb */
 	usb_musb_init(&musb_board_data);
 
@@ -509,6 +660,7 @@ static void __init ti8148_ipnc_init(void)
 	__raw_writel(0x0, DSS_HDMI_RESET);
 	platform_add_devices(ti8148_devices, ARRAY_SIZE(ti8148_devices));
 #endif
+	ti814x_wl12xx_init();
 	regulator_use_dummy_regulator();
 #ifdef CONFIG_HAVE_PWM
 	omap_register_pwm_config(ti8148_ipnc_pwm_cfg, ARRAY_SIZE(ti8148_ipnc_pwm_cfg));

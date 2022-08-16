@@ -109,14 +109,6 @@ config LCD_S6E63M0
 	  If you have an S6E63M0 LCD Panel, say Y to enable its
 	  LCD control driver.
 
-config LCD_ILI9325
-	tristate "ILI9325D LCD Driver"
-	depends on SPI_MASTER
-	default n
-	help
-	  If you have a ILI9325D controller chip
-	  then say y to include a power driver for it.
-
 endif # LCD_CLASS_DEVICE
 
 #
