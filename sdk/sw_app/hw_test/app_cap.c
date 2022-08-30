@@ -58,7 +58,7 @@ int app_cap_start(void)
 	if(iapp->ste.b.cap)		//# already start
 		return SOK;
 
-	dprintf("start ...\n");
+	DBG_HWT("start ...\n");
 
 	//#--- init params
 	Vsys_params_init(&vsysParams);
@@ -92,7 +92,7 @@ int app_cap_start(void)
 
 	iapp->ste.b.cap = 1;
 
-	dprintf("... done!\n");
+	DBG_HWT("... done!\n");
 
 	return SOK;
 }
@@ -102,7 +102,7 @@ int app_cap_stop(void)
 	if(!iapp->ste.b.cap)
 		return EINVALID;
 
-	dprintf("start ...\n");
+	DBG_HWT("start ...\n");
 	iapp->ste.b.cap = 0;
 
 	//#--- stop link
@@ -116,7 +116,7 @@ int app_cap_stop(void)
 	Vcap_exit();
 	Vsys_exit();
 
-	dprintf("... done!\n");
+	DBG_HWT("... done!\n");
 
 	return SOK;
 }

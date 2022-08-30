@@ -19,6 +19,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define DBG_HWDIAG
 //# error type
 #define SOK			(0)
 #define EFAIL		(-1)
@@ -54,12 +55,12 @@
 #define app_msleep(ms)		OSA_waitMsecs(ms)
 #define app_get_time()		OSA_getCurTimeInMsec()
 
-#define aprintf(x, ...)	printf(" [app ] \033[32m%s: \033[0m" x, __func__, ##__VA_ARGS__);
-#define eprintf(x, ...)	printf(" [app ] \033[41m ERR! \033[0m%s: " x, __func__, ##__VA_ARGS__);
-#ifdef SYS_DEBUG
-#define dprintf(x, ...)	printf(" [app ] %s: " x, __func__, ##__VA_ARGS__);
+#ifdef DBG_HWDIAG
+#define ERR_HWD(x, ...)	printf(" [hwtest err! ] \033[41m ERR! \033[0m%s: " x, __func__, ##__VA_ARGS__);
+#define DBG_HWD(x, ...)	printf(" [hwtest ] %s: " x, __func__, ##__VA_ARGS__);
 #else
-#define dprintf(x...)
+#define ERR_HWD(x, ...)	
+#define DBG_HWD(x, ...)	
 #endif
 
 #endif	/* _APP_COMM_H_ */

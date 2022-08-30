@@ -85,7 +85,7 @@ static void *THR_gui_run(void *prm)
 	app_thr_obj *tObj = &igui->uObj;
 	int cmd, exit=0;
 
-	aprintf("enter...\n");
+	DBG_HWT("enter...\n");
 	tObj->active = 1;
 
 	tvo_draw_logo(ENA);
@@ -115,7 +115,7 @@ static void *THR_gui_run(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("exit\n");
+	DBG_HWT("exit\n");
 
 	return NULL;
 }
@@ -130,7 +130,7 @@ int gui_main(void)
 
 	//#--- create thread - for communcation
 	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWT("create thread\n");
 		return EFAIL;
 	}
 	tObj->active = 1;
@@ -178,7 +178,7 @@ int app_gui_init(void)
 	//#--- create gui run thread
 	tObj = &igui->uObj;
 	if(thread_create(tObj, THR_gui_run, UI_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWT("create thread\n");
 		return EFAIL;
 	}
 

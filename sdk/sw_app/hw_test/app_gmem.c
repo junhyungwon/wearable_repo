@@ -61,13 +61,13 @@ int g_mem_init(void)
     prm.alignment = 32;
 
 	if(CMEM_init() < 0){
-		eprintf("CMEM init error\n");
+		ERR_HWT("CMEM init error\n");
 		return EFAIL;
 	}
 
 	igmem->s_addr = (int)CMEM_alloc(G_MEM_SIZE, &prm);
 	igmem->p_addr = (int)CMEM_getPhys((void *)igmem->s_addr);
-	dprintf("addr: 0x%X(phy: 0x%X), size:%dMB\n", igmem->s_addr, igmem->p_addr, (G_MEM_SIZE/MB));
+	DBG_HWT("addr: 0x%X(phy: 0x%X), size:%dMB\n", igmem->s_addr, igmem->p_addr, (G_MEM_SIZE/MB));
 
 	imem = (g_mem_info_t *)igmem->s_addr;
 	igmem->c_addr = igmem->s_addr+G_MEM_INFO_SIZE;

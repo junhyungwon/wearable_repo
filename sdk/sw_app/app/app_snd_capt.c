@@ -114,7 +114,7 @@ static snd_pcm_t * __snd_capt_dev_init(int ch, int rate, int period_frames)
 	
 out:
 	snd_pcm_hw_params_free(hw_params);
-	eprintf("alsa: init failed!!\n");
+	dprintf("alsa: init failed!!\n");
 	return NULL;
 }
 
@@ -188,7 +188,7 @@ static snd_pcm_t * __snd_dummy_dev_init(int ch, int rate, int period_frames)
 	
 out:
 	snd_pcm_hw_params_free(hw_params);
-	eprintf("alsa: init failed!!\n");
+	dprintf("alsa: init failed!!\n");
 	return NULL;
 }
 
@@ -225,7 +225,7 @@ static void *THR_snd_capt_main(void *prm)
 	char *psampv=NULL; /* playback sound buffer */
 	
 	tObj->active = 1;
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	/* 
 	 * set alsa period size (프레임 단위로 설정함)
@@ -237,7 +237,7 @@ static void *THR_snd_capt_main(void *prm)
 	/* Initialize ALSA MIC */
 	h_pcm_capt = __snd_capt_dev_init(APP_SND_CAPT_CH, APP_SND_CAPT_SRATE, pframes);
 	if (h_pcm_capt == NULL) {
-		eprintf("Failed to init sound record device!\n");
+		dprintf("Failed to init sound record device!\n");
 		return NULL;
 	}
 	
@@ -258,7 +258,7 @@ static void *THR_snd_capt_main(void *prm)
 	if (app_cfg->voip_set_ON_OFF) {
 		h_pcm_dummy = __snd_dummy_dev_init(APP_SND_CAPT_CH, APP_SND_CAPT_SRATE, pframes);
 		if (h_pcm_dummy == NULL) {
-			eprintf("Failed to init sound dummy device!\n");
+			dprintf("Failed to init sound dummy device!\n");
 			__snd_capt_dev_exit(h_pcm_capt);
 			free(csampv);
 			return NULL;
@@ -324,7 +324,7 @@ static void *THR_snd_capt_main(void *prm)
 						snd_pcm_resume(h_pcm_dummy);
 					} else {
 						/* debugging : 이 경우가 발생하면 안됨 */
-						eprintf("sound device write error(%d)!!\n", (int)r);
+						dprintf("sound device write error(%d)!!\n", (int)r);
 					}
 				} else if ((w >= 0) && ((size_t)w < r)) {
 					/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
@@ -336,7 +336,7 @@ static void *THR_snd_capt_main(void *prm)
 			//# audio codec : g.711
 			addr = g_mem_get_addr(bytes, &idx);
 			if(addr == NULL) {
-				eprintf("audio gmem is null!!\n");
+				dprintf("audio gmem is null!!\n");
 				continue;
 			}
 			
@@ -368,7 +368,7 @@ static void *THR_snd_capt_main(void *prm)
 				snd_pcm_prepare(h_pcm_capt);
 			} else {
 				/* debugging : 이 경우가 발생하면 안됨 */
-				eprintf("sound device read error(%d)!!\n", (int)r);
+				dprintf("sound device read error(%d)!!\n", (int)r);
 			}
 			continue;
 		} /* end of if (r > 0) */
@@ -388,7 +388,7 @@ static void *THR_snd_capt_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 	return NULL;
 }
 
@@ -411,11 +411,11 @@ int app_snd_capt_init(void)
 	//#--- create thread
 	if (thread_create(&isnd_capt->cObj, THR_snd_capt_main, APP_THREAD_PRI, 
 					NULL, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return -1;
 	}
 	
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	return 0;
 }
 

@@ -105,7 +105,7 @@ static int _chk_time_file(void)
 	//# change time
 	fp = fopen(file, "r");
 	if (fp == NULL) {
-		eprintf("cannot open %s\n", file);
+		dprintf("cannot open %s\n", file);
 		return 0;
 	}
 
@@ -201,7 +201,7 @@ static void *THR_dev(void *prm)
 	int mmc, cmd, value = 0;
 	int rkey, call_state;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -215,7 +215,7 @@ static void *THR_dev(void *prm)
 		mmc = dev_ste_mmc();
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
-			aprintf("SD Card removed.. system will restart!\n");
+			dprintf("SD Card removed.. system will restart!\n");
 			app_rec_stop(OFF);
 			app_mcu_pwr_off(OFF_RESET);
 		}
@@ -272,7 +272,7 @@ static void *THR_dev(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -290,7 +290,7 @@ static void *THR_dev(void *prm)
 	int mmc, cmd, value = 0;
 	int rkey, call_state;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -304,7 +304,7 @@ static void *THR_dev(void *prm)
 		mmc = dev_ste_mmc();
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
-			aprintf("SD Card removed.. system will restart!\n");
+			dprintf("SD Card removed.. system will restart!\n");
 			app_rec_stop(OFF);
 			app_mcu_pwr_off(OFF_RESET);
 		}
@@ -350,7 +350,7 @@ static void *THR_dev(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -367,7 +367,7 @@ static void *THR_dev(void *prm)
 	int mmc, cmd, value = 0;
 	int rkey, skey;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -381,7 +381,7 @@ static void *THR_dev(void *prm)
 		mmc = dev_ste_mmc();
 		if (mmc != app_cfg->ste.b.mmc) {
 			app_cfg->ste.b.mmc = mmc;
-			aprintf("SD Card removed.. system will restart!\n");
+			dprintf("SD Card removed.. system will restart!\n");
 			app_rec_stop(OFF);
 			app_mcu_pwr_off(OFF_RESET);
 		}
@@ -415,12 +415,12 @@ static void *THR_dev(void *prm)
 					// value 2, SOS Rec  , Value 1 Normal/Event REc
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_sos_send_stop(ON) ;
-					sysprint("[APP_SOS] End SOS Event !! \n");	
+					DBG("[APP_SOS] End SOS Event !! \n");	
 				} else {
 					//  Rec off or normal/event rec -> SOS ON
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_rec_evt(ON) ;  // SOS REC
-					sysprint("[APP_SOS] Occurs SOS Event !! \n");
+					DBG("[APP_SOS] Occurs SOS Event !! \n");
 				}
 				dprintf("SOS Short Key Pressed!\n");
 			} else if (skey == KEY_LONG) {	
@@ -430,7 +430,7 @@ static void *THR_dev(void *prm)
 		app_msleep(TIME_DEV_CYCLE);
 	}
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -456,11 +456,11 @@ int app_dev_init(void)
 	//#--- create thread
     tObj = &idev->devObj;
     if (thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create dev thread\n");
+    	dprintf("create dev thread\n");
 		return EFAIL;
     }
 
-	aprintf("....done!\n");
+	dprintf("....done!\n");
 
 	return SOK;
 }
@@ -479,5 +479,5 @@ void app_dev_exit(void)
 	/* gpio free */
 	dev_gpio_exit();
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 }

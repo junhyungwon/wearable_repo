@@ -755,11 +755,11 @@ int app_udpsock_init(void)
     tObj = &udpsock->udpObj ;
     if(thread_create(tObj, THR_udpsock, APP_THREAD_PRI, NULL, NULL) < 0)
     {
-        eprintf("create sock thread\n") ;
+        ERR_HWD("create sock thread\n") ;
         return EFAIL ;
     }
 	
-	aprintf("... done!\n");
+	DBG_HWD("... done!\n");
 
     return 0;
 }
@@ -779,5 +779,5 @@ void app_udpsock_exit(void)
 
     thread_delete(tObj);
 	
-	aprintf("... done!\n");
+	DBG_HWD("... done!\n");
 }

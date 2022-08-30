@@ -125,7 +125,7 @@ static int __rtc_valid_tm(struct tm *ptm)
 		|| ((unsigned)ptm->tm_min) >= 60
 		|| ((unsigned)ptm->tm_sec) >= 60) {
 		
-		eprintf("Invalid tm: --- %d-%d-%d %02d:%02d:%02d\n",
+		dprintf("Invalid tm: --- %d-%d-%d %02d:%02d:%02d\n",
 				ptm->tm_year, ptm->tm_mon, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 		return -1;
 	}
@@ -157,7 +157,7 @@ static int update_m3_time()
 	dprintf("m3 time: %d-%d-%d %d:%d:%d\n", pgm->tm_year + 1900, pgm->tm_mon + 1,
 				pgm->tm_mday, pgm->tm_hour, pgm->tm_min, pgm->tm_sec);
 	if (dev_rtc_set_time(*pgm) < 0) {
-		eprintf("Failed to set system time to rtc\n!!!");
+		dprintf("Failed to set system time to rtc\n!!!");
 	} else {
 		char buff[MAX_CHAR_128]={0};
 		sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
@@ -177,7 +177,7 @@ static int update_m3_time()
 char *get_timezone (int timezone, int daylightsaving)
 {
 	if(daylightsaving<0 || daylightsaving > 1) {
-		eprintf("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
+		dprintf("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
 		daylightsaving = 0;
 	}
 
@@ -465,7 +465,7 @@ static int time_sync(void)
 		dprintf("ntp time: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
 				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
 		if (dev_rtc_set_time(tp) < 0) {
-            eprintf("Failed to set system time to rtc\n!!!");
+            dprintf("Failed to set system time to rtc\n!!!");
         } else {
             dprintf("--- changed time from Time server ---\n");
             sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
@@ -498,7 +498,7 @@ static int time_sync(void)
             Vsys_datetime_init();   //# m3 Date/Time init
             app_msleep(100);
             if (dev_rtc_set_time(tv) < 0) {
-                eprintf("Failed to set system time to rtc\n!!!");
+                dprintf("Failed to set system time to rtc\n!!!");
             }
             else
                 dprintf("--- changed time default 2000 ---\n");
@@ -526,7 +526,7 @@ static void *THR_tsync(void *prm)
     int cmd, retry_cnt = 0;
     int exit = FALSE, retval = FALSE;
 
-    aprintf("enter...\n");
+    dprintf("enter...\n");
     itsync->tsync_status = TIMESYNC_READY;
     tObj->active = 1;
 
@@ -568,7 +568,7 @@ static void *THR_tsync(void *prm)
     }
 
     tObj->active = 0;
-    aprintf("...exit\n");
+    dprintf("...exit\n");
 
     return NULL;
 }
@@ -589,10 +589,10 @@ int app_tsync_init(void)
     tObj = &itsync->tsyncObj ;
     if(thread_create(tObj, THR_tsync, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
     {
-        eprintf("create tsync thread\n") ;
+        dprintf("create tsync thread\n") ;
         return EFAIL ;
     }
-    aprintf("... done!\n");
+    dprintf("... done!\n");
     
 	return 0 ;
 }
@@ -608,6 +608,6 @@ void app_tsync_exit(void)
 
     thread_delete(tObj);
 
-    aprintf("... done!\n");
+    dprintf("... done!\n");
 }
 

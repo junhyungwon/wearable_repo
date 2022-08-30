@@ -154,7 +154,7 @@ int ctrl_chk_network(void)
 
 	p = strstr(buf, "packets received") - 2;
 	recv_pack = (int)atoi(p);
-	dprintf("recv_pack : %d\n", recv_pack);
+	DBG_HWT("recv_pack : %d\n", recv_pack);
 
 	#if APP_RELEASE
 	fp = popen("ifconfig eth0 down", "r");

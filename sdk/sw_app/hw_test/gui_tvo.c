@@ -197,8 +197,8 @@ static int ui_draw_title(char *str, int font, ui_pos_t txt, int align, Upix col_
 
 	str_wi = draw_string_len(str, font);
 	if(str_wi > txt.w) {
-		eprintf("str length great than drawing area!\n");
-		eprintf("(%s)\n", str);
+		ERR_HWT("str length great than drawing area!\n");
+		ERR_HWT("(%s)\n", str);
 		return -1;
 	}
 
@@ -442,7 +442,7 @@ int test_time(app_thr_obj *tObj)
 	struct tm *ts;
 	char buf[128];
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("시간 확인");
 
@@ -481,7 +481,7 @@ int test_gps(app_thr_obj *tObj)
 	app_thr_obj *testObj = &itvo->aObj;
 	int ret;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("GPS 테스트");
 
@@ -500,7 +500,7 @@ int test_net(app_thr_obj *tObj)
 {
 	int ret;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 
 	while(1)
 	{
@@ -622,7 +622,7 @@ int test_usb(app_thr_obj *tObj)
 	app_thr_obj *testObj = &itvo->aObj;
 	int ret=0;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("USB 테스트");
 
@@ -670,7 +670,7 @@ int test_sens(app_thr_obj *tObj)
 	app_thr_obj *testObj = &itvo->aObj;
 	int ret;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("센서 및 입력 테스트");
 
@@ -707,7 +707,7 @@ int test_led(app_thr_obj *tObj)
 	app_thr_obj *testObj = &itvo->aObj;
 	int ret;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("LED 테스트");
 
@@ -771,7 +771,7 @@ static void _snd_set_swparam(snd_prm_t *prm, int mode)
 	snd_pcm_sw_params_alloca(&sw_params);
     err = snd_pcm_sw_params_current(handle, sw_params);
     if (err < 0) {
-        dprintf("Failed to get current software parameters\n");
+        DBG_HWT("Failed to get current software parameters\n");
     }
 	snd_pcm_sw_params_set_avail_min(handle, sw_params, period_size);
 
@@ -785,7 +785,7 @@ static void _snd_set_swparam(snd_prm_t *prm, int mode)
 
     err = snd_pcm_sw_params(handle, sw_params);
     if (err < 0) {
-        dprintf("Failed to set software parameters\n");
+        DBG_HWT("Failed to set software parameters\n");
     }
 }
 
@@ -811,7 +811,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	
 	err = snd_pcm_open(&handle, pcm_name, mode, 0);
 	if (err < 0) {
-		dprintf("alsa: could not open device '%s' (%s)\n", pcm_name, 
+		DBG_HWT("alsa: could not open device '%s' (%s)\n", pcm_name, 
 												snd_strerror(err));
 		goto out;
 	}
@@ -819,7 +819,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	snd_pcm_hw_params_alloca(&hw_params);
 	err = snd_pcm_hw_params_any(handle, hw_params);
 	if (err < 0) {
-		dprintf("Failed to initialize hardware parameters\n");
+		DBG_HWT("Failed to initialize hardware parameters\n");
 		goto out;
 	}
 
@@ -827,14 +827,14 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	err = snd_pcm_hw_params_set_access(handle, hw_params,
 							SND_PCM_ACCESS_RW_INTERLEAVED);
 	if (err < 0) {
-		dprintf("Failed to set access type\n");
+		DBG_HWT("Failed to set access type\n");
 		goto out;
 	}
 
 	/* Set sample format */
 	err = snd_pcm_hw_params_set_format(handle, hw_params, SND_PCM_FORMAT_S16_LE);
 	if (err < 0) {
-		dprintf("cannot set sample format!\n");
+		DBG_HWT("cannot set sample format!\n");
 		goto out;
 	}
 
@@ -843,26 +843,26 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	freq = prm->sample_rate;
 	err = snd_pcm_hw_params_set_rate_near(handle, hw_params, &freq, 0);
 	if (err < 0) {
-		dprintf("Failed to set frequency %d\n", freq);
+		DBG_HWT("Failed to set frequency %d\n", freq);
 		goto out;
 	}
 	
 	nchannels = prm->channel;
 	err = snd_pcm_hw_params_set_channels(handle, hw_params, nchannels);
 	if (err < 0) {
-		dprintf("Failed to set number of channels %d\n", nchannels);
+		DBG_HWT("Failed to set number of channels %d\n", nchannels);
 		goto out;
 	}
 
     err = snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0);
     if (err < 0) {
-        dprintf("Failed to set period size to %ld\n", period_size);
+        DBG_HWT("Failed to set period size to %ld\n", period_size);
         goto out;
     }
 
     err = snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size);
     if (err < 0) {
-        dprintf("Failed to set buffer size to %ld\n", buffer_size);
+        DBG_HWT("Failed to set buffer size to %ld\n", buffer_size);
         goto out;
     }
 
@@ -870,14 +870,14 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
     /* PCM device and prepare device  */
     err = snd_pcm_hw_params(handle, hw_params);
 	if (err < 0) {
-		dprintf("Unable to install hw params\n");
+		DBG_HWT("Unable to install hw params\n");
 		goto out;
 	}
 
 	/* prepare for audio device */
 	err = snd_pcm_prepare(handle);
     if (err < 0) {
-        printf("Could not prepare handle %p\n", handle);
+        DBG_HWT("Could not prepare handle %p\n", handle);
         goto out;
     }
 
@@ -886,7 +886,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	
 out:
 	if (err) {
-		dprintf("alsa: init failed: err=%d\n", err);
+		DBG_HWT("alsa: init failed: err=%d\n", err);
 	}
 	
 	return err;
@@ -909,7 +909,7 @@ static void _snd_start(snd_prm_t *prm)
 	/* Start */
 	err = snd_pcm_start(handle);
 	if (err) {
-		dprintf("alsa: could not start ausrc device %s, (%s)\n", 
+		DBG_HWT("alsa: could not start ausrc device %s, (%s)\n", 
 				prm->path, snd_strerror(err));
 	}
 }
@@ -952,21 +952,21 @@ static ssize_t _snd_read(snd_prm_t *prm)
 		{
 			switch (r) {
 			case 0:
-				dprintf(" Failed to read frames(zero)\n");
+				DBG_HWT(" Failed to read frames(zero)\n");
 				continue;
 
 			case -EAGAIN:
-				dprintf(" pcm wait (count = %d)!!\n", count);
+				DBG_HWT(" pcm wait (count = %d)!!\n", count);
 				snd_pcm_wait(handle, 100);
 				break;
 
 			case -EPIPE:
-				dprintf(" pcm overrun(count = %d)!!\n", count);
+				DBG_HWT(" pcm overrun(count = %d)!!\n", count);
 				snd_pcm_prepare(handle);
 				break;
 
 			default:
-				dprintf(" read error!!\n");
+				DBG_HWT(" read error!!\n");
 				return -1;
 			}
 		}
@@ -1008,23 +1008,23 @@ static ssize_t _snd_write(snd_prm_t *prm, size_t w_samples)
 
 		r = snd_pcm_writei(handle, rbuf, count);
 		if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
-			//dprintf("pcm write wait(100ms)!!\n");
+			//DBG_HWT("pcm write wait(100ms)!!\n");
 			snd_pcm_wait(handle, 100);
 		} else if (r == -EPIPE) {
-			//dprintf("pcm write underrun!!\n");
+			//DBG_HWT("pcm write underrun!!\n");
 			ret = snd_pcm_prepare(handle);
 			if (ret < 0) {
-				dprintf("Failed to prepare handle %p\n", handle);
+				DBG_HWT("Failed to prepare handle %p\n", handle);
 			}
 			continue;
 		} else if (r == -ESTRPIPE) {
 			ret = snd_pcm_resume(handle);
 			if (ret < 0) {
-				dprintf("Failed. Restarting stream.\n");
+				DBG_HWT("Failed. Restarting stream.\n");
 			}
 			continue;
 		} else if (r < 0) {
-			dprintf("write error\n");
+			DBG_HWT("write error\n");
 			return -1;
 		}
 
@@ -1066,7 +1066,7 @@ static void *thr_snd_in(void *prm)
 
 	r |= _snd_open("plughw:0,0", &snd_in_data);
 	if (r) {
-		eprintf("Failed to init sound device!\n");
+		ERR_HWT("Failed to init sound device!\n");
 	}
 	
 	_snd_start(&snd_in_data);
@@ -1115,7 +1115,7 @@ void *thr_snd_out(void *prm)
 
 	r |= _snd_open("plughw:0,0", &snd_out_data);
 	if (r) {
-		eprintf("Failed to init sound device!\n");
+		ERR_HWT("Failed to init sound device!\n");
 		return NULL;
 	}
 
@@ -1138,7 +1138,7 @@ int test_snd(app_thr_obj *tObj)
 {
 	int ret;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("오디오 입/출력 테스트");
 	draw_sub_text("PC의 사운드 출력을 오디오 입력에 연결합니다", 1, RGB_F_GRAY);
@@ -1214,7 +1214,7 @@ static void *thr_snd_in(void *prm)
 
 	r |= _snd_open("plughw:0,0", &snd_in_data);
 	if (r) {
-		eprintf("Failed to init sound device!\n");
+		ERR_HWT("Failed to init sound device!\n");
 	}
 	
 	_snd_start(&snd_in_data);
@@ -1260,7 +1260,7 @@ int test_snd(app_thr_obj *tObj)
 {
 	int ret;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("오디오 입력 테스트");
 
@@ -1281,7 +1281,7 @@ int test_video(app_thr_obj *tObj)
 	int ret;
 	ui_pos_t st;
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 
 	//# video layout
@@ -1308,7 +1308,7 @@ static int test_info(app_thr_obj *tObj)
 	int ret;
 	char ver[64];
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	draw_sub_clear();
 	draw_sub_title("시스템 정보");
 
@@ -1368,7 +1368,7 @@ static int draw_result(app_thr_obj *tObj, int cnt)
 	int ret, i, line=1, pass=1;
 	char buf[128];
 
-	aprintf("start...\n");
+	DBG_HWT("start...\n");
 	app_buzzer(100, 2);
 
 	draw_sub_clear();
@@ -1481,7 +1481,7 @@ int gui_test_main(void *thr)
 	}
 
 	test_cnt = sizeof(tf)/sizeof(test_func_t);
-	dprintf("test functions : %d\n", test_cnt);
+	DBG_HWT("test functions : %d\n", test_cnt);
 
 	app_buzzer(100, 2);
 	draw_menu(tObj, test_cnt);

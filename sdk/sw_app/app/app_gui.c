@@ -74,7 +74,7 @@ static void *THR_gui(void *prm)
 	app_thr_obj *tObj = &igui->uObj;
 	int cmd, res, exit=0;
 
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while (!exit)
@@ -91,7 +91,6 @@ static void *THR_gui(void *prm)
 			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
 				igui->tmr_cnt = 0;
 				/* check wis-streamer */
-//	 	    	system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs kill -9");
 				if (!ctrl_is_live_process((const char *)"wis-streamer"))
 					app_rtsptx_start();
 			} else {
@@ -175,7 +174,7 @@ static void *THR_gui(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -198,7 +197,7 @@ static void *THR_hdmi(void *prm)
 	app_thr_obj *tObj = &igui->hObj;
 	int cmd, exit=0;
 
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -226,7 +225,7 @@ static void *THR_hdmi(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -244,17 +243,17 @@ int app_gui_init(void)
     igui->tmr_cnt=0; igui->voip_tmr=0; igui->sd_err_tmr=0;
 	tObj = &igui->uObj;
     if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create gui thread\n");
+    	dprintf("create gui thread\n");
 		return EFAIL;
     }
 	
     tObj = &igui->hObj;
     if (thread_create(tObj, THR_hdmi, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create chagen video output thread\n");
+    	dprintf("create chagen video output thread\n");
 		return EFAIL;
     }
 
-    aprintf("... done!\n");
+    dprintf("... done!\n");
 
     return 0;
 }
@@ -277,5 +276,5 @@ void app_gui_exit(void)
     	app_msleep(20);
     thread_delete(tObj);
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 }

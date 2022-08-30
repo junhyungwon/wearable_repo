@@ -101,7 +101,7 @@ static Void THR_csock(Void *prm)
     msginit () ;
 	Sock_Init() ;
 
-    aprintf("enter....\n") ;
+    dprintf("enter....\n") ;
 #ifdef NETWORK_DEBUG
       DEBUG_PRI("THR_csock start done..!!\n") ;
 #endif
@@ -126,7 +126,7 @@ static Void THR_csock(Void *prm)
     release_message_manager(gMessageManager);
 
     tObj->active = 0 ;
-    aprintf("...exit\n");
+    dprintf("...exit\n");
 
 }
 
@@ -189,7 +189,7 @@ static Void *THR_ddns(Void *prm)
     system(stop_buffer) ;
 
     tObj->active = 0 ;
-    aprintf("...exit\n");
+    dprintf("...exit\n");
  
     return NULL ;
 }
@@ -205,7 +205,7 @@ int CSock_init()
     tObj = &inet->sockObj ;
     if(thread_create(tObj, THR_csock, APP_THREAD_PRI, NULL, __FILENAME__) < 0) 
     {
-        eprintf("create sock thread\n");
+        dprintf("create sock thread\n");
         return EFAIL;
     }
 
@@ -215,7 +215,7 @@ int CSock_init()
         tObj = &inet->ddnsObj ;
         if(thread_create(tObj, THR_ddns, APP_THREAD_PRI, NULL, __FILENAME__) < 0) 
         {
-            eprintf("create ddns thread\n");
+            dprintf("create ddns thread\n");
             return EFAIL;
         }
     }
@@ -245,5 +245,5 @@ void CSock_exit()
         thread_delete(tObj);
     }
 */
-    aprintf("... done\n") ;
+    dprintf("... done\n") ;
 }

@@ -257,7 +257,7 @@ static int flash_bad_block (int fd, uint8_t mtd_type, loff_t *blockstart)
 		}
 
 		if (badblock) {
-#ifdef DEBUG
+#ifdef DBG_DEV
 			fprintf (stderr, "Bad block at 0x%llx, "
 				 "skipping\n", *blockstart);
 #endif
@@ -346,7 +346,7 @@ static int flash_read_buf (int dev, int fd, void *buf, size_t count,
 			return -1;
 		}
 
-#ifdef DEBUG
+#ifdef DBG_DEV
 		fprintf (stderr, "Read 0x%x bytes at 0x%llx\n",
 			 rc, blockstart + block_seek);
 #endif
@@ -476,7 +476,7 @@ static int flash_write_buf(int dev, int fd, void *buf, size_t count,
 			return -1;
 		}
 
-#ifdef DEBUG
+#ifdef DBG_DEV
 		printf ("Write 0x%x bytes at 0x%llx\n", erasesize, blockstart);
 #endif
 		if (write(fd, data + processed, erasesize) != erasesize) {
@@ -536,7 +536,7 @@ static int flash_write (int fd_current, int fd_target, int dev_target)
 		return -1;
 	}
 
-#ifdef DEBUG
+#ifdef DBG_DEV
 	printf("Writing new environment at 0x%lx on %s\n",
 		DEVOFFSET (dev_target), DEVNAME (dev_target));
 #endif
@@ -552,7 +552,7 @@ static int flash_write (int fd_current, int fd_target, int dev_target)
 		off_t offset = DEVOFFSET (dev_current) +
 			offsetof (struct env_image_redundant, flags);
 
-#ifdef DEBUG
+#ifdef DBG_DEV
 		printf ("Setting obsolete flag in environment at 0x%lx on %s\n",
 			DEVOFFSET (dev_current), DEVNAME (dev_current));
 #endif

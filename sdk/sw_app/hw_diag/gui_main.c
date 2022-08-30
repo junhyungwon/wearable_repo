@@ -138,7 +138,7 @@ static int dev_ste_key(int gio)
 	int status;
 
 	gpio_get_value(gio, &status);
-	//dprintf("--- [key] value %d\n", status);
+	//DBG_HWD("--- [key] value %d\n", status);
 
 	return status;
 }
@@ -197,7 +197,7 @@ static void *thread_key(void *prm)
 
 		res = chk_rec_key();
 		if (res == KEY_SHORT || res == KEY_LONG) {
-			dprintf("REC KEY OK!!\n");
+			DBG_HWD("REC KEY OK!!\n");
 			send_keyPress(0) ;
 		}
 
@@ -206,7 +206,7 @@ static void *thread_key(void *prm)
 	
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWD("...exit\n");
 
 	return NULL;
 }
@@ -252,21 +252,21 @@ static int test_info(app_thr_obj *tObj)
 	char ver[64]={0,};
 //	char buf[64]={0,};
 	
-	aprintf("version test start...\n");
+	DBG_HWD("version test start...\n");
 
 	//# sw version
 	sprintf(ver, "%s", FITT360_SW_VER);
-	dprintf("sw version %s\n", ver);
+	DBG_HWD("sw version %s\n", ver);
 	strcpy(iapp->sw_ver, ver);
 
 	res = ctrl_get_hw_version(NULL);
 	iapp->hw_ver = res;
-	dprintf("hw version %d\n", res);
+	DBG_HWD("hw version %d\n", res);
 	
 	res = ctrl_get_mcu_version(ver);
 	iapp->mcu_ver = res;
 	/* sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF); */
-	dprintf("mcu version %s\n", ver);
+	DBG_HWD("mcu version %s\n", ver);
 	
 //	util_hexdump(buf, 64);
 	
@@ -280,7 +280,7 @@ static int test_buzzer(app_thr_obj *tObj)
 {
 	int res = 0;
 	
-	aprintf("buzzer test start...\n");
+	DBG_HWD("buzzer test start...\n");
 	
 	app_buzzer(100, 10);
 	
@@ -298,7 +298,7 @@ static int test_key(app_thr_obj *tObj)
 	{
 		res = chk_rec_key();
 		if (res == KEY_SHORT || res == KEY_LONG) {
-			dprintf("REC KEY OK!!\n");
+			DBG_HWD("REC KEY OK!!\n");
 			send_keyPress(0) ;
 		}
 		
@@ -358,7 +358,7 @@ static void _snd_set_swparam(snd_prm_t *prm, int mode)
 	snd_pcm_sw_params_alloca(&sw_params);
     err = snd_pcm_sw_params_current(handle, sw_params);
     if (err < 0) {
-        dprintf("Failed to get current software parameters\n");
+        DBG_HWD("Failed to get current software parameters\n");
     }
 	snd_pcm_sw_params_set_avail_min(handle, sw_params, period_size);
 
@@ -372,7 +372,7 @@ static void _snd_set_swparam(snd_prm_t *prm, int mode)
 
     err = snd_pcm_sw_params(handle, sw_params);
     if (err < 0) {
-        dprintf("Failed to set software parameters\n");
+        DBG_HWD("Failed to set software parameters\n");
     }
 }
 
@@ -398,7 +398,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	
 	err = snd_pcm_open(&handle, pcm_name, mode, 0);
 	if (err < 0) {
-		dprintf("alsa: could not open device '%s' (%s)\n", pcm_name, 
+		DBG_HWD("alsa: could not open device '%s' (%s)\n", pcm_name, 
 												snd_strerror(err));
 		goto out;
 	}
@@ -406,7 +406,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	snd_pcm_hw_params_alloca(&hw_params);
 	err = snd_pcm_hw_params_any(handle, hw_params);
 	if (err < 0) {
-		dprintf("Failed to initialize hardware parameters\n");
+		DBG_HWD("Failed to initialize hardware parameters\n");
 		goto out;
 	}
 
@@ -414,14 +414,14 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	err = snd_pcm_hw_params_set_access(handle, hw_params,
 							SND_PCM_ACCESS_RW_INTERLEAVED);
 	if (err < 0) {
-		dprintf("Failed to set access type\n");
+		DBG_HWD("Failed to set access type\n");
 		goto out;
 	}
 
 	/* Set sample format */
 	err = snd_pcm_hw_params_set_format(handle, hw_params, SND_PCM_FORMAT_S16_LE);
 	if (err < 0) {
-		dprintf("cannot set sample format!\n");
+		DBG_HWD("cannot set sample format!\n");
 		goto out;
 	}
 
@@ -430,26 +430,26 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	freq = prm->sample_rate;
 	err = snd_pcm_hw_params_set_rate_near(handle, hw_params, &freq, 0);
 	if (err < 0) {
-		dprintf("Failed to set frequency %d\n", freq);
+		DBG_HWD("Failed to set frequency %d\n", freq);
 		goto out;
 	}
 	
 	nchannels = prm->channel;
 	err = snd_pcm_hw_params_set_channels(handle, hw_params, nchannels);
 	if (err < 0) {
-		dprintf("Failed to set number of channels %d\n", nchannels);
+		DBG_HWD("Failed to set number of channels %d\n", nchannels);
 		goto out;
 	}
 
     err = snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0);
     if (err < 0) {
-        dprintf("Failed to set period size to %ld\n", period_size);
+        DBG_HWD("Failed to set period size to %ld\n", period_size);
         goto out;
     }
 
     err = snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size);
     if (err < 0) {
-        dprintf("Failed to set buffer size to %ld\n", buffer_size);
+        DBG_HWD("Failed to set buffer size to %ld\n", buffer_size);
         goto out;
     }
 
@@ -457,7 +457,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
     /* PCM device and prepare device  */
     err = snd_pcm_hw_params(handle, hw_params);
 	if (err < 0) {
-		dprintf("Unable to install hw params\n");
+		DBG_HWD("Unable to install hw params\n");
 		goto out;
 	}
 
@@ -473,7 +473,7 @@ static int _snd_open(const char *pcm_name, snd_prm_t *prm)
 	
 out:
 	if (err) {
-		dprintf("alsa: init failed: err=%d\n", err);
+		DBG_HWD("alsa: init failed: err=%d\n", err);
 	}
 	
 	return err;
@@ -496,7 +496,7 @@ static void _snd_start(snd_prm_t *prm)
 	/* Start */
 	err = snd_pcm_start(handle);
 	if (err) {
-		dprintf("alsa: could not start ausrc device %s, (%s)\n", 
+		DBG_HWD("alsa: could not start ausrc device %s, (%s)\n", 
 				prm->path, snd_strerror(err));
 	}
 }
@@ -539,21 +539,21 @@ static ssize_t _snd_read(snd_prm_t *prm)
 		{
 			switch (r) {
 			case 0:
-				dprintf(" Failed to read frames(zero)\n");
+				DBG_HWD(" Failed to read frames(zero)\n");
 				continue;
 
 			case -EAGAIN:
-				dprintf(" pcm wait (count = %d)!!\n", count);
+				DBG_HWD(" pcm wait (count = %d)!!\n", count);
 				snd_pcm_wait(handle, 100);
 				break;
 
 			case -EPIPE:
-				dprintf(" pcm overrun(count = %d)!!\n", count);
+				DBG_HWD(" pcm overrun(count = %d)!!\n", count);
 				snd_pcm_prepare(handle);
 				break;
 
 			default:
-				dprintf(" read error!!\n");
+				DBG_HWD(" read error!!\n");
 				return -1;
 			}
 		}
@@ -595,23 +595,23 @@ static ssize_t _snd_write(snd_prm_t *prm, size_t w_samples)
 
 		r = snd_pcm_writei(handle, rbuf, count);
 		if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
-			//dprintf("pcm write wait(100ms)!!\n");
+			//DBG_HWD("pcm write wait(100ms)!!\n");
 			snd_pcm_wait(handle, 100);
 		} else if (r == -EPIPE) {
-			//dprintf("pcm write underrun!!\n");
+			//DBG_HWD("pcm write underrun!!\n");
 			ret = snd_pcm_prepare(handle);
 			if (ret < 0) {
-				dprintf("Failed to prepare handle %p\n", handle);
+				DBG_HWD("Failed to prepare handle %p\n", handle);
 			}
 			continue;
 		} else if (r == -ESTRPIPE) {
 			ret = snd_pcm_resume(handle);
 			if (ret < 0) {
-				dprintf("Failed. Restarting stream.\n");
+				DBG_HWD("Failed. Restarting stream.\n");
 			}
 			continue;
 		} else if (r < 0) {
-			dprintf("write error\n");
+			DBG_HWD("write error\n");
 			return -1;
 		}
 
@@ -653,7 +653,7 @@ static void *thr_snd_in(void *prm)
 
 	r |= _snd_open("plughw:0,0", &snd_in_data);
 	if (r) {
-		eprintf("Failed to init sound device!\n");
+		ERR_HWD("Failed to init sound device!\n");
 	}
 	
 	_snd_start(&snd_in_data);
@@ -702,7 +702,7 @@ void *thr_snd_out(void *prm)
 
 	r |= _snd_open("plughw:0,0", &snd_out_data);
 	if (r) {
-		eprintf("Failed to init sound device!\n");
+		ERR_HWD("Failed to init sound device!\n");
 		return NULL;
 	}
 
@@ -725,7 +725,7 @@ int test_snd(app_thr_obj *tObj)
 {
 	int res;
 
-	aprintf("sount test start...\n");
+	DBG_HWD("sount test start...\n");
 	
 	pipe(snd_pipe);
 	/* create sound in/out thread */
@@ -770,7 +770,7 @@ int update_m3_time()
     struct tm *pgm;
     int    retval = FALSE;
 
- //  dprintf("--- update m3 time ---\n");
+ //  DBG_HWD("--- update m3 time ---\n");
 
  // time(), gmtime(), it represents the number of seconds elapsed since the Epoch, 1970-01-01 00:00:00 (UTC)
     time(&now);
@@ -778,7 +778,7 @@ int update_m3_time()
 
     if (dev_rtc_set_time(*pgm) < 0)
 	{
-        eprintf("Failed to set system time to rtc\n!!!");
+        ERR_HWD("Failed to set system time to rtc\n!!!");
     }
     else
     {
@@ -795,7 +795,7 @@ int update_m3_time()
 char *get_timezone (int timezone, int daylightsaving)
 {
     if(daylightsaving<0 || daylightsaving > 1) {
-        eprintf("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
+        ERR_HWD("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
         daylightsaving = 0;
     }
 
@@ -951,7 +951,7 @@ static void *THR_gui_run(void *prm)
 	app_thr_obj *tObj = &igui->uObj;
 	int cmd, exit=0;
 
-	aprintf("enter...\n");
+	DBG_HWD("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -974,7 +974,7 @@ static void *THR_gui_run(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("exit\n");
+	DBG_HWD("exit\n");
 
 	return NULL;
 }
@@ -989,7 +989,7 @@ int gui_main(void)
 	
 	//#--- create thread - for communcation
 	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
 	}
 	tObj->active = 1;
@@ -1036,14 +1036,14 @@ int app_gui_init(void)
 	//#--- create gui run thread
 	tObj = &igui->uObj;
 	if (thread_create(tObj, THR_gui_run, UI_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create ir thread
 	tObj = &igui->iObj;
 	if(thread_create(tObj, thread_key, UI_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return -1;
 	}
 

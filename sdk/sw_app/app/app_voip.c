@@ -186,7 +186,7 @@ static void __set_default_account(const char *login, const char *domain, const c
 		/* write account */
 		f = fopen(file, "w");
 		if (!f) {
-			eprintf("can't create conf %s file\n", file);
+			dprintf("can't create conf %s file\n", file);
 			return;
 		}
 		
@@ -206,10 +206,10 @@ static void __call_register_handler(void)
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
-		sysprint("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
+		DBG("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
 				ivoip->svr_port, ivoip->passwd);
 	} else {
-		sysprint("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
+		DBG("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
 				ivoip->svr_port, ivoip->passwd);
 	}
 }
@@ -231,11 +231,11 @@ static void __call_event_handler(void)
 	int action = ivoip->st.call_ste;
 	
 	if (!ivoip->st.call_reg) {
-		eprintf("not registered yet!!\n");
+		dprintf("not registered yet!!\n");
 		return;
 	}
 	
-	sysprint("baresip state is %s, send btn...\n", __action_str(action));
+	DBG("baresip state is %s, send btn...\n", __action_str(action));
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
 		/* 전화를 건다 */
@@ -291,7 +291,7 @@ static void __call_status_handler(void)
 	int is_reg = ivoip->st.call_reg;
 	int action = ivoip->st.call_ste;
 	
-	sysprint("baresip response is %s\n", __action_str(action));
+	DBG("baresip response is %s\n", __action_str(action));
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
 	{
@@ -348,7 +348,7 @@ static void *THR_voip_main(void *prm)
 	app_thr_obj *tObj = &ivoip->eObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -369,7 +369,7 @@ static void *THR_voip_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 
 	return NULL;
 }
@@ -384,7 +384,7 @@ static void *THR_voip_recv_msg(void *prm)
 	app_thr_obj *tObj = &ivoip->rObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	//# message queue
@@ -394,7 +394,7 @@ static void *THR_voip_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			eprintf("failed to receive voip process msg!\n");
+			dprintf("failed to receive voip process msg!\n");
 			continue;
 		}
 		
@@ -420,7 +420,7 @@ static void *THR_voip_recv_msg(void *prm)
 	tObj->active = 0;
 	
 	/* kill process ?? */
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 
 	return NULL;
 }
@@ -445,7 +445,7 @@ int app_voip_init(void)
 	ivoip->snd_level = SND_LEVEL_HIGH;
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
-		eprintf("can't access baresip execute file!\n");
+		dprintf("can't access baresip execute file!\n");
         return -1;
 	}
 	system(SIPC_CMD_STR);
@@ -453,13 +453,13 @@ int app_voip_init(void)
 	//# create recv msg thread.
 	tObj = &ivoip->rObj;
 	if (thread_create(tObj, THR_voip_recv_msg, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create SIP Client Receive Msg thread\n");
+    	dprintf("create SIP Client Receive Msg thread\n");
 		return EFAIL;
     }
 
 	tObj = &ivoip->eObj;
 	if (thread_create(tObj, THR_voip_main, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create SIP Client event poll thread\n");
+    	dprintf("create SIP Client event poll thread\n");
 		return EFAIL;
     }
 
@@ -467,7 +467,7 @@ int app_voip_init(void)
 	status = OSA_mutexCreate(&ivoip->lock);
 	OSA_assert(status == OSA_SOK);
 	
-    aprintf("... done!\n");
+    dprintf("... done!\n");
 
     return 0;
 }
@@ -543,7 +543,7 @@ void app_voip_stop(void)
 void app_voip_event_noty(void)
 {
 	if (!ivoip->st.call_reg) {
-		eprintf("Not registered!\n");
+		dprintf("Not registered!\n");
 		return;
 	}
 	__call_send_cmd(APP_CMD_NOTY);
@@ -557,7 +557,7 @@ void app_voip_event_noty(void)
 void app_voip_event_call_close(void)
 {
     if (!ivoip->st.call_reg) {
-        eprintf("Not registered!\n");
+        dprintf("Not registered!\n");
         return;
     }
     __call_send_cmd(APP_CMD_CALL_CLOSE);

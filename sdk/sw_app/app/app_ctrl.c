@@ -119,7 +119,7 @@ static int _is_firmware_for_release(void)
         }
 
 		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
-			sysprint("This FW is not for %s !!!\n", MODEL_NAME);
+			DBG("This FW is not for %s !!!\n", MODEL_NAME);
 			ret = EFAIL;
 		}
     }
@@ -146,7 +146,7 @@ static char *_findFirmware(const char *root)
 			return extPath;
 		}
 	} else {
-		notice("Not found firmware file in %s\n", root);
+		dprintf("Not found firmware file in %s\n", root);
 	}
 	globfree(&globbuf);
 
@@ -166,7 +166,7 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "%s/%s", FW_DIR, FW_VINFO_FNAME);
 	if(-1 == access(buf, 0)) {
-		sysprint("Failed to read %s!!!\n", buf);
+		DBG("Failed to read %s!!!\n", buf);
 		return EFAIL;
 	}
 
@@ -216,7 +216,7 @@ static void _check_micom_update(void)
 			}
 		}
 	} else {
-		eprintf("Failed to open %s\n", path);
+		dprintf("Failed to open %s\n", path);
 	}
 }
 
@@ -249,7 +249,7 @@ static int __normal_update(void)
 	int ret = 0;
 	int release = 1;
 	
-	aprintf("start...\n");
+	dprintf("start...\n");
 	
 	//# buzz: update
 	app_buzz_ctrl(50, 3);
@@ -258,7 +258,7 @@ static int __normal_update(void)
 	app_cfg->ste.b.busy = 1;
 	pFile = _findFirmware(FW_DIR); //# /mmc
 	if (pFile == NULL) {
-		sysprint("Firmware file is not exist !!!\n");
+		DBG("Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
 		return EFAIL;
 	}
@@ -267,7 +267,7 @@ static int __normal_update(void)
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc
 	if (_unpack_N_check((const char *)pFile, (const char *)FW_DIR, &release) == EFAIL) {
-		sysprint("It is not match model name in firmware file !!!\n");
+		DBG("It is not match model name in firmware file !!!\n");
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
@@ -277,7 +277,7 @@ static int __normal_update(void)
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
-	sysprint("Full version Firmware update done....\n");
+	DBG("Full version Firmware update done....\n");
 	dprintf("done! will restart\n");
 	ret = SOK;
 	
@@ -304,13 +304,13 @@ static int __emergency_update(void)
 	//# /mmc/firmware/*.dat 파일이 있는 지 확인.
 	pFile = _findFirmware(EMERGENCY_UPDATE_DIR);
 	if (pFile == NULL) {
-		sysprint("Emergency Firmware file is not exist !!!\n");
+		DBG("Emergency Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
 		return -1;
 	}
 	
 	//# buzz: update
-	aprintf("start...\n");
+	dprintf("start...\n");
 	app_buzz_ctrl(50, 3);
 	
 	/* unpack firmware */
@@ -401,7 +401,7 @@ static int Delete_updatefile()
 
 void *thrRunFWUpdate(void *arg)
 {
-	sysprint("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
+	DBG("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
 
 	app_buzz_ctrl(50, 3);		//# buzz: update
 	dev_fw_setenv("nand_update", "1", 0);
@@ -515,7 +515,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		// OK, ready to firmware upgrade
 	}
 	else {
-		eprintf("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
+		dprintf("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
 		//TODO: 실패할 경우, 압축해제한 파일들 처리
 		return -1;
 	}
@@ -528,7 +528,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		pthread_t tid_fw;
 		int ret = pthread_create(&tid_fw, NULL, thrRunFWUpdate, NULL);
 		if (ret != 0) {
-			eprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
+			dprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
 			return -1;
 		}
 		pthread_setname_np(tid_fw, __FILENAME__);
@@ -600,7 +600,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 
 	if(rc == RATE_CTRL_VBR)
 	{
-        sysprint("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
+        DBG("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
 
 		params.qpMax 	= 45;
 		params.qpInit 	= -1;
@@ -622,7 +622,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 	else	//# RATE_CTRL_CBR
 	{
-        sysprint("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
+        DBG("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
  
 		params.qpMin	= 2;//10;	//# for improve quality: 10->0
 		params.qpMax 	= 40;
@@ -763,13 +763,13 @@ int ctrl_vid_resolution(int resol_idx)
 	switch(resol_idx) {
 	default:
 	case 0:
-		sysprint("[APP_CTRL] --- change Display Mode to 480P ---\n");
+		DBG("[APP_CTRL] --- change Display Mode to 480P ---\n");
 		break;
 	case 1:
-		sysprint("[APP_CTRL] --- change Display Mode to 720P ---\n");
+		DBG("[APP_CTRL] --- change Display Mode to 720P ---\n");
 		break;
 	case 2:
-		sysprint("[APP_CTRL] --- change Display Mode to 1080P ---\n");
+		DBG("[APP_CTRL] --- change Display Mode to 1080P ---\n");
 		break;
     }
 	
@@ -916,14 +916,14 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 			if (subnet != NULL)
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
-			sysprint("[APP] --- Wireless ipaddress changed System Restart ---\n");
+			DBG("[APP] --- Wireless ipaddress changed System Restart ---\n");
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			sysprint("[APP] --- Ethernet ipaddress changed System Restart ---\n");
+			DBG("[APP] --- Ethernet ipaddress changed System Restart ---\n");
 		}
 	}	
 	
@@ -942,7 +942,7 @@ int ctrl_set_gateway(const char *gw)
     if (gw != NULL)
         strcpy(app_set->net_info.eth_gateway, gw);
 	
-	sysprint("[APP] --- Ethernet gateway changed System Restart ---\n");
+	DBG("[APP] --- Ethernet gateway changed System Restart ---\n");
 	ctrl_sys_halt(0); /* reboot */	
 
     return SOK;
@@ -1001,14 +1001,14 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
     set = mktime(&ts);
 
     strftime( buf, sizeof(buf), "%Y%2m%2d_%2H%2M%2S", &ts );
-    sysprint("[APP_CTRL] Time Change : %s\n", buf);
+    DBG("[APP_CTRL] Time Change : %s\n", buf);
 
     stime(&set);
     Vsys_datetime_init();   //# m3 Date/Time init
     OSA_waitMsecs(100);
 
     if (dev_rtc_set_time(ts) < 0) {
-        sysprint("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
+        DBG("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
     }   
 
     return 0;
@@ -1034,16 +1034,16 @@ int ctrl_mmc_check_exfat(unsigned long *size)
 
 	ret = dev_disk_mmc_part_check_info(MMC_BLK_DEV_NAME, &mmc_part);
 	if (ret) {
-		eprintf("please check sd card!!\n");
+		dprintf("please check sd card!!\n");
 		return -1;
 	}
 
 	if (mmc_part.part_size > MMC_SIZE_128GB) {
-		eprintf("Not suppoted sd card (%lu MB)!!\n", mmc_part.part_size);
+		dprintf("Not suppoted sd card (%lu MB)!!\n", mmc_part.part_size);
 		return -1;
 	}
 	if (mmc_part.part_no != 1) {
-		eprintf("Invalid partition sd card!!\n");
+		dprintf("Invalid partition sd card!!\n");
 		return -1;
 	}
 
@@ -1117,7 +1117,7 @@ int ctrl_mmc_check_partitions(void)
 
 	part_f = fopen("/proc/partitions", "r");
 	if (part_f == NULL) {
-		eprintf("couldn't open /proc/partitions\n");
+		dprintf("couldn't open /proc/partitions\n");
 		return -1;
 	}
 
@@ -1347,5 +1347,5 @@ void ctrl_sys_halt(int shutdown)
 		app_mcu_pwr_off(OFF_RESET);
 	}
 	
-	aprintf("....exit!\n");
+	dprintf("....exit!\n");
 }

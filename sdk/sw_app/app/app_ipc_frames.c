@@ -109,7 +109,7 @@ static void file_open(void)
 
 	fout = fopen(filename, "wb");
 	if(fout == NULL)
-		eprintf("file open!\n");
+		dprintf("file open!\n");
 }
 
 static unsigned int vcap_mmap(unsigned int physAddr, unsigned int size)
@@ -118,7 +118,7 @@ static unsigned int vcap_mmap(unsigned int physAddr, unsigned int size)
 
 	gMmap.mem_fd = open("/dev/mem",O_RDWR|O_SYNC);
     if(gMmap.mem_fd < 0) {
-		eprintf("/dev/mem open failed!\n");
+		dprintf("/dev/mem open failed!\n");
 		return -1;
     }
 
@@ -131,7 +131,7 @@ static unsigned int vcap_mmap(unsigned int physAddr, unsigned int size)
 			PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,
 			gMmap.mem_fd, gMmap.mmap_addr);
 	if (gMmap.mem_virtAddr==NULL) {
-		eprintf("mmap() failed!\n");
+		dprintf("mmap() failed!\n");
 		return -1;
 	}
 
@@ -291,7 +291,7 @@ static void ipcFramesInitThrdObj(IpcFramesCtrlThrdObj *tObj)
     {
         gIpcFramesCtrl.que_buf[i] = malloc(sizeof(frame_info_t));
         if(gIpcFramesCtrl.que_buf[i] == NULL)
-        	eprintf("ipcframes buffer alloc\n");
+        	dprintf("ipcframes buffer alloc\n");
 		
 		#if 0
         dprintf("que_buf 0x%x\n", (int)gIpcFramesCtrl.que_buf[i]);

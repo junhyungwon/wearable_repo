@@ -129,7 +129,7 @@ static size_t get_cfg_size (const char *file_name)
     struct stat sb;
 
     if (stat(file_name, &sb) != 0) {
-        eprintf("Failed the CFG file size.\n");
+        dprintf("Failed the CFG file size.\n");
         return 0;
     }
 
@@ -1064,7 +1064,7 @@ static int cfg_read(int is_mmc, char* cfg_path)
 	
 	if(is_mmc){
 		if (!app_cfg->ste.b.mmc) {
-			eprintf("#### NO INSERTED SD CARD !! ####\n");
+			dprintf("#### NO INSERTED SD CARD !! ####\n");
 			return EFAIL;
 		}
 	}
@@ -1073,13 +1073,13 @@ static int cfg_read(int is_mmc, char* cfg_path)
         mkdir(cfg_dir[is_mmc], 0775);
         chmod(cfg_dir[is_mmc], 0775);
 
-		eprintf("#### NOT EXIST CFG DIR [%s] !! ####\n", cfg_path);
+		dprintf("#### NOT EXIST CFG DIR [%s] !! ####\n", cfg_path);
 		return EFAIL;
     }
 
     if (-1 == access(cfg_path, 0)) {
 		//# cpoy nand cfg file to SD
-		eprintf("#### NOT EXIST CFG FILE IN [%s] !! ####\n", cfg_path);
+		dprintf("#### NOT EXIST CFG FILE IN [%s] !! ####\n", cfg_path);
 		return EFAIL;
 	}
 
@@ -1088,14 +1088,14 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
-		sysprint(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
+		DBG(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
 										cfg_path, app_set_size, saved_cfg_size);
 		return EFAIL;
 	} else {
 	    //#--- ucx app setting param
     	OSA_fileReadFile(cfg_path, (Uint8*)app_set, app_set_size, (Uint32*)&readSize);
 		if(readSize == 0 || readSize != app_set_size) {
-			eprintf(" #### CFG Read Failed [%s] !! ####\n", cfg_path);
+			dprintf(" #### CFG Read Failed [%s] !! ####\n", cfg_path);
 			return EFAIL;
 		}
 
@@ -1115,7 +1115,7 @@ static void app_set_default(int default_type)
 
 	int ich=0, channels = 0, i = 0;
 	
-	sysprint(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
+	DBG(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
 
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;
@@ -1251,7 +1251,7 @@ static void app_set_default(int default_type)
         strncpy(app_set->sys_info.deviceId, MacAddr, 12);
     }
     else {
-        eprintf( "Fatal error: Failed to get local host's MAC address\n" );
+        dprintf( "Fatal error: Failed to get local host's MAC address\n" );
     }
 
     app_set->sys_info.osd_set = ON ;
@@ -1495,7 +1495,7 @@ int app_set_write(void)
 			chmod(CFG_DIR_MMC, 0775);
 		}
         if(js_write_settings(app_set, NEXX_CFG_JSON_MMC) != OSA_SOK)
-			eprintf("couldn't open %s file\n", path);
+			dprintf("couldn't open %s file\n", path);
 	}
 	//# save cfg in nand.
 
@@ -1504,7 +1504,7 @@ int app_set_write(void)
 		chmod(CFG_DIR_NAND, 0775);
 	}
     if(js_write_settings(app_set, NEXX_CFG_JSON_NAND) != OSA_SOK)
-	    eprintf("couldn't open %s file\n", path);
+	    dprintf("couldn't open %s file\n", path);
 
 #else
 	if (app_cfg->ste.b.mmc)
@@ -1516,7 +1516,7 @@ int app_set_write(void)
 
 		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
 		if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
-			eprintf("couldn't open %s file\n", path);
+			dprintf("couldn't open %s file\n", path);
 		}
    }
 
@@ -1530,13 +1530,13 @@ int app_set_write(void)
 	snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
 	
 	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
-		eprintf("couldn't open %s file\n", path);
+		dprintf("couldn't open %s file\n", path);
 	}
 #endif
 	
 	dprintf("CFG sync start..\n");
 	sync();
-	aprintf("....exit!\n");
+	dprintf("....exit!\n");
 
 	return 0;
 }
@@ -1557,7 +1557,7 @@ int get_frame_size(int resol, int *wi, int *he)
 		*he = 480;
 	}
 	else {
-		eprintf("Invaild resol param %d\n", resol);
+		dprintf("Invaild resol param %d\n", resol);
 		return EFAIL;
 	}
 
@@ -1575,7 +1575,7 @@ int app_set_web_password(char *id, char *pw, int lv, int authtype)
 		app_set_write() ;
 		return 0;
 	}
-	eprintf(" Can't set %s's password\n", id);
+	dprintf(" Can't set %s's password\n", id);
 
 	return -1;
 }
@@ -1589,7 +1589,7 @@ int app_set_onvif_password(char *id, char *pw, int lv)
 
 		return 0;
 	}
-	eprintf("ONVIF Can't set %s's password to %s\n", id, pw);
+	dprintf("ONVIF Can't set %s's password to %s\n", id, pw);
 
 	return -1;
 }

@@ -34,6 +34,7 @@
 
 #include "gnss_ipc_cmd_defs.h"
 
+#if SYS_CONFIG_GPS
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -122,7 +123,7 @@ static void *THR_gps_jack_detect(void *prm)
 	int exit = 0, cmd = 0;
 	int res = 0, val;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	app_leds_gps_ctrl(LED_GPS_OFF); //#default LED OFF
@@ -169,7 +170,7 @@ static void *THR_gps_jack_detect(void *prm)
 	
 	gpio_exit(GPS_PWR_EN);
 	tObj->active = 0;
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 		
 	return NULL;
 }
@@ -186,7 +187,7 @@ static void *THR_gps_main(void *prm)
 	int first = 0;
 	int poll_done=0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	/* meta reset */
@@ -229,7 +230,7 @@ static void *THR_gps_main(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -240,26 +241,26 @@ static int __gps_ready_event_handle(void)
 	
 	tObj = &igps->hObj;
 	if (thread_create(tObj, THR_gps_main, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create gps jack detect thread
 	tObj = &igps->pObj;
 	if (thread_create(tObj, THR_gps_jack_detect, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 
 	igps->shmid = shmget((key_t)GNSS_SHM_KEY, 0, 0);
 	if (igps->shmid == -1) {
-		eprintf("shared memory for gps is not created!!\n");
+		dprintf("shared memory for gps is not created!!\n");
 	}
 	
 	//# get shared memory
 	igps->sbuf = (unsigned char *)shmat(igps->shmid, NULL, 0);
 	if (igps->sbuf == NULL) {
-		eprintf("shared memory for gps scan is NULL!!!");
+		dprintf("shared memory for gps scan is NULL!!!");
 	}
 	
 	return SOK;
@@ -292,7 +293,7 @@ static int app_sys_time(struct tm *ts)
 		Vsys_datetime_init();	//# m3 Date/Time init
     	app_msleep(100);
 		if (dev_rtc_set_time(*ts) < 0) {
-			eprintf("Failed to set system time to rtc\n!!!");
+			dprintf("Failed to set system time to rtc\n!!!");
 		}
 
         if (app_cfg->ste.b.prerec_state) 
@@ -364,7 +365,7 @@ static void *THR_gps_recv_msg(void *prm)
 	int exit = 0, cmd;
 //	int sync_time = 1;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	//# message queue
 	igps->qid = Msg_Init(GNSS_MSG_KEY);
@@ -374,7 +375,7 @@ static void *THR_gps_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			eprintf("failed to receive gps process msg!\n");
+			dprintf("failed to receive gps process msg!\n");
 			continue;
 		}
 		
@@ -441,7 +442,7 @@ static void *THR_gps_recv_msg(void *prm)
 	
 	Msg_Kill(igps->qid);
 	
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 		
 	return NULL;
 }
@@ -461,7 +462,7 @@ int app_gps_init(void)
 	
 	/* start gps process */
     if (stat(GNSS_BIN_STR, &sb) != 0) {
-		eprintf("can't access gps execute file!\n");
+		dprintf("can't access gps execute file!\n");
         return -1;
 	}
 	system(GNSS_CMD_STR);
@@ -478,11 +479,11 @@ int app_gps_init(void)
 	//#--- create msg receive thread
 	tObj = &igps->rObj;
 	if (thread_create(tObj, THR_gps_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 	
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 
 	return SOK;
 }
@@ -517,7 +518,9 @@ int app_gps_exit(void)
     if (app_set->srv_info.ON_OFF)
         OSA_mutexDelete(&igps->mutex_meta);
 	
-	aprintf("done!...\n");
+	dprintf("done!...\n");
 
 	return SOK;
 }
+#endif /* end of #if SYS_CONFIG_GPS */
+

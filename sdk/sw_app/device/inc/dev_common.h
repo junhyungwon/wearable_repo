@@ -30,12 +30,12 @@ extern "C" {
 #include <termios.h>	/* For struct termios */
 #include <time.h> //# nanosleep()
 
-//#define DEBUG
+//#define DBG_DEV
 
 /* Debugging */
 #define dev_err(fmt, arg...)  fprintf(stderr, "%s:%d: " fmt, __FILE__, __LINE__, ## arg)
 
-#ifdef DEBUG
+#ifdef DBG_DEV
 #define dev_dbg(fmt, arg...)  fprintf(stdout, "%s:%d: " fmt, __FILE__, __LINE__, ## arg)
 #else
 #define dev_dbg(fmt, arg...)  do { } while (0)

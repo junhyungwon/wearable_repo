@@ -55,7 +55,10 @@ typedef struct {
 -----------------------------------------------------------------------------*/
 static app_cap_t cap_obj;
 static app_cap_t *icap=&cap_obj;
+
+#if SYS_CONFIG_GPS
 static app_gps_meta_t gmeta;
+#endif
 
 #if H264_DUMP
 static int first = 0;
@@ -93,7 +96,7 @@ void video_status(void)
 	}
 #endif
 	app_cfg->vid_count = vcount;
-	sysprint("[APP_CAP] Camera Detected Count: %d\n", count);
+	DBG("[APP_CAP] Camera Detected Count: %d\n", count);
 	
 	if (app_cfg->ste.b.cap == 0) {
 #if defined(NEXXONE) || defined(NEXXB_ONE)
@@ -265,7 +268,8 @@ static void proc_vid_cap(void)
                 } 
 
             }
-
+			
+			#if SYS_CONFIG_GPS
 			//# META (GPS)
 			if (pFullBuf->chnId == 0 && pFullBuf->frameType == VCODEC_FRAME_TYPE_I_FRAME)
 			{
@@ -291,6 +295,7 @@ static void proc_vid_cap(void)
                 app_gps_get_rmc_data((void *)&gmeta);
                 app_memcpy(addr, (char*)&gmeta, ifr->b_size);
 			}//# end of META
+			#endif
         }
 	}
 
@@ -306,7 +311,7 @@ static void *THR_vid_cap(void *prm)
 	app_thr_obj *tObj = &icap->vObj;
 	int cmd, exit=0;
 
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -321,7 +326,7 @@ static void *THR_vid_cap(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("....exit!\n");
+	dprintf("....exit!\n");
 
 	return NULL;
 }
@@ -342,7 +347,7 @@ int vid_cap_start(void)
 
 	//#--- create thread
 	if(thread_create(&icap->vObj, THR_vid_cap, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
     }
 
@@ -444,7 +449,7 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 		ch_prm = &app_set->ch[idx];
 
 		if (get_frame_size(ch_prm->resol, &wi, &he) == EFAIL) {
-			eprintf("Failed get resolution!!!\n");
+			dprintf("Failed get resolution!!!\n");
 			return EFAIL;
 		}
         dprintf("channel = %d resolution = %d\n", idx, ch_prm->resol) ;
@@ -519,7 +524,7 @@ int app_cap_start(void)
 	app_cfg->wd_tot |= WD_ENC; /* Fixed */
 	app_cfg->num_ch = vsysParams.numChs;
 	if (capt_param_init(&vcapParams) == EFAIL) {
-		eprintf("Failed initialize capture parameters!!\n");
+		dprintf("Failed initialize capture parameters!!\n");
 		return EFAIL;
 	}
 
@@ -555,7 +560,7 @@ int app_cap_start(void)
 	if(!app_set->rtmp.ON_OFF)
 		ctrl_enc_multislice() ; 
 
-	aprintf("....done!\n");
+	dprintf("....done!\n");
 
 	return SOK;
 }
@@ -583,7 +588,7 @@ int app_cap_stop(void)
 
 	app_msleep(500);	//# wait m3 cap_stop done
 
-	aprintf("....done!\n");
+	dprintf("....done!\n");
 
 	return SOK;
 }

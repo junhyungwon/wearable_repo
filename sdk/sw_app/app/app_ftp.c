@@ -1349,14 +1349,14 @@ int fota_proc()
 		{
 			iftp->fota_state = FOTA_STATE_RECEIVE_FIRM ;
 		    ftp_dbg("receive fota_configure file\n");
-			sysprint("Receive Done Fota configure file !!!\n");
+			DBG("Receive Done Fota configure file !!!\n");
 		}
 		else
 		{
 			iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
 			ftp_close(iftp->lsdFtp) ;
 			ftp_dbg("%s Receive Fail \n",app_set->fota_info.confname) ;
-			sysprint("Did not receive Fota configure file !!!\n");
+			DBG("Did not receive Fota configure file !!!\n");
 		}
 
 		sprintf(cmd, "/mmc/%s",app_set->fota_info.confname) ;
@@ -1375,7 +1375,7 @@ int fota_proc()
 			{
 				iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
 				ftp_dbg("Receive Remote firmware file\n");
-				sysprint("Receive Done Remote Firmware file !!!\n");
+				DBG("Receive Done Remote Firmware file !!!\n");
 				retval = 1 ;
 			}
 			else
@@ -1389,7 +1389,7 @@ int fota_proc()
 				}
 
 				iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
-				sysprint("Receive Fail Remote Firmware file !!!\n");
+				DBG("Receive Fail Remote Firmware file !!!\n");
 			}
 
 		}
@@ -1402,7 +1402,7 @@ int fota_proc()
 				remove(cmd);
 				ftp_dbg("%s Receive Fail, Delete unperfect file \n",app_set->fota_info.confname) ;
 			}
-			sysprint("tried fw update with Same version or older verion firmware !!!\n");
+			DBG("tried fw update with Same version or older verion firmware !!!\n");
 		}
 
 
@@ -1506,7 +1506,7 @@ static void ftp_send(void)
         {
             if (get_ftp_send_file(i, FileName) < 0) {  // -1 -> error
 			   /* 파일 목록이 많은 경우 keep alive 신호를 못 보냄 */
-			   //eprintf("FTP File not found!!\n");
+			   //dprintf("FTP File not found!!\n");
 			   OSA_waitMsecs(5);
 			   continue ;
 			}
@@ -1622,7 +1622,7 @@ static void *THR_ftp(void *prm)
 	app_thr_obj *tObj = &iftp->ftpObj;
 	int cmd, exit = 0, cradle_status = 0, ret = 0, rec_state = 0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
     iftp->ftp_state = FTP_STATE_NONE;
@@ -1754,7 +1754,7 @@ static void *THR_ftp(void *prm)
 
 //  reboot for firmware update
     tObj->active = 0;
-    aprintf("...exit\n");
+    dprintf("...exit\n");
 
 	return NULL;
 }
@@ -1782,7 +1782,7 @@ int app_ftp_init(void)
 	//# create ftp thread
 	    tObj = &iftp->ftpObj;
 	    if (thread_create(tObj, THR_ftp, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		    eprintf("create ftp thread\n");
+		    dprintf("create ftp thread\n");
 		    return EFAIL;
 	    }
     }

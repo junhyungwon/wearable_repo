@@ -240,7 +240,7 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 		}
 	}
 	
-	eprintf("Failed to delete files for overwriting!\n");
+	dprintf("Failed to delete files for overwriting!\n");
 	return -1; /* failure */
 }
 
@@ -255,7 +255,7 @@ static int add_node_tail(const char *path, struct list_head *head)
 
 	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
 	if (ptr == NULL) {
-		eprintf("can't allocate list\n");
+		dprintf("can't allocate list\n");
 		return -1;
 	}
 
@@ -282,7 +282,7 @@ static int add_node_head(const char *path, struct list_head *head)
 
 	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
 	if (ptr == NULL) {
-		eprintf("can't allocate list\n");
+		dprintf("can't allocate list\n");
 		return -1;
 	}
 
@@ -391,7 +391,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	
 	/* opendir is not required "/" */
 	if ((dp = opendir(__path)) == NULL) {
-		eprintf("cannot open directory : %s\n", __path);
+		dprintf("cannot open directory : %s\n", __path);
 		return -1;
 	}
 
@@ -448,25 +448,25 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	
 	f = fopen(path, "r");
 	if (f == NULL) {
-		eprintf("failed to open %s!\n", path);
+		dprintf("failed to open %s!\n", path);
 		return -1;
 	}
 	
 	fread((void *)&lcnt, sizeof(int), 1, f);  //# total file count
 	snprintf(msg, sizeof(msg), "saved file number is %d in video lst", lcnt);
-	notice("%s\n", msg);
+	dprintf("%s\n", msg);
 	
 	if ((lcnt == 0) || (bcnt != lcnt)) {
 		memset(msg, 0, sizeof(msg));
 		snprintf(msg, sizeof(msg), "file list mismatched (dir-%d, list-%d)!!\n", bcnt, lcnt);
-		notice("%s\n", msg);
+		dprintf("%s\n", msg);
 		return -1;
 	}
 	
 	//# memory alloc
 	list = (linked_info_t *)malloc(sizeof(linked_info_t)*lcnt);
 	if (list == NULL) {
-		eprintf("failed to allocate memory with file list!\n");
+		dprintf("failed to allocate memory with file list!\n");
 		fclose(f);
 		return -1;
 	}
@@ -510,11 +510,11 @@ static int __save_file_list(void)
 	
 	f = fopen(path, "w");
 	if (f == NULL) {
-		eprintf("failed to open %s!\n", path);
+		dprintf("failed to open %s!\n", path);
 		return -1;
 	}
 	
-	notice("[APP_FILE] %d files saved in video list\n", scnt);
+	dprintf("[APP_FILE] %d files saved in video list\n", scnt);
 	fwrite(&scnt, sizeof(size_t), 1, f);    //# total file count
 	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
@@ -542,7 +542,7 @@ static void *THR_file_mng(void *prm)
 	int cmd, exit=0;
 	int r = 0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -571,7 +571,7 @@ static void *THR_file_mng(void *prm)
 					r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
 					OSA_mutexUnlock(&ifile->mutex_file);
 					if (r == EFAIL) {
-						eprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
+						dprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
 						if (app_rec_state() > 0) {
 							app_rec_stop(ON); 
 							app_msleep(500); /* wait for record done!! */
@@ -597,7 +597,7 @@ static void *THR_file_mng(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 	sync();
 
 	return NULL;
@@ -618,7 +618,7 @@ static void *THR_file_led_mng(void *prm)
 	unsigned long b_cycle=0;
 	unsigned long f_cycle=0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -686,7 +686,7 @@ static void *THR_file_led_mng(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -716,7 +716,7 @@ int app_file_init(void)
 	if (res < 0) {
 		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &storageList, num_of_files);
 		if (status == EFAIL) 	{
-			sysprint("Failed to make file list!!\n");
+			DBG("Failed to make file list!!\n");
 			return status;
 		}
 	}
@@ -730,17 +730,17 @@ int app_file_init(void)
     OSA_assert(status == OSA_SOK);
 	
 	if (thread_create(&ifile->fObj, THR_file_mng, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return -1;
 	}
 	
 	/* Create File LED Thread */
 	if (thread_create(&ifile->lObj, THR_file_led_mng, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return -1;
 	}
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	return 0;
 }
 
@@ -775,7 +775,7 @@ void app_file_exit(void)
 	OSA_assert(status == OSA_SOK);
 	ifile = NULL;
 
-    aprintf("... done!\n");
+    dprintf("... done!\n");
 }
 /*****************************************************************************
 * @brief    file manager callback function
@@ -852,7 +852,7 @@ int get_ftp_send_file(int index, char *path)
 	int count=0;
 	
 	if (path == NULL) {
-		eprintf("path is null!\n");
+		dprintf("path is null!\n");
 		return -1;
 	}
 	

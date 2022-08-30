@@ -322,7 +322,7 @@ int ctrl_ether_cfg_read(const char *fname, const char *ip, const char *mask, con
 	 */ 
 	f = fopen(fname, "r");
 	if (f == NULL) {
-		eprintf("Can't read %s\n", fname);
+		ERR_HWD("Can't read %s\n", fname);
 		return -1;
 	}
 	
@@ -345,7 +345,7 @@ int ctrl_ether_cfg_read(const char *fname, const char *ip, const char *mask, con
 				data[i] = s[i];
 			}
 			data[i] = '\0';
-			dprintf("IP: %s\n", data);
+			DBG_HWD("IP: %s\n", data);
 		}
 		else if ((s = strstr(lineBuf, "NETMASK=")) != NULL)
 		{
@@ -361,7 +361,7 @@ int ctrl_ether_cfg_read(const char *fname, const char *ip, const char *mask, con
 				data[i] = s[i];
 			}
 			data[i] = '\0';
-			dprintf("MASK: %s\n", data);
+			DBG_HWD("MASK: %s\n", data);
 		}
 		else if ((s = strstr(lineBuf, "GATEWAY=")) != NULL)
 		{
@@ -377,7 +377,7 @@ int ctrl_ether_cfg_read(const char *fname, const char *ip, const char *mask, con
 				data[i] = s[i];
 			}
 			data[i] = '\0';
-			dprintf("GATE: %s\n", data);
+			DBG_HWD("GATE: %s\n", data);
 		}
 	}
 	
