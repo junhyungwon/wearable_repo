@@ -19,13 +19,12 @@
 //#define __GOP_DEBUG
 
 //#ifdef __GOP_DEBUG
-//#define DBG(fmt, args...) fprintf(stderr, "GOP Debug: " fmt, ## args)
+//#define DBG_RT(fmt, args...) fprintf(stderr, "GOP Debug: " fmt, ## args)
 //#else
-//#define DBG(fmt, args...)
+//#define DBG_RT(fmt, args...)
 //#endif
 
-#define ERR(fmt, args...) fprintf(stderr, "GOP Error: " fmt, ## args)
-
+#define ERR_RT(fmt, args...) fprintf(stderr, "GOP Error: " fmt, ## args)
 
 typedef struct GopInfo{
 	int start_serial;
@@ -162,7 +161,7 @@ GopRet_t LockGopBySerial(int serial, VIDEO_BLK_INFO *pVidInfo, int index)
 				ret = GOP_ERROR_OP;
 			}
 		} else
-			ERR("Unkown fram type in %s\n", __func__);
+			ERR_RT("Unkown fram type in %s\n", __func__);
 	}
 
 
@@ -194,9 +193,9 @@ GopRet_t UnlockGopBySerial(int serial, VIDEO_BLK_INFO *pVidInfo,int index)
 		if(pGopInfo->start_serial <= cur_serial && pGopInfo->end_serial >= cur_serial)
 			ret = GOP_INCOMPLETE;
 		if(UnlockGop(pGopInfo->start_serial, pGopInfo->end_serial, pVidInfo) != GOP_COMPLETE)
-			ERR("Unlock fail, Memory leak will occure\n");
+			ERR_RT("Unlock fail, Memory leak will occure\n");
 		if(DeleteGop(pGopInfo,index) != GOP_COMPLETE)
-			ERR("Can not found GOP at address 0x%x\n", (unsigned int)pGopInfo);
+			ERR_RT("Can not found GOP at address 0x%x\n", (unsigned int)pGopInfo);
 	}
 
 
@@ -313,7 +312,7 @@ GopRet_t LockGop(int start_serial, int end_serial, VIDEO_BLK_INFO *pVidInfo)
 			while(--serial >= start_serial){
 				CacheMng_Video_CacheUnlock(serial, pVidInfo);
 			}
-			ERR("Lock Gop fail from %d to %d\n", start_serial, end_serial);
+			ERR_RT("Lock Gop fail from %d to %d\n", start_serial, end_serial);
 			if(ret == CACHE_NOMEM)
 				return GOP_NOMEM;
 			else
@@ -366,7 +365,7 @@ GopRet_t AddAndLockGop(int start_serial, int end_serial, VIDEO_BLK_INFO *pVidInf
 		if(pGopInfo != NULL)
 			DeleteGop(pGopInfo, index);
 		else
-			ERR("Incompelete GOP (%d ~ %d) was not deleted by %s\n",
+			ERR_RT("Incompelete GOP (%d ~ %d) was not deleted by %s\n",
 				start_serial, end_serial, __func__);
 	}
 	return ret;
@@ -404,7 +403,7 @@ GopRet_t LockCurrentGopP(VIDEO_BLK_INFO *pVidInfo, int index)
 
 	if(pGopInfo == NULL)
 	{
-		ERR("cur_serial = %d\n",cur_serial);
+		ERR_RT("cur_serial = %d\n",cur_serial);
 		ShowAllGop(index);
 		return GOP_ERROR_OP;
 	}
@@ -412,7 +411,7 @@ GopRet_t LockCurrentGopP(VIDEO_BLK_INFO *pVidInfo, int index)
 	//	return GOP_COMPLETE;
 	//CheckReCache( cur_serial, pVidInfo, __LINE__ ); -- DEBUG ONLY
 	if((ret = CacheMng_Video_CacheLock(cur_serial, pVidInfo)) != 0){
-		ERR("LockCurrentGopP: %d\n",ret);
+		ERR_RT("LockCurrentGopP: %d\n",ret);
 		UnlockGop(pGopInfo->start_serial, pGopInfo->end_serial, pVidInfo);
 		DeleteGop(pGopInfo,index);
 		if(ret == CACHE_NOMEM)
@@ -436,11 +435,11 @@ GopRet_t LockCurrentGopP(VIDEO_BLK_INFO *pVidInfo, int index)
 void ShowAllGop(int index)
 {
 	GopInfo_t* pGopInfo;
-	ERR("ShowAllGop Start\n");
+	ERR_RT("ShowAllGop Start\n");
 	for(pGopInfo = gGopList[index];pGopInfo != NULL;pGopInfo = pGopInfo->next){
-		ERR("start_serial: %d\n",pGopInfo->start_serial);
-		ERR("end_serial: %d\n",pGopInfo->end_serial);
-		ERR("lock: %d\n",pGopInfo->lock);
+		ERR_RT("start_serial: %d\n",pGopInfo->start_serial);
+		ERR_RT("end_serial: %d\n",pGopInfo->end_serial);
+		ERR_RT("lock: %d\n",pGopInfo->lock);
 	}
-	ERR("ShowAllGop End\n");
+	ERR_RT("ShowAllGop End\n");
 }

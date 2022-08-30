@@ -66,7 +66,7 @@ void video_status(void)
 #endif
 	for (i = 0; i < count; i++)
     {
-		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
+		DBG_HWD("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
 	}	
 }
 
@@ -147,7 +147,7 @@ static void proc_vid_cap(void)
                 {
 					FILE *jpeg_f = NULL;
                     #if 0
-					dprintf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n", 
+					DBG_HWD("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n", 
 								pFullBuf->chnId, pFullBuf->codecType, ((pFullBuf->frameType == VCODEC_FRAME_TYPE_I_FRAME) ? 1:0));          
 					#endif
                     jpeg_f = fopen("/tmp/fitt360.jpeg","w") ;
@@ -165,7 +165,7 @@ static void proc_vid_cap(void)
 							fwrite((void *)pFullBuf->bufVirtAddr, pFullBuf->filledBufSize, 1, jfp) ;
 							fclose(jfp);
 							sync();
-							dprintf("jpeg snapshot done!!\n");
+							DBG_HWD("jpeg snapshot done!!\n");
 						}
 					}
 #endif
@@ -187,7 +187,7 @@ static void *THR_vid_cap(void *prm)
 	app_thr_obj *tObj = &icap->vObj;
 	int cmd, exit=0;
 
-	aprintf("enter...\n");
+	DBG_HWD("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -202,7 +202,7 @@ static void *THR_vid_cap(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("exit\n");
+	DBG_HWD("exit\n");
 
 	return NULL;
 }
@@ -223,7 +223,7 @@ int vid_cap_start(void)
 
 	//#--- create thread
 	if (thread_create(&icap->vObj, THR_vid_cap, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
     }
 
@@ -291,7 +291,7 @@ static void cap_jpeg_quality(int ch, int value)
 	params.qpInit	= value;
 
 	Venc_setDynamicParam(ch, 0, &params, VENC_QPVAL_I);
-	dprintf("jpeg ch %d, value %d\n", ch, value);
+	DBG_HWD("jpeg ch %d, value %d\n", ch, value);
 }
 
 static void cap_enc_late_init(void)
@@ -340,7 +340,7 @@ int app_cap_start(void)
 	if(iapp->ste.b.cap)		//# already start
 		return SOK;
 
-	dprintf("start ...\n");
+	DBG_HWD("start ...\n");
 	
 	//# register event
 	Vsys_registerEventHandler(vsys_event, NULL);
@@ -402,7 +402,7 @@ int app_cap_start(void)
 
 	iapp->ste.b.cap = 1;
 
-	dprintf("... done!\n");
+	DBG_HWD("... done!\n");
 
 	return SOK;
 }
@@ -412,7 +412,7 @@ int app_cap_stop(void)
 	if(!iapp->ste.b.cap)
 		return EINVALID;
 
-	dprintf("start ...\n");
+	DBG_HWD("start ...\n");
 	iapp->ste.b.cap = 0;
 
 	//#--- stop link
@@ -431,7 +431,7 @@ int app_cap_stop(void)
 	
 	app_msleep(500);	//# wait m3 cap_stop done
 	
-	dprintf("... done!\n");
+	DBG_HWD("... done!\n");
 
 	return SOK;
 }

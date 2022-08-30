@@ -144,7 +144,7 @@ int util_disk_info(disk_info_t *idisk, const char *path)
 	struct statvfs s;
 
 	if (statvfs(path, &s) != 0) {
-		eprintf("%s fault\n", path);
+		dprintf("%s fault\n", path);
 		return -1;
 	}
 
@@ -241,10 +241,10 @@ int util_sys_exec(char *arg)
 	               exArg[5],exArg[6],exArg[7],exArg[8],exArg[9],NULL);
 	        break;
 		}
-        eprintf("execlp failed...\n");
+        dprintf("execlp failed...\n");
 	    exit(0);
 	} else if(chId < 0) {
-		eprintf("Failed to create child process\n");
+		dprintf("Failed to create child process\n");
 		return -1;
 	} else {
 		/* parent process */
@@ -255,7 +255,7 @@ int util_sys_exec(char *arg)
 		if (WIFEXITED(status))
 			dprintf("Chiled exited with the code %d\n", WEXITSTATUS(status));
 		else
-			eprintf("Child terminated abnormally..\n");
+			dprintf("Child terminated abnormally..\n");
 		#endif
 	}
 

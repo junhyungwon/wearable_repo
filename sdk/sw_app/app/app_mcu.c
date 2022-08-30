@@ -147,7 +147,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				sysprint("Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
+				DBG("Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
@@ -171,7 +171,7 @@ static void *THR_micom(void *prm)
 	int exit=0, ret=0, value = 0;
 	mic_msg_t msg;
 
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	mic_set_watchdog(ENA, TIME_WATCHDOG);
@@ -229,7 +229,7 @@ static void *THR_micom(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -306,7 +306,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				sysprint("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
+				DBG("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
@@ -330,7 +330,7 @@ static void *THR_micom(void *prm)
 	int exit=0, ret=0, value = 0;
 	mic_msg_t msg;
 
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	mic_set_watchdog(ENA, TIME_WATCHDOG);
@@ -376,7 +376,7 @@ static void *THR_micom(void *prm)
 				if (key_type == PSW_EVT_LONG) 
 				{
 					if (!app_cfg->ste.b.busy) {
-						sysprint("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
+						DBG("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
 						//# add rupy
 						ctrl_sys_halt(1); /* for shutdown */
 						exit = 1;
@@ -407,13 +407,13 @@ static void *THR_micom(void *prm)
 						// value 1, SOS Rec  , Value 1 Normal/Event REc
 							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 							app_sos_send_stop(ON) ;
-							sysprint("[APP_SOS] End SOS Event !! \n");	
+							DBG("[APP_SOS] End SOS Event !! \n");	
 						} 
 						else {
 							//  Rec off or normal/event rec -> SOS ON
 							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 							app_rec_evt(ON) ;  // SOS REC
-							sysprint("[APP_SOS] Occurs SOS Event !! \n");
+							DBG("[APP_SOS] Occurs SOS Event !! \n");
 						}
 					}
 					dprintf("SOS Short Key Pressed!\n");
@@ -433,7 +433,7 @@ static void *THR_micom(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -467,7 +467,7 @@ int app_mcu_start(void)
 	app_cfg->wd_tot |= WD_MICOM;
 	tObj = &imcu->cObj;
 	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 
@@ -513,7 +513,7 @@ int app_mcu_init(void)
 	}
 	
 //	mic_exit_state(OFF_NONE, 0);	//# for test - no power off
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	
 	return 0;
 }
@@ -522,7 +522,7 @@ int app_mcu_exit(void)
 {
     mic_msg_exit();
 	
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	
 	return 0;
 }

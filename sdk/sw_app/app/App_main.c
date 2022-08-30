@@ -90,7 +90,7 @@ static int main_thread_init(void)
 
 	//#--- create thread
 	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return -1;
 	}
 
@@ -146,11 +146,11 @@ static void app_setdns(void)
 	{
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server1) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		sysprint(buffer);
+		DBG("nameserver %s\n", app_set->net_info.dns_server1);
 		
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server2) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		sysprint(buffer);
+		DBG("nameserver %s\n", app_set->net_info.dns_server2);
 		
 		sprintf(buffer, "options timeout:1 retry:1\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
@@ -208,14 +208,14 @@ int app_main(void)
 	char cmd, exit=0;
 	#endif
 
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	app_mcu_start();
-    sysprint("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<\n", FITT360_SW_VER);
+    DBG("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<\n", FITT360_SW_VER);
 
     ctrl_get_mcu_version( micom_ver ) ;
-    sysprint("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
+    DBG("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
     if(app_set->sslvpn_info.ON_OFF)
@@ -389,7 +389,7 @@ int app_main(void)
 
 	app_leds_init(); /* set leds off state */
 
-	sysprint("[APP_FITT360] app_main() EXIT....\n");
+	DBG("[APP_FITT360] app_main() EXIT....\n");
 
 	return SOK;
 }

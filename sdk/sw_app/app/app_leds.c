@@ -80,7 +80,7 @@ static int leds_ctrl(int index, int state)
 	memset(path, 0, sizeof(path));
 	snprintf(path, sizeof(path), "%s/led%d/trigger", LED_BASE_PATH, index);
 	if ((fd = open(path, O_WRONLY)) < 0) {
-		//eprintf("Error open %s\n", path);
+		//dprintf("Error open %s\n", path);
 		ret = -1;
 		goto err_exit;
 	}
@@ -93,7 +93,7 @@ static int leds_ctrl(int index, int state)
 		memset(path, 0, sizeof(path));
 		snprintf(path, sizeof(path), "%s/led%d/delay_on", LED_BASE_PATH, index);
 		if ((fd = open(path, O_WRONLY)) < 0) {
-			//eprintf("Error open %s\n", path);
+			//dprintf("Error open %s\n", path);
 			ret = -1;
 			goto err_exit;
 		}
@@ -106,7 +106,7 @@ static int leds_ctrl(int index, int state)
 		memset(path, 0, sizeof(path));
 		snprintf(path, sizeof(path), "%s/led%d/delay_off", LED_BASE_PATH, index);
 		if ((fd = open(path, O_WRONLY)) < 0) {
-			//eprintf("Error open %s\n", path);
+			//dprintf("Error open %s\n", path);
 			ret = -1;
 			goto err_exit;
 		}
@@ -127,7 +127,7 @@ static int leds_ctrl(int index, int state)
 		memset(path, 0, sizeof(path));
 		snprintf(path, sizeof(path), "%s/led%d/brightness", LED_BASE_PATH, index);
 		if ((fd = open(path, O_WRONLY)) < 0) {
-			//eprintf("Error open %s\n", path);
+			//dprintf("Error open %s\n", path);
 			ret = -1;
 			goto err_exit;
 		}
@@ -154,12 +154,12 @@ int app_leds_init(void)
 		ledste[i] = (char)-1;
 		ret = leds_ctrl(i, 0);
 		if (ret < 0 ) {
-			//eprintf("%d led error!\n", i);
+			//dprintf("%d led error!\n", i);
 			return -1;
 		}
 	}
 	
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	
 	return SOK;
 }
@@ -193,12 +193,13 @@ int app_leds_rf_ctrl(int ste)
 	ret = leds_ctrl(LED_IDX_RF_G, g_val);
 	ret |= leds_ctrl(LED_IDX_RF_R, r_val);
 	if (ret < 0) {
-		//eprintf("invalid RF led control (%d)\n", ste);
+		//dprintf("invalid RF led control (%d)\n", ste);
 	}
 
 	return ret;
 }
 
+#if SYS_CONFIG_GPS
 /*----------------------------------------------------------------------------
  LED GPS Green control.
  *
@@ -228,11 +229,12 @@ int app_leds_gps_ctrl(int ste)
 	ret = leds_ctrl(LED_IDX_GPS_G, g_val);
 	ret |= leds_ctrl(LED_IDX_GPS_R, r_val);
 	if (ret < 0) {
-		//eprintf("invalid GPS led control (%d)\n", ste);
+		//dprintf("invalid GPS led control (%d)\n", ste);
 	}
 
 	return ret;
 }
+#endif
 
 /*----------------------------------------------------------------------------
  LED camera control. (CAM1->0, CAM2->1, CAM3->2, CAM4->3
@@ -278,13 +280,13 @@ int app_leds_cam_ctrl(int no, int ste)
 		index = LED_IDX_CAM4; break;
 #endif	
 	default:
-		eprintf("invalid camera led index (%d)\n", no);
+		dprintf("invalid camera led index (%d)\n", no);
 		return -1;
 	}
 
 	ret = leds_ctrl(index, ste?DEV_LED_ON:DEV_LED_OFF);
 	if (ret < 0) {
-		eprintf("failed camera led control (%d)\n", index);
+		dprintf("failed camera led control (%d)\n", index);
 	}
 
 	return ret;
@@ -314,7 +316,7 @@ int app_leds_voip_ctrl(int ste)
 #endif	
 	ret = leds_ctrl(index, ste);
 	if (ret < 0) {
-		//eprintf("failed voip led control (%d)\n", index);
+		//dprintf("failed voip led control (%d)\n", index);
 	}
 
 	return ret;
@@ -361,7 +363,7 @@ int app_leds_mmc_ctrl(int ste)
 	}
 
 	if (ret < 0) {
-		//eprintf("failed SD card led control!\n");
+		//dprintf("failed SD card led control!\n");
 	}
 
 	return ret;
@@ -401,7 +403,7 @@ int app_leds_mmc_capacity_ctrl(int step)
 		leds_ctrl(LED_IDX_SD_G3, DEV_LED_ON);
 		break;
 	default:
-		//eprintf("invalid mmc capacity led(%d)!\n", step);
+		//dprintf("invalid mmc capacity led(%d)!\n", step);
 		break;
 	}
 
@@ -434,7 +436,7 @@ int app_leds_rec_ctrl(int ste)
 	}
 
 	if (ret < 0) {
-		//eprintf("failed REC led control!(%d)\n", ste);
+		//dprintf("failed REC led control!(%d)\n", ste);
 	}
 
 	return ret;
@@ -506,7 +508,7 @@ int app_leds_int_batt_ctrl(int step)
 		leds_ctrl(LED_IDX_BAT_G4, DEV_LED_ON);
 		break;
 	default:
-		//eprintf("invalid battery led(%d)!\n", step);
+		//dprintf("invalid battery led(%d)!\n", step);
 		break;
 	}
 
@@ -534,7 +536,7 @@ int app_leds_backup_state_ctrl(int ste)
 
 	ret = leds_ctrl(LED_IDX_BACKUP, val);
 	if (ret < 0) {
-		//eprintf("invalid backup state led control (%d)\n", ste);
+		//dprintf("invalid backup state led control (%d)\n", ste);
 	}
 
 	return ret;
@@ -579,7 +581,10 @@ int app_leds_sys_normal_ctrl(void)
 				break ;
 		}
 	}
+
+#if SYS_CONFIG_GPS	
     app_leds_gps_ctrl(LED_GPS_OFF) ;
+#endif
 
     app_file_update_disk_usage() ;
 	if(app_rec_state())
@@ -652,7 +657,7 @@ int app_leds_eth_status_ctrl(int ste)
 
 	ret = leds_ctrl(LED_IDX_ETH_STATUS, val);
 	if (ret < 0) {
-		//eprintf("invalid eth status led control (%d)\n", ste);
+		//dprintf("invalid eth status led control (%d)\n", ste);
 	}
 
 	return ret;

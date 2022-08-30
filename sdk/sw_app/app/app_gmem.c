@@ -62,7 +62,7 @@ int g_mem_init(void)
     prm.alignment = 32;
 
 	if(CMEM_init() < 0){
-		eprintf("CMEM init error\n");
+		dprintf("CMEM init error\n");
 		return EFAIL;
 	}
 

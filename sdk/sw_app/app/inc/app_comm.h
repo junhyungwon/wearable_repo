@@ -20,6 +20,9 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define DBG_SYS
+#define USE_SYSLOG  (1) //# 0-> disable syslogd
+
 //# error type
 #define SOK			(0)
 #define EFAIL		(-1)
@@ -51,12 +54,31 @@
 #define app_msleep(ms)		OSA_waitMsecs(ms)
 #define app_get_time()		OSA_getCurTimeInMsec()
 
-/* ANSI Color Green print 32m */
-#define aprintf(x,...)	printf(" [app ] \033[32m%s: \033[0m" x, __func__, ##__VA_ARGS__);
-#define eprintf(x...) do { printf(" [app !err] %s: ", __func__); printf(x); } while(0)
-#define dprintf(x...) do { printf(" [app ] %s: ", __func__); printf(x); } while(0)
-/* ANSI Color RED */
-#define notice(x,...)	printf(" [app ] \033[31m%s: \033[0m" x, __func__, ##__VA_ARGS__);
+/** ANSI printf color **/
+/** black \033[30m **/
+/** red   \033[31m **/
+/** green \033[32m **/
+/** yellow\033[33m **/
+/** blue  \033[34m **/
+/** pink  \033[35m **/
+/** teal  \033[36m **/
+/** white \033[37m **/
 
-#define sysprint(x...) do { printf(" [app LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
+#ifdef DBG_SYS
+#define dprintf(x,...) do { printf(" [app ] \033[32m%s: \033[0m" x, __func__, ##__VA_ARGS__); fflush(stdout); } while(0)
+
+#	if USE_SYSLOG
+#	define DBG(x...)	do {printf(" [app ] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_INFO, x);} while(0)
+#	define ERR(x...)	do {printf(" [app err!] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_ERR, x);} while(0)
+#	else
+#	define DBG(x...)	do {printf(" [app ] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	define ERR(x...)	do {printf(" [app err!] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	endif
+#else
+#define dprintf(x,...)
+
+#	define DBG(x...)	
+#	define ERR(x...)
+#endif
+
 #endif	/* _APP_COMM_H_ */

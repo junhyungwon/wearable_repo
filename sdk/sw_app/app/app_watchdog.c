@@ -65,7 +65,7 @@ static void *THR_watchdog(void *prm)
 	int wd_cycle = 0, wd_detect=0, pre_wd = 0;
 	char wd_name[MAX_CHAR_64], msg[MAX_CHAR_128];
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 
 	while (!exit)
@@ -101,7 +101,7 @@ static void *THR_watchdog(void *prm)
 					get_wd_name(wd_name);
 					sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
 								app_cfg->wd_tot, wd_name);
-					sysprint("%s\n", msg);
+					DBG("%s\n", msg);
 					sync();
 				}
 			}
@@ -113,7 +113,7 @@ static void *THR_watchdog(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 
 	return NULL;
 }
@@ -130,11 +130,11 @@ int app_watchdog_init(void)
 	//#--- create thread
 	tObj = &iwatch->wObj;
     if (thread_create(tObj, THR_watchdog, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	eprintf("create watchdog thread\n");
+    	dprintf("create watchdog thread\n");
 		return EFAIL;
     }
 	
-    aprintf("... done!\n");
+    dprintf("... done!\n");
     return 0;
 }
 
@@ -149,5 +149,5 @@ void app_watchdog_exit(void)
     	app_msleep(20);
     thread_delete(tObj);
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 }

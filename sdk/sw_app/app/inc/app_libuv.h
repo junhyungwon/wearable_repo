@@ -20,7 +20,6 @@
 /* Function error codes */
 #define SUCCESS         0
 #define FAILURE         -1
-#define ERR(fmt, args...) fprintf(stderr, "Encode Error: " fmt, ## args)
 
 /*----------------------------------------------------------------------------
  Declares variables

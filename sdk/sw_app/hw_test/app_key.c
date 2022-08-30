@@ -55,7 +55,7 @@ static int dev_ste_key(int gio)
 	int status;
 
 	gpio_get_value(gio, &status);
-	//dprintf("--- [key] value %d\n", status);
+	//DBG_HWT("--- [key] value %d\n", status);
 
 	return status;
 }
@@ -149,7 +149,7 @@ static void *thread_key(void *prm)
 	gpio_exit(REC_KEY);
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWT("...exit\n");
 
 	return NULL;
 }
@@ -169,7 +169,7 @@ int app_key_start(void)
 	//#--- create ir thread
 	tObj = &ikey->iObj;
 	if(thread_create(tObj, thread_key, UI_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWT("create thread\n");
 		return -1;
 	}
 

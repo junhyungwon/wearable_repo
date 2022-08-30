@@ -106,7 +106,7 @@ int app_ste_mmc(void)
 	int status;
 
 	status = util_check_mount("/dev/mmcblk0");
-	//dprintf("--- value %d\n", status);
+	//DBG_HWD("--- value %d\n", status);
 
 	return status;
 }
@@ -209,7 +209,7 @@ static void *THR_buzzer(void *prm)
 	int cmd, exit=0;
 	int i, time, cnt;
 
-	aprintf("enter...\n");
+	DBG_HWD("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -234,7 +234,7 @@ static void *THR_buzzer(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWD("...exit\n");
 
 	return NULL;
 }
@@ -273,7 +273,7 @@ int app_sys_time(struct tm *ts)
 		sleep(1);
 		util_sys_exec("hwclock -w");	//# more once
 		sleep(1);
-		aprintf("--- changed time from GPS ---\n");
+		DBG_HWD("--- changed time from GPS ---\n");
 	}
 
 	return SOK;
@@ -328,14 +328,14 @@ static void *THR_dev(void *prm)
 	int ret, val, state, timewait = 0, time_set = 1;
 	int i, on=ON;
 	
-	aprintf("enter...\n");
+	DBG_HWD("enter...\n");
 	tObj->active = 1;
 	
 	//# gps init
 	idev->gps_tmr = 0; idev->led_tmr=0;
 	ret = dev_gps_init();
 	if (ret < 0) {
-		eprintf("gps init\n");
+		ERR_HWD("gps init\n");
 		return NULL;
 	}
 	
@@ -357,7 +357,7 @@ static void *THR_dev(void *prm)
             
             iapp->voltage = val ;			
 //			sprintf(iapp->vbuf, "%02d.%02d V", (val/100), (val%100));
-			//dprintf("current input voltage %s\n", iapp->vbuf);
+			//DBG_HWD("current input voltage %s\n", iapp->vbuf);
 		}
 		#endif
 		
@@ -368,7 +368,7 @@ static void *THR_dev(void *prm)
 			
 			ret = app_get_usb_id(1, &vid, &pid);
 			if (ret == 1) {
-				//dprintf("Detected usb (%x, %x)\n", vid, pid);
+				//DBG_HWD("Detected usb (%x, %x)\n", vid, pid);
 				iapp->ste.b.usb = 1;
 			} else {
 				iapp->ste.b.usb = 0;
@@ -416,7 +416,7 @@ static void *THR_dev(void *prm)
 				if (!ret) {
 					iapp->ste.b.rtc=1;
 					#if 0
-					dprintf("Current RTC date/time is %02d-%02d-%d, %02d:%02d:%02d.\n", hw_tm.tm_mday, hw_tm.tm_mon + 1, 
+					DBG_HWD("Current RTC date/time is %02d-%02d-%d, %02d:%02d:%02d.\n", hw_tm.tm_mday, hw_tm.tm_mon + 1, 
 								hw_tm.tm_year + 1900, hw_tm.tm_hour, hw_tm.tm_min, hw_tm.tm_sec);
 					#endif			 
 				} else {
@@ -431,14 +431,14 @@ static void *THR_dev(void *prm)
 		#if GPS_TEST
 		/* get GPS Jack state */
 		if (!gpio_get_value(GPS_PWR_EN, &val)) {
-			//dprintf("GPS Jack GET value %d\n", val);
+			//DBG_HWD("GPS Jack GET value %d\n", val);
 			if (val == 1) {
 				iapp->ste.b.gps_jack = 1;
 			} else {
 				iapp->ste.b.gps_jack = 0;
 			}
 		} else {
-			eprintf("Failed to read GPS Jack Detect\n");
+			ERR_HWD("Failed to read GPS Jack Detect\n");
 		}
 		
 		if (idev->gps_tmr >= CNT_GPS_CHECK)
@@ -457,7 +457,7 @@ static void *THR_dev(void *prm)
 
 						sprintf(Gpsdata, "LAT:%.2f, LOT:%.2f",gps_nmea->latitude, gps_nmea->longitude) ;
 						#if 0
-						dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
+						DBG_HWD("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
 							gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
 							gps_nmea->date.tm_hour + TIME_ZONE, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
 							gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude
@@ -470,7 +470,7 @@ static void *THR_dev(void *prm)
 						{
 							if(time_set)
 							{
-						        dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
+						        DBG_HWD("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
 							        gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
 							        gps_nmea->date.tm_hour + TIME_ZONE, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
 							        gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude ) ;
@@ -507,7 +507,7 @@ static void *THR_dev(void *prm)
 	
 	iapp->ste.b.gps = 0;
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWD("...exit\n");
 
 	return NULL;
 }
@@ -599,21 +599,21 @@ int app_dev_start(void)
 	//#--- create dev thread
 	tObj = &idev->dObj;
 	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
 	}
 
 	//#--- create buzzer thread
 	tObj = &idev->bObj;
 	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create cradle ether thread
 	tObj = &idev->cObj;
 	if(thread_create(tObj, THR_ether_poll, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
 	}
 

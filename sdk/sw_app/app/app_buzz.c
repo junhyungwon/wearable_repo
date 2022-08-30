@@ -96,7 +96,7 @@ int app_buzz_init(void)
     OSA_assert(status == OSA_SOK);
 	
 	if ((res = open(BEEP_DRV_BASE_PATH, O_WRONLY)) < 0) {
-		eprintf("Error open %s\n", BEEP_DRV_BASE_PATH);
+		dprintf("Error open %s\n", BEEP_DRV_BASE_PATH);
 		return -1;
 	}
 	

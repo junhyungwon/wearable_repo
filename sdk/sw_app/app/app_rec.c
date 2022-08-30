@@ -95,7 +95,7 @@ static int recv_msg(void)
 		return -1;
 
 	if (msg.cmd == AV_CMD_REC_FLIST) {
-		notice("REC File %s done!!\n", msg.fname);
+		dprintf("REC File %s done!!\n", msg.fname);
 		app_file_add_list(msg.fname);
 	}
 
@@ -110,7 +110,7 @@ static void *THR_rec_recv_msg(void *prm)
 {
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	//# message queue
 	irec->qid = Msg_Init(REC_MSG_KEY);
 	
@@ -118,7 +118,7 @@ static void *THR_rec_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			eprintf("failed to receive rec process msg!\n");
+			dprintf("failed to receive rec process msg!\n");
 			continue;
 		}
 		
@@ -171,7 +171,7 @@ static void *THR_rec_recv_msg(void *prm)
 	}
 	
 	Msg_Kill(irec->qid);
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 		
 	return NULL;
 }
@@ -186,7 +186,7 @@ static void *THR_rec_send_msg(void *prm)
 	int cmd = 0, option = 0;
 	int exit = 0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	irec->rec_state = 0;
@@ -238,7 +238,7 @@ static void *THR_rec_send_msg(void *prm)
 	irec->rec_state = 0;
 	app_leds_rec_ctrl(LED_REC_OFF);
 		
-	aprintf("exit\n");
+	dprintf("exit\n");
 	return NULL;
 }
 
@@ -252,7 +252,7 @@ static void *THR_stop_sos(void *prm)
 	int cmd = 0, loop_cnt = 0, evt_sndcnt = 0, option = 0;
 	int exit = 0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -301,7 +301,7 @@ static void *THR_stop_sos(void *prm)
 	
 	tObj->active = 0;
 		
-	aprintf("exit\n");
+	dprintf("exit\n");
 	return NULL;
 }
 
@@ -316,7 +316,7 @@ static void *THR_evt_buzzer(void *prm)
 	int exit = 0;
 	int status = 0, i = 0 ;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -387,7 +387,7 @@ static void *THR_evt_buzzer(void *prm)
 	
 	tObj->active = 0;
 		
-	aprintf("exit\n");
+	dprintf("exit\n");
 	return NULL;
 }
 
@@ -395,14 +395,14 @@ static int _is_enable_rec_start(int rec_type)
 {	
 	//# currently record
 	if (irec->rec_state && !rec_type) {
-		eprintf("currently recording...\n");
+		dprintf("currently recording...\n");
 		return EFAIL;
 	}
 
 	if (!app_cfg->en_rec || !app_cfg->ste.b.cap || app_cfg->ste.b.mmc_err || 
 		app_cfg->ste.b.busy || (app_cfg->vid_count == 0)) 
 	{
-		eprintf("can't record cuz %s %s %s %s %s\n",
+		dprintf("can't record cuz %s %s %s %s %s\n",
 			app_cfg->ste.b.mmc_err?"Damaged MMC":"", app_cfg->ste.b.busy?"system busy":"",
 			app_cfg->ste.b.cap?"":"no Capture", app_cfg->en_rec?"":"no Codec",
 			(app_cfg->vid_count > 0)?"":"no video detect");
@@ -420,7 +420,7 @@ static int _is_enable_rec_start(int rec_type)
 		{
 			if(app_file_check_disk_free_space() == EFAIL)
 			{
-				eprintf("Bypass start record!\n");
+				dprintf("Bypass start record!\n");
 				return EFAIL;
 			}
 		}
@@ -549,32 +549,32 @@ int app_rec_init(void)
 	//#--- create msg receive thread
 	tObj = &irec->rObj;
 	if(thread_create(tObj, THR_rec_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create msg send thread
 	tObj = &irec->sObj;
 	if(thread_create(tObj, THR_rec_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 
 	//#--- create event buzzer thread
 	tObj = &irec->bObj;
 	if(thread_create(tObj, THR_evt_buzzer, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 
 	//#--- create sos packet thread for stop
 	tObj = &irec->kObj;
 	if(thread_create(tObj, THR_stop_sos, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 
 	return SOK;
 }
@@ -598,7 +598,7 @@ int app_rec_exit(void)
 //	tObj = &irec->rObj;
 //	thread_delete(tObj);
 	
-	aprintf("done!...\n");
+	dprintf("done!...\n");
 
 	return SOK;
 }

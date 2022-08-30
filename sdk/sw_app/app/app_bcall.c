@@ -47,7 +47,6 @@
 #define  AUDIO_END_WAV       "/usr/baresip/audio_end.wav"
 #define  RING_BACK_WAV       "/usr/baresip/ringback.wav"
 
-
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/

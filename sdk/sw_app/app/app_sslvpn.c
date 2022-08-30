@@ -22,50 +22,50 @@ void app_set_sslvpnconf(void)
 	{
 		sprintf(buffer, "SSLVPN_HOME=%s\n", SSLVPN_CONF_PATH) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 		
 		sprintf(buffer, "SSLVPN_ID=%s\n", app_set->sslvpn_info.vpn_id) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 		
 		sprintf(buffer, "\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "interface tap0\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	tap version 3\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
 
 		sprintf(buffer, "	tap heartbeat interval %d threshold %d\n",app_set->sslvpn_info.heartbeat_interval, app_set->sslvpn_info.heartbeat_threshold) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	tap proto %s port %d queue %d\n", protocol_type[app_set->sslvpn_info.protocol], app_set->sslvpn_info.port, app_set->sslvpn_info.queue) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	tap key %s\n",app_set->sslvpn_info.key) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	tap algorithm %s\n",enc_type[app_set->sslvpn_info.encrypt_type]) ;		
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	tap destination %s\n", app_set->sslvpn_info.ipaddr) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	tap source %s\n", ni_type[app_set->sslvpn_info.NI]) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "	no shutdown\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-//		sysprint(buffer);
+//		DBG(buffer);
 
 		sprintf(buffer, "!\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);

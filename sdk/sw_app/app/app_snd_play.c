@@ -227,7 +227,7 @@ static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
 	
 out:
 	snd_pcm_hw_params_free(hw_params);
-	eprintf("alsa: init failed!!\n");
+	dprintf("alsa: init failed!!\n");
 	return NULL;
 }
 
@@ -254,7 +254,7 @@ static int __snd_out_write(snd_pcm_t *handle, void *buf, int data_size)
 				//dprintf("bcsnd pcm write resume!!\n");
 				snd_pcm_resume(handle);
 			} else if (w < 0) {
-				eprintf("backchannel sound device write error!!\n");
+				dprintf("backchannel sound device write error!!\n");
 			}
 		} else if ((w >= 0) && ((size_t)w < count)) {
 			/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
@@ -358,7 +358,7 @@ static void *THR_snd_bcplay_main(void *prm)
 #endif		
 
 	tObj->active = 1;
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	/* 
 	 * sound period size (프레임 단위로 설정함)
@@ -370,7 +370,7 @@ static void *THR_snd_bcplay_main(void *prm)
 	/* Initialize ALSA Speaker */
 	h_pcm = __snd_out_init(APP_SND_BC_CH, APP_SND_BC_SRATE, pframes);
 	if (h_pcm == NULL) {
-		eprintf("Failed to init plughw:0,0 device!\n");
+		dprintf("Failed to init plughw:0,0 device!\n");
 		return NULL;
 	}
 	
@@ -408,7 +408,7 @@ static void *THR_snd_bcplay_main(void *prm)
 	
 	//# message queue
 	isnd_bc->qid = Msg_Init(BCPLAY_MSG_KEY);
-	aprintf("isnd_bc->qid:0x%X\n", isnd_bc->qid);
+	dprintf("isnd_bc->qid:0x%X\n", isnd_bc->qid);
 	
 	while (!exit) 
 	{
@@ -431,7 +431,7 @@ static void *THR_snd_bcplay_main(void *prm)
 					bytes = isnd_bc->len;
 					//dprintf("received audio data, len=%d\n", bytes);
 					if (bytes == 0) {
-						eprintf("bc sound size error!!\n");
+						dprintf("bc sound size error!!\n");
 						OSA_waitMsecs(10);
 						continue;
 					}
@@ -470,7 +470,7 @@ static void *THR_snd_bcplay_main(void *prm)
 				break;
 			} /* end of switch (cmd) */
 		} else {
-			eprintf("failed to receive bcplay process msg!\n");
+			dprintf("failed to receive bcplay process msg!\n");
 			OSA_waitMsecs(1000);
 			continue;
 		}
@@ -484,7 +484,7 @@ static void *THR_snd_bcplay_main(void *prm)
 		free(sampv);
 	
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 	return NULL;
 }
 
@@ -505,12 +505,12 @@ int app_snd_bcplay_init(void)
 		//#--- create backchannel play thread bkkim
 		if (thread_create(&isnd_bc->mObj, THR_snd_bcplay_main, APP_THREAD_PRI, 
 						NULL, __FILENAME__) < 0) {
-			eprintf("create bc play thread\n");
+			dprintf("create bc play thread\n");
 			return -1;
 		}
 	}
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	return 0;
 }
 
@@ -542,7 +542,7 @@ static int __wav_decode(FILE *f, wave_info_t *info)
 	fread(&wh, sizeof(wav_header), 1, f);
 	if ((MKTAG(wh.chunk_id[0], wh.chunk_id[1], wh.chunk_id[2], wh.chunk_id[3]) != TAG_RIFF)
 		|| (MKTAG(wh.format[0], wh.format[1], wh.format[2], wh.format[3])!= TAG_WAVE)) {
-		eprintf("Invaild file format!\n");
+		dprintf("Invaild file format!\n");
 		return -1;
 	}
 	
@@ -550,7 +550,7 @@ static int __wav_decode(FILE *f, wave_info_t *info)
 	for (;;) 
 	{
 		if (feof(f)) {
-			eprintf("Not founded wave data tag!\n");
+			dprintf("Not founded wave data tag!\n");
 			return -1;
 		}
 
@@ -585,7 +585,7 @@ static void *THR_snd_iplay_main(void *prm)
 	FILE *fin;
 	
 	tObj->active = 1;
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	
 	while (!exit) 
 	{
@@ -603,12 +603,12 @@ static void *THR_snd_iplay_main(void *prm)
 		/* decode wav file */
 		fin = fopen(&isnd_info->filename[0], "rb");
 		if (fin == NULL) {
-			eprintf("Unable to open %s file \n", &isnd_info->filename[0]);
+			dprintf("Unable to open %s file \n", &isnd_info->filename[0]);
 			continue;
 		}
 	
 		if (__wav_decode(fin, &isnd_info->winfo) < 0) {
-			eprintf("Failed to decode wav file!\n");
+			dprintf("Failed to decode wav file!\n");
 			fclose(fin);
 			continue;
 		}
@@ -620,7 +620,7 @@ static void *THR_snd_iplay_main(void *prm)
 		
 		sampv = (char *)malloc(size);
 		if (sampv == NULL) {
-			eprintf("Failed to alloc memory!\n");
+			dprintf("Failed to alloc memory!\n");
 			fclose(fin);
 			continue;
 		}
@@ -654,7 +654,7 @@ static void *THR_snd_iplay_main(void *prm)
 	} /* while(!exit) */
 	
 	tObj->active = 0;
-	aprintf("...exit\n");
+	dprintf("...exit\n");
 	
 	return NULL;
 }
@@ -722,11 +722,11 @@ int app_snd_iplay_init(void)
 	//#--- create sound info play thread
 	if (thread_create(&isnd_info->iObj, THR_snd_iplay_main, APP_THREAD_PRI, 
 					NULL, __FILENAME__) < 0) {
-		eprintf("create sound info play thread\n");
+		dprintf("create sound info play thread\n");
 		return -1;
 	}
 
-	aprintf("... done!\n");
+	dprintf("... done!\n");
 	return 0;
 }
 

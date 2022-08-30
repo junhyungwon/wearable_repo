@@ -107,7 +107,7 @@ int util_sys_exec(char *arg)
 	numArg = j + 1;
 
 	if (numArg > 10) {
-	    dprintf("The no of arguments are greater than 10" \
+	    DBG_HWT("The no of arguments are greater than 10" \
 	    		"calling standard system function...\n");
 	    return (util_sys_exec(arg));
 	}
@@ -153,10 +153,10 @@ int util_sys_exec(char *arg)
 	               exArg[5],exArg[6],exArg[7],exArg[8],exArg[9],NULL);
 	        break;
 		}
-        eprintf("execlp failed...\n");
+        ERR_HWT("execlp failed...\n");
 	    exit(0);
 	} else if(chId < 0) {
-		eprintf("Failed to create child process\n");
+		ERR_HWT("Failed to create child process\n");
 		return -1;
 	} else {
 		/* parent process */
@@ -165,9 +165,9 @@ int util_sys_exec(char *arg)
 		waitpid(chId, &status, 0);
 		#if 0
 		if (WIFEXITED(status))
-			dprintf("Chiled exited with the code %d\n", WEXITSTATUS(status));
+			DBG_HWT("Chiled exited with the code %d\n", WEXITSTATUS(status));
 		else
-			eprintf("Child terminated abnormally..\n");
+			ERR_HWT("Child terminated abnormally..\n");
 		#endif
 	}
 
@@ -187,7 +187,7 @@ int util_check_mount(char *dev)
 
 	fp = fopen(PROC_MOUNTS, "r");
 	if (fp == NULL) {
-		eprintf("cannot open %s\n", PROC_MOUNTS);
+		ERR_HWT("cannot open %s\n", PROC_MOUNTS);
 		return detect;
 	}
 

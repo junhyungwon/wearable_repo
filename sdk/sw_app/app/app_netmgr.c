@@ -91,7 +91,7 @@ static int recv_msg(void)
 	
 	//# blocking
 	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0) {
-		eprintf("invalid netmgr message (cmd = %x)\n", msg.cmd);
+		dprintf("invalid netmgr message (cmd = %x)\n", msg.cmd);
 		return -1;
 	}
 	
@@ -310,7 +310,7 @@ static void __netmgr_dev_link_status_handler(void)
 	int link   = inetmgr->link_status;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		eprintf("invalid netdevice --> %s\n", netdev_str(device));
+		dprintf("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -371,7 +371,7 @@ static void __netmgr_dev_ip_status_handler(void)
 	int device = inetmgr->device;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		eprintf("invalid netdevice --> %s\n", netdev_str(device));
+		dprintf("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -413,7 +413,7 @@ static void __netmgr_dev_ip_status_handler(void)
 static void __netmgr_rssi_status_handler(int level)
 {
 	if (level < 0) {
-		sysprint("Wi-Fi RSSI is minus, connection closed...\n");
+		DBG("Wi-Fi RSSI is minus, connection closed...\n");
 	} else {					
 		//dprintf("current rssi level is (%d/100)\n", level);	
 		/* level 값을 확인 후 추가적인 작업이 필요할 경우를 위해서....*/
@@ -429,19 +429,19 @@ static void __netmgr_start(void)
 	inetmgr->shmid = shmget((key_t)NETMGR_SHM_KEY, 0, 0);
 	if (inetmgr->shmid == -1) {
 		/* debugging 목적 */
-		eprintf("shared memory for netmgr is not created!!\n");
+		dprintf("shared memory for netmgr is not created!!\n");
 	}
 
 	//# get shared memory
 	inetmgr->sbuf = (unsigned char *)shmat(inetmgr->shmid, NULL, 0);
 	if (inetmgr->sbuf == NULL) {
 		/* debugging 목적 */
-		eprintf("shared memory for netmgr is NULL!!!");
+		dprintf("shared memory for netmgr is NULL!!!");
 	}
 	
 	//#--- create msg send thread
 	if (thread_create(tObj, THR_netmgr_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 	}
 
 	send_msg(NETMGR_CMD_PROG_START);
@@ -456,7 +456,7 @@ static void *THR_netmgr_send_msg(void *prm)
 	app_thr_obj *tObj = &inetmgr->sObj;
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -507,7 +507,7 @@ static void *THR_netmgr_send_msg(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit\n");
+	dprintf("exit\n");
 	
 	return NULL;
 }
@@ -520,7 +520,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 {
 	int exit = 0, cmd;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	//# message queue
 	inetmgr->qid = Msg_Init(NETMGR_MSG_KEY);
 	
@@ -528,7 +528,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			eprintf("failed to receive netmgr process msg!\n");
+			dprintf("failed to receive netmgr process msg!\n");
 			continue;
 		}
 		
@@ -540,19 +540,19 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_DEV_DETECT:
 			__netmgr_hotplug_noty();
-			sysprint("[APP_NET] netdevice type %s, state %s\n", 
+			DBG("[APP_NET] netdevice type %s, state %s\n", 
 						netdev_str(inetmgr->device), inetmgr->insert?"insert":"remove");
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
 			__netmgr_dev_link_status_handler();
-			sysprint("[APP_NET] device type %s, link status 0x%x\n", 
+			DBG("[APP_NET] device type %s, link status 0x%x\n", 
 						netdev_str(inetmgr->device), inetmgr->link_status);
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
 			__netmgr_dev_ip_status_handler();
-			sysprint("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
+			DBG("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
@@ -562,7 +562,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
-			sysprint("[APP_NET] netmgr exit!\n");
+			DBG("[APP_NET] netmgr exit!\n");
 			break;
 		default:
 			break;	
@@ -570,7 +570,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 	}
 	
 	Msg_Kill(inetmgr->qid);
-	aprintf("exit...\n");
+	dprintf("exit...\n");
 		
 	return NULL;
 }
@@ -586,7 +586,7 @@ static void *THR_netmgr_wlan_thr(void *prm)
 	int poll_time;
 	int wait_poll = 0;
 	
-	aprintf("enter...\n");
+	dprintf("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -623,7 +623,7 @@ static void *THR_netmgr_wlan_thr(void *prm)
 	}
 	
 	tObj->active = 0;
-	aprintf("exit\n");
+	dprintf("exit\n");
 	
 	return NULL;
 }
@@ -648,7 +648,7 @@ int app_netmgr_init(void)
 	//# --create wlan event thread
 	tObj = &inetmgr->wObj;
 	if(thread_create(tObj, THR_netmgr_wlan_thr, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 	#endif
@@ -656,11 +656,11 @@ int app_netmgr_init(void)
 	//#--- create msg receive thread
 	tObj = &inetmgr->rObj;
 	if(thread_create(tObj, THR_netmgr_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		eprintf("create thread\n");
+		dprintf("create thread\n");
 		return EFAIL;
 	}
 	
-	aprintf("... exit!\n");
+	dprintf("... exit!\n");
 
 	return SOK;
 }
@@ -692,7 +692,7 @@ int app_netmgr_exit(void)
 //	tObj = &inetmgr->rObj;
 //	thread_delete(tObj);
 	
-	aprintf("...exit!\n");
+	dprintf("...exit!\n");
 
 	return SOK;
 }

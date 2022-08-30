@@ -79,7 +79,7 @@ int app_ste_mmc(void)
 	int status;
 
 	status = util_check_mount("/dev/mmcblk0");
-	//dprintf("--- value %d\n", status);
+	//DBG_HWT("--- value %d\n", status);
 
 	return status;
 }
@@ -111,7 +111,7 @@ static void *THR_buzzer(void *prm)
 	int cmd, exit=0;
 	int i, time, cnt;
 
-	aprintf("enter...\n");
+	DBG_HWT("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -136,7 +136,7 @@ static void *THR_buzzer(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWT("...exit\n");
 
 	return NULL;
 }
@@ -189,7 +189,7 @@ int app_sys_time(struct tm *ts)
 		sleep(1);
 		util_sys_exec("hwclock -w");	//# more once
 		sleep(1);
-		aprintf("--- changed time from GPS ---\n");
+		DBG_HWT("--- changed time from GPS ---\n");
 	}
 
 	return SOK;
@@ -211,11 +211,11 @@ static void *THR_gps(void *prm)
 	//# gps init
 	ret = dev_gps_init();
 	if (ret < 0) {
-		eprintf("gps init\n");
+		ERR_HWT("gps init\n");
 		return NULL;
 	}
 
-	aprintf("enter...\n");
+	DBG_HWT("enter...\n");
 	tObj->active = 1;
 	while(!exit)
 	{
@@ -235,7 +235,7 @@ static void *THR_gps(void *prm)
 				{
 					gps_nmea = &gps_data.nmea;
 					#if 0
-					dprintf("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
+					DBG_HWT("GPS - DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f) \n",
 						gps_nmea->date.tm_year+1900, gps_nmea->date.tm_mon+1, gps_nmea->date.tm_mday,
 						gps_nmea->date.tm_hour, gps_nmea->date.tm_min, gps_nmea->date.tm_sec,
 						gps_nmea->speed, gps_nmea->latitude, gps_nmea->longitude
@@ -267,7 +267,7 @@ static void *THR_gps(void *prm)
 	dev_gps_close();
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWT("...exit\n");
 
 	return NULL;
 }
@@ -281,7 +281,7 @@ static void *THR_dev(void *prm)
 	app_thr_obj *tObj = &idev->dObj;
 	int cmd, exit=0;
 
-	aprintf("enter...\n");
+	DBG_HWT("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -295,7 +295,7 @@ static void *THR_dev(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWT("...exit\n");
 
 	return NULL;
 }
@@ -311,7 +311,7 @@ int app_gps_ctrl(int en)
 	if(en) {
 		tObj = &idev->gObj;
 		if(thread_create(tObj, THR_gps, APP_THREAD_PRI, NULL, NULL) < 0) {
-			eprintf("create thread\n");
+			ERR_HWT("create thread\n");
 			return EFAIL;
 		}
 	}
@@ -339,7 +339,7 @@ int app_dev_start(void)
 	//#--- create dev thread
 	tObj = &idev->dObj;
 	if(thread_create(tObj, THR_dev, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWT("create thread\n");
 		return EFAIL;
 	}
 
@@ -349,7 +349,7 @@ int app_dev_start(void)
 	//#--- create buzzer thread
 	tObj = &idev->bObj;
 	if(thread_create(tObj, THR_buzzer, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWT("create thread\n");
 		return EFAIL;
 	}
 

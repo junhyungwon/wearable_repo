@@ -51,7 +51,7 @@ static void *THR_micom(void *prm)
 	int exit=0, ret=0;
 	mic_msg_t msg;
 
-	aprintf("enter...\n");
+	DBG_HWD("enter...\n");
 	tObj->active = 1;
 
 	mic_data_send(1, TIME_DATA_CYCLE);
@@ -83,10 +83,10 @@ static void *THR_micom(void *prm)
 			case CMD_PSW_EVT:
 			{
 				short key_type = msg.data[0];
-				dprintf("[evt] pwr switch %s event\n", key_type==2?"long":"short");
+				DBG_HWD("[evt] pwr switch %s event\n", key_type==2?"long":"short");
 				if (key_type == 2)
 				{
-					dprintf("APP_KEY_PWR.....\n") ;
+					DBG_HWD("APP_KEY_PWR.....\n") ;
 					gui_ctrl(APP_KEY_PWR, 0, 0);
 				}
 				else
@@ -106,7 +106,7 @@ static void *THR_micom(void *prm)
 	}
 
 	tObj->active = 0;
-	aprintf("...exit\n");
+	DBG_HWD("...exit\n");
 
 	return NULL;
 }
@@ -134,7 +134,7 @@ int app_mcu_start(void)
 	//#--- create dio thread
 	tObj = &imcu->cObj;
 	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL, NULL) < 0) {
-		eprintf("create thread\n");
+		ERR_HWD("create thread\n");
 		return EFAIL;
 	}
 
