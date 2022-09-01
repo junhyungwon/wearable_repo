@@ -108,7 +108,7 @@ static int recv_msg(void)
 static int __gps_send_cmd(int cmd)
 {
 	send_msg(cmd);
-	//dprintf("send command to GPS process(%x)!!\n", cmd);
+	//TRACE_INFO("send command to GPS process(%x)!!\n", cmd);
 	
 	return SOK;
 }
@@ -123,14 +123,14 @@ static void *THR_gps_jack_detect(void *prm)
 	int exit = 0, cmd = 0;
 	int res = 0, val;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	app_leds_gps_ctrl(LED_GPS_OFF); //#default LED OFF
 	gpio_irq_init(GPS_PWR_EN, GPIO_IRQ_BOTH);
 	
 	if (!gpio_get_value(GPS_PWR_EN, &val)) {
-		dprintf("GPS Jack GET value %d\n", val);
+		TRACE_INFO("GPS Jack GET value %d\n", val);
 		if (val == 1) {
 			app_cfg->ste.b.gps = 1;
 			sync_time = 1 ;
@@ -151,7 +151,7 @@ static void *THR_gps_jack_detect(void *prm)
 		/* 1000ms timeout */
 		res = gpio_irq_read(GPS_PWR_EN, &val, 1000);
 		if (res == 0) {
-			dprintf("GPS Jack GPIO value %d\n", val);
+			TRACE_INFO("GPS Jack GPIO value %d\n", val);
 			if ((app_cfg->ste.b.gps == 0) && (val == 1)) {
 				app_cfg->ste.b.gps = 1;
 			    sync_time = 1 ;
@@ -170,7 +170,7 @@ static void *THR_gps_jack_detect(void *prm)
 	
 	gpio_exit(GPS_PWR_EN);
 	tObj->active = 0;
-	dprintf("exit...\n");
+	TRACE_INFO("exit...\n");
 		
 	return NULL;
 }
@@ -187,7 +187,7 @@ static void *THR_gps_main(void *prm)
 	int first = 0;
 	int poll_done=0;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	/* meta reset */
@@ -230,7 +230,7 @@ static void *THR_gps_main(void *prm)
 	}
 
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 
 	return NULL;
 }
@@ -241,26 +241,26 @@ static int __gps_ready_event_handle(void)
 	
 	tObj = &igps->hObj;
 	if (thread_create(tObj, THR_gps_main, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_INFO("create thread\n");
 		return EFAIL;
 	}
 	
 	//#--- create gps jack detect thread
 	tObj = &igps->pObj;
 	if (thread_create(tObj, THR_gps_jack_detect, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_INFO("create thread\n");
 		return EFAIL;
 	}
 
 	igps->shmid = shmget((key_t)GNSS_SHM_KEY, 0, 0);
 	if (igps->shmid == -1) {
-		dprintf("shared memory for gps is not created!!\n");
+		TRACE_INFO("shared memory for gps is not created!!\n");
 	}
 	
 	//# get shared memory
 	igps->sbuf = (unsigned char *)shmat(igps->shmid, NULL, 0);
 	if (igps->sbuf == NULL) {
-		dprintf("shared memory for gps scan is NULL!!!");
+		TRACE_INFO("shared memory for gps scan is NULL!!!");
 	}
 	
 	return SOK;
@@ -273,7 +273,7 @@ static int app_sys_time(struct tm *ts)
 
     app_cfg->ste.b.prerec_state = app_set->rec_info.auto_rec ;
   
-	dprintf("---reached app_sys_time ---\n");
+	TRACE_INFO("---reached app_sys_time ---\n");
     //# get current time
 	now = time(NULL);
 
@@ -293,7 +293,7 @@ static int app_sys_time(struct tm *ts)
 		Vsys_datetime_init();	//# m3 Date/Time init
     	app_msleep(100);
 		if (dev_rtc_set_time(*ts) < 0) {
-			dprintf("Failed to set system time to rtc\n!!!");
+			TRACE_INFO("Failed to set system time to rtc\n!!!");
 		}
 
         if (app_cfg->ste.b.prerec_state) 
@@ -302,7 +302,7 @@ static int app_sys_time(struct tm *ts)
 	    }
         app_cfg->ste.b.rec = 0 ;
 
-		dprintf("--- changed time from GPS ---\n");
+		TRACE_INFO("--- changed time from GPS ---\n");
 
 	}
 
@@ -352,7 +352,7 @@ static void send_gps_data()
 			gpsdata_send((void*)&Gpsdata);
 	} else {
 		/* GPS ?°ê²°?€ ?ˆì?ë§??˜ì‹ ???ˆë  ê²½ìš° */
-		//dprintf("Failed to get GPRMC Data\n");
+		//TRACE_INFO("Failed to get GPRMC Data\n");
 	}
 }
 
@@ -365,7 +365,7 @@ static void *THR_gps_recv_msg(void *prm)
 	int exit = 0, cmd;
 //	int sync_time = 1;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	
 	//# message queue
 	igps->qid = Msg_Init(GNSS_MSG_KEY);
@@ -375,14 +375,14 @@ static void *THR_gps_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			dprintf("failed to receive gps process msg!\n");
+			TRACE_INFO("failed to receive gps process msg!\n");
 			continue;
 		}
 		
 		switch (cmd) {
 		case GNSS_CMD_GPS_READY:
 			__gps_ready_event_handle();
-			dprintf("received gps ready!\n");
+			TRACE_INFO("received gps ready!\n");
 			break;
 		
 		case GNSS_CMD_GPS_POLL_DATA:
@@ -407,7 +407,7 @@ static void *THR_gps_recv_msg(void *prm)
 			
 			//# debugging
 			#if 0	
-			dprintf("GPS POLL(%d)- DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
+			TRACE_INFO("GPS POLL(%d)- DATE %04d-%02d-%02d, UTC %02d:%02d:%02d, speed=%.2f, (LAT:%.2f, LOT:%.2f)\n",
 					igps->r_data.gps_fixed, igps->r_data.gtm.tm_year+1900, igps->r_data.gtm.tm_mon+1, 
 					igps->r_data.gtm.tm_mday, igps->r_data.gtm.tm_hour, igps->r_data.gtm.tm_min, 
 					igps->r_data.gtm.tm_sec, igps->r_data.speed, igps->r_data.lat, igps->r_data.lot);
@@ -416,12 +416,12 @@ static void *THR_gps_recv_msg(void *prm)
 			if (igps->r_data.view_num > 0) 
 			{
 				int i;
-				dprintf("Total number of %d satellites in view!!\n", igps->r_data.view_num);
+				TRACE_INFO("Total number of %d satellites in view!!\n", igps->r_data.view_num);
 				for (i = 0; i < igps->r_data.view_num; i++) {
 					if (igps->r_data.sateview[i].used) {
-						dprintf("[%d]th satellites SNR is = %d(dB)\n", i, igps->r_data.sateview[i].ss);
+						TRACE_INFO("[%d]th satellites SNR is = %d(dB)\n", i, igps->r_data.sateview[i].ss);
 					} else {
-						dprintf("[%d]th satellites not used\n", i);
+						TRACE_INFO("[%d]th satellites not used\n", i);
 					}
 				}
 			}
@@ -433,7 +433,7 @@ static void *THR_gps_recv_msg(void *prm)
 		
 		case GNSS_CMD_GPS_EXIT:
 			exit = 1;
-			dprintf("received gps exit!\n");
+			TRACE_INFO("received gps exit!\n");
 			break;
 		default:
 			break;	
@@ -442,7 +442,7 @@ static void *THR_gps_recv_msg(void *prm)
 	
 	Msg_Kill(igps->qid);
 	
-	dprintf("exit...\n");
+	TRACE_INFO("exit...\n");
 		
 	return NULL;
 }
@@ -462,7 +462,7 @@ int app_gps_init(void)
 	
 	/* start gps process */
     if (stat(GNSS_BIN_STR, &sb) != 0) {
-		dprintf("can't access gps execute file!\n");
+		TRACE_INFO("can't access gps execute file!\n");
         return -1;
 	}
 	system(GNSS_CMD_STR);
@@ -479,11 +479,11 @@ int app_gps_init(void)
 	//#--- create msg receive thread
 	tObj = &igps->rObj;
 	if (thread_create(tObj, THR_gps_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_INFO("create thread\n");
 		return EFAIL;
 	}
 	
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 
 	return SOK;
 }
@@ -518,7 +518,7 @@ int app_gps_exit(void)
     if (app_set->srv_info.ON_OFF)
         OSA_mutexDelete(&igps->mutex_meta);
 	
-	dprintf("done!...\n");
+	TRACE_INFO("done!...\n");
 
 	return SOK;
 }

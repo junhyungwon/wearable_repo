@@ -412,7 +412,7 @@ static void *THR_ipinstall(void *prm)
 #ifdef IPINSTALL_DEBUG
                     DEBUG_PRI("ReadSocketData CONNECTION TIMEOUT\n") ;
 #endif
-                    DBG("Tcp Connect Timeout... !! on RECEIVER\n");
+                    LOGD("Tcp Connect Timeout... !! on RECEIVER\n");
 
                     close(ipins->rsock) ;
                     break ;
@@ -504,11 +504,11 @@ int app_ipins_init(void)
     tObj = &ipins->ipinsObj ;
     if(thread_create(tObj, THR_ipinstall, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
     {
-        dprintf("create sock thread\n") ;
+        TRACE_ERR("create sock thread\n") ;
         return EFAIL ;
     }
 	
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 
     return 0;
 }
@@ -528,5 +528,5 @@ void app_ipins_exit(void)
 
     thread_delete(tObj);
 	
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 }

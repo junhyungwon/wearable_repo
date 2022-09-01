@@ -55,7 +55,7 @@ static int OSA_semCreate(OSA_SemHndl *hndl, Uint32 maxCount, Uint32 initVal)
 		hndl->count = hndl->maxCount;
 
 	if (status!=OSA_SOK)
-		printf("OSA_semCreate() = %d\r\n", status);
+		fprintf(stderr, "OSA_semCreate() = %d\r\n", status);
 
 	pthread_condattr_destroy(&cond_attr);
 	pthread_mutexattr_destroy(&mutex_attr);
@@ -121,7 +121,7 @@ static int OSA_thrCreate(OSA_ThrHndl *hndl, OSA_ThrEntryFunc entryFunc, Uint32 p
 	// initialize thread attributes structure
 	status = pthread_attr_init(&thread_attr);
 	if (status != OSA_SOK) {
-		printf("OSA_thrCreate() - Could not initialize thread attributes\n");
+		fprintf(stderr, "OSA_thrCreate() - Could not initialize thread attributes\n");
 		return status;
 	}
 
@@ -140,13 +140,13 @@ static int OSA_thrCreate(OSA_ThrHndl *hndl, OSA_ThrEntryFunc entryFunc, Uint32 p
 	status |= pthread_attr_setschedparam(&thread_attr, &schedprm);
 
 	if (status != OSA_SOK) {
-		printf("OSA_thrCreate() - Could not initialize thread attributes\n");
+		fprintf(stderr, "OSA_thrCreate() - Could not initialize thread attributes\n");
 		goto error_exit;
 	}
 
 	status = pthread_create(&hndl->hndl, &thread_attr, entryFunc, prm);
 	if (status != OSA_SOK) {
-		printf("OSA_thrCreate() - Could not create thread [%d]\n", status);
+		fprintf(stderr, "OSA_thrCreate() - Could not create thread [%d]\n", status);
 	}
 
 error_exit:  
@@ -285,10 +285,10 @@ int Msg_Init(int msgKey)
 	qid = msgget(key,0);
 	if (qid < 0) {
 		qid = msgget(key,IPC_CREAT|0666);
-		printf("Creat queue id:%d\n", qid);
+		dprintf("Creat queue id:%d\n", qid);
 	}
 
-	printf("queue id:%d\n", qid);
+	dprintf("queue id:%d\n", qid);
 
 	return qid;
 }
@@ -354,7 +354,7 @@ int Msg_Kill(int qid)
 {
 	msgctl(qid, IPC_RMID, NULL);
 
-	printf("Kill queue id:%d\n", qid);
+	dprintf("Kill queue id:%d\n", qid);
 
 	return 0;
 }

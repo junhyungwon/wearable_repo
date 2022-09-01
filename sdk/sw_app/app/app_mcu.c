@@ -137,7 +137,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 {
 	//app_leds_int_batt_ctrl(3); /* TODO */
 #if 0
-	dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
+	TRACE_INFO("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 	//# low power check
 	//# ebatt를 체크할 경우 크래들 사용이 불가능 해 진다. 따라서 mbatt를 체크하며 크래들 사용 시 
@@ -147,7 +147,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				DBG("Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
+				LOGD("Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
@@ -171,7 +171,7 @@ static void *THR_micom(void *prm)
 	int exit=0, ret=0, value = 0;
 	mic_msg_t msg;
 
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 
 	mic_set_watchdog(ENA, TIME_WATCHDOG);
@@ -213,13 +213,13 @@ static void *THR_micom(void *prm)
 			case CMD_PSW_EVT:
 			{
 				short key_type = msg.data[0];
-				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
+				TRACE_INFO("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
 				break;
 			}
 			
 			case CMD_DAT_STOP:		//# response data send stop
 			{
-				dprintf("[evt] data stop event\n");
+				TRACE_INFO("[evt] data stop event\n");
 				exit = 1;
 				break;
 			}
@@ -229,7 +229,7 @@ static void *THR_micom(void *prm)
 	}
 
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 
 	return NULL;
 }
@@ -293,7 +293,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 					app_leds_int_batt_ctrl(bg_lv);
 				}
 #if 0
-				dprintf("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
+				TRACE_INFO("ibatt %d(V): ebatt %d(V): mbatt %d(V): gauge %d\n", ibatt, ebatt, mbatt, bg_lv);
 #endif				
 			}
 		} else {
@@ -306,7 +306,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				DBG("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
+				LOGD("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
@@ -330,7 +330,7 @@ static void *THR_micom(void *prm)
 	int exit=0, ret=0, value = 0;
 	mic_msg_t msg;
 
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 
 	mic_set_watchdog(ENA, TIME_WATCHDOG);
@@ -372,16 +372,16 @@ static void *THR_micom(void *prm)
 			case CMD_PSW_EVT:
 			{
 				short key_type = msg.data[0];
-				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
+				TRACE_INFO("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
 				if (key_type == PSW_EVT_LONG) 
 				{
 					if (!app_cfg->ste.b.busy) {
-						DBG("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
+						LOGD("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
 						//# add rupy
 						ctrl_sys_halt(1); /* for shutdown */
 						exit = 1;
 					} else {
-						dprintf("skip power switch event!!!\n");
+						TRACE_INFO("skip power switch event!!!\n");
 					}
 				} 
 				else 
@@ -407,23 +407,23 @@ static void *THR_micom(void *prm)
 						// value 1, SOS Rec  , Value 1 Normal/Event REc
 							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 							app_sos_send_stop(ON) ;
-							DBG("[APP_SOS] End SOS Event !! \n");	
+							LOGD("[APP_SOS] End SOS Event !! \n");	
 						} 
 						else {
 							//  Rec off or normal/event rec -> SOS ON
 							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 							app_rec_evt(ON) ;  // SOS REC
-							DBG("[APP_SOS] Occurs SOS Event !! \n");
+							LOGD("[APP_SOS] Occurs SOS Event !! \n");
 						}
 					}
-					dprintf("SOS Short Key Pressed!\n");
+					TRACE_INFO("SOS Short Key Pressed!\n");
 				}
 				break;
 			}
 			
 			case CMD_DAT_STOP:		//# response data send stop
 			{
-				dprintf("[evt] data stop event\n");
+				TRACE_INFO("[evt] data stop event\n");
 				exit = 1;
 				break;
 			}
@@ -433,7 +433,7 @@ static void *THR_micom(void *prm)
 	}
 
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 
 	return NULL;
 }
@@ -467,7 +467,7 @@ int app_mcu_start(void)
 	app_cfg->wd_tot |= WD_MICOM;
 	tObj = &imcu->cObj;
 	if(thread_create(tObj, THR_micom, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_ERR("create thread\n");
 		return EFAIL;
 	}
 
@@ -509,12 +509,11 @@ int app_mcu_init(void)
 	mic_send_ready();
 	ver = (int)mic_get_version();
 	if(ver < SYS_MCU_VER) {
-		printf(" [warning] micom version is old!!!\n");
+		TRACE_INFO(" [warning] micom version is old!!!\n");
 	}
 	
 //	mic_exit_state(OFF_NONE, 0);	//# for test - no power off
-	dprintf("... done!\n");
-	
+	TRACE_INFO("micom init done!\n");
 	return 0;
 }
 
@@ -522,7 +521,7 @@ int app_mcu_exit(void)
 {
     mic_msg_exit();
 	
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 	
 	return 0;
 }

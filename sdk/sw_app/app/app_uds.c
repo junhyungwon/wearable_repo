@@ -757,7 +757,7 @@ static int setNetworkConfiguration(T_CGI_NETWORK_CONFIG *t)
 
 #if 0   // save and reboot; The system restart is changed by User Manually.
 		// restart 후에 적용됨. 2019년 8월 26일, 웹에서 apply,누르면 restart는 하는걸로...
-		DBG("[APP] --- The network settings are changed and the System restarts ---\n");
+		LOGD("[APP] --- The network settings are changed and the System restarts ---\n");
 
 		if(app_rec_state())
 		{
@@ -786,7 +786,7 @@ int updateOnvifUser(T_CGI_ONVIF_USER *t)
 		return 0;
 	}
 
-	dprintf(" Can't set %s's password to %s\n", t->id, t->pw);
+	TRACE_INFO(" Can't set %s's password to %s\n", t->id, t->pw);
 	return -1;
 }
 
@@ -800,7 +800,7 @@ int updateUser(T_CGI_USER *t)
 		return 0;
 	}
 
-	dprintf(" Can't set %s's password to %s\n", t->id, t->pw);
+	TRACE_INFO(" Can't set %s's password to %s\n", t->id, t->pw);
 	return -1;
 }
 
@@ -1842,7 +1842,7 @@ void *myFunc(void *arg)
 			//}
 		}
 		else if (strcmp(rbuf, "ControlTelnetd") == 0) {
-			DBG("[APP_UDS] --- ControlTelnetd ---\n");
+			LOGD("[APP_UDS] --- ControlTelnetd ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -1867,7 +1867,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "ControlRtmp") == 0 && app_set->rtmp.ON_OFF) {
-			DBG("[APP_UDS] --- ControlRtmp ---\n");
+			LOGD("[APP_UDS] --- ControlRtmp ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -1898,7 +1898,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetSystemDateAndTime") == 0)
 		{
-			//DBG("[APP_UDS] --- GetSystemDateAndTime---\n");
+			//LOGD("[APP_UDS] --- GetSystemDateAndTime---\n");
 			char str[128] = {0};
 			int timezone = app_set->time_info.time_zone - 12;
 			sprintf(str, "TZ=%d,DS=%d,ST=%d", timezone,
@@ -1915,7 +1915,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkInterface") == 0){
-			//DBG("[APP_UDS] --- GetNetworkInterfaces ---\n");
+			//LOGD("[APP_UDS] --- GetNetworkInterfaces ---\n");
 
 			// read interface name, interface의 이름을 확인합니다.
 			char iface[128]={0};
@@ -1963,7 +1963,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkProtocols") == 0){
-			//DBG("[APP_UDS] --- GetNetworkProtocols ---\n");
+			//LOGD("[APP_UDS] --- GetNetworkProtocols ---\n");
 
 			// http, https, rtsp 의 순으로 보냅니다.
 			// 구조체 형식으로 보내지 않으면, 데이터 크기, 개수 변경시 뒈짐
@@ -1989,7 +1989,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetNTP") == 0)
 		{
-			DBG("[APP_UDS] --- GetNTP ---\n");
+			LOGD("[APP_UDS] --- GetNTP ---\n");
 
 			char strNTP[128] = {0};
 			//TODO, sprintf(strNTP, "%s", app_set->time_info.time_server);
@@ -2006,7 +2006,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetDNS") == 0)
 		{
-			DBG("[APP_UDS] --- GetDNS ---\n");
+			LOGD("[APP_UDS] --- GetDNS ---\n");
 
 			char strDNS[128] = {0};
 			//TODO, sprintf(strDNS, "%s", app_set->net_info.dns_server1[0]);
@@ -2022,7 +2022,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetHostname") == 0) {
-			DBG("[APP_UDS] --- Get Hostname ---\n");
+			LOGD("[APP_UDS] --- Get Hostname ---\n");
 
 			char hname[100]={0};
 			char sz[128] = {0}; // write buffer with 128 bytes
@@ -2045,7 +2045,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetOnvifUser") == 0){
-			DBG("[APP_UDS] --- SetOnvifUser ---\n");
+			LOGD("[APP_UDS] --- SetOnvifUser ---\n");
 
 			T_ONVIF_USER st;
 			memset(&st, 0, sizeof st);
@@ -2060,7 +2060,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetNetworkInterfaces") == 0){ //subnet -> prefixlen
-			DBG("[APP_UDS] --- SetNetworkInterfaces ---\n");
+			LOGD("[APP_UDS] --- SetNetworkInterfaces ---\n");
 
 			T_ONVIF_NETWORK_INTERFACE st;
 			memset(&st, 0, sizeof st);
@@ -2087,7 +2087,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetNetworkDefaultGateway") == 0){
 			char gw[32]={0};
-			DBG("[APP_UDS] --- SetNetworkDefaultGateway ---\n");
+			LOGD("[APP_UDS] --- SetNetworkDefaultGateway ---\n");
 
 			ret = read(cs_uds, gw, sizeof gw);
 			if(ret > 0){
@@ -2104,7 +2104,7 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "SetNetworkProtocols") == 0)
 		{
 			onvif_NetworkProtocol np;
-			DBG("[APP_UDS] --- SetNetworkProtocols ---\n");
+			LOGD("[APP_UDS] --- SetNetworkProtocols ---\n");
 
 			memset(&np, 0, sizeof np);
 			ret = read(cs_uds, &np, sizeof np);
@@ -2125,7 +2125,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetZeroConfiguration") == 0)
 		{
-			DBG("[APP_UDS] --- SetZeroConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetZeroConfiguration ---\n");
 
 			int  Enabled;
 			memset(rbuf, 0, sizeof rbuf);
@@ -2142,7 +2142,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetNTP") == 0)
 		{
-			DBG("[APP_UDS] --- Set NTP ---\n");
+			LOGD("[APP_UDS] --- Set NTP ---\n");
 
 			int  FromDHCP;    // 0:no, 1:dhcp
 			char ntp[100]=""; // ntp server 
@@ -2162,7 +2162,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetDNS") == 0)
 		{
-			//DBG("[APP_UDS] --- Set DNS ---\n");
+			//LOGD("[APP_UDS] --- Set DNS ---\n");
 
 			int  FromDHCP;    // 0:no, 1:dhcp
 			char dns[100]=""; // dns server
@@ -2182,7 +2182,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetHostname") == 0)
 		{// ONVIF
-			//DBG("[APP_UDS] --- Set Hostname ---\n");
+			//LOGD("[APP_UDS] --- Set Hostname ---\n");
 
 			int fromDHCP=0; // 0:no, 1:dhcp
 			char str[100]={0}; // hostname's size of onvifserver module
@@ -2207,7 +2207,7 @@ void *myFunc(void *arg)
 		////// maintenance 
 		else if (strcmp(rbuf, "SystemFactoryDefault") == 0)
 		{
-			DBG("[APP_UDS] --- System Factory Default ---\n");
+			LOGD("[APP_UDS] --- System Factory Default ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2238,7 +2238,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetSystemDateAndTime") == 0)
 		{
-			DBG("[APP_UDS] --- System Date and Time ---\n");
+			LOGD("[APP_UDS] --- System Date and Time ---\n");
 
 			int ST=TIMESYNC_NTP; // Sync Type 0:Computer(Manual), 1:NTP
 			int DS=0;            // Daylight Savings 0:disable, 1:enable
@@ -2279,7 +2279,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "FWUPDATE") == 0)
 		{
-			DBG("[APP_CGI] --- FWUPDATE ---\n");
+			LOGD("[APP_CGI] --- FWUPDATE ---\n");
 
 			if (app_cfg->ste.b.ftp_run)
 			{
@@ -2341,12 +2341,12 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SystemRestore") == 0)
 		{
-			DBG("[APP_UDS] --- System Restore ---\n");
+			LOGD("[APP_UDS] --- System Restore ---\n");
 			//app_restore(); //TODO
 		}
 		else if (strcmp(rbuf, "SystemReboot") == 0)
 		{
-			DBG("[APP_UDS] --- System Reboot ---\n");
+			LOGD("[APP_UDS] --- System Reboot ---\n");
 			ctrl_sys_halt(0); /* reboot */
 			sleep(10); // client에 응답을 주지 않는다. Restarting....메시지 표시 때문에...
 		}
@@ -2355,7 +2355,7 @@ void *myFunc(void *arg)
 		}
 				
 		else if (strcmp(rbuf, "GetVoipConfiguration") == 0) {
-			DBG("[APP_UDS] --- GetVoipConfiguration ---\n");
+			LOGD("[APP_UDS] --- GetVoipConfiguration ---\n");
 
 			T_CGI_VOIP_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getVoipConfiguration(&t)){
@@ -2372,7 +2372,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetVoipConfiguration") == 0) {
-			DBG("[APP_UDS] --- SetVoipConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetVoipConfiguration ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2403,7 +2403,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
-			DBG("[APP_UDS] --- GetServersConfiguration ---\n");
+			LOGD("[APP_UDS] --- GetServersConfiguration ---\n");
 
 			T_CGI_SERVERS_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getServersConfiguration(&t)){
@@ -2420,7 +2420,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetServersConfiguration") == 0) {
-			DBG("[APP_UDS] --- SetServersConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetServersConfiguration ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2451,7 +2451,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetUserConfiguration") == 0) {
-			DBG("[APP_UDS] --- GetUserconfiguration ---\n");
+			LOGD("[APP_UDS] --- GetUserconfiguration ---\n");
 
 			T_CGI_USER_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getUserConfiguration(&t)){
@@ -2467,7 +2467,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetUserConfiguration") == 0) {
-			DBG("[APP_UDS] --- SetUserConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetUserConfiguration ---\n");
 
 			sprintf(wbuf, "READY");
 			ret = write(cs_uds, wbuf, sizeof wbuf);
@@ -2510,7 +2510,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetSystemConfiguration") == 0) {
-			DBG("[APP_UDS] --- GetSystemconfiguration ---\n");
+			LOGD("[APP_UDS] --- GetSystemconfiguration ---\n");
 
 			T_CGI_SYSTEM_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getSystemConfiguration(&t)){
@@ -2525,7 +2525,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetSystemConfiguration") == 0) {
-			DBG("[APP_UDS] --- SetSystemConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetSystemConfiguration ---\n");
 
 			sprintf(wbuf, "READY");
 			ret = write(cs_uds, wbuf, sizeof wbuf);
@@ -2554,7 +2554,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetHttpsConfiguration") == 0) {
-			DBG("[APP_UDS] --- GetHttpsConfiguration ---\n");
+			LOGD("[APP_UDS] --- GetHttpsConfiguration ---\n");
 
 			T_CGI_HTTPS_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getHttpsConfiguration(&t)){
@@ -2569,7 +2569,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetHttpsConfiguration") == 0) {
-			DBG("[APP_UDS] --- SetHttpsConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetHttpsConfiguration ---\n");
 
 			sprintf(wbuf, "READY");
 			ret = write(cs_uds, wbuf, sizeof wbuf);
@@ -2598,7 +2598,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "InstallCertFile") == 0) {
-			DBG("[APP_UDS] --- InstallCertFile ---\n");
+			LOGD("[APP_UDS] --- InstallCertFile ---\n");
 
 			sprintf(wbuf, "READY"); // This means Send ack
 			ret = write(cs_uds, wbuf, sizeof wbuf);
@@ -2743,7 +2743,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetNetworkConfiguration2") == 0 ) {
-			DBG("[APP_UDS] --- SetNetworkConfiguration2 ---\n");
+			LOGD("[APP_UDS] --- SetNetworkConfiguration2 ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2771,7 +2771,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetNetworkConfiguration") == 0) {
-			//DBG("[APP_UDS] --- GetNetworkConfiguration ---\n");
+			//LOGD("[APP_UDS] --- GetNetworkConfiguration ---\n");
 			{
 				/* start init */
 				T_CGI_NETWORK_CONFIG t;
@@ -2860,7 +2860,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetNetworkConfiguration") == 0 ) {
-			DBG("[APP_UDS] --- SetNetworkConfiguration ---\n");
+			LOGD("[APP_UDS] --- SetNetworkConfiguration ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2888,7 +2888,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetVideoQuality") == 0){
-			//DBG("[APP_UDS] --- GetVideoQuality ---\n");
+			//LOGD("[APP_UDS] --- GetVideoQuality ---\n");
 
 			T_CGI_VIDEO_QUALITY p; memset(&p, 0, sizeof(p));
 
@@ -2917,7 +2917,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetVideoQuality") == 0){
-			//DBG("[APP_UDS] --- SetVideoQuality ---\n");
+			//LOGD("[APP_UDS] --- SetVideoQuality ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2943,7 +2943,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetDynVideoQuality") == 0){
-			//DBG("[APP_UDS] --- SetDynVideoQuality ---\n");
+			//LOGD("[APP_UDS] --- SetDynVideoQuality ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2970,7 +2970,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "GetVideoEncoderConfiguration") == 0){
 			// Onvifserver uses this command
-			//DBG("[APP_UDS] --- GetVideoEncoderConfiguration---\n");
+			//LOGD("[APP_UDS] --- GetVideoEncoderConfiguration---\n");
 
 			// Read Encoding Type
 			ret = read(cs_uds, rbuf, sizeof rbuf);
@@ -3004,7 +3004,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetOperationConfiguration") == 0){
-			//DBG("[APP_UDS] --- GetOperationConfiguration---\n");
+			//LOGD("[APP_UDS] --- GetOperationConfiguration---\n");
 
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
@@ -3155,7 +3155,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "UpdateOnvifUser") == 0)
 		{
-			DBG("[APP_UDS] --- UpdateOnvifUser ---\n");
+			LOGD("[APP_UDS] --- UpdateOnvifUser ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -3190,7 +3190,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "ChangePassword") == 0)
 		{
-			DBG("[APP_UDS] --- ChangePassword ---\n");
+			LOGD("[APP_UDS] --- ChangePassword ---\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");

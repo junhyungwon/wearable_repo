@@ -125,7 +125,7 @@ static int __rtc_valid_tm(struct tm *ptm)
 		|| ((unsigned)ptm->tm_min) >= 60
 		|| ((unsigned)ptm->tm_sec) >= 60) {
 		
-		dprintf("Invalid tm: --- %d-%d-%d %02d:%02d:%02d\n",
+		TRACE_INFO("Invalid tm: --- %d-%d-%d %02d:%02d:%02d\n",
 				ptm->tm_year, ptm->tm_mon, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec);
 		return -1;
 	}
@@ -139,7 +139,7 @@ static int update_m3_time()
 	struct tm *pgm;
 	int retval = FALSE;
 
-//	dprintf("--- update m3 time ---\n");
+//	TRACE_INFO("--- update m3 time ---\n");
 
 	// time(), gmtime(), it represents the number of seconds elapsed since the Epoch, 1970-01-01 00:00:00 (UTC)
 	time(&now);
@@ -154,10 +154,10 @@ static int update_m3_time()
 		pgm->tm_sec  = 0;
 	}
 	
-	dprintf("m3 time: %d-%d-%d %d:%d:%d\n", pgm->tm_year + 1900, pgm->tm_mon + 1,
+	TRACE_INFO("m3 time: %d-%d-%d %d:%d:%d\n", pgm->tm_year + 1900, pgm->tm_mon + 1,
 				pgm->tm_mday, pgm->tm_hour, pgm->tm_min, pgm->tm_sec);
 	if (dev_rtc_set_time(*pgm) < 0) {
-		dprintf("Failed to set system time to rtc\n!!!");
+		TRACE_INFO("Failed to set system time to rtc\n!!!");
 	} else {
 		char buff[MAX_CHAR_128]={0};
 		sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
@@ -177,7 +177,7 @@ static int update_m3_time()
 char *get_timezone (int timezone, int daylightsaving)
 {
 	if(daylightsaving<0 || daylightsaving > 1) {
-		dprintf("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
+		TRACE_INFO("Please, check for daylightsaving(%d). It must be 0 or 1", daylightsaving);
 		daylightsaving = 0;
 	}
 
@@ -207,13 +207,13 @@ int set_time_zone()
     if(Fp != NULL)
 		pclose(Fp) ;
     else {
-		dprintf("ERROR setting Timezone \n") ;
+		TRACE_INFO("ERROR setting Timezone \n") ;
         return retval ;
 	}
 
 	// No guaranteed completion PIPE???
 	update_m3_time();
-	dprintf("....done!!\n");
+	TRACE_INFO("....done!!\n");
 
 	return 1 ;
 }
@@ -224,7 +224,7 @@ int set_time_manual(int year, int month, int day, int hour, int minute, int seco
 	struct tm stm;
 	time_t set;
 
-	dprintf("--- changed time by manual ---\n");
+	TRACE_INFO("--- changed time by manual ---\n");
 	stm.tm_year = year  - 1900; 
 	stm.tm_mon  = month - 1;
 	stm.tm_mday = day ;
@@ -349,10 +349,10 @@ int set_time_by_ntp()
     }
 
 	if(retval){
-		dprintf("succeed set time ntp\n");
+		TRACE_INFO("succeed set time ntp\n");
 		update_m3_time();
 	}else {
-		dprintf("failed set time ntp\n");
+		TRACE_INFO("failed set time ntp\n");
 	}
 
 	return retval;
@@ -436,7 +436,7 @@ static int time_sync(void)
     struct tm tp, tv;
     struct hostent *hp;
 	
-	//dprintf("Enter time sync!...\n");
+	//TRACE_INFO("Enter time sync!...\n");
     if(check_ipaddress(app_set->time_info.time_server)) {
 		strncpy(timesrv_addr, app_set->time_info.time_server, strlen(app_set->time_info.time_server));
 	}
@@ -462,12 +462,12 @@ static int time_sync(void)
         time(&timeval) ;
 		//localtime_r(&timeval, &tp);
 		gmtime_r(&timeval, &tp);
-		dprintf("ntp time: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
+		TRACE_INFO("ntp time: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
 				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
 		if (dev_rtc_set_time(tp) < 0) {
-            dprintf("Failed to set system time to rtc\n!!!");
+            TRACE_INFO("Failed to set system time to rtc\n!!!");
         } else {
-            dprintf("--- changed time from Time server ---\n");
+            TRACE_INFO("--- changed time from Time server ---\n");
             sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
             system(buff) ;
             retval = TRUE;
@@ -478,7 +478,7 @@ static int time_sync(void)
 	}
     else if(gettime_from_ntp(timesrv_addr) == -1)  // TIME SYNC 실패시 
     {
-		//dprintf("%s, %d\n", __func__, __LINE__);
+		//TRACE_INFO("%s, %d\n", __func__, __LINE__);
         time(&time_val) ;
         localtime_r(&time_val, &tv);
 		if (__rtc_valid_tm(&tv) < 0) {
@@ -490,7 +490,7 @@ static int time_sync(void)
 			tv.tm_min  = 0;
 			tv.tm_sec  = 0;
 			
-			dprintf("Failed sync: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
+			TRACE_INFO("Failed sync: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
 				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
 					
 			set = mktime(&tv);
@@ -498,10 +498,10 @@ static int time_sync(void)
             Vsys_datetime_init();   //# m3 Date/Time init
             app_msleep(100);
             if (dev_rtc_set_time(tv) < 0) {
-                dprintf("Failed to set system time to rtc\n!!!");
+                TRACE_INFO("Failed to set system time to rtc\n!!!");
             }
             else
-                dprintf("--- changed time default 2000 ---\n");
+                TRACE_INFO("--- changed time default 2000 ---\n");
 		}
 		retval = FALSE ;
     }
@@ -526,7 +526,7 @@ static void *THR_tsync(void *prm)
     int cmd, retry_cnt = 0;
     int exit = FALSE, retval = FALSE;
 
-    dprintf("enter...\n");
+    TRACE_INFO("enter...\n");
     itsync->tsync_status = TIMESYNC_READY;
     tObj->active = 1;
 
@@ -568,7 +568,7 @@ static void *THR_tsync(void *prm)
     }
 
     tObj->active = 0;
-    dprintf("...exit\n");
+    TRACE_INFO("...exit\n");
 
     return NULL;
 }
@@ -585,16 +585,15 @@ int app_tsync_init(void)
     memset(itsync, 0x0, sizeof(app_tsync_t)) ;
 
     //# create tsync thread ;
-
     tObj = &itsync->tsyncObj ;
     if(thread_create(tObj, THR_tsync, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
     {
-        dprintf("create tsync thread\n") ;
-        return EFAIL ;
+        TRACE_ERR("create tsync thread\n") ;
+        return EFAIL;
     }
-    dprintf("... done!\n");
-    
-	return 0 ;
+	
+    TRACE_INFO("... done!\n");
+	return 0;
 }
 
 void app_tsync_exit(void)
@@ -608,6 +607,6 @@ void app_tsync_exit(void)
 
     thread_delete(tObj);
 
-    dprintf("... done!\n");
+    TRACE_INFO("... done!\n");
 }
 

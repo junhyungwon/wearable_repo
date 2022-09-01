@@ -175,7 +175,7 @@ static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
 	unsigned int freq, nchannels;
 	
 	if (snd_pcm_open(&handle, SND_PLAY_DEVNAME, SND_PCM_STREAM_PLAYBACK, 0) < 0) {
-		dprintf("could not open aix3x play device!\n");
+		TRACE_INFO("could not open aix3x play device!\n");
 		goto out;
 	}
 	
@@ -197,12 +197,12 @@ static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
 	period_size = period_frames;
 	buffer_size = (period_size * 4); //# alsa 표준
     if (snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0) < 0) {
-        dprintf("Failed to set period size to %ld\n", period_size);
+        TRACE_INFO("Failed to set period size to %ld\n", period_size);
         goto out;
     }
 
     if (snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size) < 0){
-        dprintf("Failed to set buffer size to %ld\n", buffer_size);
+        TRACE_INFO("Failed to set buffer size to %ld\n", buffer_size);
         goto out;
     }
 
@@ -220,14 +220,14 @@ static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
 
 	/* prepare for audio device */
 	if (snd_pcm_prepare(handle) < 0) {
-        dprintf("Could not prepare handle!\n");
+        TRACE_INFO("Could not prepare handle!\n");
         goto out;
     }
 	return (snd_pcm_t *)handle;
 	
 out:
 	snd_pcm_hw_params_free(hw_params);
-	dprintf("alsa: init failed!!\n");
+	TRACE_INFO("alsa: init failed!!\n");
 	return NULL;
 }
 
@@ -245,16 +245,16 @@ static int __snd_out_write(snd_pcm_t *handle, void *buf, int data_size)
 		w = snd_pcm_writei(handle, data, count);
 		if (w < 0) {
 			if (w == -EAGAIN) {
-				//dprintf("bcsnd pcm write wait(required 100ms)!!\n");
+				//TRACE_INFO("bcsnd pcm write wait(required 100ms)!!\n");
 				snd_pcm_wait(handle, 100);
 			} else if (w == -EPIPE) {
-				//dprintf("bcsnd pcm write underrun!!\n");
+				//TRACE_INFO("bcsnd pcm write underrun!!\n");
 				snd_pcm_prepare(handle);
 			} else if (w == -ESTRPIPE) {
-				//dprintf("bcsnd pcm write resume!!\n");
+				//TRACE_INFO("bcsnd pcm write resume!!\n");
 				snd_pcm_resume(handle);
 			} else if (w < 0) {
-				dprintf("backchannel sound device write error!!\n");
+				TRACE_INFO("backchannel sound device write error!!\n");
 			}
 		} else if ((w >= 0) && ((size_t)w < count)) {
 			/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
@@ -358,7 +358,7 @@ static void *THR_snd_bcplay_main(void *prm)
 #endif		
 
 	tObj->active = 1;
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	
 	/* 
 	 * sound period size (프레임 단위로 설정함)
@@ -370,10 +370,11 @@ static void *THR_snd_bcplay_main(void *prm)
 	/* Initialize ALSA Speaker */
 	h_pcm = __snd_out_init(APP_SND_BC_CH, APP_SND_BC_SRATE, pframes);
 	if (h_pcm == NULL) {
-		dprintf("Failed to init plughw:0,0 device!\n");
+		TRACE_ERR("Failed to init plughw:0,0 device!\n");
 		return NULL;
 	}
 	
+	LOGD("Initializing Backchannel Audio Device success!\n");
 	__snd_set_swparam(h_pcm, pframes);
 	sampv = (unsigned short *)malloc(BC_SAMPLE_BUFFER_SZ); //# 최대 크기로 가정함.
 	if (sampv == NULL) {
@@ -408,7 +409,7 @@ static void *THR_snd_bcplay_main(void *prm)
 	
 	//# message queue
 	isnd_bc->qid = Msg_Init(BCPLAY_MSG_KEY);
-	dprintf("isnd_bc->qid:0x%X\n", isnd_bc->qid);
+	TRACE_INFO("isnd_bc->qid:0x%X\n", isnd_bc->qid);
 	
 	while (!exit) 
 	{
@@ -421,7 +422,7 @@ static void *THR_snd_bcplay_main(void *prm)
 			switch (cmd)
 			{
 				case BCPLAY_CMD_READY:
-					dprintf("received ready!\n");
+					LOGD("Backchannel Audio Process Ready!\n");
 					break;
 					
 				case BCPLAY_CMD_AUD_DATA:
@@ -429,9 +430,8 @@ static void *THR_snd_bcplay_main(void *prm)
 					int i;
 					
 					bytes = isnd_bc->len;
-					//dprintf("received audio data, len=%d\n", bytes);
+					//TRACE_INFO("received audio data, len=%d\n", bytes);
 					if (bytes == 0) {
-						dprintf("bc sound size error!!\n");
 						OSA_waitMsecs(10);
 						continue;
 					}
@@ -470,7 +470,7 @@ static void *THR_snd_bcplay_main(void *prm)
 				break;
 			} /* end of switch (cmd) */
 		} else {
-			dprintf("failed to receive bcplay process msg!\n");
+			LOGE("Failed to initialize Backchannel audio process!(for ipc)\n");
 			OSA_waitMsecs(1000);
 			continue;
 		}
@@ -484,7 +484,7 @@ static void *THR_snd_bcplay_main(void *prm)
 		free(sampv);
 	
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 	return NULL;
 }
 
@@ -505,12 +505,12 @@ int app_snd_bcplay_init(void)
 		//#--- create backchannel play thread bkkim
 		if (thread_create(&isnd_bc->mObj, THR_snd_bcplay_main, APP_THREAD_PRI, 
 						NULL, __FILENAME__) < 0) {
-			dprintf("create bc play thread\n");
+			TRACE_ERR("create bc play thread\n");
 			return -1;
 		}
 	}
 
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 	return 0;
 }
 
@@ -531,7 +531,7 @@ void app_snd_bcplay_exit(void)
 }
 //############################################# BACK-CHANNEL SOUND PLAY HELPER ########################################################################
 
-//############################################# INFO SOUND PLAY HELPER ################################################################################
+//############################################# SOUND INFO PLAY HELPER ################################################################################
 static int __wav_decode(FILE *f, wave_info_t *info)
 {
 	wav_header wh;
@@ -542,7 +542,7 @@ static int __wav_decode(FILE *f, wave_info_t *info)
 	fread(&wh, sizeof(wav_header), 1, f);
 	if ((MKTAG(wh.chunk_id[0], wh.chunk_id[1], wh.chunk_id[2], wh.chunk_id[3]) != TAG_RIFF)
 		|| (MKTAG(wh.format[0], wh.format[1], wh.format[2], wh.format[3])!= TAG_WAVE)) {
-		dprintf("Invaild file format!\n");
+		TRACE_ERR("Invaild file format!\n");
 		return -1;
 	}
 	
@@ -550,7 +550,7 @@ static int __wav_decode(FILE *f, wave_info_t *info)
 	for (;;) 
 	{
 		if (feof(f)) {
-			dprintf("Not founded wave data tag!\n");
+			TRACE_ERR("Not founded wave data tag!\n");
 			return -1;
 		}
 
@@ -565,7 +565,7 @@ static int __wav_decode(FILE *f, wave_info_t *info)
 		fseek(f, next_tag, SEEK_SET);
 	}
 	//*ofs = ftell(file);
-	fprintf(stderr, "size %d, channels %d, sample_rate %d, bits_per_sample %d\n", size, 
+	TRACE_INFO("size %d, channels %d, sample_rate %d, bits_per_sample %d\n", size, 
 				wh.channels, wh.sample_rate, wh.bits_per_sample);
 
 	info->sz = size;
@@ -585,7 +585,7 @@ static void *THR_snd_iplay_main(void *prm)
 	FILE *fin;
 	
 	tObj->active = 1;
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	
 	while (!exit) 
 	{
@@ -603,12 +603,12 @@ static void *THR_snd_iplay_main(void *prm)
 		/* decode wav file */
 		fin = fopen(&isnd_info->filename[0], "rb");
 		if (fin == NULL) {
-			dprintf("Unable to open %s file \n", &isnd_info->filename[0]);
+			TRACE_ERR("Unable to open %s file \n", &isnd_info->filename[0]);
 			continue;
 		}
 	
 		if (__wav_decode(fin, &isnd_info->winfo) < 0) {
-			dprintf("Failed to decode wav file!\n");
+			TRACE_ERR("Failed to decode wav file!\n");
 			fclose(fin);
 			continue;
 		}
@@ -620,7 +620,7 @@ static void *THR_snd_iplay_main(void *prm)
 		
 		sampv = (char *)malloc(size);
 		if (sampv == NULL) {
-			dprintf("Failed to alloc memory!\n");
+			TRACE_ERR("Failed to alloc memory!\n");
 			fclose(fin);
 			continue;
 		}
@@ -654,7 +654,7 @@ static void *THR_snd_iplay_main(void *prm)
 	} /* while(!exit) */
 	
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 	
 	return NULL;
 }
@@ -722,11 +722,11 @@ int app_snd_iplay_init(void)
 	//#--- create sound info play thread
 	if (thread_create(&isnd_info->iObj, THR_snd_iplay_main, APP_THREAD_PRI, 
 					NULL, __FILENAME__) < 0) {
-		dprintf("create sound info play thread\n");
+		TRACE_ERR("create sound info play thread\n");
 		return -1;
 	}
 
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 	return 0;
 }
 

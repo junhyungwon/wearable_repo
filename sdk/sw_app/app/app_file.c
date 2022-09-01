@@ -117,8 +117,8 @@ static void _check_threshold_size(app_file_t *pInfo)
 	pInfo->disk_max 	= idisk.total;
 	pInfo->disk_avail 	= idisk.avail;
 	pInfo->disk_used	= (idisk.total-idisk.avail);
-//	dprintf("MAX capacity %ld(KB)\n", pInfo->disk_max);
-//	dprintf("available capacity %ld(KB)\n", pInfo->disk_avail);
+//	TRACE_INFO("MAX capacity %ld(KB)\n", pInfo->disk_max);
+//	TRACE_INFO("available capacity %ld(KB)\n", pInfo->disk_avail);
 }
 
 static int _check_file_size(const char *fname, Uint32 *sz)
@@ -129,7 +129,7 @@ static int _check_file_size(const char *fname, Uint32 *sz)
 	if (fname != NULL) {
 		if (stat(fname, &st) == 0) {
 			len = (st.st_size / KB); /* byte -> KB */
-			//dprintf("check file size %s(%dKB)\n", fname, len);
+			//TRACE_INFO("check file size %s(%dKB)\n", fname, len);
 			*sz = len;
 			return 0;
 		}
@@ -148,7 +148,7 @@ int app_file_check_disk_free_space(void)
 	unsigned long avail = ifile->disk_avail;
 	int ret = 0;
 	
-//	dprintf("Check free : %lu(KB) / threshold : %lu(KB)!\n", avail, MIN_THRESHOLD_SIZE);
+//	TRACE_INFO("Check free : %lu(KB) / threshold : %lu(KB)!\n", avail, MIN_THRESHOLD_SIZE);
 	if (avail < MIN_THRESHOLD_SIZE) 
 		ret = -1; /* disk full state */
 	
@@ -188,7 +188,7 @@ static Uint32 get_file_count(const char *dpath)
 	} else {
 		count = 0;
 	}
-	//dprintf("%u files in %s path\n", count, dpath);
+	//TRACE_INFO("%u files in %s path\n", count, dpath);
 
 	return count;
 }
@@ -228,7 +228,7 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 			/* delete file */
 			if (remove(ptr->node.name) == 0) {
 				OSA_waitMsecs(5);
-				//dprintf("DELETE FILE : %s (%d KB)\n", ptr->node.name, sz);
+				//TRACE_INFO("DELETE FILE : %s (%d KB)\n", ptr->node.name, sz);
 				list_del(&ptr->queue);
 				ifile->file_count--;
 				if(!strstr(ptr->node.name, NORMAL_FILE))
@@ -240,7 +240,7 @@ static int find_first_and_delete(struct list_head *head, Uint32 *del_sz)
 		}
 	}
 	
-	dprintf("Failed to delete files for overwriting!\n");
+	TRACE_INFO("Failed to delete files for overwriting!\n");
 	return -1; /* failure */
 }
 
@@ -255,12 +255,12 @@ static int add_node_tail(const char *path, struct list_head *head)
 
 	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
 	if (ptr == NULL) {
-		dprintf("can't allocate list\n");
+		TRACE_INFO("can't allocate list\n");
 		return -1;
 	}
 
 	snprintf(ptr->node.name, sizeof(ptr->node.name), "%s", path);
-//	dprintf(" Add List name: %s\n", path);
+//	TRACE_INFO(" Add List name: %s\n", path);
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add(&ptr->queue, head);
 	ifile->file_count++;
@@ -282,12 +282,12 @@ static int add_node_head(const char *path, struct list_head *head)
 
 	ptr = (struct disk_list *)malloc(sizeof(struct disk_list));
 	if (ptr == NULL) {
-		dprintf("can't allocate list\n");
+		TRACE_INFO("can't allocate list\n");
 		return -1;
 	}
 
 	snprintf(ptr->node.name, sizeof(ptr->node.name), "%s", path);
-//	dprintf(" Add List name: %s\n", ptr->node.name);
+//	TRACE_INFO(" Add List name: %s\n", ptr->node.name);
 	INIT_LIST_HEAD(&ptr->queue);
 	list_add_tail(&ptr->queue, head);
 	ifile->file_count++;
@@ -325,7 +325,7 @@ static void display_node(struct list_head *head)
 
 	__list_for_each(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
-		dprintf("name %s \n", ptr->node.name);
+		TRACE_INFO("name %s \n", ptr->node.name);
 	}
 }
 #endif
@@ -340,7 +340,7 @@ static int _delete_files(unsigned long del_sz)
 	struct list_head *head = &storageList;
 	unsigned long tmp = 0;
 					
-//	dprintf("Required space %ld(KB)\n", del_sz);					
+//	TRACE_INFO("Required space %ld(KB)\n", del_sz);					
 	if (del_sz > 0) 
 	{
 		/* delete the oldest file (list) */
@@ -391,7 +391,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	
 	/* opendir is not required "/" */
 	if ((dp = opendir(__path)) == NULL) {
-		dprintf("cannot open directory : %s\n", __path);
+		TRACE_INFO("cannot open directory : %s\n", __path);
 		return -1;
 	}
 
@@ -419,7 +419,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 			}
 		}
 	}
-	//dprintf("directory scanning done!!\n");
+	//TRACE_INFO("directory scanning done!!\n");
 	closedir(dp);
 	qsort(list, index, sizeof(linked_info_t), _cmpold);
 	/* add linked list */
@@ -427,7 +427,7 @@ static int __create_list(const char *search_path, char *filters, struct list_hea
 	if (index) {
 		for (i = 0; i < index; i++, tmp++) {
 			add_node_tail(tmp->name, head);
-			//dprintf("index %d, fullname %s\n", i, tmp->name);
+			//TRACE_INFO("index %d, fullname %s\n", i, tmp->name);
 		}
 	}
 
@@ -448,25 +448,25 @@ static int __load_file_list(const char *path, struct list_head *head, size_t bcn
 	
 	f = fopen(path, "r");
 	if (f == NULL) {
-		dprintf("failed to open %s!\n", path);
+		TRACE_INFO("failed to open %s!\n", path);
 		return -1;
 	}
 	
 	fread((void *)&lcnt, sizeof(int), 1, f);  //# total file count
 	snprintf(msg, sizeof(msg), "saved file number is %d in video lst", lcnt);
-	dprintf("%s\n", msg);
+	TRACE_INFO("%s\n", msg);
 	
 	if ((lcnt == 0) || (bcnt != lcnt)) {
 		memset(msg, 0, sizeof(msg));
 		snprintf(msg, sizeof(msg), "file list mismatched (dir-%d, list-%d)!!\n", bcnt, lcnt);
-		dprintf("%s\n", msg);
+		TRACE_INFO("%s\n", msg);
 		return -1;
 	}
 	
 	//# memory alloc
 	list = (linked_info_t *)malloc(sizeof(linked_info_t)*lcnt);
 	if (list == NULL) {
-		dprintf("failed to allocate memory with file list!\n");
+		TRACE_INFO("failed to allocate memory with file list!\n");
 		fclose(f);
 		return -1;
 	}
@@ -510,17 +510,17 @@ static int __save_file_list(void)
 	
 	f = fopen(path, "w");
 	if (f == NULL) {
-		dprintf("failed to open %s!\n", path);
+		TRACE_INFO("failed to open %s!\n", path);
 		return -1;
 	}
 	
-	dprintf("[APP_FILE] %d files saved in video list\n", scnt);
+	TRACE_INFO("[APP_FILE] %d files saved in video list\n", scnt);
 	fwrite(&scnt, sizeof(size_t), 1, f);    //# total file count
 	list_for_each_prev(iter, head) {
 		ptr = list_entry(iter, struct disk_list, queue);
 		if (ptr != NULL) {
 			strcpy(info.name, ptr->node.name);
-			//dprintf("saved name %s, in video list!\n", ptr->fullname);
+			//TRACE_INFO("saved name %s, in video list!\n", ptr->fullname);
 			fwrite(&info, sizeof(linked_info_t), 1, f);	
 		}
 	}
@@ -542,14 +542,14 @@ static void *THR_file_mng(void *prm)
 	int cmd, exit=0;
 	int r = 0;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
 	{
 		cmd = event_wait(tObj);
 		if(cmd == APP_CMD_EXIT) {
-			dprintf("file manager exit!\n");
+			TRACE_INFO("file manager exit!\n");
 			break;
 		}
 				
@@ -571,7 +571,7 @@ static void *THR_file_mng(void *prm)
 					r = _delete_files((MIN_THRESHOLD_SIZE-ifile->disk_avail));
 					OSA_mutexUnlock(&ifile->mutex_file);
 					if (r == EFAIL) {
-						dprintf("[APP_FILE] !! SD Card Error...reboot!!\n");
+						TRACE_INFO("[APP_FILE] !! SD Card Error...reboot!!\n");
 						if (app_rec_state() > 0) {
 							app_rec_stop(ON); 
 							app_msleep(500); /* wait for record done!! */
@@ -597,7 +597,7 @@ static void *THR_file_mng(void *prm)
 	}
 	
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 	sync();
 
 	return NULL;
@@ -618,7 +618,7 @@ static void *THR_file_led_mng(void *prm)
 	unsigned long b_cycle=0;
 	unsigned long f_cycle=0;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -686,7 +686,7 @@ static void *THR_file_led_mng(void *prm)
 	}
 	
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 
 	return NULL;
 }
@@ -716,12 +716,13 @@ int app_file_init(void)
 	if (res < 0) {
 		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &storageList, num_of_files);
 		if (status == EFAIL) 	{
-			DBG("Failed to make file list!!\n");
+			LOGE("Failed to create list of files!!\n");
 			return status;
 		}
+	} else {
+		LOGD("Generation list of files from SD card done!\n");
 	}
 	
-	//# default LED ���¿� �뷮�� üũ (overwrite ��� �����ϸ� ��ȭ �ȵ�)
 	_check_threshold_size(ifile);
 	app_file_update_disk_usage();
 	
@@ -730,17 +731,17 @@ int app_file_init(void)
     OSA_assert(status == OSA_SOK);
 	
 	if (thread_create(&ifile->fObj, THR_file_mng, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_ERR("create thread\n");
 		return -1;
 	}
 	
 	/* Create File LED Thread */
 	if (thread_create(&ifile->lObj, THR_file_led_mng, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_ERR("create thread\n");
 		return -1;
 	}
 
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 	return 0;
 }
 
@@ -766,16 +767,12 @@ void app_file_exit(void)
 		OSA_waitMsecs(20);
 	thread_delete(tObj);
 	
-	/* overwrite ����� �� file thread�� ������� ������ ����Ʈ ���� �� delete �Ǵ� ���Ϸ� 
-	 * ���ؼ� ���� ���� ���� ������ ����Ʈ�� ������ ��ġ���� ����.
-	 * ����� ����.
-	 */
 	__save_file_list();
 	status = OSA_mutexDelete(&(ifile->mutex_file));
 	OSA_assert(status == OSA_SOK);
 	ifile = NULL;
 
-    dprintf("... done!\n");
+    TRACE_INFO("... done!\n");
 }
 /*****************************************************************************
 * @brief    file manager callback function
@@ -803,7 +800,7 @@ void app_file_update_disk_usage(void)
 	denominator = ((unsigned long long)used * 100);
 	percent = (unsigned long)(denominator / sum);
 	
-//	dprintf("file manger total %u(KB), used %u(KB), percent %d%%\n", sum, used, percent);	
+//	TRACE_INFO("file manger total %u(KB), used %u(KB), percent %d%%\n", sum, used, percent);	
 	if (percent > DISK_USED_MID)
 		app_leds_mmc_capacity_ctrl(LED_DISK_USAGE_ON_3);	//# x > 66%
 	else if(percent < DISK_USED_MIN )
@@ -832,7 +829,7 @@ int app_file_add_list(const char *pathname)
 {
 	OSA_mutexLock(&ifile->mutex_file);	
 	add_node_tail(pathname, &storageList);
-//	dprintf("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
+//	TRACE_INFO("ADDED FILE : %s(%ld) ===\n", pathname, ifile->file_count);
 	OSA_mutexUnlock(&ifile->mutex_file);
 
 	return SOK;
@@ -852,7 +849,7 @@ int get_ftp_send_file(int index, char *path)
 	int count=0;
 	
 	if (path == NULL) {
-		dprintf("path is null!\n");
+		TRACE_INFO("path is null!\n");
 		return -1;
 	}
 	
@@ -863,13 +860,13 @@ int get_ftp_send_file(int index, char *path)
 			if (count == index) {
 				/* file name copy */
 				strcpy(path, ptr->node.name);
-				//dprintf("index %d file name is %s\n", count, path);
+				//TRACE_INFO("index %d file name is %s\n", count, path);
 				return 0;
 			} else {
 				count++;
 			}
 		} else {
-			//dprintf("index %d not founded file\n", count);
+			//TRACE_INFO("index %d not founded file\n", count);
 		}
 	}
 	
@@ -920,7 +917,7 @@ void delete_ftp_send_file(const char *path)
 		if (ptr != NULL) {
 			if (strcmp(path, ptr->node.name) == 0) {
 				/* valid check (access() ) ??? */
-				//dprintf("delete fname ==> %s\n", path);
+				//TRACE_INFO("delete fname ==> %s\n", path);
 				remove(path); //# or unlink
 				ifile->file_count--;
 				if (strstr(path, NORMAL_FILE) == NULL) {

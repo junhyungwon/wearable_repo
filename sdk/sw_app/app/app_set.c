@@ -99,37 +99,12 @@ app_set_t app_sys_set;
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
-#define CFG_RE       ".re" //setting default file
-static char *find_reset(void) //setting default file search
-{
-	char path[255];
-	static char	extPath[255];
-	glob_t globbuf;
-
-	memset(&globbuf, 0, sizeof(glob_t));
-
-	sprintf(path, "%s/*%s", SD_MOUNT_PATH, CFG_RE);
-    if (glob(path, GLOB_DOOFFS, NULL, &globbuf) == 0)
-   	{
-   		if(globbuf.gl_pathc > 0)
-		{
-			strcpy(extPath,globbuf.gl_pathv[0]);
-			globfree(&globbuf);
-			return extPath;
-		}
-   	}
-
-	globfree(&globbuf);
-
-	return NULL;
-}
-
 static size_t get_cfg_size (const char *file_name)
 {
     struct stat sb;
 
     if (stat(file_name, &sb) != 0) {
-        dprintf("Failed the CFG file size.\n");
+        TRACE_INFO("Failed the CFG file size.\n");
         return 0;
     }
 
@@ -923,10 +898,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->account_info.webuser.authtype <= CFG_INVALID || pset->account_info.webuser.authtype > 1)
 		pset->account_info.webuser.authtype = 0;
 
-    printf("pset->account_info.webuser.id		= %s\n", pset->account_info.webuser.id) ;
-    printf("pset->account_info.webuser.pw		= %s\n", pset->account_info.webuser.pw) ;
-    printf("pset->account_info.webuser.lv		= %d\n", pset->account_info.webuser.lv) ;
-    printf("pset->account_info.webuser.authtype = %d\n", pset->account_info.webuser.authtype) ;
+    TRACE_INFO("pset->account_info.webuser.id		= %s\n", pset->account_info.webuser.id) ;
+    TRACE_INFO("pset->account_info.webuser.pw		= %s\n", pset->account_info.webuser.pw) ;
+    TRACE_INFO("pset->account_info.webuser.lv		= %d\n", pset->account_info.webuser.lv) ;
+    TRACE_INFO("pset->account_info.webuser.authtype = %d\n", pset->account_info.webuser.authtype) ;
 
 	// onvif user
     if((int)pset->account_info.onvif.id[0] == CHAR_INVALID || (int)pset->account_info.onvif.id[0] == 0){
@@ -941,14 +916,14 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->account_info.onvif.lv <= CFG_INVALID || pset->account_info.onvif.lv > 4) {
 		pset->account_info.onvif.lv       = 0;
 	}
-    printf("pset->account_info.onvif.lv		= %d\n", pset->account_info.onvif.lv) ;
-    printf("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
-    printf("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
+    TRACE_INFO("pset->account_info.onvif.lv		= %d\n", pset->account_info.onvif.lv) ;
+    TRACE_INFO("pset->account_info.onvif.id		= %s\n", pset->account_info.onvif.id) ;
+    TRACE_INFO("pset->account_info.onvif.pw		= %s\n", pset->account_info.onvif.pw) ;
 
     if((int)pset->multi_ap.ON_OFF <= CFG_INVALID || (int)pset->multi_ap.ON_OFF > 1 )
         pset->multi_ap.ON_OFF = OFF ;
 
-    printf("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
+    TRACE_INFO("pset->multi_ap.ON_OFF = %d\n", pset->multi_ap.ON_OFF) ;
 	
 	//# ----------------- VOIP Parameters Start -----------------------------------------
 	if((int)pset->voip.ipaddr[0] == CHAR_INVALID || (int)pset->voip.ipaddr[0] == 0)
@@ -1050,8 +1025,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 static void app_set_version_read(void)
 {
-	if (app_set != NULL)
-	{
+	if (app_set != NULL) {
 		sprintf(app_set->sys_info.fw_ver, "%s", FITT360_SW_VER);
 		sprintf(app_set->sys_info.hw_ver, "%s", FITT360_HW_VER);
 	}
@@ -1064,7 +1038,7 @@ static int cfg_read(int is_mmc, char* cfg_path)
 	
 	if(is_mmc){
 		if (!app_cfg->ste.b.mmc) {
-			dprintf("#### NO INSERTED SD CARD !! ####\n");
+			TRACE_INFO("#### NO INSERTED SD CARD !! ####\n");
 			return EFAIL;
 		}
 	}
@@ -1073,13 +1047,13 @@ static int cfg_read(int is_mmc, char* cfg_path)
         mkdir(cfg_dir[is_mmc], 0775);
         chmod(cfg_dir[is_mmc], 0775);
 
-		dprintf("#### NOT EXIST CFG DIR [%s] !! ####\n", cfg_path);
+		TRACE_INFO("#### NOT EXIST CFG DIR [%s] !! ####\n", cfg_path);
 		return EFAIL;
     }
 
     if (-1 == access(cfg_path, 0)) {
 		//# cpoy nand cfg file to SD
-		dprintf("#### NOT EXIST CFG FILE IN [%s] !! ####\n", cfg_path);
+		TRACE_INFO("#### NOT EXIST CFG FILE IN [%s] !! ####\n", cfg_path);
 		return EFAIL;
 	}
 
@@ -1088,14 +1062,14 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
-		DBG(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
+		LOGD(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
 										cfg_path, app_set_size, saved_cfg_size);
 		return EFAIL;
 	} else {
 	    //#--- ucx app setting param
     	OSA_fileReadFile(cfg_path, (Uint8*)app_set, app_set_size, (Uint32*)&readSize);
 		if(readSize == 0 || readSize != app_set_size) {
-			dprintf(" #### CFG Read Failed [%s] !! ####\n", cfg_path);
+			TRACE_INFO(" #### CFG Read Failed [%s] !! ####\n", cfg_path);
 			return EFAIL;
 		}
 
@@ -1115,7 +1089,7 @@ static void app_set_default(int default_type)
 
 	int ich=0, channels = 0, i = 0;
 	
-	DBG(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
+	LOGD(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
 
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;
@@ -1206,9 +1180,7 @@ static void app_set_default(int default_type)
 	memset(app_set->net_info.ssc_CN, 0, MAX_CHAR_64);
 	memset(app_set->net_info.ssc_Email, 0, MAX_CHAR_64);
 	memset(app_set->net_info.cert_name, 0, MAX_CHAR_64);
-
 	/******************** end of net_info ********************/
-
 	//# Meta Server information
     app_set->srv_info.ON_OFF = OFF ;
     app_set->srv_info.port = 80 ;
@@ -1251,7 +1223,7 @@ static void app_set_default(int default_type)
         strncpy(app_set->sys_info.deviceId, MacAddr, 12);
     }
     else {
-        dprintf( "Fatal error: Failed to get local host's MAC address\n" );
+        TRACE_ERR( "Fatal error: Failed to get local host's MAC address\n" );
     }
 
     app_set->sys_info.osd_set = ON ;
@@ -1268,7 +1240,6 @@ static void app_set_default(int default_type)
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
 	app_cfg->rec_overwrite 	= app_set->rec_info.overwrite;
-
 
 #if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
@@ -1358,7 +1329,6 @@ static void app_set_default(int default_type)
 
 	memset((void*)app_set->voip.reserved, 0x00, 38);
 	//#------------- VOIP Params End ---------------------------------------------------
-
 	app_set->rtmp.ON_OFF = OFF;
 	app_set->rtmp.USE_URL = OFF;
 	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
@@ -1377,53 +1347,15 @@ static void app_set_default(int default_type)
 	app_set->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
 	strcpy(app_set->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
 	app_set->sslvpn_info.NI = 2 ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
-
 }
 
-static void app_set_delete_cfg(void)
-{
-	int res=0;
-	
-	/* remove cfg directory in nand */
-	res = access(CFG_DIR_NAND, R_OK|W_OK);
-    if ((res == 0) || (errno == EACCES)) {
-		remove(CFG_DIR_NAND);
-	} else {
-		fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_NAND,
-							strerror(errno));
-		/* TODO 에러가 발생했을 경우??? */	
-	} 
-		
-	if (app_cfg->ste.b.mmc) 
-	{
-		res = access(CFG_DIR_MMC, R_OK|W_OK);
-		if ((res == 0) || (errno == EACCES)) {
-			remove(CFG_DIR_MMC);
-		} else {
-			fprintf(stderr, "can't remove %s(%s)\n", CFG_DIR_MMC, 
-							strerror(errno));
-			/* TODO 에러가 발생했을 경우??? */
-		}
-	}
-	sync();
-}
-
+/*****************************************************************************
+* @brief    system cfg open
+* @section  [desc]
+*****************************************************************************/
 int app_set_open(void)
 {
     int ret=SOK;
-    char *pFile = NULL;
-
-	//# delete cfg file
-	pFile = find_reset();
-	if (pFile != NULL) {
-		ret = access(pFile, R_OK|W_OK);
-		if ((ret == 0) || (errno == EACCES)) {
-			remove(pFile);
-		}
-		
-		app_set_delete_cfg();
-		printf("[%s] CFG delete done!! \n", __func__);
-	}
 
     //#--- ucx app setting param
     app_set = (app_set_t *)&app_sys_set;
@@ -1432,11 +1364,13 @@ int app_set_open(void)
 #if ENABLE_JSON_CONFIG_FILE 	
 	// try read config from json file
 	ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC);
-    if( EFAIL == ret)
+    if(EFAIL == ret) {
 		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
+	}
 	
 	// data 검사..cfg_read 아래부분에 있는거 복붙..
 	if(EFAIL != ret){
+		LOGD("Reading configuration file succeed!\n");
 	    cfg_param_check_nexx(app_set);
 		app_set_version_read();
 	}
@@ -1458,18 +1392,31 @@ int app_set_open(void)
 			ret = SOK ;
 	}
 	
-	//# cfg read done!!
-	sync();
-	if (ret == EFAIL) 
-	    app_set_default(FULL_RESET);
+	if (ret == EFAIL) {
+	    LOGE("Failed to read configuration file from storage!\n");
+		app_set_default(FULL_RESET);
+	}
 	
-    app_set_delete_cfg(); // another verion setting file
+	/* remove cfg directory in nand */
+	ret = access(CFG_DIR_NAND, R_OK|W_OK);
+    if ((ret == 0) || (errno == EACCES)) {
+		remove(CFG_DIR_NAND);
+	} 
+	
+	/* remove cfg directory in SD card */
+	if (app_cfg->ste.b.mmc) {
+		ret = access(CFG_DIR_MMC, R_OK|W_OK);
+		if ((ret == 0) || (errno == EACCES)) {
+			remove(CFG_DIR_MMC);
+		} 
+	}
+	// sync(); // changed to app_ser_write()
     set_uid() ;  // read uid from nand and then set uid to app_set
-
-    app_set_sslvpnconf() ;
+	if(app_set->sslvpn_info.ON_OFF)
+		app_set_sslvpnconf() ;
 	app_set_write();
-	printf("done\n");
-
+	
+	TRACE_INFO("...done\n");
 	return 0;
 }
 
@@ -1495,7 +1442,7 @@ int app_set_write(void)
 			chmod(CFG_DIR_MMC, 0775);
 		}
         if(js_write_settings(app_set, NEXX_CFG_JSON_MMC) != OSA_SOK)
-			dprintf("couldn't open %s file\n", path);
+			TRACE_INFO("couldn't open %s file\n", path);
 	}
 	//# save cfg in nand.
 
@@ -1504,7 +1451,7 @@ int app_set_write(void)
 		chmod(CFG_DIR_NAND, 0775);
 	}
     if(js_write_settings(app_set, NEXX_CFG_JSON_NAND) != OSA_SOK)
-	    dprintf("couldn't open %s file\n", path);
+	    TRACE_INFO("couldn't open %s file\n", path);
 
 #else
 	if (app_cfg->ste.b.mmc)
@@ -1516,7 +1463,7 @@ int app_set_write(void)
 
 		snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_MMC);
 		if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
-			dprintf("couldn't open %s file\n", path);
+			TRACE_INFO("couldn't open %s file\n", path);
 		}
    }
 
@@ -1530,17 +1477,14 @@ int app_set_write(void)
 	snprintf(path, sizeof(path), "%s", NEXX_CFG_FILE_NAND);
 	
 	if (OSA_fileWriteFile(path, (Uint8*)app_set, sizeof(app_set_t)) != OSA_SOK) {
-		dprintf("couldn't open %s file\n", path);
+		TRACE_INFO("couldn't open %s file\n", path);
 	}
 #endif
-	
-	dprintf("CFG sync start..\n");
 	sync();
-	dprintf("....exit!\n");
+	TRACE_INFO("CFG sync done!\n");
 
 	return 0;
 }
-
 
 int get_frame_size(int resol, int *wi, int *he)
 {
@@ -1557,7 +1501,7 @@ int get_frame_size(int resol, int *wi, int *he)
 		*he = 480;
 	}
 	else {
-		dprintf("Invaild resol param %d\n", resol);
+		TRACE_INFO("Invaild resol param %d\n", resol);
 		return EFAIL;
 	}
 
@@ -1575,7 +1519,7 @@ int app_set_web_password(char *id, char *pw, int lv, int authtype)
 		app_set_write() ;
 		return 0;
 	}
-	dprintf(" Can't set %s's password\n", id);
+	TRACE_INFO(" Can't set %s's password\n", id);
 
 	return -1;
 }
@@ -1589,7 +1533,7 @@ int app_set_onvif_password(char *id, char *pw, int lv)
 
 		return 0;
 	}
-	dprintf("ONVIF Can't set %s's password to %s\n", id, pw);
+	TRACE_INFO("ONVIF Can't set %s's password to %s\n", id, pw);
 
 	return -1;
 }

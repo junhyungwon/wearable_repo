@@ -253,7 +253,7 @@ int Sock_create()
 
                 if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
                 {
-//                    DBG("Manager Server_Connect ... FAIL. !!\n");
+//                    LOGD("Manager Server_Connect ... FAIL. !!\n");
 #ifdef FMS_DEBUG
 //            DEBUG_PRI("fms tcp connect error!\n") ;
 #endif
@@ -262,7 +262,7 @@ int Sock_create()
                 }
                 else
                 {
-                    DBG("Manager Server_Connect ... SUCCESS. !!\n");
+                    LOGD("Manager Server_Connect ... SUCCESS. !!\n");
 #ifdef FMS_DEBUG
 //            DEBUG_PRI("fms TCP Connect Ok..\n") ;
 #endif
@@ -273,7 +273,7 @@ int Sock_create()
 #ifdef FMS_DEBUG
                 DEBUG_PRI("socket open error\n") ;
 #endif
-//                DBG(MSG_LOG_WRITE, "Manager Socket open Error... !!\n");
+//                LOGD(MSG_LOG_WRITE, "Manager Socket open Error... !!\n");
                 sock = SOCK_ERROR ;
             }
         }
@@ -418,7 +418,7 @@ static void *THR_sock(void *prm)
     int cmd, retry_cnt = 0, receive_len = 0, E_wouldcnt = 0 ;
     int exit = 0;
 
-    dprintf("enter...\n");
+    TRACE_INFO("enter...\n");
     tObj->active = 1;
 
     ifms->sockfd = Sock_create() ;
@@ -487,7 +487,7 @@ static void *THR_sock(void *prm)
 #ifdef FMS_DEBUG
                     DEBUG_PRI("ReadSocketData CONNECTION TIMEOUT\n") ;
 #endif
-                    DBG( "Tcp Connect Timeout... !! on RECEIVER\n");
+                    LOGD( "Tcp Connect Timeout... !! on RECEIVER\n");
 
                     close(ifms->sockfd) ;
                     break ;
@@ -526,7 +526,7 @@ static void *THR_sock(void *prm)
 
     tObj->active = 0;
 
-    dprintf("...exit\n");
+    TRACE_INFO("...exit\n");
 
     return NULL;
 }
@@ -739,7 +739,7 @@ static void *THR_fms_meta(void *prm)
 
     frame_info_t *ifrm ;
 
-    dprintf("enter...\n");
+    TRACE_INFO("enter...\n");
     tObj->active = 1;
 
     while (!exit)
@@ -785,7 +785,7 @@ static void *THR_fms_meta(void *prm)
     }
 
     tObj->active = 0;
-    dprintf("...exit\n");
+    TRACE_INFO("...exit\n");
 
     return NULL;
 }
@@ -801,7 +801,7 @@ static void *THR_jpeg(void *prm)
     int cmd;
     int exit = 0;
 
-    dprintf("enter...\n");
+    TRACE_INFO("enter...\n");
     tObj->active = 1;
 
     while (!exit)
@@ -814,7 +814,7 @@ static void *THR_jpeg(void *prm)
     }
 
     tObj->active = 0;
-    dprintf("...exit\n");
+    TRACE_INFO("...exit\n");
 
     return NULL;
 }
@@ -841,28 +841,28 @@ int app_fms_init(void)
         tObj = &ifms->sockObj ;
         if(thread_create(tObj, THR_sock, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
         {
-            dprintf("create sock thread\n") ;
+            TRACE_INFO("create sock thread\n") ;
             return EFAIL ;
         }
 
         tObj = &ifms->metaObj ;
         if(thread_create(tObj, THR_fms_meta, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
         {
-            dprintf("create meta thread\n") ;
+            TRACE_INFO("create meta thread\n") ;
             return EFAIL ;
         }
 
         tObj = &ifms->jpegObj ;
         if(thread_create(tObj, THR_jpeg, APP_THREAD_PRI, NULL, __FILENAME__) < 0)
         {
-            dprintf("create jpeg thread\n") ;
+            TRACE_INFO("create jpeg thread\n") ;
             return EFAIL ;
         }
 
         app_cfg->ste.b.sock = 1 ;
     }
 
-    dprintf(".done!\n") ;
+    TRACE_INFO(".done!\n") ;
     return 0;
 }
 
@@ -900,7 +900,7 @@ void app_fms_exit(void)
 
         app_cfg->ste.b.sock = 0 ;
     }
-    dprintf(".done!\n") ;
+    TRACE_INFO(".done!\n") ;
 }
 
 void app_event_set()
