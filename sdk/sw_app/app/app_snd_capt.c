@@ -62,7 +62,7 @@ static snd_pcm_t * __snd_capt_dev_init(int ch, int rate, int period_frames)
 	unsigned int freq, nchannels;
 	
 	if (snd_pcm_open(&handle, "plughw:0,0", SND_PCM_STREAM_CAPTURE, 0) < 0) {
-		dprintf("could not open device!\n");
+		TRACE_INFO("could not open device!\n");
 		goto out;
 	}
 	
@@ -84,12 +84,12 @@ static snd_pcm_t * __snd_capt_dev_init(int ch, int rate, int period_frames)
 	period_size = period_frames;
 	buffer_size = (period_size * 4); //# alsa 표준
     if (snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0) < 0) {
-        dprintf("Failed to set period size to %ld\n", period_size);
+        TRACE_INFO("Failed to set period size to %ld\n", period_size);
         goto out;
     }
 
     if (snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size) < 0){
-        dprintf("Failed to set buffer size to %ld\n", buffer_size);
+        TRACE_INFO("Failed to set buffer size to %ld\n", buffer_size);
         goto out;
     }
 
@@ -107,14 +107,14 @@ static snd_pcm_t * __snd_capt_dev_init(int ch, int rate, int period_frames)
 
 	/* prepare for audio device */
 	if (snd_pcm_prepare(handle) < 0) {
-        dprintf("Could not prepare handle!\n");
+        TRACE_INFO("Could not prepare handle!\n");
         goto out;
     }
 	return (snd_pcm_t *)handle;
 	
 out:
 	snd_pcm_hw_params_free(hw_params);
-	dprintf("alsa: init failed!!\n");
+	TRACE_INFO("alsa: init failed!!\n");
 	return NULL;
 }
 
@@ -136,7 +136,7 @@ static snd_pcm_t * __snd_dummy_dev_init(int ch, int rate, int period_frames)
 	unsigned int freq, nchannels;
 	
 	if (snd_pcm_open(&handle, "plughw:1,0", SND_PCM_STREAM_PLAYBACK, 0) < 0) {
-		dprintf("could not open device!\n");
+		TRACE_INFO("could not open device!\n");
 		goto out;
 	}
 	
@@ -158,12 +158,12 @@ static snd_pcm_t * __snd_dummy_dev_init(int ch, int rate, int period_frames)
 	period_size = period_frames;
 	buffer_size = (period_size * 4); //# alsa 표준
     if (snd_pcm_hw_params_set_period_size_near(handle, hw_params, &period_size, 0) < 0) {
-        dprintf("Failed to set period size to %ld\n", period_size);
+        TRACE_INFO("Failed to set period size to %ld\n", period_size);
         goto out;
     }
 
     if (snd_pcm_hw_params_set_buffer_size_near(handle, hw_params, &buffer_size) < 0){
-        dprintf("Failed to set buffer size to %ld\n", buffer_size);
+        TRACE_INFO("Failed to set buffer size to %ld\n", buffer_size);
         goto out;
     }
 
@@ -181,14 +181,14 @@ static snd_pcm_t * __snd_dummy_dev_init(int ch, int rate, int period_frames)
 
 	/* prepare for audio device */
 	if (snd_pcm_prepare(handle) < 0) {
-        dprintf("Could not prepare handle!\n");
+        TRACE_INFO("Could not prepare handle!\n");
         goto out;
     }
 	return (snd_pcm_t *)handle;
 	
 out:
 	snd_pcm_hw_params_free(hw_params);
-	dprintf("alsa: init failed!!\n");
+	TRACE_INFO("alsa: init failed!!\n");
 	return NULL;
 }
 
@@ -225,7 +225,7 @@ static void *THR_snd_capt_main(void *prm)
 	char *psampv=NULL; /* playback sound buffer */
 	
 	tObj->active = 1;
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	
 	/* 
 	 * set alsa period size (프레임 단위로 설정함)
@@ -237,9 +237,10 @@ static void *THR_snd_capt_main(void *prm)
 	/* Initialize ALSA MIC */
 	h_pcm_capt = __snd_capt_dev_init(APP_SND_CAPT_CH, APP_SND_CAPT_SRATE, pframes);
 	if (h_pcm_capt == NULL) {
-		dprintf("Failed to init sound record device!\n");
+		TRACE_ERR("Failed to init sound record device!\n");
 		return NULL;
 	}
+	LOGD("Initializing audio mic device success!\n");
 	
 	/* 
 	 * alloc buffer (byte 단위로 변경해야 한다)
@@ -258,7 +259,7 @@ static void *THR_snd_capt_main(void *prm)
 	if (app_cfg->voip_set_ON_OFF) {
 		h_pcm_dummy = __snd_dummy_dev_init(APP_SND_CAPT_CH, APP_SND_CAPT_SRATE, pframes);
 		if (h_pcm_dummy == NULL) {
-			dprintf("Failed to init sound dummy device!\n");
+			TRACE_ERR("Failed to init sound dummy device!\n");
 			__snd_capt_dev_exit(h_pcm_capt);
 			free(csampv);
 			return NULL;
@@ -314,21 +315,21 @@ static void *THR_snd_capt_main(void *prm)
 				w = snd_pcm_writei(h_pcm_dummy, psampv, r);
 				if (w < 0) {
 					if (w == -EAGAIN) {
-						//dprintf("dummy pcm write wait(required 100ms)!!\n");
+						//TRACE_ERR("dummy pcm write wait(required 100ms)!!\n");
 						snd_pcm_wait(h_pcm_dummy, 100);
 					} else if (w == -EPIPE) {
-						//dprintf("dummy pcm write underrun!!\n");
+						//TRACE_ERR("dummy pcm write underrun!!\n");
 						snd_pcm_prepare(h_pcm_dummy);
 					} else if (w == -ESTRPIPE) {
-						//dprintf("dummy pcm write resume!!\n");
+						//TRACE_ERR("dummy pcm write resume!!\n");
 						snd_pcm_resume(h_pcm_dummy);
 					} else {
 						/* debugging : 이 경우가 발생하면 안됨 */
-						dprintf("sound device write error(%d)!!\n", (int)r);
+						TRACE_ERR("sound device write error(%d)!!\n", (int)r);
 					}
 				} else if ((w >= 0) && ((size_t)w < r)) {
 					/* blocking 장치라 이 경우가 발생하는 지 잘 모름? */
-					//dprintf("dummy pcm not enough sound data!!\n");
+					//TRACE_ERR("dummy pcm not enough sound data!!\n");
 					snd_pcm_wait(h_pcm_dummy, 100);
 				}
 			} /* if (app_cfg->voip_set_ON_OFF) */	
@@ -336,7 +337,7 @@ static void *THR_snd_capt_main(void *prm)
 			//# audio codec : g.711
 			addr = g_mem_get_addr(bytes, &idx);
 			if(addr == NULL) {
-				dprintf("audio gmem is null!!\n");
+				TRACE_INFO("audio gmem is null!!\n");
 				continue;
 			}
 			
@@ -359,16 +360,16 @@ static void *THR_snd_capt_main(void *prm)
 		} else {
 			/* error returned */
 			if (r == 0) {
-				//dprintf("Failed to read sound data!!\n");
+				//TRACE_ERR("Failed to read sound data!!\n");
 			} else if (r == -EAGAIN) {
-				//dprintf("requied pcm wait!\n", count);
+				//TRACE_ERR("requied pcm wait!\n", count);
 				snd_pcm_wait(h_pcm_capt, 100);
 			} else if (r == -EPIPE) {
-				//dprintf("pcm overrun!\n");
+				//TRACE_ERR("pcm overrun!\n");
 				snd_pcm_prepare(h_pcm_capt);
 			} else {
 				/* debugging : 이 경우가 발생하면 안됨 */
-				dprintf("sound device read error(%d)!!\n", (int)r);
+				TRACE_ERR("sound device read error(%d)!!\n", (int)r);
 			}
 			continue;
 		} /* end of if (r > 0) */
@@ -388,7 +389,7 @@ static void *THR_snd_capt_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 	return NULL;
 }
 
@@ -411,11 +412,11 @@ int app_snd_capt_init(void)
 	//#--- create thread
 	if (thread_create(&isnd_capt->cObj, THR_snd_capt_main, APP_THREAD_PRI, 
 					NULL, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_ERR("create thread\n");
 		return -1;
 	}
 	
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 	return 0;
 }
 
@@ -431,5 +432,5 @@ void app_snd_capt_exit(void)
 	}
 	thread_delete(tObj);
 
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 }

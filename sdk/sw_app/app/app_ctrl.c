@@ -114,12 +114,12 @@ static int _is_firmware_for_release(void)
         fclose(F_fw);
 
         if (strcmp(fw[FW_TYPE].value, F_RELEASE) == 0) {
-           	dprintf("\n TYPE RELEASE!!\n");
+           	TRACE_INFO("\n TYPE RELEASE!!\n");
         	ret = TRUE;
         }
 
 		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
-			DBG("This FW is not for %s !!!\n", MODEL_NAME);
+			LOGD("This FW is not for %s !!!\n", MODEL_NAME);
 			ret = EFAIL;
 		}
     }
@@ -146,7 +146,7 @@ static char *_findFirmware(const char *root)
 			return extPath;
 		}
 	} else {
-		dprintf("Not found firmware file in %s\n", root);
+		TRACE_INFO("Not found firmware file in %s\n", root);
 	}
 	globfree(&globbuf);
 
@@ -166,7 +166,7 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "%s/%s", FW_DIR, FW_VINFO_FNAME);
 	if(-1 == access(buf, 0)) {
-		DBG("Failed to read %s!!!\n", buf);
+		LOGD("Failed to read %s!!!\n", buf);
 		return EFAIL;
 	}
 
@@ -216,7 +216,7 @@ static void _check_micom_update(void)
 			}
 		}
 	} else {
-		dprintf("Failed to open %s\n", path);
+		TRACE_ERR("Not founded micom update file!\n");
 	}
 }
 
@@ -228,7 +228,7 @@ static int __app_only_replace(void)
 	
 	snprintf(path, sizeof(path), "%s/%s", FW_DIR,  FW_APP_FNAME);
 	if (0 == access(path, 0)) { // existence only
-		dprintf("\n######### COPY APP_FIIT.OUT !!!! #########\n");
+		TRACE_INFO("\n######### COPY APP_FIIT.OUT !!!! #########\n");
 		sprintf(cmd, "/bin/cp %s /opt/fit/bin/.", path);
 		util_sys_exec(cmd);
 		sprintf(cmd, "/bin/rm %s", path);
@@ -249,7 +249,7 @@ static int __normal_update(void)
 	int ret = 0;
 	int release = 1;
 	
-	dprintf("start...\n");
+	TRACE_INFO("start...\n");
 	
 	//# buzz: update
 	app_buzz_ctrl(50, 3);
@@ -258,7 +258,7 @@ static int __normal_update(void)
 	app_cfg->ste.b.busy = 1;
 	pFile = _findFirmware(FW_DIR); //# /mmc
 	if (pFile == NULL) {
-		DBG("Firmware file is not exist !!!\n");
+		TRACE_INFO("Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
 		return EFAIL;
 	}
@@ -267,18 +267,17 @@ static int __normal_update(void)
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc
 	if (_unpack_N_check((const char *)pFile, (const char *)FW_DIR, &release) == EFAIL) {
-		DBG("It is not match model name in firmware file !!!\n");
+		LOGE("Founded Firmware File, but It's not matched model name! cancel update!\n");
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
 	}
-	_check_micom_update();
 	
+	_check_micom_update();
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
-	DBG("Full version Firmware update done....\n");
-	dprintf("done! will restart\n");
+	LOGD("Starting Firmware update....system will be restart!\n");
 	ret = SOK;
 	
 fw_exit:
@@ -304,13 +303,13 @@ static int __emergency_update(void)
 	//# /mmc/firmware/*.dat 파일이 있는 지 확인.
 	pFile = _findFirmware(EMERGENCY_UPDATE_DIR);
 	if (pFile == NULL) {
-		DBG("Emergency Firmware file is not exist !!!\n");
+		LOGD("Emergency Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
 		return -1;
 	}
 	
 	//# buzz: update
-	dprintf("start...\n");
+	TRACE_INFO("start...\n");
 	app_buzz_ctrl(50, 3);
 	
 	/* unpack firmware */
@@ -341,7 +340,7 @@ static int __emergency_update(void)
 	return 0;
 }
 
-static int Delete_updatefile()
+static void Delete_updatefile(void)
 {
     char cmd[MAX_CHAR_255] = {0,};
     int i;
@@ -356,11 +355,13 @@ static int Delete_updatefile()
 	};
 	
 	//# remove micom firmware,-->(-1) 
-	for (i = 0; i < FW_FILE_NUM-1; i++)
-	{
-		sprintf(cmd, "/bin/rm -rf %s/%s", FW_DIR, full_upfiles[i]);
-		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", full_upfiles[i]);
-		util_sys_exec(cmd);
+	for (i = 0; i < FW_FILE_NUM-1; i++) {
+		memset(cmd, 0, sizeof(cmd));
+		snprintf(cmd, sizeof(cmd), "%s/%s", FW_DIR, full_upfiles[i]);
+		if (access(cmd, F_OK) == 0) {
+			remove(cmd);
+			TRACE_INFO("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);	
+		}
 	}
 
 	//# delete "/mmc/rfs_fit.ubifs.md5"
@@ -368,7 +369,7 @@ static int Delete_updatefile()
 	snprintf(cmd, sizeof(cmd), "%s/%s", FW_DIR, FW_UBIFSMD5_FNAME); 
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
-		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+		TRACE_INFO("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
 	
 	//# delete micom firmware
@@ -376,16 +377,15 @@ static int Delete_updatefile()
 	snprintf(cmd, sizeof(cmd), "%s/%s", FW_DIR, FW_MICOM_FNAME);
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
-		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+		TRACE_INFO("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
 	
-#if 1 //# ???	
 	//# delete mcu_extb.txt
 	memset(cmd, 0, sizeof(cmd));
 	snprintf(cmd, sizeof(cmd), "/mmc/mcu_extb.txt");
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
-		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+		TRACE_INFO("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
 	
 	// delete mcu_cctv.txt
@@ -393,21 +393,19 @@ static int Delete_updatefile()
 	snprintf(cmd, sizeof(cmd), "/mmc/mcu_cctv.txt");
 	if (access(cmd, F_OK) == 0) {
 		remove(cmd);
-		printf("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
+		TRACE_INFO("@@@@@@@@@ DELETE %s @@@@@@@@@@@@\n", cmd);
 	}
-#endif	
-	return 0 ;
 }
 
 void *thrRunFWUpdate(void *arg)
 {
-	DBG("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
+	LOGD("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
 
 	app_buzz_ctrl(50, 3);		//# buzz: update
 	dev_fw_setenv("nand_update", "1", 0);
 	sync();
 
-	dprintf("\nfw update ready ! It will restart\n\n");
+	TRACE_INFO("\nfw update ready ! It will restart\n\n");
 	app_mcu_pwr_off(OFF_RESET);
 
 	return NULL;
@@ -515,7 +513,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		// OK, ready to firmware upgrade
 	}
 	else {
-		dprintf("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
+		TRACE_INFO("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
 		//TODO: 실패할 경우, 압축해제한 파일들 처리
 		return -1;
 	}
@@ -528,7 +526,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		pthread_t tid_fw;
 		int ret = pthread_create(&tid_fw, NULL, thrRunFWUpdate, NULL);
 		if (ret != 0) {
-			dprintf("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
+			TRACE_INFO("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
 			return -1;
 		}
 		pthread_setname_np(tid_fw, __FILENAME__);
@@ -573,12 +571,9 @@ void ctrl_firmware_update(void)
 void ctrl_reset_nand_update(void)
 {
 	//# delete full updated file
-	if(dev_fw_printenv("nand_update") == 2)
-	{
+	if(dev_fw_printenv("nand_update") == 2){
         if(_is_firmware_for_release()) // RELEASE Version .. --> update file delete
-		{
 		    Delete_updatefile() ;
-		}
 		
 		dev_fw_setenv("nand_update", "0", 0);
 	}
@@ -600,7 +595,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 
 	if(rc == RATE_CTRL_VBR)
 	{
-        DBG("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
+        LOGD("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
 
 		params.qpMax 	= 45;
 		params.qpInit 	= -1;
@@ -622,7 +617,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 	else	//# RATE_CTRL_CBR
 	{
-        DBG("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
+        LOGD("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
  
 		params.qpMin	= 2;//10;	//# for improve quality: 10->0
 		params.qpMax 	= 40;
@@ -763,18 +758,18 @@ int ctrl_vid_resolution(int resol_idx)
 	switch(resol_idx) {
 	default:
 	case 0:
-		DBG("[APP_CTRL] --- change Display Mode to 480P ---\n");
+		LOGD("[APP_CTRL] --- change Display Mode to 480P ---\n");
 		break;
 	case 1:
-		DBG("[APP_CTRL] --- change Display Mode to 720P ---\n");
+		LOGD("[APP_CTRL] --- change Display Mode to 720P ---\n");
 		break;
 	case 2:
-		DBG("[APP_CTRL] --- change Display Mode to 1080P ---\n");
+		LOGD("[APP_CTRL] --- change Display Mode to 1080P ---\n");
 		break;
     }
 	
     app_cfg->ste.b.nokey = 0;
-	dprintf("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
+	TRACE_INFO("vid_resolution nokey = %d\n",app_cfg->ste.b.nokey) ;
 
     return SOK ;
 }
@@ -916,14 +911,14 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 			if (subnet != NULL)
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
-			DBG("[APP] --- Wireless ipaddress changed System Restart ---\n");
+			LOGD("[APP] --- Wireless ipaddress changed System Restart ---\n");
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			DBG("[APP] --- Ethernet ipaddress changed System Restart ---\n");
+			LOGD("[APP] --- Ethernet ipaddress changed System Restart ---\n");
 		}
 	}	
 	
@@ -942,7 +937,7 @@ int ctrl_set_gateway(const char *gw)
     if (gw != NULL)
         strcpy(app_set->net_info.eth_gateway, gw);
 	
-	DBG("[APP] --- Ethernet gateway changed System Restart ---\n");
+	LOGD("[APP] --- Ethernet gateway changed System Restart ---\n");
 	ctrl_sys_halt(0); /* reboot */	
 
     return SOK;
@@ -1001,14 +996,14 @@ int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
     set = mktime(&ts);
 
     strftime( buf, sizeof(buf), "%Y%2m%2d_%2H%2M%2S", &ts );
-    DBG("[APP_CTRL] Time Change : %s\n", buf);
+    LOGD("[APP_CTRL] Time Change : %s\n", buf);
 
     stime(&set);
     Vsys_datetime_init();   //# m3 Date/Time init
     OSA_waitMsecs(100);
 
     if (dev_rtc_set_time(ts) < 0) {
-        DBG("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
+        LOGD("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
     }   
 
     return 0;
@@ -1034,16 +1029,16 @@ int ctrl_mmc_check_exfat(unsigned long *size)
 
 	ret = dev_disk_mmc_part_check_info(MMC_BLK_DEV_NAME, &mmc_part);
 	if (ret) {
-		dprintf("please check sd card!!\n");
+		TRACE_INFO("please check sd card!!\n");
 		return -1;
 	}
 
 	if (mmc_part.part_size > MMC_SIZE_128GB) {
-		dprintf("Not suppoted sd card (%lu MB)!!\n", mmc_part.part_size);
+		TRACE_INFO("Not suppoted sd card (%lu MB)!!\n", mmc_part.part_size);
 		return -1;
 	}
 	if (mmc_part.part_no != 1) {
-		dprintf("Invalid partition sd card!!\n");
+		TRACE_INFO("Invalid partition sd card!!\n");
 		return -1;
 	}
 
@@ -1077,7 +1072,7 @@ int ctrl_mmc_exFAT_format(unsigned long size)
 
 	blkid = dev_disk_mmc_part_format(size);
 	if (blkid < 0) {
-		dprintf("Failed to format sdcard\n");
+		TRACE_INFO("Failed to format sdcard\n");
 		/* todo: return or reboot?? */
 		return -1;
 	}
@@ -1117,7 +1112,7 @@ int ctrl_mmc_check_partitions(void)
 
 	part_f = fopen("/proc/partitions", "r");
 	if (part_f == NULL) {
-		dprintf("couldn't open /proc/partitions\n");
+		TRACE_INFO("couldn't open /proc/partitions\n");
 		return -1;
 	}
 
@@ -1180,7 +1175,7 @@ int ctrl_mmc_check_writable(void)
 		}
 	}
 	
-	dprintf("sd card read-only filesystem!!\n");
+	TRACE_INFO("sd card read-only filesystem!!\n");
 	fclose(f);
 	return 0;
 }
@@ -1283,7 +1278,7 @@ int ctrl_is_live_process(const char *process_name)
         }
         else
         {
-            dprintf("Can't read file [%s]\n", path);
+            TRACE_INFO("Can't read file [%s]\n", path);
         }
     }
 
@@ -1337,7 +1332,7 @@ void ctrl_sys_halt(int shutdown)
     	}
 	}
 	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
-    dprintf("file manager exit success.(while system %s!)\n", shutdown ? "shutdown" : "reboot");
+    TRACE_INFO("file manager exit success.(while system %s!)\n", shutdown ? "shutdown" : "reboot");
 	app_set_write();
 	
 	if (shutdown) {
@@ -1347,5 +1342,5 @@ void ctrl_sys_halt(int shutdown)
 		app_mcu_pwr_off(OFF_RESET);
 	}
 	
-	dprintf("....exit!\n");
+	TRACE_INFO("....exit!\n");
 }

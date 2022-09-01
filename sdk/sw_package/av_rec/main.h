@@ -36,8 +36,6 @@
 #define eprintf(x...) do { printf(" [AVREC ERR!] %s: ", __func__); printf(x); } while(0)
 #define dprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
 
-#define sysprint(x...) do { printf(" [AVREC LOG] %s: ", __func__); printf(x); syslog(LOG_INFO, x);} while(0)
-
 #ifndef TRUE
 #define TRUE 		1
 #endif
@@ -51,7 +49,6 @@
 -----------------------------------------------------------------------------*/
 typedef	union {
 	unsigned int word;
-
 	struct {
 		unsigned int mmc:1;        /* mmc device state */
 	} bit;

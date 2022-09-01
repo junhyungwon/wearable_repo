@@ -70,7 +70,6 @@ static FILE *fp = NULL;
 static FILE *jfp = NULL;
 #endif
 
-
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
@@ -84,19 +83,19 @@ void video_status(void)
 	
 #if defined(NEXXONE) || defined(NEXXB_ONE)
 	app_leds_cam_ctrl(0, vstatus[0]);
-	dprintf("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
+	TRACE_INFO("cam_0 : %s!\n", vstatus[0]?"video detect":"no video");
     vcount += vstatus[0] ;
 #else
 	/* nexx_b 3ch -> 0, 2, 3번에 카메라 연결됨 */
 	for (i = 0; i < count; i++) {
 		/* cam led on/off */
 		app_leds_cam_ctrl(i, vstatus[i]);
-		dprintf("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
+		TRACE_INFO("cam_%d : %s!\n", i, vstatus[i]?"video detect":"no video");
         vcount += vstatus[i] ;
 	}
 #endif
 	app_cfg->vid_count = vcount;
-	DBG("[APP_CAP] Camera Detected Count: %d\n", count);
+	TRACE_INFO("[APP_CAP] Camera Detected Count: %d\n", count);
 	
 	if (app_cfg->ste.b.cap == 0) {
 #if defined(NEXXONE) || defined(NEXXB_ONE)
@@ -311,7 +310,7 @@ static void *THR_vid_cap(void *prm)
 	app_thr_obj *tObj = &icap->vObj;
 	int cmd, exit=0;
 
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -326,7 +325,7 @@ static void *THR_vid_cap(void *prm)
 	}
 
 	tObj->active = 0;
-	dprintf("....exit!\n");
+	TRACE_INFO("....exit!\n");
 
 	return NULL;
 }
@@ -347,7 +346,7 @@ int vid_cap_start(void)
 
 	//#--- create thread
 	if(thread_create(&icap->vObj, THR_vid_cap, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_ERR("create thread\n");
 		return EFAIL;
     }
 
@@ -415,7 +414,7 @@ static void cap_jpeg_quality(int ch, int value)
 	params.qpInit	= value;
 
 	Venc_setDynamicParam(ch, 0, &params, VENC_QPVAL_I);
-	//dprintf("ch %d, value %d\n", ch, value);
+	//TRACE_INFO("ch %d, value %d\n", ch, value);
 }
 
 static void cap_enc_late_init(void)
@@ -449,18 +448,18 @@ static int capt_param_init(VCAP_PARAMS_S *vcapParams)
 		ch_prm = &app_set->ch[idx];
 
 		if (get_frame_size(ch_prm->resol, &wi, &he) == EFAIL) {
-			dprintf("Failed get resolution!!!\n");
+			TRACE_ERR("Failed get resolution!!!\n");
 			return EFAIL;
 		}
-        dprintf("channel = %d resolution = %d\n", idx, ch_prm->resol) ;
-
+		
+        TRACE_INFO("channel = %d resolution = %d\n", idx, ch_prm->resol) ;
 		app_cfg->ich[idx].wi = wi;
 		app_cfg->ich[idx].he = he;
 		app_cfg->ich[idx].fr = app_set->ch[idx].framerate ;
 //		app_cfg->ich[idx].br = (app_set->ch[idx].quality * app_cfg->ich[idx].fr)/DEFAULT_FPS;
 		app_cfg->ich[idx].br = app_set->ch[idx].quality ;
 		app_cfg->ich[idx].rc = app_set->ch[idx].rate_ctrl ; 
-		dprintf(" [app] (CH%d): %dx%d, fr %d, br %d\n", idx, wi, he, app_cfg->ich[idx].fr, app_cfg->ich[idx].br);
+		TRACE_INFO(" [app] (CH%d): %dx%d, fr %d, br %d\n", idx, wi, he, app_cfg->ich[idx].fr, app_cfg->ich[idx].br);
         
 		if(idx==0) {
 			//# set cap param
@@ -524,7 +523,7 @@ int app_cap_start(void)
 	app_cfg->wd_tot |= WD_ENC; /* Fixed */
 	app_cfg->num_ch = vsysParams.numChs;
 	if (capt_param_init(&vcapParams) == EFAIL) {
-		dprintf("Failed initialize capture parameters!!\n");
+		TRACE_ERR("Failed to initinitialize capture parameters!!\n");
 		return EFAIL;
 	}
 
@@ -552,15 +551,15 @@ int app_cap_start(void)
 
 	Vcap_start();
 	Vdis_start();
-
 	Venc_start();
-
+	LOGD("Initializing Video Capture System succeed!\n");
+	
 	cap_enc_late_init();
 
 	if(!app_set->rtmp.ON_OFF)
 		ctrl_enc_multislice() ; 
 
-	dprintf("....done!\n");
+	TRACE_INFO("....done!\n");
 
 	return SOK;
 }
@@ -588,8 +587,7 @@ int app_cap_stop(void)
 
 	app_msleep(500);	//# wait m3 cap_stop done
 
-	dprintf("....done!\n");
-
+	TRACE_INFO("....done!\n");
 	return SOK;
 }
 

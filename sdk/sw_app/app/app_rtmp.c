@@ -56,7 +56,7 @@ static void _init_queue() {
 
 static void _rtmp_close() {
     if (rtmp != NULL) {
-        fprintf(stderr, "[RTMP] close the RTMP connection.\n");
+        TRACE_ERR("[RTMP] close the RTMP connection.\n");
         srs_rtmp_destroy(rtmp);
         rtmp = NULL;
     }
@@ -68,7 +68,7 @@ static void _rtmp_close() {
 static inline int _checkAsyncQueue() {
     // max async queue to (DEFAULT_FPS * 1)
     if (queue_lenth > (DEFAULT_FPS * 1)) {
-        fprintf(stderr, "[RTMP] async queue overflow(queue length: %d).\n"
+        TRACE_ERR("[RTMP] async queue overflow(queue length: %d).\n"
             , queue_lenth);
 
         return FAILURE;
@@ -78,7 +78,7 @@ static inline int _checkAsyncQueue() {
 
 static int _checkCpuLoad() {
     if (*procLoad == -1 || *procLoad >= 70) {
-        fprintf(stderr, "[RTMP] high cpu load(self: %d, total: %d).\n"
+        TRACE_ERR("[RTMP] high cpu load(self: %d, total: %d).\n"
             , *procLoad, *cpuLoad);
 
         return FAILURE;
@@ -90,7 +90,7 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
     if (rtmp_enabled == false  || rtmp_ready == false)
         return;
 
-    // fprintf(stderr, "[RTMP] rtmp_publish_async_cb fired.\n");
+    // TRACE_INFO("[RTMP] rtmp_publish_async_cb fired.\n");
     struct stream_s* stream;
 
     u_int32_t dts = 0, pts = 0, timestamp = 0;
@@ -115,7 +115,7 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
         free(stream);
 
         if (rtmp == NULL || ifr == NULL || ifr->addr == NULL || ifr->b_size <= 0) {
-            fprintf(stderr, "[RTMP] wrong data.\n");
+            TRACE_ERR("[RTMP] wrong data.\n");
             break;
         }
 
@@ -171,20 +171,20 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
     if (!rtmp_enabled)
         return;
 
-    fprintf(stderr, "[RTMP] connection timer fired. rtmp status : %d.\n", rtmp_ready);
+    TRACE_ERR("[RTMP] connection timer fired. rtmp status : %d.\n", rtmp_ready);
 
     if (_checkCpuLoad() == FAILURE) {
         // disable rtmp_ready in advanced.
         rtmp_ready = false;
 
-        fprintf(stderr, "[RTMP] the cpu load is too high.\n");
+        TRACE_ERR("[RTMP] the cpu load is too high.\n");
         uv_async_send(async_rtmp_disconnect);
         return;
     }
 
     if (!rtmp_ready) {
         if (app_cfg->ste.b.usbnet_run == 0 && app_cfg->ste.b.cradle_net_run == 0) {
-            fprintf(stderr, "[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_net_run: %d\n",
+            TRACE_ERR("[RTMP] network unavailable. try next time. usbnet_run: %d, cradle_net_run: %d\n",
                 app_cfg->ste.b.usbnet_run, app_cfg->ste.b.cradle_net_run);
             return;
         }
@@ -194,7 +194,7 @@ void rtmp_connect_timer_cb (uv_timer_t* timer, int status) {
 }
 
 void rtmp_disconnect_async_cb(uv_async_t* async) {
-    fprintf(stderr, "[RTMP] try to disconnect : %s.\n", rtmp_endpoint);
+    TRACE_ERR("[RTMP] try to disconnect : %s.\n", rtmp_endpoint);
     _rtmp_close();
 }
 
@@ -202,7 +202,7 @@ void rtmp_connect_async_cb(uv_async_t* async) {
     // close first
     _rtmp_close();
 
-    fprintf(stderr, "[RTMP] try to connect : %s.\n", rtmp_endpoint);
+    TRACE_ERR("[RTMP] try to connect : %s.\n", rtmp_endpoint);
 
     // librtmp
     rtmp = srs_rtmp_create(rtmp_endpoint);
@@ -248,7 +248,7 @@ int app_rtmp_start(void)
     r = uv_async_init(loop_video, async_rtmp_publish, rtmp_publish_async_cb);
 
     // connection check timer in default loop.
-    timer = malloc(sizeof(uv_timer_t));
+    timer = malloc(sizeof(uv_timer_t)); //# free ??
     uv_timer_init(loop, timer);
 
 	return SOK;
@@ -298,7 +298,7 @@ void app_rtmp_publish_video(stream_info_t *ifr)
 
 void app_rtmp_enable(void)
 {
-    fprintf(stderr, "[RTMP] app_rtmp_enable.\n");
+    TRACE_INFO("[RTMP] app_rtmp_enable.\n");
 	rtmp_enabled = true;
 
     // check the connection on every 10sec
@@ -307,7 +307,7 @@ void app_rtmp_enable(void)
 
 void app_rtmp_disable(void)
 {
-    fprintf(stderr, "[RTMP] app_rtmp_disable.\n");
+    TRACE_INFO("[RTMP] app_rtmp_disable.\n");
 	rtmp_enabled = false;
 
 	uv_timer_stop(timer);
@@ -318,9 +318,8 @@ void app_rtmp_disable(void)
 
 void app_rtmp_set_endpoint(const char* endpoint)
 {
-    fprintf(stderr, "[RTMP] set endpoint from %s to %s.\n", rtmp_endpoint, endpoint);
+    TRACE_INFO("[RTMP] set endpoint from %s to %s.\n", rtmp_endpoint, endpoint);
 
     // fixme : validate the endpoint
 	strcpy(rtmp_endpoint, endpoint);
 }
-

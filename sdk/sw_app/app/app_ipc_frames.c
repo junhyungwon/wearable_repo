@@ -109,7 +109,7 @@ static void file_open(void)
 
 	fout = fopen(filename, "wb");
 	if(fout == NULL)
-		dprintf("file open!\n");
+		TRACE_INFO("file open!\n");
 }
 
 static unsigned int vcap_mmap(unsigned int physAddr, unsigned int size)
@@ -118,7 +118,7 @@ static unsigned int vcap_mmap(unsigned int physAddr, unsigned int size)
 
 	gMmap.mem_fd = open("/dev/mem",O_RDWR|O_SYNC);
     if(gMmap.mem_fd < 0) {
-		dprintf("/dev/mem open failed!\n");
+		TRACE_INFO("/dev/mem open failed!\n");
 		return -1;
     }
 
@@ -131,7 +131,7 @@ static unsigned int vcap_mmap(unsigned int physAddr, unsigned int size)
 			PROT_READ|PROT_WRITE|PROT_EXEC,MAP_SHARED,
 			gMmap.mem_fd, gMmap.mmap_addr);
 	if (gMmap.mem_virtAddr==NULL) {
-		dprintf("mmap() failed!\n");
+		TRACE_INFO("mmap() failed!\n");
 		return -1;
 	}
 
@@ -157,7 +157,7 @@ void *dataProcessFxn(void *prm)
 	frame_info_t *frame_que;
 	int status;
 
-	dprintf("--- %s\n", __func__);
+	TRACE_INFO("--- %s\n", __func__);
 
 	#if EN_FILE_WRITE
 	file_open();
@@ -182,7 +182,7 @@ void *dataProcessFxn(void *prm)
 				printf("%s: addr 0x%p(%dx%d)\n", __func__, &frame_que->buf, frame_que->width, frame_que->height);
 			#endif
 
-			//dprintf("frame_que 0x%x\n", frame_que);
+			//TRACE_INFO("frame_que 0x%x\n", frame_que);
 			OSA_quePut(&tObj->bufQFreeBufs, (Int32)frame_que, OSA_TIMEOUT_NONE);
 		}
 		else
@@ -198,7 +198,7 @@ void *dataProcessFxn(void *prm)
 	#endif
 	
 	tObj->exitRecordThreadDone = TRUE;
-	dprintf("--- %s done!\n", __func__);
+	TRACE_INFO("--- %s done!\n", __func__);
 
 	return NULL;
 }
@@ -217,7 +217,7 @@ static void ipcFramesProcessFullBufs(IpcFramesCtrlThrdObj *tObj)
 
 	Vcap_getFullVideoFrames(&bufList, 0);
 	
-	dprintf("IPC Frames get %d\n", bufList.numFrames);
+	TRACE_INFO("IPC Frames get %d\n", bufList.numFrames);
 			
 	for (i = 0; i < bufList.numFrames; i++)
 	{
@@ -229,7 +229,7 @@ static void ipcFramesProcessFullBufs(IpcFramesCtrlThrdObj *tObj)
 			continue;
 
 		#if 0
-		dprintf("CH%d (%dx%d) 0x%x(0x%x), %d\n", pBuf->channelNum,
+		TRACE_INFO("CH%d (%dx%d) 0x%x(0x%x), %d\n", pBuf->channelNum,
 			pBuf->frameWidth, pBuf->frameHeight, virtAddr, pBuf->phyAddr[0][0], frameSize);
 		#endif
 
@@ -261,7 +261,7 @@ static void *ipcFramesRecvFxn(void *prm)
 	IpcFramesCtrl *ctrl = (IpcFramesCtrl *)prm;
 	IpcFramesCtrlThrdObj *tObj = &ctrl->tObj;
 
-	dprintf("--- %s\n", __func__);
+	TRACE_INFO("--- %s\n", __func__);
 
 	while (FALSE == tObj->exitBitsInThread)
 	{
@@ -272,7 +272,7 @@ static void *ipcFramesRecvFxn(void *prm)
 	}
 
 	tObj->exitBitsInThreadDone = TRUE;
-	dprintf("--- %s done!\n", __func__);
+	TRACE_INFO("--- %s done!\n", __func__);
 
 	return NULL;
 }
@@ -291,10 +291,10 @@ static void ipcFramesInitThrdObj(IpcFramesCtrlThrdObj *tObj)
     {
         gIpcFramesCtrl.que_buf[i] = malloc(sizeof(frame_info_t));
         if(gIpcFramesCtrl.que_buf[i] == NULL)
-        	dprintf("ipcframes buffer alloc\n");
+        	TRACE_INFO("ipcframes buffer alloc\n");
 		
 		#if 0
-        dprintf("que_buf 0x%x\n", (int)gIpcFramesCtrl.que_buf[i]);
+        TRACE_INFO("que_buf 0x%x\n", (int)gIpcFramesCtrl.que_buf[i]);
 		#endif
 			
 		OSA_quePut(&tObj->bufQFreeBufs, (Int32)gIpcFramesCtrl.que_buf[i], OSA_TIMEOUT_NONE);
@@ -368,7 +368,7 @@ Int32 ipcFramesInit(void)
 
 	ipcFramesInitThrdObj(&gIpcFramesCtrl.tObj);
 
-	dprintf("--- %s\n", __func__);
+	TRACE_INFO("--- %s\n", __func__);
 
 	return 0;
 }
@@ -394,12 +394,12 @@ void ipcFramesStop(void)
 		OSA_waitMsecs(MCFW_MAIN_WAIT_TIME);
 	}
 
-	dprintf("--- %s done!\n", __func__);
+	TRACE_INFO("--- %s done!\n", __func__);
 }
 
 void ipcFramesExit(void)
 {
 	ipcFramesDeInitThrObj(&gIpcFramesCtrl.tObj);
 
-	dprintf("--- %s done!\n", __func__);
+	TRACE_INFO("--- %s done!\n", __func__);
 }

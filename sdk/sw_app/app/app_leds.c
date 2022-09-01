@@ -26,7 +26,6 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define LED_BASE_PATH		"/sys/class/leds/"
-#define LED_BLINK_MS		300
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -56,7 +55,7 @@ typedef enum {
 } LEDS_IDX;
 
 static char ledste[LED_IDX_ALL]; //# led state
-static pthread_mutex_t leds_lock = PTHREAD_MUTEX_INITIALIZER;
+static OSA_MutexHndl led_lock;
 
 /*----------------------------------------------------------------------------
  Declares a function prototype
@@ -65,103 +64,103 @@ static pthread_mutex_t leds_lock = PTHREAD_MUTEX_INITIALIZER;
 static int leds_ctrl(int index, int state)
 {
 	char path[256] = {0,};
-	char buf[16];
-	int fd, len, brightness;
-	int ret = 0;
-
-	if (ledste[index] == state)
+	int fd, ret = 0;
+	
+	if (ledste[index] == -2) {
+		TRACE_ERR("Invalid %d[th]LED!\n", index);
+		return -1;
+	} else if (ledste[index] == state)
 		return 0;
 
-	pthread_mutex_lock(&leds_lock);
-
-	ledste[index] = state;
-
-	buf[sizeof(buf) - 1] = '\0';
 	memset(path, 0, sizeof(path));
 	snprintf(path, sizeof(path), "%s/led%d/trigger", LED_BASE_PATH, index);
 	if ((fd = open(path, O_WRONLY)) < 0) {
-		//dprintf("Error open %s\n", path);
-		ret = -1;
-		goto err_exit;
+		return EFAIL;
 	}
 
 	if (state == DEV_LED_BLINK) {
-		len = snprintf(buf, sizeof(buf), "timer");
-		write(fd, buf, len);
+		write(fd, "timer", 5);
 		close(fd);
 
 		memset(path, 0, sizeof(path));
 		snprintf(path, sizeof(path), "%s/led%d/delay_on", LED_BASE_PATH, index);
 		if ((fd = open(path, O_WRONLY)) < 0) {
-			//dprintf("Error open %s\n", path);
-			ret = -1;
-			goto err_exit;
+			return EFAIL;
 		}
 
-		buf[sizeof(buf) - 1] = '\0';
-		len = snprintf(buf, sizeof(buf), "%d", LED_BLINK_MS);
-		write(fd, buf, len);
+		write(fd, "300", 3);
 		close(fd);
 
 		memset(path, 0, sizeof(path));
 		snprintf(path, sizeof(path), "%s/led%d/delay_off", LED_BASE_PATH, index);
 		if ((fd = open(path, O_WRONLY)) < 0) {
-			//dprintf("Error open %s\n", path);
-			ret = -1;
-			goto err_exit;
+			return EFAIL;
 		}
 
-		buf[sizeof(buf) - 1] = '\0';
-		len = snprintf(buf, sizeof(buf), "%d", LED_BLINK_MS);
-		write(fd, buf, len);
+		write(fd, "300", 3);
 		close(fd);
-
 	} else {
-		if (state == DEV_LED_ON) brightness = 255;
-		else					 brightness = 0;
-
-		len = snprintf(buf, sizeof(buf), "none");
-		write(fd, buf, len);
+		write(fd, "none", 4);
 		close(fd);
 
 		memset(path, 0, sizeof(path));
 		snprintf(path, sizeof(path), "%s/led%d/brightness", LED_BASE_PATH, index);
 		if ((fd = open(path, O_WRONLY)) < 0) {
-			//dprintf("Error open %s\n", path);
-			ret = -1;
-			goto err_exit;
+			return EFAIL;
 		}
-
-		buf[sizeof(buf) - 1] = '\0';
-		len = snprintf(buf, sizeof(buf), "%d", brightness);
-		write(fd, buf, len);
+		
+		if (state == DEV_LED_ON) {
+			write(fd, "1", 1); //strlen("255")+1
+		} else {
+			write(fd, "0", 1); //strlen("0")+1
+		}
 		close(fd);
 	}
-
-err_exit:
-	pthread_mutex_unlock(&leds_lock);
-
-	return ret;
+	
+	ledste[index] = state;
+	return SOK;
 }
 
 /*----------------------------------------------------------------------------
  LED all off
 -----------------------------------------------------------------------------*/
-int app_leds_init(void)
+void app_leds_init(void)
 {
 	int i, ret;
+	
+	//#--- create mutex
+	ret = OSA_mutexCreate(&led_lock);
+    OSA_assert(ret == OSA_SOK);
+	
+	OSA_mutexLock(&led_lock);
 	for (i = 0; i < LED_IDX_ALL; i++) {
 		ledste[i] = (char)-1;
 		ret = leds_ctrl(i, 0);
-		if (ret < 0 ) {
-			//dprintf("%d led error!\n", i);
-			return -1;
+		if (ret < 0) {
+			ledste[i] = (char)-2;
 		}
 	}
+	OSA_mutexUnlock(&led_lock);
 	
-	dprintf("... done!\n");
+	TRACE_INFO("LED init Success!\n");
+}
+
+void app_leds_exit(void)
+{
+	int i, ret;
 	
-	return SOK;
+	OSA_mutexLock(&led_lock);
+	for (i = 0; i < LED_IDX_ALL; i++) {
+		ledste[i] = (char)-1;
+		leds_ctrl(i, 0);
+	}
+	OSA_mutexUnlock(&led_lock);
+	
+	//#--- delete mutex
+	ret = OSA_mutexDelete(&led_lock);
+	OSA_assert(ret == OSA_SOK);
+	
+	TRACE_INFO("...done!\n");
 }
 
 /*----------------------------------------------------------------------------
@@ -173,14 +172,13 @@ int app_leds_init(void)
 -----------------------------------------------------------------------------*/
 int app_leds_rf_ctrl(int ste)
 {
-	int ret = 0;
 	int g_val = DEV_LED_OFF;
 	int r_val = DEV_LED_OFF;
+	int ret=0;
 
 	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
+	if (app_cfg->ste.b.busy)
+		return SOK;
 
 	if (ste == LED_RF_OFF) {
 		g_val = DEV_LED_OFF; r_val = DEV_LED_OFF;
@@ -189,13 +187,16 @@ int app_leds_rf_ctrl(int ste)
 	} else if (ste == LED_RF_FAIL) {
 		g_val = DEV_LED_OFF; r_val = DEV_LED_ON;
 	}
-
+	
+	OSA_mutexLock(&led_lock);
 	ret = leds_ctrl(LED_IDX_RF_G, g_val);
 	ret |= leds_ctrl(LED_IDX_RF_R, r_val);
+	OSA_mutexUnlock(&led_lock);
 	if (ret < 0) {
-		//dprintf("invalid RF led control (%d)\n", ste);
+		//TRACE_ERR("invalid RF led control (%d)\n", ste);
+	} else {
+		//TRACE_INFO("RF led control set %d success\n", ste);
 	}
-
 	return ret;
 }
 
@@ -215,7 +216,7 @@ int app_leds_gps_ctrl(int ste)
 
 	/* don't control for update */
 	if (app_cfg->ste.b.busy) {
-		return 0;
+		return SOK;
 	}
 
 	if (ste == LED_GPS_OFF) {
@@ -225,13 +226,16 @@ int app_leds_gps_ctrl(int ste)
 	} else if (ste == LED_GPS_FAIL) {
 		g_val = DEV_LED_OFF; r_val = DEV_LED_ON;
 	}
-
+	
+	OSA_mutexLock(&led_lock);
 	ret = leds_ctrl(LED_IDX_GPS_G, g_val);
 	ret |= leds_ctrl(LED_IDX_GPS_R, r_val);
+	OSA_mutexUnlock(&led_lock);
 	if (ret < 0) {
-		//dprintf("invalid GPS led control (%d)\n", ste);
+		//TRACE_INFO("invalid GPS led control (%d)\n", ste);
+	} else {
+		//TRACE_INFO("GPS led control set %d success\n", ste);
 	}
-
 	return ret;
 }
 #endif
@@ -249,7 +253,7 @@ int app_leds_cam_ctrl(int no, int ste)
 
 	/* don't control for update */
 	if (app_cfg->ste.b.busy) {
-		return 0;
+		return SOK;
 	}
 
 	/*
@@ -280,18 +284,20 @@ int app_leds_cam_ctrl(int no, int ste)
 		index = LED_IDX_CAM4; break;
 #endif	
 	default:
-		dprintf("invalid camera led index (%d)\n", no);
+		TRACE_INFO("invalid camera led index (%d)\n", no);
 		return -1;
 	}
-
+	
+	OSA_mutexLock(&led_lock);
 	ret = leds_ctrl(index, ste?DEV_LED_ON:DEV_LED_OFF);
+	OSA_mutexUnlock(&led_lock);
 	if (ret < 0) {
-		dprintf("failed camera led control (%d)\n", index);
+		//TRACE_INFO("Failed to control %d [th] camera led\n", index);
+	} else {
+		//TRACE_INFO("%d[th] Camera led control set %d success\n", index, ste);
 	}
-
 	return ret;
 }
-
 
 /*----------------------------------------------------------------------------
  LED VOIP control. (
@@ -305,23 +311,24 @@ int app_leds_voip_ctrl(int ste)
 	int index = 0;
 
 	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
+	if (app_cfg->ste.b.busy)
+		return SOK;
 
 #if defined(NEXXB)	
 	index = LED_IDX_CAM2;
 #else
 	index = LED_IDX_CAM4;
-#endif	
+#endif
+	OSA_mutexLock(&led_lock);
 	ret = leds_ctrl(index, ste);
+	OSA_mutexUnlock(&led_lock);
 	if (ret < 0) {
-		//dprintf("failed voip led control (%d)\n", index);
+		//TRACE_INFO("failed to control voip LED\n");
+	} else {
+		//TRACE_INFO("voip LED set %d state success\n", ste);
 	}
-
 	return ret;
 }
-
 
 /*----------------------------------------------------------------------------
  LED SD card (insert/remove) control.
@@ -334,10 +341,10 @@ int app_leds_mmc_ctrl(int ste)
 	int ret = 0;
 
 	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
-
+	if (app_cfg->ste.b.busy)
+		return SOK;
+	
+	OSA_mutexLock(&led_lock);
 	switch(ste) {
 	case LED_MMC_RED_ON:
 		ret = leds_ctrl(LED_IDX_SD_G, DEV_LED_OFF);
@@ -361,11 +368,13 @@ int app_leds_mmc_ctrl(int ste)
 		ret |= leds_ctrl(LED_IDX_SD_R, DEV_LED_OFF);
 		break;
 	}
-
+	OSA_mutexUnlock(&led_lock);
+	
 	if (ret < 0) {
-		//dprintf("failed SD card led control!\n");
+		//TRACE_INFO("failed SD card led control!\n");
+	} else {
+		//TRACE_INFO("SD LED set %d state success\n", ste);
 	}
-
 	return ret;
 }
 
@@ -378,36 +387,41 @@ int app_leds_mmc_ctrl(int ste)
 -----------------------------------------------------------------------------*/
 int app_leds_mmc_capacity_ctrl(int step)
 {
-	int i;
+	int i, ret=0;
 
 	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
-
+	if (app_cfg->ste.b.busy)
+		return SOK;
+	
+	OSA_mutexLock(&led_lock);
 	for (i = LED_IDX_SD_G1; i <= LED_IDX_SD_G3; i++) {
 		leds_ctrl(i, DEV_LED_OFF);
 	}
 
 	switch(step) {
 	case LED_DISK_USAGE_ON_1:
-		leds_ctrl(LED_IDX_SD_G1, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_SD_G1, DEV_LED_ON);
 		break;
 	case LED_DISK_USAGE_ON_2:
-		leds_ctrl(LED_IDX_SD_G1, DEV_LED_ON);
-		leds_ctrl(LED_IDX_SD_G2, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_SD_G1, DEV_LED_ON);
+		ret |=leds_ctrl(LED_IDX_SD_G2, DEV_LED_ON);
 		break;
 	case LED_DISK_USAGE_ON_3:
-		leds_ctrl(LED_IDX_SD_G1, DEV_LED_ON);
-		leds_ctrl(LED_IDX_SD_G2, DEV_LED_ON);
-		leds_ctrl(LED_IDX_SD_G3, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_SD_G1, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_SD_G2, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_SD_G3, DEV_LED_ON);
 		break;
 	default:
-		//dprintf("invalid mmc capacity led(%d)!\n", step);
 		break;
 	}
-
-	return 0;
+	OSA_mutexUnlock(&led_lock);
+	
+	if (ret < 0) {
+		//TRACE_INFO("failed SD card led control!\n");
+	} else {
+		//TRACE_INFO("MMC LED set %d step success\n", step);
+	}
+	return ret;
 }
 
 /*----------------------------------------------------------------------------
@@ -421,10 +435,10 @@ int app_leds_rec_ctrl(int ste)
 	int ret = 0;
 
 	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
-
+	if (app_cfg->ste.b.busy)
+		return SOK;
+	
+	OSA_mutexLock(&led_lock);
 	if (ste == LED_REC_OFF) {
 		ret = leds_ctrl(LED_IDX_REC, DEV_LED_OFF);
 	} else if (ste == LED_REC_ON) {
@@ -434,11 +448,13 @@ int app_leds_rec_ctrl(int ste)
 	} else {
 		ret = -1;
 	}
-
+	OSA_mutexUnlock(&led_lock);
+	
 	if (ret < 0) {
-		//dprintf("failed REC led control!(%d)\n", ste);
+		TRACE_INFO("failed REC led control!(%d)\n", ste);
+	} else {
+		//TRACE_INFO("REC LED set %d success\n", ste);
 	}
-
 	return ret;
 }
 
@@ -449,25 +465,32 @@ int app_leds_rec_ctrl(int ste)
 -----------------------------------------------------------------------------*/
 int app_leds_fw_update_ctrl(void)
 {
-	int i;
-
+	int i, ret=0;
+	
+	OSA_mutexLock(&led_lock);
 	for (i = 0; i < LED_IDX_ALL; i++) {
 		leds_ctrl(i, DEV_LED_OFF);
 	}
 
 	/* GREEN LEDS BLINK */
-	leds_ctrl(LED_IDX_RF_G, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_GPS_G, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_BAT_G1, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_BAT_G2, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_BAT_G3, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_BAT_G4, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_SD_G, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_SD_G1, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_SD_G2, DEV_LED_BLINK);
-	leds_ctrl(LED_IDX_SD_G3, DEV_LED_BLINK);
-
-	return 0;
+	ret = leds_ctrl(LED_IDX_RF_G, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_GPS_G, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_BAT_G1, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_BAT_G2, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_BAT_G3, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_BAT_G4, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_SD_G, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_SD_G1, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_SD_G2, DEV_LED_BLINK);
+	ret |= leds_ctrl(LED_IDX_SD_G3, DEV_LED_BLINK);
+	OSA_mutexUnlock(&led_lock);
+	
+	if (ret < 0) {
+		TRACE_INFO("failed FW Update LED control!\n");
+	} else {
+		TRACE_INFO("FW Update LED success\n");
+	}
+	return ret;
 }
 
 /*----------------------------------------------------------------------------
@@ -477,42 +500,47 @@ int app_leds_fw_update_ctrl(void)
 -----------------------------------------------------------------------------*/
 int app_leds_int_batt_ctrl(int step)
 {
-	int i;
+	int i, ret=0;
 
 	/* don't control for update */
-	if (app_cfg->ste.b.busy) {
-		return 0;
-	}
-
+	if (app_cfg->ste.b.busy)
+		return SOK;
+	
+	OSA_mutexLock(&led_lock);
 	for (i = LED_IDX_BAT_G1; i <= LED_IDX_BAT_G4; i++) {
 		leds_ctrl(i, DEV_LED_OFF);
 	}
 
 	switch(step) {
 	case 0:
-		leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
 		break;
 	case 1:
-		leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
-		leds_ctrl(LED_IDX_BAT_G2, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_BAT_G2, DEV_LED_ON);
 		break;
 	case 2:
-		leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
-		leds_ctrl(LED_IDX_BAT_G2, DEV_LED_ON);
-		leds_ctrl(LED_IDX_BAT_G3, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_BAT_G2, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_BAT_G3, DEV_LED_ON);
 		break;
 	case 3:
-		leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
-		leds_ctrl(LED_IDX_BAT_G2, DEV_LED_ON);
-		leds_ctrl(LED_IDX_BAT_G3, DEV_LED_ON);
-		leds_ctrl(LED_IDX_BAT_G4, DEV_LED_ON);
+		ret = leds_ctrl(LED_IDX_BAT_G1, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_BAT_G2, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_BAT_G3, DEV_LED_ON);
+		ret |= leds_ctrl(LED_IDX_BAT_G4, DEV_LED_ON);
 		break;
 	default:
-		//dprintf("invalid battery led(%d)!\n", step);
 		break;
 	}
-
-	return 0;
+	OSA_mutexUnlock(&led_lock);
+	
+	if (ret < 0) {
+		//TRACE_INFO("failed BATT LED control!\n");
+	} else {
+		//TRACE_INFO("BATT LED set %d step success\n", step);
+	}
+	return ret;
 }
 
 /*----------------------------------------------------------------------------
@@ -528,17 +556,20 @@ int app_leds_backup_state_ctrl(int ste)
 
 	/* don't control for update */
 	if (app_cfg->ste.b.busy)
-		return 0;
+		return SOK;
 
 	if (ste == LED_FTP_ON) {
 		val = DEV_LED_BLINK;
 	}
-
+	
+	OSA_mutexLock(&led_lock);
 	ret = leds_ctrl(LED_IDX_BACKUP, val);
+	OSA_mutexUnlock(&led_lock);
 	if (ret < 0) {
-		//dprintf("invalid backup state led control (%d)\n", ste);
+		//TRACE_INFO("invalid backup state led control (%d)\n", ste);
+	} else {
+		//TRACE_INFO("BACKUP LED set %d success\n", ste);
 	}
-
 	return ret;
 }
 
@@ -546,16 +577,15 @@ int app_leds_backup_state_ctrl(int ste)
   LED system normal 
   *
 -----------------------------------------------------------------------------*/
-int app_leds_sys_normal_ctrl(void)
+void app_leds_sys_normal_ctrl(void)
 {
-    int i;
-    int state ;
-
+    int i,state;
+	
+	OSA_mutexLock(&led_lock);
 	for (i = LED_IDX_CAM1; i < LED_IDX_SD_G; i++)
-	{
 		leds_ctrl(i, DEV_LED_ON);
-	}
-
+	OSA_mutexUnlock(&led_lock);
+	
     if((state = get_write_status()))
 	{
 		switch(state)
@@ -565,7 +595,6 @@ int app_leds_sys_normal_ctrl(void)
 				    app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK) ;
                 else
 				    app_leds_mmc_ctrl(LED_MMC_GREEN_ON) ;
-
 				break ;
 
 			case FILE_STATE_FULL :
@@ -585,52 +614,33 @@ int app_leds_sys_normal_ctrl(void)
 #if SYS_CONFIG_GPS	
     app_leds_gps_ctrl(LED_GPS_OFF) ;
 #endif
-
-    app_file_update_disk_usage() ;
+    app_file_update_disk_usage();
+	OSA_mutexLock(&led_lock);
 	if(app_rec_state())
         leds_ctrl(LED_IDX_REC, DEV_LED_BLINK);
 	else
         leds_ctrl(LED_IDX_REC, DEV_LED_OFF);
-
-/*
- *  move to netmgr.c 
-	if (app_cfg->ste.b.usbnet_run)
-	{
-        g_val = DEV_LED_ON;
-		r_val = DEV_LED_OFF ;
-	    leds_ctrl(LED_IDX_RF_G, g_val) ;
-	    leds_ctrl(LED_IDX_RF_R, r_val) ;
-	}
-	else
-	{
-        g_val = DEV_LED_OFF;
-		r_val = DEV_LED_OFF ;
-	    leds_ctrl(LED_IDX_RF_G, g_val) ;
-	    leds_ctrl(LED_IDX_RF_R, r_val) ;
-	}
-*/
-	return 0 ;
+	OSA_mutexUnlock(&led_lock);
 }
 
 /*----------------------------------------------------------------------------
  LED system error control
  *
 -----------------------------------------------------------------------------*/
-int app_leds_sys_error_ctrl(void)
+void app_leds_sys_error_ctrl(void)
 {
 	int i;
-
-	for (i = 0; i < LED_IDX_ALL; i++) {
+	
+	OSA_mutexLock(&led_lock);
+	for (i = 0; i < LED_IDX_ALL; i++)
 		leds_ctrl(i, DEV_LED_OFF);
-	}
 
 	/* GREEN LEDS BLINK */
 	leds_ctrl(LED_IDX_RF_R, DEV_LED_BLINK);
 	leds_ctrl(LED_IDX_GPS_R, DEV_LED_BLINK);
 	leds_ctrl(LED_IDX_SD_R, DEV_LED_BLINK);
 	leds_ctrl(LED_IDX_REC, DEV_LED_BLINK);
-
-	return 0;
+	OSA_mutexUnlock(&led_lock);
 }
 
 /*----------------------------------------------------------------------------
@@ -639,13 +649,12 @@ int app_leds_sys_error_ctrl(void)
 -----------------------------------------------------------------------------*/
 int app_leds_eth_status_ctrl(int ste)
 {
-
 	int ret = 0;
 	int val = DEV_LED_OFF;
 
 	/* don't control for update */
 	if (app_cfg->ste.b.busy)
-		return 0;
+		return SOK;
 
     if (ste == LED_FTP_ON) {
 		val = DEV_LED_ON;
@@ -653,13 +662,14 @@ int app_leds_eth_status_ctrl(int ste)
     if (ste == LED_FTP_ERROR) {
 		val = DEV_LED_BLINK;
 	}
-
-
+	
+	OSA_mutexLock(&led_lock);
 	ret = leds_ctrl(LED_IDX_ETH_STATUS, val);
+	OSA_mutexUnlock(&led_lock);
 	if (ret < 0) {
-		//dprintf("invalid eth status led control (%d)\n", ste);
+		//TRACE_INFO("invalid eth status led control (%d)\n", ste);
+	} else {
+		//TRACE_INFO("eth status led control (%d) success\n", ste);
 	}
-
 	return ret;
-
 }

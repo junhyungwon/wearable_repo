@@ -63,8 +63,10 @@ static void __buzzer_set__(int en)
 *****************************************************************************/
 void app_buzz_ctrl(int time, int cnt)
 {
-	if(!app_set->sys_info.beep_sound)
-		return ;
+	if(!app_set->sys_info.beep_sound) {
+		TRACE_INFO("Beep Alarm disabled\n");
+		return;
+	}
 
 	OSA_mutexLock(&ibuzz->b_lock);		
 	//# buzzer active
@@ -96,7 +98,7 @@ int app_buzz_init(void)
     OSA_assert(status == OSA_SOK);
 	
 	if ((res = open(BEEP_DRV_BASE_PATH, O_WRONLY)) < 0) {
-		dprintf("Error open %s\n", BEEP_DRV_BASE_PATH);
+		TRACE_INFO("Error open %s\n", BEEP_DRV_BASE_PATH);
 		return -1;
 	}
 	

@@ -309,7 +309,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 	if(cmd == APP_CMD_EVT) // event 
 	{
 		// TODO File Type check and then select close or not 
-//        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
+//        dprintf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
 		/*  warning: suggest parentheses around '&&' within '||' */
 		if ((irec->old_min != ts.tm_min && minute_change) || (irec->rec_evt_cnt > 0))
 	    {
@@ -321,7 +321,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				s = strstr(irec->fname, "/mmc/DCIM/R_") ;
                 if (s != NULL)
 				{
-					printf("normal irec->fname= %s\n",irec->fname) ;
+					dprintf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
@@ -329,12 +329,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
                 }
 				else if(strstr(irec->fname, "/mmc/DCIM/S_"))  // 현재 recording 파일이 SOS file인 경우 
 				{
-					printf("ignore event ..\n") ;
+					dprintf("ignore event ..\n") ;
 				}
 
 				if(strstr(irec->fname, "/mmc/DCIM/E_") && irec->old_min != ts.tm_min && minute_change && irec->old_min != 0)
 				{
-					printf("event irec->fname= %s\n",irec->fname) ;
+					dprintf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current event file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
@@ -382,7 +382,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 	if(cmd == APP_CMD_SOS) // SOS
 	{
 		// TODO File Type check and then select close or not 
-//        printf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
+//        dprintf("irec->old_min = %d ts.tm_min = %d minute_change = %d irec->rec_evt_cnt = %d\n",irec->old_min, ts.tm_min, minute_change, irec->rec_evt_cnt);
 	    if ((irec->old_min != ts.tm_min && minute_change) || (irec->rec_evt_cnt > 0))
 	    {
             if(abs(irec->old_min - ts.tm_min) > irec->rec_min)  
@@ -393,7 +393,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 				s = strstr(irec->fname, "/mmc/DCIM/R_") ;
                 if(s != NULL)  // 현재 recording 파일이 normal file 인 경우 
 				{
-					printf("normal irec->fname= %s\n",irec->fname) ;
+					dprintf("normal irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
@@ -401,7 +401,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
                 }
 				else if(strstr(irec->fname, "/mmc/DCIM/E_"))  // 현재 recording 파일이 event file인 경우 
 				{
-					printf("event irec->fname= %s\n",irec->fname) ;
+					dprintf("event irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
@@ -410,7 +410,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 				if(strstr(irec->fname, "/mmc/DCIM/S_") && irec->old_min != ts.tm_min && minute_change && irec->old_min != 0)
 				{
-					printf("SOS irec->fname= %s\n",irec->fname) ;
+					dprintf("SOS irec->fname= %s\n",irec->fname) ;
         	        avi_file_close(irec->fevt, irec->fname);	//# close current SOS file
 					send_msg(AV_CMD_REC_FLIST, irec->fname);
 				    irec->fevt = NULL ;
@@ -594,7 +594,7 @@ static void *THR_rec_evt(void *prm)
 			    tObj->cmd = 0x00 ;  // 이전 이벤트가 누적 되지 않도록 
 			}
 
-//			printf("irec->rec_evt_cnt = %d cmd = %d\n", irec->rec_evt_cnt, cmd) ;
+//			dprintf("irec->rec_evt_cnt = %d cmd = %d\n", irec->rec_evt_cnt, cmd) ;
 			for (i = 0; i < frame_num; i++)
 			{
 				ifr = &imem->ifr[read_idx];
@@ -734,7 +734,7 @@ static void app_main(void)
 	{
 		cmd = recv_msg();
 		if (cmd < 0) {
-			dprintf("invalid cmd %d\n", cmd);
+			eprintf("invalid cmd %d\n", cmd);
 			continue;
 		}
 		
@@ -755,7 +755,7 @@ static void app_main(void)
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			break;
 		case AV_CMD_REC_GSTOP:
-		printf("AV_CMD_REC_GSTOP\n");
+			dprintf("AV_CMD_REC_GSTOP\n");
 			irec->pre_type = -1 ;
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			break;
@@ -789,7 +789,7 @@ int main(int argc, char **argv)
 	unsigned int gmem_addr;
 	int rc = 0;
 
-//	printf(" [rec process] start...\n");
+//	dprintf(" [rec process] start...\n");
 	
 	/* get gmem address */
 	sscanf(argv[1], "%x", &phy_addr);
@@ -830,7 +830,7 @@ int main(int argc, char **argv)
 		free(enc_buf);
 	}
 	CMEM_exit();
-	printf(" [rec process] process exit!\n");
+	dprintf(" [rec process] process exit!\n");
 	
 	return 0;
 }

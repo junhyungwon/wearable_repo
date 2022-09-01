@@ -90,7 +90,7 @@ static int main_thread_init(void)
 
 	//#--- create thread
 	if(thread_create(tObj, NULL, APP_THREAD_PRI, NULL, NULL) < 0) {
-		dprintf("create thread\n");
+		TRACE_ERR("create thread\n");
 		return -1;
 	}
 
@@ -117,19 +117,19 @@ void getStatus()
 	MC_UINT flag = 0;
 	rv = MC_GetStatus(&flag);
 
-	printf("\n MC_GetStatus rv = 0x%04x (%s), flag = 0x%08x \n", rv, MC_GetErrorString(rv), flag);
+	TRACE_INFO("\n MC_GetStatus rv = 0x%04x (%s), flag = 0x%08x \n", rv, MC_GetErrorString(rv), flag);
 
 	if (flag & MC_STAT_INITIALIZED) {
-		printf(" MC status is normal. (%s) \n", MC_GetErrorString(rv));
+		TRACE_INFO(" MC status is normal. (%s) \n", MC_GetErrorString(rv));
 
 	} else if (flag & MC_STAT_FATAL) {
-	    printf(" MC status is fatal error ! (%s) \n", MC_GetErrorString(rv));
+	    TRACE_ERR(" MC status is fatal error ! (%s) \n", MC_GetErrorString(rv));
 		exit(0);
 	}else { /* (flag & MC_STAT_NONE)*/
-		printf(" MC status is not initialized. (%s) \n", MC_GetErrorString(rv));
+		TRACE_INFO(" MC status is not initialized. (%s) \n", MC_GetErrorString(rv));
 	} 
 
-	printf("\n");
+	TRACE_INFO("\n");
 }
 
 #endif 
@@ -146,11 +146,11 @@ static void app_setdns(void)
 	{
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server1) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		DBG("nameserver %s\n", app_set->net_info.dns_server1);
+		TRACE_INFO("nameserver %s\n", app_set->net_info.dns_server1);
 		
 		sprintf(buffer, "nameserver %s\n", app_set->net_info.dns_server2) ;
 		fwrite(buffer, strlen(buffer), 1, fp);
-		DBG("nameserver %s\n", app_set->net_info.dns_server2);
+		TRACE_INFO("nameserver %s\n", app_set->net_info.dns_server2);
 		
 		sprintf(buffer, "options timeout:1 retry:1\n") ;
 		fwrite(buffer, strlen(buffer), 1, fp);
@@ -173,25 +173,12 @@ static int __mmc_prepare(void)
 		} else 
 			closedir(logdir);
 		sync();		
-		
 		/* mmc prepare 성공 */
 		app_cfg->ste.b.mmc = 1;
 	} else 
 		return -1;
 					
 	return SOK;
-}
-
-static void __syslogd_enable(int en)
-{
-	char command[128]={0,};
-	
-	if (en) {
-		snprintf(command, sizeof(command), "/etc/init.d/logging.sh start");
-	} else {
-		snprintf(command, sizeof(command), "/etc/init.d/logging.sh stop");
-	}
-	system(command);
 }
 
 /*****************************************************************************
@@ -202,36 +189,36 @@ int app_main(void)
 {
     char micom_ver[128] = {0, } ;
 	char sw_ver[128] = {0, } ;
-
+	
 	app_thr_obj *tObj = &app_cfg->mObj;
 	#if !USE_CONSOLE_MENU
 	char cmd, exit=0;
 	#endif
 
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 
 	app_mcu_start();
-    DBG("[APP_MAIN]>>>>> %s_SYSTEM STARTED!! <<<<<\n", FITT360_SW_VER);
-
-    ctrl_get_mcu_version( micom_ver ) ;
-    DBG("[APP_MAIN]SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
+    ctrl_get_mcu_version(micom_ver) ;
+    LOGD("Starting NEXX Application with SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
-    if(app_set->sslvpn_info.ON_OFF)
-	{
-		app_sslvpn_start() ;
+    if(app_set->sslvpn_info.ON_OFF) {
+		app_sslvpn_start();
 	}
 
     if(app_set->rtmp.ON_OFF)
 	{
+		struct sigaction act;
+		
     	app_libuv_start();
 	    app_rtmp_start();
-
-    // disable SIGPIPE
-	sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
-
-    // enable in default
+    	// disable SIGPIPE
+		act.sa_handler = SIG_IGN;
+		sigemptyset(&act.sa_mask);
+		act.sa_flags=0;
+		sigaction(SIGPIPE, &act, NULL);
+    	// enable in default
 	    app_rtmp_enable();
 	}
 
@@ -389,7 +376,7 @@ int app_main(void)
 
 	app_leds_init(); /* set leds off state */
 
-	DBG("[APP_FITT360] app_main() EXIT....\n");
+	LOGD("[APP_FITT360] app_main() EXIT....\n");
 
 	return SOK;
 }
@@ -438,22 +425,17 @@ int app_cfg_init(void)
 int main(int argc, char **argv)
 {
 	unsigned long part_size = 0;
-	int ret, mmc_state;	
-	
-	printf("\n--- FITT360 start (v%s) ---\n", FITT360_SW_VER);
+	int mmc_ste, mcu_ste, led_ste;	
 	
 	/* micom ready 신호 전달 */
-	app_mcu_init();
-	//# LED 초기 상태 설정
+	mcu_ste = app_mcu_init();
 	app_leds_init();
 	app_buzz_init(); //# buzzer mutex init..	
 	app_cfg_init();
 	
 	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
-	ret = ctrl_mmc_check_exfat(&part_size);
-	if (ret == 1) {
+	if (ctrl_mmc_check_exfat(&part_size) == 1)
 		ctrl_mmc_exFAT_format(part_size);
-	}
 	
 	/* SD 카드 fsck 실행 */
 	system("/bin/umount /mmc"); /* umount */
@@ -466,9 +448,27 @@ int main(int argc, char **argv)
 	system("/bin/rm -rf /mmc/*.REC");
 		
 	/* mmc prepare: 쓰기 가능한 지 확인 및 log 디렉토리 생성 */
-	mmc_state = __mmc_prepare();
-	if (mmc_state == SOK) {
-		app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+	mmc_ste = __mmc_prepare();
+	/* After MMC mount, log data be written */
+	if (mmc_ste == SOK) {
+		//# start log system
+		system("/etc/init.d/logging.sh start");
+		/* wait for syslogd init */
+		app_msleep(100);
+		
+		/* checking mcu state */
+		if (mcu_ste < 0)
+			LOGE("Unable to connect with micom!\n"); 
+		else
+			LOGD("Connecting with micom succeed!(IPC ready)\n");	
+		/* Buzzer device log */
+		LOGD("Initializing Buzzer Device success!\n");
+		
+		led_ste = app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
+		if (led_ste < 0)
+			LOGE("Failed to Initialize LED!\n");
+		else
+			LOGD("Initializing LED Device success!\n");
 		/* copy app_fitt.out or full update */
 		app_set_open();
 		ctrl_firmware_update();
@@ -486,35 +486,33 @@ int main(int argc, char **argv)
 		mic_msg_exit();
 		return -1;
 	}
+	LOGD("Initializing NAND Flash success!\n");
 	
 	//----------  SD 카드 ----------------------------------------------
     app_setdns() ;  // set resolv.conf
 	//#--- system init
-	ret = main_thread_init();
-	if (ret < 0) {
+	if (main_thread_init() < 0) {
+		LOGE("Failed to init main thread!. system exit!\n");
 		return -1;
 	}
 	
-	dprintf("app_set->ch[%d].resol = %d\n", MODEL_CH_NUM, app_set->ch[MODEL_CH_NUM].resol) ;
-	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol) ; 
+	TRACE_INFO("Starting Initialize Video Processor: HD %d[CH]---\n", MODEL_CH_NUM);
+	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol); 
 	g_mem_init();
-
-	//# start log system
     app_ipins_init();
-	__syslogd_enable(1);
-	
 	app_gui_init();
 	app_dev_init();
-    app_tsync_init() ;
-
+	LOGD("Initializing Input system(KEY) success!\n");
+	
+    app_tsync_init();
 //    setting_txtbase() ;
-
 	if (app_file_init() == SOK) {
 		app_rec_init();
 	}
 	
 #if SYS_CONFIG_GPS	
 	app_gps_init();
+	LOGD("Initializing GPS system success!\n");
 #endif
 	/* watchdog alive */
 	app_watchdog_init();
@@ -522,13 +520,15 @@ int main(int argc, char **argv)
 	//#--- app main ----------
 	app_main();
 	//#-----------------------
-
 	//#--- system de-init
 	app_watchdog_exit();
 	app_rec_exit();
 	app_file_exit();
 	
-	__syslogd_enable(0);
+	/* stopping syslogd */
+	system("/etc/init.d/logging.sh stop");
+	app_msleep(20);
+	
 	app_mcu_exit();		//# will power off after 200mS
 	app_dev_exit();
 	app_gui_exit();
@@ -548,14 +548,12 @@ int main(int argc, char **argv)
 
 #if SYS_CONFIG_GPS	
 	app_gps_exit();
-#endif	
+#endif
+	app_leds_exit();	
 	g_mem_exit();
 	mcfw_linux_exit();
 	main_thread_exit();
-
 //	app_mcu_exit();		//# will power off after 200mS
-	
-	printf("--- FITT360 end ---\n\n");
-
+	fprintf(stderr, "--- NEXX end ---\n\n");
 	return 0;
 }

@@ -118,7 +118,7 @@ int app_p2p_start(void)
 				}
 			} 
 		}
-		//dprintf("invalid UID...Couln't start p2p service!!\n");
+		//TRACE_INFO("invalid UID...Couln't start p2p service!!\n");
     }
     return -1;
 }
@@ -148,7 +148,7 @@ static void *THR_p2p(void *prm)
     app_thr_obj *tObj = &ip2p->p2pObj;
     int exit = 0, ret = 0, cmd;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
     while (!exit)
@@ -169,7 +169,7 @@ static void *THR_p2p(void *prm)
     }
 
     tObj->active = 0;
-    dprintf("...exit\n");
+    TRACE_INFO("...exit\n");
 
     return NULL;    
 }
@@ -187,10 +187,10 @@ int app_p2p_init(void)
 
     tObj = &ip2p->p2pObj;
     if (thread_create(tObj, THR_p2p, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-        dprintf("create p2p thread\n");
+        TRACE_INFO("create p2p thread\n");
         return EFAIL;
     }   
-    dprintf(".done!\n");
+    TRACE_INFO(".done!\n");
 
     return 0;
 }
@@ -207,5 +207,5 @@ void app_p2p_exit(void)
 
     thread_delete(tObj);
 
-    dprintf(".done!\n") ;
+    TRACE_INFO(".done!\n") ;
 }

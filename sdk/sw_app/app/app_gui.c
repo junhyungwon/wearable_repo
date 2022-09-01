@@ -74,7 +74,7 @@ static void *THR_gui(void *prm)
 	app_thr_obj *tObj = &igui->uObj;
 	int cmd, res, exit=0;
 
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 
 	while (!exit)
@@ -133,7 +133,7 @@ static void *THR_gui(void *prm)
 			{
 				/* PBX not registered.. retry */
 				if (igui->voip_tmr >= CNT_VOIP_REG_CHECK) {
-					dprintf("voip timer expired for registeration.\n");
+					TRACE_INFO("voip timer expired for registeration.\n");
 					igui->voip_tmr = 0; app_cfg->ste.b.voip = 1;
 				} else 
 					igui->voip_tmr++;
@@ -174,7 +174,7 @@ static void *THR_gui(void *prm)
 	}
 
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 
 	return NULL;
 }
@@ -197,7 +197,7 @@ static void *THR_hdmi(void *prm)
 	app_thr_obj *tObj = &igui->hObj;
 	int cmd, exit=0;
 
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 
 	while(!exit)
@@ -225,7 +225,7 @@ static void *THR_hdmi(void *prm)
 	}
 
 	tObj->active = 0;
-	dprintf("...exit\n");
+	TRACE_INFO("...exit\n");
 
 	return NULL;
 }
@@ -243,17 +243,17 @@ int app_gui_init(void)
     igui->tmr_cnt=0; igui->voip_tmr=0; igui->sd_err_tmr=0;
 	tObj = &igui->uObj;
     if (thread_create(tObj, THR_gui, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	dprintf("create gui thread\n");
+    	TRACE_INFO("create gui thread\n");
 		return EFAIL;
     }
 	
     tObj = &igui->hObj;
     if (thread_create(tObj, THR_hdmi, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	dprintf("create chagen video output thread\n");
+    	TRACE_INFO("create chagen video output thread\n");
 		return EFAIL;
     }
 
-    dprintf("... done!\n");
+    TRACE_INFO("... done!\n");
 
     return 0;
 }
@@ -276,5 +276,5 @@ void app_gui_exit(void)
     	app_msleep(20);
     thread_delete(tObj);
 
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 }

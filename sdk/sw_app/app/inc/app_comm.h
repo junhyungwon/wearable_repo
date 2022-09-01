@@ -20,8 +20,8 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define DBG_SYS
-#define USE_SYSLOG  (1) //# 0-> disable syslogd
+#define __DEBUG__
+#define USE_SYSLOGD  (1) //# 0-> disable syslogd
 
 //# error type
 #define SOK			(0)
@@ -64,21 +64,23 @@
 /** teal  \033[36m **/
 /** white \033[37m **/
 
-#ifdef DBG_SYS
-#define dprintf(x,...) do { printf(" [app ] \033[32m%s: \033[0m" x, __func__, ##__VA_ARGS__); fflush(stdout); } while(0)
+#ifdef __DEBUG__
+#define TRACE_INFO(x,...) do { printf(" [app ] \033[32m%s: \033[0m", __func__); printf(x, ##__VA_ARGS__); fflush(stdout); } while(0)
+#define TRACE_ERR(x,...) do { printf(" [app err!] \033[31m%s: \033[0m", __func__); printf(x, ##__VA_ARGS__); fflush(stdout); } while(0)
 
-#	if USE_SYSLOG
-#	define DBG(x...)	do {printf(" [app ] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_INFO, x);} while(0)
-#	define ERR(x...)	do {printf(" [app err!] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_ERR, x);} while(0)
+#	if USE_SYSLOGD
+#	define LOGD(x...)	do {printf(" [app ] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_INFO, x);} while(0)
+#	define LOGE(x...)	do {printf(" [app err!] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_ERR, x);} while(0)
 #	else
-#	define DBG(x...)	do {printf(" [app ] %s: ", __func__); printf(x); fflush(stdout);} while(0)
-#	define ERR(x...)	do {printf(" [app err!] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	define LOGD(x...)	do {printf(" [app ] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	define LOGE(x...)	do {printf(" [app err!] %s: ", __func__); printf(x); fflush(stdout);} while(0)
 #	endif
 #else
-#define dprintf(x,...)
+#define TRACE_INFO(x,...)
+#define TRACE_ERR(x,...)
 
-#	define DBG(x...)	
-#	define ERR(x...)
+#	define LOGD(x...)	
+#	define LOGE(x...)
 #endif
 
 #endif	/* _APP_COMM_H_ */

@@ -144,7 +144,7 @@ int util_disk_info(disk_info_t *idisk, const char *path)
 	struct statvfs s;
 
 	if (statvfs(path, &s) != 0) {
-		dprintf("%s fault\n", path);
+		TRACE_INFO("%s fault\n", path);
 		return -1;
 	}
 
@@ -152,8 +152,8 @@ int util_disk_info(disk_info_t *idisk, const char *path)
 	idisk->avail = (s.f_bavail * (s.f_bsize/KB));
 	idisk->used =  ((s.f_blocks - s.f_bfree) * (s.f_bsize/KB));
 	
-	//dprintf("cur disk block size %ld frag size %ld\n", s.f_bsize, s.f_frsize);
-	//dprintf("cur disk total %ld(KB), avail %ld(KB), used %ld(KB)\n", idisk->total, idisk->avail, idisk->used);
+	//TRACE_INFO("cur disk block size %ld frag size %ld\n", s.f_bsize, s.f_frsize);
+	//TRACE_INFO("cur disk total %ld(KB), avail %ld(KB), used %ld(KB)\n", idisk->total, idisk->avail, idisk->used);
 
     return 0;
 }
@@ -195,7 +195,7 @@ int util_sys_exec(char *arg)
 	numArg = j + 1;
 
 	if (numArg > 10) {
-	    dprintf("The no of arguments are greater than 10" \
+	    TRACE_INFO("The no of arguments are greater than 10" \
 	    		"calling standard system function...\n");
 	    return (system(arg));
 	}
@@ -241,10 +241,10 @@ int util_sys_exec(char *arg)
 	               exArg[5],exArg[6],exArg[7],exArg[8],exArg[9],NULL);
 	        break;
 		}
-        dprintf("execlp failed...\n");
+        TRACE_INFO("execlp failed...\n");
 	    exit(0);
 	} else if(chId < 0) {
-		dprintf("Failed to create child process\n");
+		TRACE_INFO("Failed to create child process\n");
 		return -1;
 	} else {
 		/* parent process */
@@ -253,9 +253,9 @@ int util_sys_exec(char *arg)
 		waitpid(chId, &status, 0);
 		#if 0
 		if (WIFEXITED(status))
-			dprintf("Chiled exited with the code %d\n", WEXITSTATUS(status));
+			TRACE_INFO("Chiled exited with the code %d\n", WEXITSTATUS(status));
 		else
-			dprintf("Child terminated abnormally..\n");
+			TRACE_INFO("Child terminated abnormally..\n");
 		#endif
 	}
 
@@ -496,10 +496,10 @@ int Msg_Init(int msgKey)
 	qid = msgget(key,0);
 	if (qid < 0) {
 		qid = msgget(key,IPC_CREAT|0666);
-		dprintf("Creat queue id: %d\n", qid);
+		TRACE_INFO("Creat queue id: %d\n", qid);
 	}
 
-	dprintf("queue id: %d\n", qid);
+	TRACE_INFO("queue id: %d\n", qid);
 
 	return qid;
 }
@@ -565,7 +565,7 @@ int Msg_Kill(int qid)
 {
 	msgctl(qid, IPC_RMID, NULL);
 
-	dprintf("Kill queue id: %d\n", qid);
+	TRACE_INFO("Kill queue id: %d\n", qid);
 
 	return 0;
 }

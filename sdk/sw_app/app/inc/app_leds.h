@@ -59,7 +59,8 @@ extern "C" {
 /*----------------------------------------------------------------------------
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
-int app_leds_init(void);
+void app_leds_init(void);
+void app_leds_exit(void);
 int app_leds_rf_ctrl(int ste);
 int app_leds_gps_ctrl(int ste);
 int app_leds_mmc_ctrl(int ste);
@@ -68,13 +69,11 @@ int app_leds_rec_ctrl(int ste);
 int app_leds_int_batt_ctrl(int step);
 int app_leds_fw_update_ctrl(void);
 int app_leds_backup_state_ctrl(int ste);
-int app_leds_sys_normal_ctrl(void);
-int app_leds_sys_error_ctrl(void);
+void app_leds_sys_normal_ctrl(void);
+void app_leds_sys_error_ctrl(void);
 int app_leds_eth_status_ctrl(int ste);
 int app_leds_cam_ctrl(int no, int ste);
-
 int app_leds_voip_ctrl(int ste);
-
 
 #ifdef __cplusplus
 }

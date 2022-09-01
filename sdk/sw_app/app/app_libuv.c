@@ -23,28 +23,28 @@ uv_timer_t *timer_empty;
 
 void cpuload_timer_cb (uv_timer_t* timer, int status) {
     if (getArmCpuLoad(&selfLoad, &totalLoad) == SUCCESS) {
-        // fprintf(stderr, "[LIBUV] current cpu load. self : %d, total : %d.\n", *procLoad, *cpuLoad);
+        // TRACE_INFO("[LIBUV] current cpu load. self : %d, total : %d.\n", *procLoad, *cpuLoad);
     } else {
         *cpuLoad = *procLoad = -1;
     }
-    // fprintf(stderr, "[LIBUV] the loop alive.\n");
+    // TRACE_INFO("[LIBUV] the loop alive.\n");
 }
 
 void empty_timer_cb (uv_timer_t* timer, int status) {
-    // fprintf(stderr, "[LIBUV] the loop alive.\n");
+    // TRACE_INFO("[LIBUV] the loop alive.\n");
 }
 
 void uv_thread(void* context){
     //Start loop
     int r = uv_run(loop, UV_RUN_DEFAULT);
-    fprintf(stderr, "[LIBUV] the default event loop exited with %d\n", r);
+    TRACE_INFO("[LIBUV] the default event loop exited with %d\n", r);
     pthread_exit(NULL);
 }
 
 void uv_thread_video(void* context){
     //Start loop for video
     int r = uv_run(loop_video, UV_RUN_DEFAULT);
-    fprintf(stderr, "[LIBUV] the video event loop exited with %d\n", r);
+    TRACE_INFO("[LIBUV] the video event loop exited with %d\n", r);
     pthread_exit(NULL);
 }
 
@@ -54,7 +54,7 @@ void uv_thread_video(void* context){
 *****************************************************************************/
 int app_libuv_start(void)
 {
-    fprintf(stderr, "[LIBUV] start the event loop.\n");
+    TRACE_INFO("[LIBUV] start the event loop.\n");
     uv_loop_init(loop);
     uv_loop_init(loop_video);
 
@@ -80,7 +80,7 @@ int app_libuv_start(void)
 
 void app_libuv_stop(void)
 {
-    fprintf(stderr, "[LIBUV] the loop exited.\n");
+    TRACE_INFO("[LIBUV] the loop exited.\n");
     uv_timer_stop(timer_cpu);
     uv_timer_stop(timer_empty);
     uv_loop_close(loop);
@@ -104,9 +104,8 @@ int getArmCpuLoad(int *procLoad, int *cpuLoad)
 
     /* Read the overall system information */
     fptr = fopen("/proc/stat", "r");
-
     if (fptr == NULL) {
-        ERR("/proc/stat not found. Is the /proc filesystem mounted?\n");
+        LOGE("/proc/stat not found. Is the /proc filesystem mounted?\n");
         return FAILURE;
     }
 
@@ -129,15 +128,14 @@ int getArmCpuLoad(int *procLoad, int *cpuLoad)
 
     /* Read the current process information */
     fptr = fopen("/proc/self/stat", "r");
-
     if (fptr == NULL) {
-        ERR("/proc/self/stat not found. Is the /proc filesystem mounted?\n");
+        LOGE("/proc/self/stat not found. Is the /proc filesystem mounted?\n");
         return FAILURE;
     }
 
     if (fscanf(fptr, "%*d %*s %*s %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %lu "
                      "%lu %lu %lu", &uTime, &sTime, &cuTime, &csTime) != 4) {
-        ERR("Failed to get process load information.\n");
+        LOGE("Failed to get process load information.\n");
         fclose(fptr);
         return FAILURE;
     }

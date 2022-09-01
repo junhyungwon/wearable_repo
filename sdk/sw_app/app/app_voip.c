@@ -186,7 +186,7 @@ static void __set_default_account(const char *login, const char *domain, const c
 		/* write account */
 		f = fopen(file, "w");
 		if (!f) {
-			dprintf("can't create conf %s file\n", file);
+			TRACE_INFO("can't create conf %s file\n", file);
 			return;
 		}
 		
@@ -206,17 +206,17 @@ static void __call_register_handler(void)
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
-		DBG("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
+		LOGD("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
 				ivoip->svr_port, ivoip->passwd);
 	} else {
-		DBG("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
+		LOGD("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
 				ivoip->svr_port, ivoip->passwd);
 	}
 }
 
 static void __call_unregister_handler(void)
 {
-	dprintf("baresip user unregister start.....\n");
+	TRACE_INFO("baresip user unregister start.....\n");
 	
 	send_msg(SIPC_CMD_SIP_UNREGISTER_UA, NULL);
 }
@@ -231,11 +231,11 @@ static void __call_event_handler(void)
 	int action = ivoip->st.call_ste;
 	
 	if (!ivoip->st.call_reg) {
-		dprintf("not registered yet!!\n");
+		TRACE_INFO("not registered yet!!\n");
 		return;
 	}
 	
-	DBG("baresip state is %s, send btn...\n", __action_str(action));
+	LOGD("baresip state is %s, send btn...\n", __action_str(action));
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
 		/* 전화를 건다 */
@@ -291,7 +291,7 @@ static void __call_status_handler(void)
 	int is_reg = ivoip->st.call_reg;
 	int action = ivoip->st.call_ste;
 	
-	DBG("baresip response is %s\n", __action_str(action));
+	LOGD("baresip response is %s\n", __action_str(action));
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
 	{
@@ -348,7 +348,7 @@ static void *THR_voip_main(void *prm)
 	app_thr_obj *tObj = &ivoip->eObj;
 	int exit = 0, cmd;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -369,7 +369,7 @@ static void *THR_voip_main(void *prm)
 	}
 	
 	tObj->active = 0;
-	dprintf("exit...\n");
+	TRACE_INFO("exit...\n");
 
 	return NULL;
 }
@@ -384,7 +384,7 @@ static void *THR_voip_recv_msg(void *prm)
 	app_thr_obj *tObj = &ivoip->rObj;
 	int exit = 0, cmd;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	//# message queue
@@ -394,7 +394,7 @@ static void *THR_voip_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			dprintf("failed to receive voip process msg!\n");
+			TRACE_INFO("failed to receive voip process msg!\n");
 			continue;
 		}
 		
@@ -420,7 +420,7 @@ static void *THR_voip_recv_msg(void *prm)
 	tObj->active = 0;
 	
 	/* kill process ?? */
-	dprintf("exit...\n");
+	TRACE_INFO("exit...\n");
 
 	return NULL;
 }
@@ -445,7 +445,7 @@ int app_voip_init(void)
 	ivoip->snd_level = SND_LEVEL_HIGH;
 	/* execute baresip */
     if (stat(SIPC_BIN_STR, &sb) != 0) {
-		dprintf("can't access baresip execute file!\n");
+		TRACE_INFO("can't access baresip execute file!\n");
         return -1;
 	}
 	system(SIPC_CMD_STR);
@@ -453,13 +453,13 @@ int app_voip_init(void)
 	//# create recv msg thread.
 	tObj = &ivoip->rObj;
 	if (thread_create(tObj, THR_voip_recv_msg, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	dprintf("create SIP Client Receive Msg thread\n");
+    	TRACE_INFO("create SIP Client Receive Msg thread\n");
 		return EFAIL;
     }
 
 	tObj = &ivoip->eObj;
 	if (thread_create(tObj, THR_voip_main, APP_THREAD_PRI, NULL, __FILENAME__) < 0) {
-    	dprintf("create SIP Client event poll thread\n");
+    	TRACE_INFO("create SIP Client event poll thread\n");
 		return EFAIL;
     }
 
@@ -467,7 +467,7 @@ int app_voip_init(void)
 	status = OSA_mutexCreate(&ivoip->lock);
 	OSA_assert(status == OSA_SOK);
 	
-    dprintf("... done!\n");
+    TRACE_INFO("... done!\n");
 
     return 0;
 }
@@ -491,7 +491,7 @@ void app_voip_exit(void)
 	send_msg(SIPC_CMD_SIP_EXIT, NULL);
 	OSA_mutexDelete(&(ivoip->lock));
 	
-	dprintf("... done!\n");
+	TRACE_INFO("... done!\n");
 }
 
 /*****************************************************************************
@@ -543,7 +543,7 @@ void app_voip_stop(void)
 void app_voip_event_noty(void)
 {
 	if (!ivoip->st.call_reg) {
-		dprintf("Not registered!\n");
+		TRACE_INFO("Not registered!\n");
 		return;
 	}
 	__call_send_cmd(APP_CMD_NOTY);
@@ -557,7 +557,7 @@ void app_voip_event_noty(void)
 void app_voip_event_call_close(void)
 {
     if (!ivoip->st.call_reg) {
-        dprintf("Not registered!\n");
+        TRACE_INFO("Not registered!\n");
         return;
     }
     __call_send_cmd(APP_CMD_CALL_CLOSE);

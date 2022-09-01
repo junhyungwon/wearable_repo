@@ -91,7 +91,7 @@ static int recv_msg(void)
 	
 	//# blocking
 	if (Msg_Rsv(inetmgr->qid, NETMGR_MSG_TYPE_TO_MAIN, (void *)&msg, sizeof(to_netmgr_main_msg_t)) < 0) {
-		dprintf("invalid netmgr message (cmd = %x)\n", msg.cmd);
+		TRACE_INFO("invalid netmgr message (cmd = %x)\n", msg.cmd);
 		return -1;
 	}
 	
@@ -150,7 +150,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 			info->freq = 0;
 			info->stealth = 0;
 			
-			dprintf("Wi-Fi SOFTAP start (NAME=%s).........\n", info->ssid);
+			TRACE_INFO("Wi-Fi SOFTAP start (NAME=%s).........\n", info->ssid);
 			send_msg(NETMGR_CMD_WLAN_SOFTAP_START);
         } else {
 			/* Wi-Fi Client Mode */    
@@ -204,7 +204,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 				   ) {
 					/* 기본값이면 Wi-Fi 실행 안 함 : Notice 할 방법은 없다...... */
 				} else {
-					dprintf("Wi-Fi STATION start.........\n");
+					TRACE_INFO("Wi-Fi STATION start.........\n");
 					send_msg(NETMGR_CMD_WLAN_CLIENT_START);
 					break;
 				}
@@ -212,7 +212,7 @@ static void __netmgr_wlan_event_handler(int ste, int mode)
 		}
 		
 	} else {
-		dprintf("Wi-Fi %s STOP.........\n", mode?"AP":"CLIENT");
+		TRACE_INFO("Wi-Fi %s STOP.........\n", mode?"AP":"CLIENT");
 		app_cfg->ste.b.usbnet_ready = 0;
 		/* Wi-Fi 장치가 제거되었을 때 필요한 루틴을 수행 */
 		if (mode) {
@@ -310,7 +310,7 @@ static void __netmgr_dev_link_status_handler(void)
 	int link   = inetmgr->link_status;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		dprintf("invalid netdevice --> %s\n", netdev_str(device));
+		TRACE_INFO("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -371,7 +371,7 @@ static void __netmgr_dev_ip_status_handler(void)
 	int device = inetmgr->device;
 	
 	if (device < NETMGR_DEV_TYPE_WIFI || device > NETMGR_DEV_TYPE_CRADLE) {
-		dprintf("invalid netdevice --> %s\n", netdev_str(device));
+		TRACE_INFO("invalid netdevice --> %s\n", netdev_str(device));
 		return;
 	}
 	
@@ -381,9 +381,9 @@ static void __netmgr_dev_ip_status_handler(void)
 
 #if 0	
 	//# for debugging
-	dprintf("[Dev %s] Get dhcp ip address is %s\n", netdev_str(device), info->ip_address);
-	dprintf("[Dev %s] Get dhcp mask address is %s\n", netdev_str(device), info->mask_address);
-	dprintf("[Dev %s] Get dhcp gateway address is %s\n", netdev_str(device), info->gw_address);
+	TRACE_INFO("[Dev %s] Get dhcp ip address is %s\n", netdev_str(device), info->ip_address);
+	TRACE_INFO("[Dev %s] Get dhcp mask address is %s\n", netdev_str(device), info->mask_address);
+	TRACE_INFO("[Dev %s] Get dhcp gateway address is %s\n", netdev_str(device), info->gw_address);
 #endif
 	
 	/* cradle network device를 제외하고 나머지는 동일한 루틴에서 처리 */
@@ -413,9 +413,9 @@ static void __netmgr_dev_ip_status_handler(void)
 static void __netmgr_rssi_status_handler(int level)
 {
 	if (level < 0) {
-		DBG("Wi-Fi RSSI is minus, connection closed...\n");
+		LOGD("Wi-Fi RSSI is minus, connection closed...\n");
 	} else {					
-		//dprintf("current rssi level is (%d/100)\n", level);	
+		//TRACE_INFO("current rssi level is (%d/100)\n", level);	
 		/* level 값을 확인 후 추가적인 작업이 필요할 경우를 위해서....*/
 	}		
 }
@@ -429,19 +429,19 @@ static void __netmgr_start(void)
 	inetmgr->shmid = shmget((key_t)NETMGR_SHM_KEY, 0, 0);
 	if (inetmgr->shmid == -1) {
 		/* debugging 목적 */
-		dprintf("shared memory for netmgr is not created!!\n");
+		TRACE_INFO("shared memory for netmgr is not created!!\n");
 	}
 
 	//# get shared memory
 	inetmgr->sbuf = (unsigned char *)shmat(inetmgr->shmid, NULL, 0);
 	if (inetmgr->sbuf == NULL) {
 		/* debugging 목적 */
-		dprintf("shared memory for netmgr is NULL!!!");
+		TRACE_INFO("shared memory for netmgr is NULL!!!");
 	}
 	
 	//#--- create msg send thread
 	if (thread_create(tObj, THR_netmgr_send_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_INFO("create thread\n");
 	}
 
 	send_msg(NETMGR_CMD_PROG_START);
@@ -456,7 +456,7 @@ static void *THR_netmgr_send_msg(void *prm)
 	app_thr_obj *tObj = &inetmgr->sObj;
 	int exit = 0, cmd;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -507,7 +507,7 @@ static void *THR_netmgr_send_msg(void *prm)
 	}
 	
 	tObj->active = 0;
-	dprintf("exit\n");
+	TRACE_INFO("exit\n");
 	
 	return NULL;
 }
@@ -520,7 +520,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 {
 	int exit = 0, cmd;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	//# message queue
 	inetmgr->qid = Msg_Init(NETMGR_MSG_KEY);
 	
@@ -528,31 +528,31 @@ static void *THR_netmgr_recv_msg(void *prm)
 		//# wait cmd
 		cmd = recv_msg();
 		if (cmd < 0) {
-			dprintf("failed to receive netmgr process msg!\n");
+			TRACE_INFO("failed to receive netmgr process msg!\n");
 			continue;
 		}
 		
 		switch (cmd) {
 		case NETMGR_CMD_READY:
 			__netmgr_start();
-			dprintf("netmgr starting....!\n");
+			TRACE_INFO("netmgr starting....!\n");
 			break;
 			
 		case NETMGR_CMD_DEV_DETECT:
 			__netmgr_hotplug_noty();
-			DBG("[APP_NET] netdevice type %s, state %s\n", 
+			LOGD("[APP_NET] netdevice type %s, state %s\n", 
 						netdev_str(inetmgr->device), inetmgr->insert?"insert":"remove");
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
 			__netmgr_dev_link_status_handler();
-			DBG("[APP_NET] device type %s, link status 0x%x\n", 
+			LOGD("[APP_NET] device type %s, link status 0x%x\n", 
 						netdev_str(inetmgr->device), inetmgr->link_status);
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
 			__netmgr_dev_ip_status_handler();
-			DBG("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
+			LOGD("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
@@ -562,7 +562,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
-			DBG("[APP_NET] netmgr exit!\n");
+			LOGD("[APP_NET] netmgr exit!\n");
 			break;
 		default:
 			break;	
@@ -570,7 +570,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 	}
 	
 	Msg_Kill(inetmgr->qid);
-	dprintf("exit...\n");
+	TRACE_INFO("exit...\n");
 		
 	return NULL;
 }
@@ -586,7 +586,7 @@ static void *THR_netmgr_wlan_thr(void *prm)
 	int poll_time;
 	int wait_poll = 0;
 	
-	dprintf("enter...\n");
+	TRACE_INFO("enter...\n");
 	tObj->active = 1;
 	
 	while (!exit)
@@ -602,19 +602,19 @@ static void *THR_netmgr_wlan_thr(void *prm)
 		while (!wait_poll)
 		{
 			if (tObj->cmd == APP_CMD_EXIT || tObj->cmd == APP_CMD_STOP) {
-				dprintf("....exit!!\n");
+				TRACE_INFO("....exit!!\n");
 				break;
 			}
 			
 			/* 카메라가 감지되면 station mode */
 			if ((app_cfg->vid_count > 0) && (poll_time < 10)) {
 				__netmgr_wlan_event_handler(1, 0); /* station mode */
-				dprintf("wi-fi station mode start!\n");
+				TRACE_INFO("wi-fi station mode start!\n");
 				break;
 			} 
 			else if ((app_cfg->vid_count == 0) && (poll_time >= 10)) {
 				__netmgr_wlan_event_handler(1, 1); /* AP mode */
-				dprintf("wi-fi AP mode start!\n");
+				TRACE_INFO("wi-fi AP mode start!\n");
 				break;
 			}
 			poll_time++;
@@ -623,7 +623,7 @@ static void *THR_netmgr_wlan_thr(void *prm)
 	}
 	
 	tObj->active = 0;
-	dprintf("exit\n");
+	TRACE_INFO("exit\n");
 	
 	return NULL;
 }
@@ -648,7 +648,7 @@ int app_netmgr_init(void)
 	//# --create wlan event thread
 	tObj = &inetmgr->wObj;
 	if(thread_create(tObj, THR_netmgr_wlan_thr, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_INFO("create thread\n");
 		return EFAIL;
 	}
 	#endif
@@ -656,11 +656,11 @@ int app_netmgr_init(void)
 	//#--- create msg receive thread
 	tObj = &inetmgr->rObj;
 	if(thread_create(tObj, THR_netmgr_recv_msg, APP_THREAD_PRI, tObj, __FILENAME__) < 0) {
-		dprintf("create thread\n");
+		TRACE_INFO("create thread\n");
 		return EFAIL;
 	}
 	
-	dprintf("... exit!\n");
+	TRACE_INFO("... exit!\n");
 
 	return SOK;
 }
@@ -692,7 +692,7 @@ int app_netmgr_exit(void)
 //	tObj = &inetmgr->rObj;
 //	thread_delete(tObj);
 	
-	dprintf("...exit!\n");
+	TRACE_INFO("...exit!\n");
 
 	return SOK;
 }
