@@ -16,8 +16,6 @@
 /* ANSI Color MAGENTA */
 #define aprintf(...) do { printf(" [VOIP ] %s:", __func__); printf(__VA_ARGS__);} while(0)
 
-#define sysprint(...) do { printf(" [VOIP LOG] %s: ", __func__); printf(__VA_ARGS__); syslog(LOG_INFO, __VA_ARGS__);} while(0)
-
 #define MAX_PENDING_SEM_CNT		(1)
 
 #define OSA_THR_PRI_MAX          sched_get_priority_max(SCHED_FIFO)

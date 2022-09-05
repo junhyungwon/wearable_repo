@@ -97,29 +97,27 @@ void  ssl_info_callback(const SSL *s, int where, int ret)
 	else
 		writeString="undefined";
 
-	fprintf(stderr, "======== writeString = [%s]\n", writeString);
+	TRACE_INFO("======== writeString = [%s]\n", writeString);
 
 	if (where & SSL_CB_LOOP)
 	{
-		fprintf(stderr, "======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+		TRACE_INFO("======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
 				writeString, SSL_state_string_long(s));
 	}
 	else if (where & SSL_CB_ALERT)
 	{
 		if (ret == 0)
 		{
-			fprintf(stderr,"======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+			TRACE_INFO("======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
 					writeString, SSL_state_string_long(s));
 		}
 		else if (ret < 0)
 		{
-			fprintf(stderr,"======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
+			TRACE_INFO("======== writeString = [%s], SSL_state_string_long(s) = [%s]\n",
 					writeString, SSL_state_string_long(s));
 		}
 	}
 }
-
-
 
 static int ftpRecvResponse(int sock, char * buf, int length)
 {
@@ -158,7 +156,7 @@ static int ftpRecvResponse(int sock, char * buf, int length)
 		}
 	}
 
-	printf("%d,%s\n", len, buf); //print response to the screen
+	TRACE_INFO("%d,%s\n", len, buf); //print response to the screen
 
 	return 0;
 }
@@ -178,7 +176,7 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
     }
 
 	strcat(buf,"\r\n");
-	printf("ftpNewCmd *%s", buf); //print the cmd to the screen
+	TRACE_INFO("ftpNewCmd *%s", buf); //print the cmd to the screen
 
     getsockopt(sock, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
     if(valopt)
@@ -553,7 +551,7 @@ static int ftp_send_file(int sd, char *filename)
 					{
 				        if (strncmp(buf, "226", 3) == 0) 
 					    {
-					        printf("%s transfer completed.\n", source_fname);
+					        TRACE_INFO("%s transfer completed.\n", source_fname);
 
 							if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
 								return -1 ;
@@ -569,7 +567,7 @@ static int ftp_send_file(int sd, char *filename)
 									{		
 										if (strncmp(buf, "250", 3) == 0)
 										{
-											printf("Rename from %s to %s \n",source_fname, dest_fname) ;
+											TRACE_INFO("Rename from %s to %s \n",source_fname, dest_fname) ;
 										    return 0 ;
 										}
 										else if(strncmp(buf, "553", 3) == 0)
@@ -739,7 +737,7 @@ static int ftp_close(int sd)
 	ftpRecvResponse(sd, buf, 0);
 
 	if (strncmp(buf, "221", 3) == 0) {
-		printf("FTP OK.\n");
+		TRACE_INFO("FTP OK.\n");
 	}
 
 #if defined(USE_SSL)
@@ -817,7 +815,7 @@ void SSL_Create(int sock_type)
 		if(!SSL_CTX_check_private_key(iftp->lsslContext))
 		{
 			ERR_print_errors_fp(stderr) ;
-			fprintf(stderr, "Private key does not match the cerificate public key\n") ;
+			TRACE_INFO("Private key does not match the cerificate public key\n") ;
 			exit(5) ;
 		}
 	
@@ -847,7 +845,7 @@ void SSL_Create(int sock_type)
 		{
 			ftp_dbg("SSL_connect.. FAIL ret = %d\n",ret);
 			int error = SSL_get_error(iftp->lsslHandle, ret) ;
-			printf("SSL_connect error no = %d\n",error) ;
+			TRACE_INFO("SSL_connect error no = %d\n",error) ;
 			ERR_print_errors_fp(stderr);
 			SSL_free(iftp->lsslHandle) ;
 			SSL_CTX_free(iftp->lsslContext) ;
@@ -856,9 +854,9 @@ void SSL_Create(int sock_type)
 		else
 		{
 			ftp_dbg("SSL_connect.. OK");
-			printf("SSL_connect.. OK\n") ;
-			printf("SSL connection using %s\n", SSL_get_cipher(iftp->lsslHandle)) ;
-			printf("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->lsslHandle)));
+			TRACE_INFO("SSL_connect.. OK\n") ;
+			TRACE_INFO("SSL connection using %s\n", SSL_get_cipher(iftp->lsslHandle)) ;
+			TRACE_INFO("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->lsslHandle)));
 
 			SSL_CTX_set_cipher_list(iftp->lsslContext, SSL_get_cipher(iftp->lsslHandle)) ;
 
@@ -867,19 +865,19 @@ void SSL_Create(int sock_type)
 			if(server_cert != NULL)
 			{
 				if(SSL_get_verify_result(iftp->lsslHandle) == X509_V_OK)
-					printf("client verification with SSL_get_verify_result() succeeded. \n") ;
+					TRACE_INFO("client verification with SSL_get_verify_result() succeeded. \n") ;
 	            else
-					printf("client verification with SSL_get_verify_result() failed.\n") ;
+					TRACE_INFO("client verification with SSL_get_verify_result() failed.\n") ;
 
-				printf("Server cerificate:\n") ;
+				TRACE_INFO("Server cerificate:\n") ;
 
 				str = X509_NAME_oneline(X509_get_subject_name (server_cert), 0, 0) ;
-				printf("\t subject: %s\n",str) ;
+				TRACE_INFO("\t subject: %s\n",str) ;
 
 				OPENSSL_free(str) ;
 
 				str = X509_NAME_oneline(X509_get_issuer_name (server_cert), 0, 0) ;
-				printf("\t issuer: %s\n",str) ;
+				TRACE_INFO("\t issuer: %s\n",str) ;
 			
 				OPENSSL_free(str) ;
 
@@ -891,7 +889,7 @@ void SSL_Create(int sock_type)
 			}
 			else
 			{
-				printf("Server certificated fail..\n") ;
+				TRACE_INFO("Server certificated fail..\n") ;
 				SSL_free(iftp->lsslHandle) ;
 			}
 		}
@@ -922,7 +920,7 @@ void SSL_Create(int sock_type)
 		if(!SSL_CTX_check_private_key(iftp->dsslContext))
 		{
 			ERR_print_errors_fp(stderr) ;
-			fprintf(stderr, "Private key does not match the cerificate public key\n") ;
+			TRACE_INFO("Private key does not match the cerificate public key\n") ;
 			exit(5) ;
 		}
 	
@@ -950,15 +948,15 @@ void SSL_Create(int sock_type)
 		{
 			ftp_dbg("SSL_connect.. FAIL ret = %d\n",ret);
 			int error = SSL_get_error(iftp->dsslHandle, ret) ;
-			printf("SSL_connect error no = %d\n",error) ;
+			TRACE_INFO("SSL_connect error no = %d\n",error) ;
 			ERR_print_errors_fp(stderr);
 		}
 		else
 		{
 			ftp_dbg("SSL_connect.. OK");
-			printf("SSL_connect.. OK\n") ;
-			printf("SSL connection using %s\n", SSL_get_cipher(iftp->dsslHandle)) ;
-			printf("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->dsslHandle)));
+			TRACE_INFO("SSL_connect.. OK\n") ;
+			TRACE_INFO("SSL connection using %s\n", SSL_get_cipher(iftp->dsslHandle)) ;
+			TRACE_INFO("SSL connection using %s\n", SSL_CIPHER_get_name(SSL_get_current_cipher(iftp->dsslHandle)));
 
 			SSL_CTX_set_cipher_list(iftp->dsslContext, SSL_get_cipher(iftp->dsslHandle)) ;
 
@@ -967,19 +965,19 @@ void SSL_Create(int sock_type)
 			if(server_cert != NULL)
 			{
 				if(SSL_get_verify_result(iftp->dsslHandle) == X509_V_OK)
-					printf("client verification with SSL_get_verify_result() succeeded. \n") ;
+					TRACE_INFO("client verification with SSL_get_verify_result() succeeded. \n") ;
 	            else
-					printf("client verification with SSL_get_verify_result() failed.\n") ;
+					TRACE_INFO("client verification with SSL_get_verify_result() failed.\n") ;
 
-				printf("Server cerificate:\n") ;
+				TRACE_INFO("Server cerificate:\n") ;
 
 				str = X509_NAME_oneline(X509_get_subject_name (server_cert), 0, 0) ;
-				printf("\t subject: %s\n",str) ;
+				TRACE_INFO("\t subject: %s\n",str) ;
 
 				OPENSSL_free(str) ;
 
 				str = X509_NAME_oneline(X509_get_issuer_name (server_cert), 0, 0) ;
-				printf("\t issuer: %s\n",str) ;
+				TRACE_INFO("\t issuer: %s\n",str) ;
 			
 				OPENSSL_free(str) ;
 
@@ -990,7 +988,7 @@ void SSL_Create(int sock_type)
 
 			}
 			else
-				printf("Server certificated fail..\n") ;
+				TRACE_INFO("Server certificated fail..\n") ;
 		}
 	}		
 }
@@ -1349,14 +1347,14 @@ int fota_proc()
 		{
 			iftp->fota_state = FOTA_STATE_RECEIVE_FIRM ;
 		    ftp_dbg("receive fota_configure file\n");
-			LOGD("Receive Done Fota configure file !!!\n");
+			LOGD("[main] Receive Done Fota configure file !!!\n");
 		}
 		else
 		{
 			iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
 			ftp_close(iftp->lsdFtp) ;
 			ftp_dbg("%s Receive Fail \n",app_set->fota_info.confname) ;
-			LOGD("Did not receive Fota configure file !!!\n");
+			LOGD("[main] Did not receive Fota configure file !!!\n");
 		}
 
 		sprintf(cmd, "/mmc/%s",app_set->fota_info.confname) ;
@@ -1375,7 +1373,7 @@ int fota_proc()
 			{
 				iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
 				ftp_dbg("Receive Remote firmware file\n");
-				LOGD("Receive Done Remote Firmware file !!!\n");
+				LOGD("[main] Receive Done Remote Firmware file !!!\n");
 				retval = 1 ;
 			}
 			else
@@ -1389,22 +1387,20 @@ int fota_proc()
 				}
 
 				iftp->fota_state = FOTA_STATE_RECEIVE_DONE ;
-				LOGD("Receive Fail Remote Firmware file !!!\n");
+				LOGD("[main] Receive Fail Remote Firmware file !!!\n");
 			}
 
 		}
         else  // Same version or older version
 		{
-
 			sprintf(cmd, "/mmc/%s",app_set->fota_info.confname) ;
 			if(access(cmd, F_OK) == 0)
 			{
 				remove(cmd);
 				ftp_dbg("%s Receive Fail, Delete unperfect file \n",app_set->fota_info.confname) ;
 			}
-			LOGD("tried fw update with Same version or older verion firmware !!!\n");
+			LOGD("[main] tried fw update with Same version or older verion firmware !!!\n");
 		}
-
 
 		// rm confile, firmware file
 		ftp_close(iftp->lsdFtp) ;
@@ -1414,7 +1410,6 @@ int fota_proc()
 
     return retval ;
 }
-
 
 static void ftp_send(void)
 {

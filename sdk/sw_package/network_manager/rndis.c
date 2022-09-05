@@ -184,7 +184,7 @@ static void *THR_rndis_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
-				dprintf("rndis stopping.....\n");
+				LOGD("[network] rndis connection closed!\n");
 				netmgr_udhcpc_stop(RNDIS_DEVNAME(irndis->iftype));
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_INACTIVE);
 				quit = 1;
@@ -214,10 +214,10 @@ static void *THR_rndis_main(void *prm)
 				netmgr_get_net_info(RNDIS_DEVNAME(irndis->iftype), NULL, irndis->ip, irndis->mask, irndis->gw);
 				if (!strcmp(irndis->ip, "0.0.0.0")) {
 					/* dhcp로부터 IP 할당이 안된 경우 */
-					dprintf("couln't get dhcp ip address!\n");	
+					LOGE("[network] Can't connect to DHCP server for rndis!\n");
 					irndis->stage = __STAGE_RNDIS_ERROR_STOP;
 				} else {
-					dprintf("rndis ip is %s\n", irndis->ip);
+					LOGD("[network] Connect to DHCP server succeed for rndis. allocated ip ->%s\n", irndis->ip);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_RNDIS, NETMGR_DEV_ACTIVE);
 					irndis->stage = __STAGE_RNDIS_DHCP_NOTY;	
 				}
@@ -231,6 +231,7 @@ static void *THR_rndis_main(void *prm)
 						irndis->first = 1;
 					}
 					//dprintf("active rndis %d(%s)\n", irndis->iftype, RNDIS_DEVNAME(irndis->iftype));
+					LOGD("[network] Initializing rndis Device succeed!\n");	
 					netmgr_udhcpc_start(RNDIS_DEVNAME(irndis->iftype));
 					irndis->stage = __STAGE_RNDIS_DHCP_VERIFY;
 					irndis->rndis_timer = 0;

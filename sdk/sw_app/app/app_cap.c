@@ -208,7 +208,7 @@ static void proc_vid_cap(void)
 					gettimeofday(&ltime, NULL) ;
 					ifr->t_sec = ltime.tv_sec ;
 					ifr->t_msec = ltime.tv_usec / 1000 ;
-//                    printf("ifr->t_sec = %d ifr->t_msec = %ld \n",ifr->t_sec, ifr->t_msec) ;
+//                    TRACE_INFO("ifr->t_sec = %d ifr->t_msec = %ld \n",ifr->t_sec, ifr->t_msec) ;
 
 					app_rtmp_publish_video(ifr);
 
@@ -233,7 +233,7 @@ static void proc_vid_cap(void)
                         {
                             fclose(fp) ;
                             first = 2 ;
-                            printf("fclose......\n") ;
+                            TRACE_INFO("fclose......\n") ;
                         }
                     }
 #endif
@@ -244,7 +244,7 @@ static void proc_vid_cap(void)
                 else if(pFullBuf->codecType == (VCODEC_TYPE_E)IVIDEO_MJPEG || pFullBuf->codecType == 0 || ifr->ch == JPEG_CH_NUM)
                 {
 					FILE *jpeg_f = NULL;
-//                    printf("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
+//                    TRACE_INFO("Jpeg...... channel = %d pFullBuf->codecType = %d is_key = %d\n",pFullBuf->chnId, pFullBuf->codecType, ifr->is_key) ;          
 
                     jpeg_f = fopen("/tmp/fitt360.jpeg","w") ;
                     if (jpeg_f != NULL)
@@ -552,7 +552,7 @@ int app_cap_start(void)
 	Vcap_start();
 	Vdis_start();
 	Venc_start();
-	LOGD("Initializing Video Capture System succeed!\n");
+	LOGD("[main] Initializing Video Capture System succeed!\n");
 	
 	cap_enc_late_init();
 

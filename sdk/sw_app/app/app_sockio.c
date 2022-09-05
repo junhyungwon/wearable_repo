@@ -172,7 +172,7 @@ static Void *THR_ddns(Void *prm)
             {
                 if(interval <= cmp_interval )
                 {   
-                    printf("interval = %d cmp_interval = %d\n",interval, cmp_interval) ;                
+                    TRACE_INFO("interval = %d cmp_interval = %d\n",interval, cmp_interval) ;                
                     system(stop_buffer) ;
                     system(start_buffer) ;
                     cmp_interval = 0 ;

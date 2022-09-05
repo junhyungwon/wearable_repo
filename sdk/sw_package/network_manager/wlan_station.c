@@ -781,7 +781,7 @@ static void *THR_wlan_cli_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
-				//dprintf("wlan station stopping!!!!\n");
+				LOGD("[network] Wi-Fi Client connection closed!\n");
 				__cli_stop(cli_dev_name);
 				netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_INACTIVE);
 				quit = 1;
@@ -828,10 +828,11 @@ static void *THR_wlan_cli_main(void *prm)
 				netmgr_get_net_info(cli_dev_name, NULL, i_cli->ip, i_cli->mask, i_cli->gw);
 				if (!strcmp(i_cli->ip, "0.0.0.0")) {
 					/* dhcp로부터 IP 할당이 안된 경우 */
-					sysprint("couln't get ip from %s!\n", i_cli->item.ssid);
+					LOGE("[network] Can't connect to DHCP server for Wi-Fi!\n");
 					i_cli->stage = __STAGE_CLI_ERROR_STOP;
 				} else {
-					sysprint("ip address of %s is %s\n", i_cli->item.ssid, i_cli->ip);
+					LOGD("[network] Connect to DHCP server succeed for Wi-Fi(%s). allocated ip ->%s\n", 
+								i_cli->item.ssid, i_cli->ip);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_WIFI, NETMGR_DEV_ACTIVE);
 					i_cli->stage = __STAGE_CLI_DHCP_NOTY;
 				}
@@ -889,7 +890,8 @@ static void *THR_wlan_cli_main(void *prm)
 				res = __is_cli_active(cli_dev_name);
 				if (res) {
 					i_cli->stage = __STAGE_CLI_CHECK_ESSID;
-					i_cli->cli_timer = 0;	
+					i_cli->cli_timer = 0;
+					LOGD("[network] Initializing Wi-Fi Device succeed!\n");	
 				}
 				//dprintf("__cli wait for active!\n");
 				break;
@@ -992,9 +994,9 @@ int netmgr_wlan_cli_start(void)
 		strcpy(i_cli->ip, info->ip_address);
 		strcpy(i_cli->mask, info->mask_address);
 		strcpy(i_cli->gw, info->gw_address);
-		sysprint("Wi-Fi client ip address set static!\n");
+		dprintf("Wi-Fi client ip address set static!\n");
 	} else {
-		sysprint("Wi-Fi client ip address set dhcp!\n");
+		dprintf("Wi-Fi client ip address set dhcp!\n");
 	}
 	
 //	netmgr_net_link_up(cli_dev_name);

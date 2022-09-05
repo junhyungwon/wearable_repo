@@ -105,7 +105,7 @@ int getArmCpuLoad(int *procLoad, int *cpuLoad)
     /* Read the overall system information */
     fptr = fopen("/proc/stat", "r");
     if (fptr == NULL) {
-        LOGE("/proc/stat not found. Is the /proc filesystem mounted?\n");
+        LOGE("[main] /proc/stat not found. Is the /proc filesystem mounted?\n");
         return FAILURE;
     }
 
@@ -129,13 +129,13 @@ int getArmCpuLoad(int *procLoad, int *cpuLoad)
     /* Read the current process information */
     fptr = fopen("/proc/self/stat", "r");
     if (fptr == NULL) {
-        LOGE("/proc/self/stat not found. Is the /proc filesystem mounted?\n");
+        LOGE("[main] /proc/self/stat not found. Is the /proc filesystem mounted?\n");
         return FAILURE;
     }
 
     if (fscanf(fptr, "%*d %*s %*s %*d %*d %*d %*d %*d %*d %*d %*d %*d %*d %lu "
                      "%lu %lu %lu", &uTime, &sTime, &cuTime, &csTime) != 4) {
-        LOGE("Failed to get process load information.\n");
+        LOGE("[main] Failed to get process load information.\n");
         fclose(fptr);
         return FAILURE;
     }

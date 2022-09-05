@@ -125,7 +125,7 @@ int app_rtsptx_start(void)
 #ifdef RTSP_ENCRYPT
     rname = randomString(5) ;
     strcpy(streamSet.stream_name, rname) ;
-    printf("RTSP STREAMER address name = %s\n",rname) ;
+    TRACE_INFO("RTSP STREAMER address name = %s\n",rname) ;
 
     free(rname) ;
 #else
@@ -136,6 +136,7 @@ int app_rtsptx_start(void)
         eprintf_rt("rtsptx stream init failed!!!\n");
         return -1;
     }
+	
 	if(app_set->account_info.ON_OFF)
 	{	
 #if defined(NEXXONE)
@@ -158,7 +159,6 @@ int app_rtsptx_start(void)
 		else
 		{
 	        sprintf(rtsp_cmd, "%s %d \"%s\" \"%s\" %d %d %s &",RTSP_STREAMER, app_set->net_info.rtsp_port, app_set->account_info.rtsp_userid, app_set->account_info.rtsp_passwd, APP_SND_CAPT_SRATE, app_set->account_info.enctype, dev_model ) ;
-
 		}
 	}
 	else
@@ -167,10 +167,12 @@ int app_rtsptx_start(void)
     }
 
     fd = popen(rtsp_cmd, "r");
-	if(fd == NULL) {
+	if (fd == NULL) {
+		TRACE_ERR("Failed to execute wis-streamer!!\n");
 		return -1;
 	}
 	pclose(fd);
+	LOGD("Starting wis-streamer for AV streaming succeed!!\n");
 
 	app_cfg->ste.b.rtsptx = 1 ;
     return 0;

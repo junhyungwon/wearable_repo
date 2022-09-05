@@ -69,7 +69,6 @@ typedef enum{
 	CFG_MAX
 } app_cfg_e;
 
-
 const char* const RTSP_DEFAULT_ID   = "admin";
 const char* const RTSP_DEFAULT_PW   = "admin";
 const char* const P2P_DEFAULT_ID    = "linkflow";
@@ -120,9 +119,10 @@ static void set_uid()
 	    if(!strncmp(uid, "LFS", 3))
 	    {
             sprintf(app_set->sys_info.uid, "%s", uid); 
-
+			LOGD("P2P UID Registration succeed!!")
 	        sprintf(app_set->voip.userid, "%d%d%s", 'A', 1, &uid[12]);
-			if(!strcmp(app_set->voip.peerid, ""))
+			LOGD("VOIP User ID Registration succeed!!")
+			if(!strcmp(app_set->voip.peerid, "")) 
                 sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
 
         }
@@ -321,7 +321,7 @@ int GetSvrMacAddress(char *mac_address)
 
     if((readlen = fread(mac_address, sizeof(char), 17, fd)) > 0)
     {
-        printf("Mac:%s len:%d\n", mac_address, readlen) ;
+        TRACE_INFO("Mac:%s len:%d\n", mac_address, readlen) ;
     }
 
     fclose(fd);
@@ -347,7 +347,7 @@ int DefaultGetMac(char *mac_address)
     }
     else
     {
-        printf( "Fatal error: Failed to get local host's MAC address\n" );
+        TRACE_ERR( "Fatal error: Failed to get local host's MAC address\n" );
     }
     return -1 ;
 }
@@ -1062,7 +1062,7 @@ static int cfg_read(int is_mmc, char* cfg_path)
 
 	if (app_set_size != saved_cfg_size) {
 		//# cfg is different
-		LOGD(" #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
+		LOGD("[main] #### [%s] DIFF CFG SIZE - app_set:%d / read:%d !!! ####\n", 
 										cfg_path, app_set_size, saved_cfg_size);
 		return EFAIL;
 	} else {
@@ -1089,7 +1089,7 @@ static void app_set_default(int default_type)
 
 	int ich=0, channels = 0, i = 0;
 	
-	LOGD(" [CFG] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
+	LOGD("[main] - SET DEFAULT CFG... !!! MODEL_NAME=%s\n", MODEL_NAME);
 
     if (app_set == NULL);
         app_set = (app_set_t *)&app_sys_set;
@@ -1370,7 +1370,7 @@ int app_set_open(void)
 	
 	// data 검사..cfg_read 아래부분에 있는거 복붙..
 	if(EFAIL != ret){
-		LOGD("Reading configuration file succeed!\n");
+		LOGD("[main] Reading configuration file succeed!\n");
 	    cfg_param_check_nexx(app_set);
 		app_set_version_read();
 	}
@@ -1393,7 +1393,7 @@ int app_set_open(void)
 	}
 	
 	if (ret == EFAIL) {
-	    LOGE("Failed to read configuration file from storage!\n");
+	    LOGE("[main] Failed to read configuration file from storage!\n");
 		app_set_default(FULL_RESET);
 	}
 	

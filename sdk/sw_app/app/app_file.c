@@ -583,7 +583,7 @@ static void *THR_file_mng(void *prm)
 				}
 			} else {
 				if (capacity_full) {
-					printf("REC_OVERWRITE Capacity_full\n") ;
+					TRACE_INFO("REC_OVERWRITE Capacity_full\n") ;
 					if(app_rec_state() == 2) // SOS 
 						app_sos_send_stop(ON) ; // send sos stop packet to client
 
@@ -639,7 +639,7 @@ static void *THR_file_led_mng(void *prm)
 				f_cycle = 0;
 				if (!once_over_beep) {
 					if (app_rec_state()) {
-						printf("@@@@@@@@@@@@@@@@@@FILE_STATE_OVERWRITE@@@@@@@@@@@@@@@@@@@\n");				
+						TRACE_INFO("@@@@@@@@@@@@@@@@@@FILE_STATE_OVERWRITE@@@@@@@@@@@@@@@@@@@\n");				
 						app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
 						app_buzz_ctrl(80, 1);
 						once_over_beep = 1;
@@ -654,7 +654,7 @@ static void *THR_file_led_mng(void *prm)
 				}
 			} else if (state == FILE_STATE_FULL) {
 				if (f_cycle >= CNT_BEEP_FULL) {
-					printf("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");
+					TRACE_INFO("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");
 					f_cycle = 0;
 					app_buzz_ctrl(80, 1);
 				} else 
@@ -668,7 +668,7 @@ static void *THR_file_led_mng(void *prm)
 				//# normal record state.
 				f_cycle = 0;
 				if (!once_normal_led) {
-					printf("@@@@@@@@@@@@@@@@@@FILE_STATE_NORMAL@@@@@@@@@@@@@@@@@@@\n");								
+					TRACE_INFO("@@@@@@@@@@@@@@@@@@FILE_STATE_NORMAL@@@@@@@@@@@@@@@@@@@\n");								
 					app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 					once_normal_led = 1;
 				}
@@ -716,11 +716,11 @@ int app_file_init(void)
 	if (res < 0) {
 		status = __create_list((const char *)ifile->rec_root, AVI_EXT, &storageList, num_of_files);
 		if (status == EFAIL) 	{
-			LOGE("Failed to create list of files!!\n");
+			LOGE("[main] Failed to create list of files!!\n");
 			return status;
 		}
 	} else {
-		LOGD("Generation list of files from SD card done!\n");
+		LOGD("[main] Generation list of files from SD card succeed!\n");
 	}
 	
 	_check_threshold_size(ifile);

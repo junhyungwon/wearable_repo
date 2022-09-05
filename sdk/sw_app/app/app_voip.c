@@ -206,10 +206,10 @@ static void __call_register_handler(void)
 			ivoip->snd_level, ivoip->dev_num,  ivoip->server, ivoip->passwd, ivoip->stun_svr);
 	
 	if (ivoip->enable_stun) {
-		LOGD("STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
+		LOGD("[main] STUN URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->stun_svr, 
 				ivoip->svr_port, ivoip->passwd);
 	} else {
-		LOGD("URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
+		LOGD("[main] URL %s@%s:%d (pw: %s)\n", ivoip->dev_num, ivoip->server, 
 				ivoip->svr_port, ivoip->passwd);
 	}
 }
@@ -235,7 +235,7 @@ static void __call_event_handler(void)
 		return;
 	}
 	
-	LOGD("baresip state is %s, send btn...\n", __action_str(action));
+	LOGD("[main] baresip state is %s, send btn...\n", __action_str(action));
 	switch (action) {
 	case SIPC_STATE_CALL_IDLE:
 		/* 전화를 건다 */
@@ -291,7 +291,7 @@ static void __call_status_handler(void)
 	int is_reg = ivoip->st.call_reg;
 	int action = ivoip->st.call_ste;
 	
-	LOGD("baresip response is %s\n", __action_str(action));
+	LOGD("[main] baresip response is %s\n", __action_str(action));
 	/* BLINK 상태 확인이 필요함 */
 	if (is_reg) 
 	{

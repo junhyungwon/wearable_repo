@@ -156,7 +156,7 @@ static int que_create(void)
     }
 #endif
 
-    printf(" [app] %s done!\n", __func__);
+    TRACE_INFO("...done!\n");
 
     return 0;
 }
@@ -196,7 +196,7 @@ static int que_delete(void)
     LQ_DestroyQueue(&Jpeg_Queue);
 #endif
 
-    printf(" [app] %s done!\n", __func__);
+    TRACE_INFO(" [app] ...done!\n");
 
     return 0 ;
 }
@@ -253,7 +253,7 @@ int Sock_create()
 
                 if(connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
                 {
-//                    LOGD("Manager Server_Connect ... FAIL. !!\n");
+//                    LOGD("[main] Manager Server_Connect ... FAIL. !!\n");
 #ifdef FMS_DEBUG
 //            DEBUG_PRI("fms tcp connect error!\n") ;
 #endif
@@ -262,7 +262,7 @@ int Sock_create()
                 }
                 else
                 {
-                    LOGD("Manager Server_Connect ... SUCCESS. !!\n");
+                    LOGD("[main] Manager Server_Connect ... SUCCESS. !!\n");
 #ifdef FMS_DEBUG
 //            DEBUG_PRI("fms TCP Connect Ok..\n") ;
 #endif
@@ -273,7 +273,7 @@ int Sock_create()
 #ifdef FMS_DEBUG
                 DEBUG_PRI("socket open error\n") ;
 #endif
-//                LOGD(MSG_LOG_WRITE, "Manager Socket open Error... !!\n");
+//                LOGD("[main] Manager Socket open Error... !!\n");
                 sock = SOCK_ERROR ;
             }
         }
@@ -487,7 +487,7 @@ static void *THR_sock(void *prm)
 #ifdef FMS_DEBUG
                     DEBUG_PRI("ReadSocketData CONNECTION TIMEOUT\n") ;
 #endif
-                    LOGD( "Tcp Connect Timeout... !! on RECEIVER\n");
+                    LOGD("[main] Tcp Connect Timeout... !! on RECEIVER\n");
 
                     close(ifms->sockfd) ;
                     break ;

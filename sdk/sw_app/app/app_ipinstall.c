@@ -206,8 +206,8 @@ void change_info(char *data)
 //    change = 1 ;
 
 	GetSvrMacAddress(Macaddr) ;
-	printf("Changeinfo->macaddr = %s\n",Changeinfo->macaddr) ;
-    printf("Macaddr = %s\n",Macaddr) ;
+	TRACE_INFO("Changeinfo->macaddr = %s\n",Changeinfo->macaddr) ;
+    TRACE_INFO("Macaddr = %s\n",Macaddr) ;
 
 //	if(!strcmp(Changeinfo->macaddr, Macaddr))
 	if(!strncmp(Changeinfo->macaddr, Macaddr, MAX_CHAR_16 + 1))
@@ -412,11 +412,10 @@ static void *THR_ipinstall(void *prm)
 #ifdef IPINSTALL_DEBUG
                     DEBUG_PRI("ReadSocketData CONNECTION TIMEOUT\n") ;
 #endif
-                    LOGD("Tcp Connect Timeout... !! on RECEIVER\n");
+                    LOGD("[main] Tcp Connect Timeout... !! on RECEIVER\n");
 
                     close(ipins->rsock) ;
                     break ;
-
 
                     default :
 #ifdef IPINSTALL_DEBUG
