@@ -734,7 +734,7 @@ static void app_main(void)
 	{
 		cmd = recv_msg();
 		if (cmd < 0) {
-			eprintf("invalid cmd %d\n", cmd);
+			LOGE("[avi] invalid message command %d.!!\n", cmd);
 			continue;
 		}
 		
@@ -742,6 +742,7 @@ static void app_main(void)
 		
 		switch(cmd) {
 		case AV_CMD_REC_START:
+			LOGD("[avi] Starting avi record process!!\n");
 			init_rec_cfg();
 			event_send(tObj, APP_CMD_START, 0, 0);
 			break;
@@ -761,6 +762,7 @@ static void app_main(void)
 			break;
 		case AV_CMD_REC_EXIT:
 			/* recording process 종료 */
+			LOGD("[avi] Exit avi record process!!\n");
 			event_send(tObj, APP_CMD_STOP, 0, 0);
 			exit = 1;
 			break;
@@ -788,17 +790,15 @@ int main(int argc, char **argv)
 	unsigned int phy_addr;
 	unsigned int gmem_addr;
 	int rc = 0;
-
-//	dprintf(" [rec process] start...\n");
 	
 	/* get gmem address */
 	sscanf(argv[1], "%x", &phy_addr);
-	
 	if (CMEM_init() < 0) {
 		eprintf("CMEM init error\n");
 		return -1;
 	}
 	
+	dprintf("Starting process with physical address %x!\n", phy_addr);
 	gmem_addr = (unsigned int)mmap(0,	// Preferred start address
 				G_MEM_SIZE,				// Length to be mapped
 				PROT_WRITE | PROT_READ,	// Read and write access
@@ -818,10 +818,11 @@ int main(int argc, char **argv)
 	/* G.711로 Encoding 시 16bit -> 8bit로 변경됨 */
 	enc_buf = (char *)malloc(MURAW_BUFF_SZ);
 	if (enc_buf == NULL) {
-		eprintf("ulaw buffer malloc\n");
+		eprintf("Failed to allocation ulaw buffer!\n");
+		CMEM_exit();
 		return 0;
 	}
-		
+	
 	//#--- main --------------
 	app_main();
 	//#-----------------------
@@ -830,7 +831,7 @@ int main(int argc, char **argv)
 		free(enc_buf);
 	}
 	CMEM_exit();
-	dprintf(" [rec process] process exit!\n");
+	eprintf(" [rec process] process exit!\n");
 	
 	return 0;
 }

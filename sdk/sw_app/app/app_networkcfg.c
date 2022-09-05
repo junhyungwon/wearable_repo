@@ -167,7 +167,7 @@ NETWORKCFG *read_cfg_file(char *filename)
 /*
         if((fd = fopen(filename,"w")) == NULL)
         {
-            printf("fitt360_settings file open error\n") ;
+            TRACE_INFO("fitt360_settings file open error\n") ;
         }
         else
         {
@@ -337,13 +337,13 @@ NETWORKCFG *read_cfg_file(char *filename)
                                 }
                                 else
                                 {
-                                    printf( "Fatal error: Failed to get local host's MAC address\n" );
+                                    TRACE_INFO( "Fatal error: Failed to get local host's MAC address\n" );
                                 }
                             }
                             else
                                 sprintf(app_set->sys_info.deviceId, "%s", strval) ;
 
-                            printf("app_set->sys_info.deviceId = %s\n",app_set->sys_info.deviceId) ;
+                            TRACE_INFO("app_set->sys_info.deviceId = %s\n",app_set->sys_info.deviceId) ;
                         }
 
                         i++ ;

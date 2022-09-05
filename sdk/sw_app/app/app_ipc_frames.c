@@ -167,7 +167,6 @@ void *dataProcessFxn(void *prm)
 	{
 		//# wait notify
 		//OSA_semWait(&tObj->recordNotifySem, OSA_TIMEOUT_FOREVER);
-
 		status = OSA_queGet(&tObj->bufQFullBufs, (Int32 *)&frame_que, OSA_TIMEOUT_NONE);
 		if(status != OSA_EFAIL)
 		{
@@ -179,7 +178,7 @@ void *dataProcessFxn(void *prm)
 				}
 			#else
 			if(!(skipcnt%(15*20)))
-				printf("%s: addr 0x%p(%dx%d)\n", __func__, &frame_que->buf, frame_que->width, frame_que->height);
+				TRACE_INFO("%s: addr 0x%p(%dx%d)\n", __func__, &frame_que->buf, frame_que->width, frame_que->height);
 			#endif
 
 			//TRACE_INFO("frame_que 0x%x\n", frame_que);

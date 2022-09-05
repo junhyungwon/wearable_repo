@@ -97,12 +97,12 @@ static snd_pcm_t * __snd_capt_dev_init(int ch, int rate, int period_frames)
     if (snd_pcm_hw_params(handle, hw_params) < 0)
 		goto out;
 
-#if 1	
+#if 0	
 	/* returned approximate maximum buffer size in frames  */
 	snd_pcm_hw_params_get_period_size(hw_params, &period_size, 0);
 	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
-	printf(" ALSA Period Size %ld\n", period_size);
-	printf(" ALSA Buffer Size %ld\n", buffer_size);
+	TRACE_INFO(" ALSA Period Size %ld\n", period_size);
+	TRACE_INFO(" ALSA Buffer Size %ld\n", buffer_size);
 #endif
 
 	/* prepare for audio device */
@@ -171,12 +171,12 @@ static snd_pcm_t * __snd_dummy_dev_init(int ch, int rate, int period_frames)
     if (snd_pcm_hw_params(handle, hw_params) < 0)
 		goto out;
 
-#if 1	
+#if 0	
 	/* returned approximate maximum buffer size in frames  */
 	snd_pcm_hw_params_get_period_size(hw_params, &period_size, 0);
 	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
-	printf(" ALSA Period Size %ld\n", period_size);
-	printf(" ALSA Buffer Size %ld\n", buffer_size);
+	TRACE_INFO(" ALSA Period Size %ld\n", period_size);
+	TRACE_INFO(" ALSA Buffer Size %ld\n", buffer_size);
 #endif
 
 	/* prepare for audio device */
@@ -240,7 +240,7 @@ static void *THR_snd_capt_main(void *prm)
 		TRACE_ERR("Failed to init sound record device!\n");
 		return NULL;
 	}
-	LOGD("Initializing audio mic device success!\n");
+	LOGD("[main] Initializing MIC sound device success!\n");
 	
 	/* 
 	 * alloc buffer (byte 단위로 변경해야 한다)
@@ -353,7 +353,7 @@ static void *THR_snd_capt_main(void *prm)
 				struct timeval tv;
 				gettimeofday(&tv, NULL) ;
 				long timestamp = tv.tv_sec + tv.tv_usec*1000 ;
-//				printf("app_cfg->ste.b.rtsptx = %d app_cfg->stream_enable_audio = %d\n",app_cfg->ste.b.rtsptx, app_cfg->stream_enable_audio) ;
+//				TRACE_INFO("app_cfg->ste.b.rtsptx = %d app_cfg->stream_enable_audio = %d\n",app_cfg->ste.b.rtsptx, app_cfg->stream_enable_audio) ;
 				if(app_cfg->ste.b.rtsptx && app_cfg->stream_enable_audio)
 					app_rtsptx_write((void *)ifr->addr, ifr->offset, ifr->b_size, 0,  2, timestamp);
 			}

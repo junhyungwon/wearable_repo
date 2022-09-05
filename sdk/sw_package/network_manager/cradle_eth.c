@@ -117,7 +117,7 @@ static void *THR_cradle_eth_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
-				dprintf("cradle ether stopping....\n");
+				LOGD("[network] ethernet connection closed!\n");
 				if (icradle->dhcp == 1) {
 					netmgr_udhcpc_stop(NETMGR_CRADLE_ETH_DEVNAME);
 				}
@@ -142,11 +142,11 @@ static void *THR_cradle_eth_main(void *prm)
 				netmgr_get_net_info(NETMGR_CRADLE_ETH_DEVNAME, NULL, icradle->ip, icradle->mask, icradle->gw);
 				if (!strcmp(icradle->ip, "0.0.0.0")) {
 					/* dhcp로부터 IP 할당이 안된 경우 */
-					dprintf("couln't get DHCP ip address!\n");	
+					LOGE("[network] Can't connect to DHCP server for ethernet!\n");
 					icradle->stage = __STAGE_CRADLE_ETH_WAIT_ACTIVE;
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_INACTIVE);
 				} else {
-					dprintf("cradle DHCP ip ==> %s\n", icradle->ip);
+					LOGD("[network] Connect to DHCP server succeed for ethernet. allocated ip ->%s\n", icradle->ip);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);
 					icradle->stage = __STAGE_CRADLE_ETH_DHCP_NOTY;	
 				}
@@ -155,10 +155,11 @@ static void *THR_cradle_eth_main(void *prm)
 			case __STAGE_CRADLE_ETH_WAIT_ACTIVE:
 				res = __is_ether_active();
 				if (res) {
+					LOGD("[network] Initializing ethernet Device succeed!\n");	
 					/* 케이블이 연결되고 IP 할당이 안된 경우 */
 					if (icradle->dhcp == 0) {
 						/* static ip alloc */
-						dprintf("cradle: set static ip %s\n", icradle->ip);
+						LOGD("[network] Set static ip %s for ethernet\n", icradle->ip);
 						netmgr_set_ip_static(NETMGR_CRADLE_ETH_DEVNAME, icradle->ip, 
 									icradle->mask, icradle->gw);
 						netmgr_event_hub_link_status(NETMGR_DEV_TYPE_CRADLE, NETMGR_DEV_ACTIVE);			

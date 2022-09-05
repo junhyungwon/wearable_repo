@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include "app_main.h"
+#include "app_comm.h"
 #include "app_web.h"
 #include "app_set.h"
 
@@ -32,7 +33,7 @@ int deleteSelfSignedCertificate()
 	unlink(PATH_HTTPS_SS_CRT);
 	unlink(PATH_HTTPS_SS_PEM);
 
-	printf("Deleted SSC files\n");
+	TRACE_INFO("Deleted SSC files\n");
 	
 	return 0;
 }
@@ -50,7 +51,7 @@ int createSelfSignedCertificate(char *path_key, char* path_crt)
 	|| strlen(app_set->net_info.ssc_C) > 4 
 	|| strlen(app_set->net_info.ssc_O)  == 0 
 	|| strlen(app_set->net_info.ssc_CN) == 0 ) {
-		printf("Make default Self Signed Certificate\n");
+		TRACE_INFO("Make default Self Signed Certificate\n");
 
 		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
 		              -keyout %s -out %s -subj \'/C=KR/O=%s/CN=%s/\' -config /etc/ssl/openssl.cnf",
@@ -68,28 +69,28 @@ int createSelfSignedCertificate(char *path_key, char* path_crt)
 		app_set->net_info.ssc_CN);
 	}
 
-	printf("Self Signed Certificate, cmd:%s\n", cmd);
+	TRACE_INFO("Self Signed Certificate, cmd:%s\n", cmd);
 	system(cmd);
 
 	if( access(path_crt, R_OK) != 0 || access(path_key, R_OK) != 0) {
-		printf("Failed to create Self Signed Certificate\n");
+		TRACE_INFO("Failed to create Self Signed Certificate\n");
 		return -1;
 	}
 
-	printf("Succeed, create Self Signed Certificate\n");
+	TRACE_INFO("Succeed, create Self Signed Certificate\n");
 
 	// make pem file for lighttpd
 	sprintf(cmd, "cat %s %s > %s", path_key, path_crt, PATH_HTTPS_SS_PEM);
-	printf("Make PEM file, cmd:%s\n", cmd);
+	TRACE_INFO("Make PEM file, cmd:%s\n", cmd);
 	system(cmd);
 
 	if( access(PATH_HTTPS_SS_PEM,  R_OK) != 0 ) {
 
-		printf("Failed to create PEM file\n");
+		TRACE_INFO("Failed to create PEM file\n");
 		return -1;
 	}
 
-	printf("Succeed, create SS PEM\n");
+	TRACE_INFO("Succeed, create SS PEM\n");
 
 	return 0;
 }
@@ -251,7 +252,7 @@ int app_web_start_server()
 #else
 	system(cmd);
 #endif
-	
+	LOGD("WEB Server starts successfully.\n");
 	return 0;
 }
 
@@ -267,7 +268,7 @@ int app_web_restart_server()
 #else
 	system(cmd);
 #endif
-
+	LOGD("WEB Server restarts successfully.\n");
 	return 0;
 }
 
@@ -307,7 +308,7 @@ int app_web_https_create_ssc()
 	int ret = pthread_create(&tid,NULL,(void *(*)(void *))__start_routine_create_ssc, NULL);
 	if (ret != 0)
 	{
-		printf("failed pthread_create. ret = %d\r\n", ret);
+		TRACE_INFO("failed pthread_create. ret = %d\r\n", ret);
 		return ret;
 	}else 
 		pthread_detach(tid);

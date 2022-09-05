@@ -33,8 +33,25 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define eprintf(x...) do { printf(" [AVREC ERR!] %s: ", __func__); printf(x); } while(0)
-#define dprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); } while(0)
+#define __DEBUG__
+#define USE_SYSLOGD  (1) //# 0-> disable syslogd
+
+#ifdef __DEBUG__
+#define eprintf(x...) do { printf(" [AVREC ERR!] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#define dprintf(x...) do { printf(" [AVREC ] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	if USE_SYSLOGD
+#	define LOGD(x...)	do {printf(" [AVREC ] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_INFO, x);} while(0)
+#	define LOGE(x...)	do {printf(" [AVREC err!] %s: ", __func__); printf(x); fflush(stdout); syslog(LOG_ERR, x);} while(0)
+#	else
+#	define LOGD(x...)	do {printf(" [AVREC ] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	define LOGE(x...)	do {printf(" [AVREC err!] %s: ", __func__); printf(x); fflush(stdout);} while(0)
+#	endif
+#else
+#define eprintf(x...)
+#define dprintf(x...)
+#define LOGD(x...)
+#define LOGE(x...)
+#endif /* #ifdef __DEBUG__ */
 
 #ifndef TRUE
 #define TRUE 		1

@@ -114,6 +114,7 @@ static void *THR_usb2eth_main(void *prm)
 			
 			cmd = tObj->cmd;
 			if (cmd == APP_CMD_STOP) {
+				LOGD("[network] usb2ethernet connection closed!\n");
 				if (iusb2eth->dhcp == 1) 
 					netmgr_udhcpc_stop(NETMGR_USB2ETH_DEVNAME);
 				
@@ -143,10 +144,10 @@ static void *THR_usb2eth_main(void *prm)
 				 netmgr_get_net_info(NETMGR_USB2ETH_DEVNAME, NULL, iusb2eth->ip, iusb2eth->mask, iusb2eth->gw);
 				if (!strcmp(iusb2eth->ip, "0.0.0.0")) {
 					/* dhcp로부터 IP 할당이 안된 경우 */
-					dprintf("couln't get usb2ether dhcp ip address!\n");
+					LOGE("[network] Can't connect to DHCP server for usb2ethernet!\n");
 					iusb2eth->stage = __STAGE_USB2ETH_ERROR_STOP;
 				} else {
-					dprintf("usb2ether dhcp ip is %s\n", iusb2eth->ip);
+					LOGD("[network] Connect to DHCP server succeed for usb2ethernet. allocated ip ->%s\n", iusb2eth->ip);
 					netmgr_event_hub_link_status(NETMGR_DEV_TYPE_USB2ETHER, NETMGR_DEV_ACTIVE);
 					iusb2eth->stage = __STAGE_USB2ETH_DHCP_NOTY;
 				}
@@ -155,6 +156,7 @@ static void *THR_usb2eth_main(void *prm)
 			case __STAGE_USB2ETH_WAIT_ACTIVE:
 				res = __is_usb2ether_active(NETMGR_USB2ETH_DEVNAME);
 				if (res) {
+					LOGD("[network] Initializing usb2ethernet Device succeed!\n");	
 					/* 케이블이 연결되고 IP 할당이 안된 경우 */
 					if (iusb2eth->dhcp == 0) {
 						/* static ip alloc */

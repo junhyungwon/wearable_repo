@@ -54,7 +54,7 @@ typedef struct {
     app_thr_obj callObj ;
 	int status ;
 	long sec ;
-    OSA_MutexHndl       lock;
+    OSA_MutexHndl lock;
 } app_call_t ;
 
 static app_call_t t_call;

@@ -99,9 +99,9 @@ static void *THR_watchdog(void *prm)
 				if (wd_detect == WD_LOG_CNT) {
 					memset(wd_name, 0, sizeof(wd_name));
 					get_wd_name(wd_name);
-					sprintf(msg, " !!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
+					sprintf(msg, "!!! WATCHDOG DETECTED flag[%x,%x]: %s !!!", app_cfg->wd_flags, 
 								app_cfg->wd_tot, wd_name);
-					LOGD("%s\n", msg);
+					LOGE("[main] %s\n", msg);
 					sync();
 				}
 			}

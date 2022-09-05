@@ -98,6 +98,7 @@ static void *THR_cradle_poll(void *prm)
 			/* set attach event */
 			if (app_cfg->ste.bit.cradle == 0) {
 				app_cfg->ste.bit.cradle = 1;
+				LOGD("[network] ethernet device inserted!\n");
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_CRADLE, 1);
 			} 
 			else {
@@ -108,6 +109,7 @@ static void *THR_cradle_poll(void *prm)
 						app_cfg->ste.bit.cradle = 0;
 						app_cfg->ste.bit.eth0   = 0;
 						/* ethernet stop */
+						LOGD("[network] ethernet cable unplugged!\n");
 						netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_CRADLE, 0);
 					}
 				}
@@ -118,6 +120,7 @@ static void *THR_cradle_poll(void *prm)
 			{
 				app_cfg->ste.bit.cradle = 0;
 				app_cfg->ste.bit.eth0   = 0;
+				LOGD("[network] ethernet device removed!\n");
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_CRADLE, 0);
 			}
 		}

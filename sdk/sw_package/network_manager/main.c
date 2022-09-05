@@ -127,6 +127,7 @@ static void app_main(void)
 	
 	tObj->active = 1;
 	
+	LOGD("[network] Starting network manager process!!\n");
 	/* mapp와 message를 송/수신..*/
 	netmgr_event_hub_init(); //# 위치 변경하면 안됨.
 	

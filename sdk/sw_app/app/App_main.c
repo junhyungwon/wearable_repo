@@ -200,7 +200,7 @@ int app_main(void)
 
 	app_mcu_start();
     ctrl_get_mcu_version(micom_ver) ;
-    LOGD("Starting NEXX Application with SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
+    LOGD("[main] Starting NEXX Application with SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
     if(app_set->sslvpn_info.ON_OFF) {
@@ -285,7 +285,7 @@ int app_main(void)
 	time(&tm1) ;
 	localtime_r(&tm1, &ts) ;
 
-    printf("%d-%d-%d-%d%d%d\n",	ts.tm_year + 1900, ts.tm_mon + 1, ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec) ;
+    TRACE_INFO("%d-%d-%d-%d%d%d\n",	ts.tm_year + 1900, ts.tm_mon + 1, ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec) ;
 
     MC_RV rv = MC_OK ;
     MC_VERSION mcVer;
@@ -376,8 +376,7 @@ int app_main(void)
 
 	app_leds_init(); /* set leds off state */
 
-	LOGD("[APP_FITT360] app_main() EXIT....\n");
-
+	TRACE_INFO("--------- app_main() EXIT....\n");
 	return SOK;
 }
 
@@ -458,17 +457,17 @@ int main(int argc, char **argv)
 		
 		/* checking mcu state */
 		if (mcu_ste < 0)
-			LOGE("Unable to connect with micom!\n"); 
+			LOGE("[main] Unable to connect with micom!\n"); 
 		else
-			LOGD("Connecting with micom succeed!(IPC ready)\n");	
+			LOGD("[main] Connecting with micom succeed!(IPC ready)\n");	
 		/* Buzzer device log */
-		LOGD("Initializing Buzzer Device success!\n");
+		LOGD("[main] Initializing Buzzer Device success!\n");
 		
 		led_ste = app_leds_mmc_ctrl(LED_MMC_GREEN_ON);
 		if (led_ste < 0)
-			LOGE("Failed to Initialize LED!\n");
+			LOGE("[main] Failed to Initialize LED!\n");
 		else
-			LOGD("Initializing LED Device success!\n");
+			LOGD("[main] Initializing LED Device success!\n");
 		/* copy app_fitt.out or full update */
 		app_set_open();
 		ctrl_firmware_update();
@@ -486,13 +485,13 @@ int main(int argc, char **argv)
 		mic_msg_exit();
 		return -1;
 	}
-	LOGD("Initializing NAND Flash success!\n");
+	LOGD("[main] Initializing NAND Flash success!\n");
 	
 	//----------  SD 카드 ----------------------------------------------
     app_setdns() ;  // set resolv.conf
 	//#--- system init
 	if (main_thread_init() < 0) {
-		LOGE("Failed to init main thread!. system exit!\n");
+		LOGE("[main] Failed to init main thread!. system exit!\n");
 		return -1;
 	}
 	
@@ -502,7 +501,7 @@ int main(int argc, char **argv)
     app_ipins_init();
 	app_gui_init();
 	app_dev_init();
-	LOGD("Initializing Input system(KEY) success!\n");
+	LOGD("[main] Initializing Input system(KEY) success!\n");
 	
     app_tsync_init();
 //    setting_txtbase() ;
@@ -512,7 +511,7 @@ int main(int argc, char **argv)
 	
 #if SYS_CONFIG_GPS	
 	app_gps_init();
-	LOGD("Initializing GPS system success!\n");
+	LOGD("[main] Initializing GPS system success!\n");
 #endif
 	/* watchdog alive */
 	app_watchdog_init();
@@ -554,6 +553,6 @@ int main(int argc, char **argv)
 	mcfw_linux_exit();
 	main_thread_exit();
 //	app_mcu_exit();		//# will power off after 200mS
-	fprintf(stderr, "--- NEXX end ---\n\n");
+	TRACE_INFO(stderr, "--- NEXX end ---\n\n");
 	return 0;
 }

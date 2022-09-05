@@ -125,12 +125,10 @@ static void *THR_rec_recv_msg(void *prm)
 		switch (cmd) {
 		case AV_CMD_REC_READY:
 			irec->init = 1; /* from record process */
-			LOGD("Starting video record process!\n");
 			break;
 		
 		case AV_CMD_REC_EXIT:
 			exit = 1;
-			LOGD("video record process exit!\n");
 			break;
 		
 		case AV_CMD_REC_EVT_END:
@@ -158,7 +156,7 @@ static void *THR_rec_recv_msg(void *prm)
 			break;
 			
 		case AV_CMD_REC_ERR:
-			LOGE("Failed to execute video record process!..Stopping System!!\n");
+			LOGE("[main] Failed to execute video record process!..Stopping System!!\n");
 			irec->rec_state = 0; /* record stop...*/
 			app_cfg->ste.b.mmc_err = 1; /* for watchdog */
 			app_leds_rec_ctrl(LED_REC_FAIL);

@@ -259,12 +259,10 @@ static void Cipher()
 
     // The encryption process is over.
     // Copy the state array to output array.
-
     for (i = 0; i<4; i++)
         for (j = 0; j<4; j++)
             out[i * 4 + j] = state[i][j];
 }
-
 
 int encrypt_aes(const char *src, char *dst, int length)
 {
@@ -311,7 +309,6 @@ int encrypt_aes(const char *src, char *dst, int length)
     printf("\n\n");
     return 0;
 }
-
 
 char *SHA256_process(char *string)
 {

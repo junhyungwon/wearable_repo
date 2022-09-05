@@ -108,7 +108,7 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
        // int length = --queue_lenth;
         uv_mutex_unlock(&mutex);
 
-        // fprintf(stderr, "[RTMP] dequeue. length : %d.\n", length);
+        // TRACE_INFO("[RTMP] dequeue. length : %d.\n", length);
         // fixme : imem will be in a short time.
         stream = QUEUE_DATA(q, struct stream_s, node);
         stream_info_t *ifr = stream->ifr;
@@ -119,7 +119,7 @@ static void rtmp_publish_async_cb(uv_async_t* async) {
             break;
         }
 
-        // fprintf(stderr, "async_cb %d\n", ifr->b_size);
+        // TRACE_INFO("async_cb %d\n", ifr->b_size);
         static int isFirst = 0;
         if (isFirst == 0 && ifr->is_key) {
             isFirst = 1;
@@ -290,7 +290,7 @@ void app_rtmp_publish_video(stream_info_t *ifr)
     QUEUE_INSERT_TAIL(&queue, &stream->node);
     uv_mutex_unlock(&mutex);
 
-    // fprintf(stderr, "[RTMP] enqueue. length : %d.\n", length);
+    // TRACE_INFO("[RTMP] enqueue. length : %d.\n", length);
 
     // fire async_cb in loop_video
     uv_async_send(async_rtmp_publish);

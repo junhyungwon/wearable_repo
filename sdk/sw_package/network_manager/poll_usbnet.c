@@ -164,14 +164,14 @@ static void *THR_usbnet_poll(void *prm)
 		if (ret > 0) {
 			/* set rndis attach event */
 			if (app_cfg->ste.bit.rndis == 0) {
-				dprintf("attected rndis_host device!!\n");
+				LOGD("[network] rndis device inserted!\n");
 				app_cfg->ste.bit.rndis = 1;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_RNDIS, 1);
 			}
 		} else {
 			/* rndis remove event */
 			if (app_cfg->ste.bit.rndis == 1) {
-				dprintf("removed rndis_host device!!\n");
+				LOGD("[network] rndis device removed!\n");
 				app_cfg->ste.bit.rndis = 0;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_RNDIS, 0);
 			} 
@@ -183,14 +183,14 @@ static void *THR_usbnet_poll(void *prm)
 				if (ret > 0) {
 					/* set usb2eth attach event */
 					if (app_cfg->ste.bit.usb2eth == 0) {
-						dprintf("detected usb2ether device!!\n");
+						LOGD("[network] usb2ethernet device inserted!\n");
 						app_cfg->ste.bit.usb2eth = 1;
 						netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_USB2ETHER, 1);
 					}	
 				} else {
 					/* usb2eth remove event */
 					if (app_cfg->ste.bit.usb2eth == 1) {
-						dprintf("removed usb2ether device!!\n");
+						LOGD("[network] usb2ethernet device removed!\n");
 						app_cfg->ste.bit.usb2eth = 0;
 						netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_USB2ETHER, 0);
 					}

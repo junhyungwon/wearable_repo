@@ -90,9 +90,12 @@ static void *THR_gui(void *prm)
 		{
 			if (igui->tmr_cnt >= CNT_STREAMER_CHECK) {
 				igui->tmr_cnt = 0;
+				
 				/* check wis-streamer */
-				if (!ctrl_is_live_process((const char *)"wis-streamer"))
+				if (!ctrl_is_live_process((const char *)"wis-streamer")) {
+					TRACE_ERR("wis-streamer failure...force executing wis-streamer\n");
 					app_rtsptx_start();
+				}
 			} else {
 				igui->tmr_cnt++;
 			}

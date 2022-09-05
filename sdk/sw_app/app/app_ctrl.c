@@ -119,7 +119,7 @@ static int _is_firmware_for_release(void)
         }
 
 		if (strcmp(fw[DEV_MODEL].value, MODEL_NAME) != 0) {
-			LOGD("This FW is not for %s !!!\n", MODEL_NAME);
+			LOGD("[main] This Firmware file is not for %s !!!\n", MODEL_NAME);
 			ret = EFAIL;
 		}
     }
@@ -166,7 +166,7 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	memset(buf, 0, sizeof(buf));
 	snprintf(buf, sizeof(buf), "%s/%s", FW_DIR, FW_VINFO_FNAME);
 	if(-1 == access(buf, 0)) {
-		LOGD("Failed to read %s!!!\n", buf);
+		LOGD("[main] Couldn't access %s!!!\n", buf);
 		return EFAIL;
 	}
 
@@ -203,7 +203,7 @@ static void _check_micom_update(void)
 		fgets(cmd, sizeof(cmd), f);
 		sscanf(cmd, "%02x %02x\n", &byte1, &byte2);
 		ret = ((byte2 << 8) | byte1);
-		//printf("ver = 0x%04x\n", ret);
+		//TRACE_INFO("ver = 0x%04x\n", ret);
 		fclose(f);
 		
 		mcu_ver = ctrl_get_mcu_version(NULL);
@@ -212,7 +212,7 @@ static void _check_micom_update(void)
 				remove(path);
 				//# update 함수 마지막에 sync() 가 호출됨
 				//sync();
-				//printf("remove %s\n", path);
+				//TRACE_INFO("remove %s\n", path);
 			}
 		}
 	} else {
@@ -267,7 +267,7 @@ static int __normal_update(void)
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc
 	if (_unpack_N_check((const char *)pFile, (const char *)FW_DIR, &release) == EFAIL) {
-		LOGE("Founded Firmware File, but It's not matched model name! cancel update!\n");
+		LOGE("[main] Founded Firmware File, but It's not matched model name! cancel update!\n");
         ret = EFAIL;
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
@@ -277,7 +277,7 @@ static int __normal_update(void)
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
-	LOGD("Starting Firmware update....system will be restart!\n");
+	LOGD("[main] Starting Firmware update....system will be restart!\n");
 	ret = SOK;
 	
 fw_exit:
@@ -303,7 +303,7 @@ static int __emergency_update(void)
 	//# /mmc/firmware/*.dat 파일이 있는 지 확인.
 	pFile = _findFirmware(EMERGENCY_UPDATE_DIR);
 	if (pFile == NULL) {
-		LOGD("Emergency Firmware file is not exist !!!\n");
+		TRACE_INFO("Emergency Firmware file is not exist !!!\n");
         app_cfg->ste.b.busy = 0;
 		return -1;
 	}
@@ -399,15 +399,14 @@ static void Delete_updatefile(void)
 
 void *thrRunFWUpdate(void *arg)
 {
-	LOGD("[APP_FITT360] Web Remote Update Temp version Firmware update done....\n");
+	LOGD("[main] Web Remote Update Temp version Firmware update done....\n");
 
-	app_buzz_ctrl(50, 3);		//# buzz: update
+	app_buzz_ctrl(50, 3); //# buzz: update
 	dev_fw_setenv("nand_update", "1", 0);
 	sync();
 
 	TRACE_INFO("\nfw update ready ! It will restart\n\n");
 	app_mcu_pwr_off(OFF_RESET);
-
 	return NULL;
 }
 
@@ -432,13 +431,13 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 #if 1
 	{
 		sprintf(cmd, "/bin/tar tf %s > /tmp/fw.list", fwpath);
-		printf("cmd:%s\n", cmd);
+		TRACE_INFO("cmd:%s\n", cmd);
 		system(cmd);
 		
 		FILE *fp = fopen("/tmp/fw.list", "r");
 		if (!fp)
 		{
-			printf("failed /bin/tar tf %s > /tmp/fw.list\n", fwpath);
+			TRACE_ERR("failed /bin/tar tf %s > /tmp/fw.list\n", fwpath);
 			return -1;
 		}
 		
@@ -452,19 +451,19 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 					line[len - 1] = '\0';
 
 				if(strcmp(line, FW_BOOTSCR_FNAME)==0){
-					printf("checked %s\n", FW_BOOTSCR_FNAME);
+					TRACE_INFO("checked %s\n", FW_BOOTSCR_FNAME);
 				}
 				else if(strcmp(line, FW_MLO_FNAME)==0){
-					printf("checked %s\n", FW_MLO_FNAME);
+					TRACE_INFO("checked %s\n", FW_MLO_FNAME);
 				}
 				else if(strcmp(line, FW_VINFO_FNAME)==0){
-					printf("checked %s\n", FW_VINFO_FNAME);
+					TRACE_INFO("checked %s\n", FW_VINFO_FNAME);
 				}
 				else if(strcmp(line, FW_UBIFS_FNAME)==0){
-					printf("checked %s\n", FW_UBIFS_FNAME);
+					TRACE_INFO("checked %s\n", FW_UBIFS_FNAME);
 				}
 				else if(strcmp(line, FW_UBIFSMD5_FNAME)==0){
-					printf("checked %s\n", FW_UBIFSMD5_FNAME);
+					TRACE_INFO("checked %s\n", FW_UBIFSMD5_FNAME);
 				}
 			}
 		}
@@ -475,21 +474,21 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 #if 1 // untar
 	sprintf(cmd, "/bin/tar xvf %s -C %s", fwpath, disk);
 	//sprintf(cmd, "cp -f %s %s/", fwpath, disk);
-	printf("fwupdate cmd:%s\n", cmd);
+	TRACE_INFO("fwupdate cmd:%s\n", cmd);
 	system(cmd);
 	sync();
 #endif
     release = _is_firmware_for_release() ; 
     if((EFAIL == release) || (FALSE == release)) // RELEASE Version .. --> update file delete
 	{
-		printf("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
+		TRACE_INFO("The model does not match, It is not release version, or the fw_version.txt is missing.\n");
 		Delete_updatefile() ;	
 		return -1;
     }
 	else // release or factory release version
 	{
 		app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
-		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
+		TRACE_INFO("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
 	}
 
 	//# micom version check..
@@ -500,10 +499,8 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 	if(fp){
 		char line[255]={0};
 		fgets(line, 255, fp);
-		printf("%s\n", line);
-
+		//TRACE_INFO("%s\n", line);
 		if(NULL == strstr(line, " OK")){
-
 			//TODO: 실패할 경우, 압축해제한 파일들 처리
 			pclose(fp);
 			return -1;
@@ -513,7 +510,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		// OK, ready to firmware upgrade
 	}
 	else {
-		TRACE_INFO("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
+		TRACE_ERR("Failed popen(md5sum -c %s) , please check firmware file!!\n", FW_UBIFSMD5_FNAME);
 		//TODO: 실패할 경우, 압축해제한 파일들 처리
 		return -1;
 	}
@@ -526,7 +523,7 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		pthread_t tid_fw;
 		int ret = pthread_create(&tid_fw, NULL, thrRunFWUpdate, NULL);
 		if (ret != 0) {
-			TRACE_INFO("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
+			TRACE_ERR("thrRunFWUpdate pthread_create failed, ret = %d\r\n", ret);
 			return -1;
 		}
 		pthread_setname_np(tid_fw, __FILENAME__);
@@ -595,8 +592,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 
 	if(rc == RATE_CTRL_VBR)
 	{
-        LOGD("[APP_CTRL] --- ch %d set vid rate control to VBR ---\n",ch);
-
+        LOGD("[main] --- ch %d set vid rate control to VBR ---\n", ch);
 		params.qpMax 	= 45;
 		params.qpInit 	= -1;
         params.qpMin    = 2;
@@ -617,7 +613,7 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	}
 	else	//# RATE_CTRL_CBR
 	{
-        LOGD("[APP_CTRL] --- ch %d set vid rate control to CBR ---\n",ch);
+        LOGD("[main] --- ch %d set vid rate control to CBR ---\n",ch);
  
 		params.qpMin	= 2;//10;	//# for improve quality: 10->0
 		params.qpMax 	= 40;
@@ -629,6 +625,10 @@ int ctrl_vid_rate(int ch, int rc, int br)
 	return SOK;
 }
 
+/*****************************************************************************
+* @brief    set multislice mode
+* @section  [desc]
+*****************************************************************************/
 int ctrl_enc_multislice()
 {
 	VENC_CHN_DYNAMIC_PARAM_S params = { 0 };
@@ -659,7 +659,8 @@ int ctrl_vid_framerate(int ch, int framerate)
     app_cfg->ich[ch].fr = framerate;
 
     params.frameRate = app_cfg->ich[ch].fr;
-// to do rec stop
+	LOGD("[main] --- ch %d set frame rate %d FPS ---\n", ch, framerate);
+	// to do rec stop
     if(ch != MODEL_CH_NUM)
 	{
         ret = app_rec_state() ;
@@ -696,7 +697,8 @@ int ctrl_vid_bitrate(int ch, int bitrate)
 //    app_cfg->ich[ch].br = (br * app_cfg->ich[ch].fr)/DEFAULT_FPS;
     app_cfg->ich[ch].br = bitrate;
     params.targetBitRate = app_cfg->ich[ch].br*1000 ;
-    
+    LOGD("[main] --- ch %d set bit rate %d(Kbps) ---\n", ch, (bitrate*1000));
+	
     Venc_setDynamicParam(ch, 0, &params, VENC_BITRATE);
 
     return SOK ;
@@ -758,13 +760,13 @@ int ctrl_vid_resolution(int resol_idx)
 	switch(resol_idx) {
 	default:
 	case 0:
-		LOGD("[APP_CTRL] --- change Display Mode to 480P ---\n");
+		LOGD("[main] --- change Display Mode to 480P ---\n");
 		break;
 	case 1:
-		LOGD("[APP_CTRL] --- change Display Mode to 720P ---\n");
+		LOGD("[main] --- change Display Mode to 720P ---\n");
 		break;
 	case 2:
-		LOGD("[APP_CTRL] --- change Display Mode to 1080P ---\n");
+		LOGD("[main] --- change Display Mode to 1080P ---\n");
 		break;
     }
 	
@@ -797,33 +799,28 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 
 	if (app_set->ch[ch].resol != resol)
 	{
-		int ret = 0;
+		int rec_ste = 0;
+
 		Vdis_disp_ctrl_exit();
-
-		ret = app_rec_state();
-
-		if (ret)
-		{
+		rec_ste = app_rec_state();
+		if (rec_ste) {
 			app_rec_stop(ON);
 			sleep(1);
 		}
 
 		app_cap_stop();
-
 		app_buzz_ctrl(100, 1);
 		app_msleep(200);
-
 		app_set->ch[ch].resol = resol;
-
 		Vdis_disp_ctrl_init(resol);
 		app_cap_start();
-		if (ret)
-		{
+		
+		/* previous video record state */
+		if (rec_ste) {
 			app_rec_start();
 		}
 
 		app_rtsptx_stop_start();
-
 		if (!app_set->sys_info.osd_set)
 			ctrl_swosd_enable(STE_DTIME, 0, 0); // osd disable
 	}
@@ -911,14 +908,14 @@ int ctrl_set_network(int net_type, const char *token, const char *ipaddr, const 
 			if (subnet != NULL)
 				strcpy(app_set->net_info.wlan_netmask, subnet);
 			
-			LOGD("[APP] --- Wireless ipaddress changed System Restart ---\n");
+			LOGD("[main] --- Wireless network set a static ip address. System will be restart! ---\n");
 		} else {
 			if (ipaddr != NULL)
 				strcpy(app_set->net_info.eth_ipaddr, ipaddr);
 			if (subnet != NULL)
 				strcpy(app_set->net_info.eth_netmask, subnet);
 			
-			LOGD("[APP] --- Ethernet ipaddress changed System Restart ---\n");
+			LOGD("[main] --- Ethernet network set a static ip address. System will be restart! ---\n");
 		}
 	}	
 	
@@ -937,7 +934,7 @@ int ctrl_set_gateway(const char *gw)
     if (gw != NULL)
         strcpy(app_set->net_info.eth_gateway, gw);
 	
-	LOGD("[APP] --- Ethernet gateway changed System Restart ---\n");
+	LOGD("[main] --- Ethernet network set a gateway ip address. System will be restart! ---\n");
 	ctrl_sys_halt(0); /* reboot */	
 
     return SOK;
@@ -978,35 +975,6 @@ int ctrl_get_mcu_version(char *version)
 		sprintf(version, "%02d.%02X", (ver>>8)&0xFF, ver&0xFF);
 
 	return ver;
-}
-
-int ctrl_time_set(int year, int mon, int day, int hour, int min, int sec)
-{
-    struct tm ts;
-    time_t set;
-    char buf[MAX_CHAR_64]={0,};
-
-    ts.tm_year = (year - 1900);
-    ts.tm_mon  = (mon - 1);
-    ts.tm_mday = day;
-    ts.tm_hour = hour;
-    ts.tm_min  = min;
-    ts.tm_sec  = sec;
-
-    set = mktime(&ts);
-
-    strftime( buf, sizeof(buf), "%Y%2m%2d_%2H%2M%2S", &ts );
-    LOGD("[APP_CTRL] Time Change : %s\n", buf);
-
-    stime(&set);
-    Vsys_datetime_init();   //# m3 Date/Time init
-    OSA_waitMsecs(100);
-
-    if (dev_rtc_set_time(ts) < 0) {
-        LOGD("[APP_CTRL] !!! Failed to set system time to rtc !!!\n");
-    }   
-
-    return 0;
 }
 
 /*****************************************************************************
@@ -1242,7 +1210,7 @@ int ctrl_is_live_process(const char *process_name)
     pdir = opendir("/proc");
     if (pdir == NULL)
     {
-        printf("err: NO_DIR\n");
+        TRACE_ERR("err: NO_DIR\n");
         return 0;
     }
 
@@ -1278,7 +1246,7 @@ int ctrl_is_live_process(const char *process_name)
         }
         else
         {
-            TRACE_INFO("Can't read file [%s]\n", path);
+            TRACE_ERR("Can't read file [%s]\n", path);
         }
     }
 

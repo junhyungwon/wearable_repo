@@ -119,13 +119,13 @@ static void *THR_wlan_poll(void *prm)
 		if (ret > 0) {
 			/* set attach event */
 			if (app_cfg->ste.bit.wlan == 0) {
-				dprintf("attached wlan0 device!!\n");
+				LOGD("[network] Wi-Fi dongle inserted!\n");
 				app_cfg->ste.bit.wlan = 1;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 1);
 			}
 		} else {
 			if (app_cfg->ste.bit.wlan == 1) {
-				dprintf("removed wlan0 device!!\n");
+				LOGD("[network] Wi-Fi dongle removed!\n");
 				app_cfg->ste.bit.wlan = 0;
 				netmgr_event_hub_dev_status(NETMGR_DEV_TYPE_WIFI, 0);
 			} 

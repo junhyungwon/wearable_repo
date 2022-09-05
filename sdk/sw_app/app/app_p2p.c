@@ -112,7 +112,7 @@ int app_p2p_start(void)
 #elif defined(NEXXB_ONE)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXB_ONE", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #endif
-					printf("%s\n", p2p_cmd) ;
+					TRACE_INFO("%s\n", p2p_cmd) ;
 					system(p2p_cmd) ;
 					return 0;
 				}
@@ -132,7 +132,7 @@ int app_p2p_stop(void)
 	//# P2P_PATH = /opt/fit/bin/P2PTunnelServer_ti
 	p2p_bname = basename(P2P_SERVER);
     sprintf(p2p_cmd, "killall -9 %s", p2p_bname);
-	printf("%s !\n", p2p_cmd) ;
+	TRACE_INFO("%s !\n", p2p_cmd) ;
     ret = system(p2p_cmd) ;
 
     return 0;

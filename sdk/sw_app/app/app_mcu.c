@@ -100,7 +100,7 @@ static void delay_3sec_exit(void)
 	}
 	gettimeofday(&t2, NULL);
 
-	printf(" [app] msec[%ld] >>>>>>>> DELAY EXIT  <<<<<<< \n",
+	TRACE_INFO(" [app] msec[%ld] >>>>>>>> DELAY EXIT  <<<<<<< \n",
 			((t2.tv_sec*1000)+(t2.tv_usec/1000))-((t1.tv_sec*1000)+(t1.tv_usec/1000)));
 
 	mic_msg_exit();
@@ -147,7 +147,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				LOGD("Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
+				LOGD("[main] Peek Low Voltage Detected(thres=%d, e=%d)", LOW_POWER_THRES, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
@@ -197,7 +197,7 @@ static void *THR_micom(void *prm)
 				imcu->val.ebatt = val->ebatt;		//# XX.xx V format
 
 				#if 0
-				printf("[%3d] mpwr: %d.%d V, ibatt:%d.%d V, ebatt:%d.%d V\n", msg.param,
+				TRACE_INFO("[%3d] mpwr: %d.%d V, ibatt:%d.%d V, ebatt:%d.%d V\n", msg.param,
 					(imcu->val.mvolt/100), (imcu->val.mvolt%100), (imcu->val.ibatt/100), (imcu->val.ibatt%100),
 					(imcu->val.ebatt/100), (imcu->val.ebatt%100));
 				#endif
@@ -306,7 +306,7 @@ static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
 		if (c_volt_chk) {
 			c_volt_chk--;
 			if (c_volt_chk == 0) {
-				LOGD("Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
+				LOGD("[main] Peek Low Voltage Detected(thres=%d, m=%d)", threshold, mbatt);
 				ctrl_sys_halt(1); /* for shutdown */
 				return -1;
 			}
@@ -356,7 +356,7 @@ static void *THR_micom(void *prm)
 				imcu->val.ebatt  = val->ebatt;		//# XX.xx V format
 
 				#if 0
-				printf("[%3d] mpwr: %d.%d V, ibatt:%d.%d V, ebatt:%d.%d V\n", msg.param,
+				TRACE_INFO("[%3d] mpwr: %d.%d V, ibatt:%d.%d V, ebatt:%d.%d V\n", msg.param,
 					(imcu->val.mvolt/100), (imcu->val.mvolt%100), (imcu->val.ibatt/100), (imcu->val.ibatt%100),
 					(imcu->val.ebatt/100), (imcu->val.ebatt%100));
 				#endif
@@ -372,11 +372,10 @@ static void *THR_micom(void *prm)
 			case CMD_PSW_EVT:
 			{
 				short key_type = msg.data[0];
-				TRACE_INFO("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
-				if (key_type == PSW_EVT_LONG) 
-				{
+				
+				if (key_type == PSW_EVT_LONG) {
 					if (!app_cfg->ste.b.busy) {
-						LOGD("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
+						LOGD("[main] --- Micom Power Switch Pressed. It Will be Shutdown ---\n");
 						//# add rupy
 						ctrl_sys_halt(1); /* for shutdown */
 						exit = 1;
@@ -386,6 +385,7 @@ static void *THR_micom(void *prm)
 				} 
 				else 
 				{
+					LOGD("[main] --- Micom Short Button Pressed.---\n");
 					if (!app_cfg->ste.b.ftp_run) 
 					{
 						if(!app_set->voip.ON_OFF)  // Backchannel
@@ -396,34 +396,33 @@ static void *THR_micom(void *prm)
 						else  // VOIP 
 						{
 							if(app_cfg->ste.b.voip)
-								app_voip_event_call_close() ;
+								app_voip_event_call_close();
 						}
 
 						value = app_rec_state() ;
-					/*
-					 * return 1-> NORMAL, 2-> SOS
-					 */
+						/*
+						* return 1-> NORMAL, 2-> SOS
+						*/
 						if (value == 2) { 
-						// value 1, SOS Rec  , Value 1 Normal/Event REc
+							// value 1, SOS Rec  , Value 1 Normal/Event REc
 							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 							app_sos_send_stop(ON) ;
-							LOGD("[APP_SOS] End SOS Event !! \n");	
+							LOGD("[main] Stopping SOS Event !! \n");	
 						} 
 						else {
 							//  Rec off or normal/event rec -> SOS ON
 							app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 							app_rec_evt(ON) ;  // SOS REC
-							LOGD("[APP_SOS] Occurs SOS Event !! \n");
+							LOGD("[main] Starting SOS Event !! \n");
 						}
 					}
-					TRACE_INFO("SOS Short Key Pressed!\n");
 				}
 				break;
 			}
 			
 			case CMD_DAT_STOP:		//# response data send stop
 			{
-				TRACE_INFO("[evt] data stop event\n");
+				TRACE_INFO("[MCU] data stop event\n");
 				exit = 1;
 				break;
 			}

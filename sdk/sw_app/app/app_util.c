@@ -290,7 +290,7 @@ void __time_trace(int act)
 	}
 	else {
 		elapsed_time = app_get_time() - btime;
-		printf("--- %ld ms\n", elapsed_time);
+		TRACE_INFO("--- %ld ms\n", elapsed_time);
 		btime += elapsed_time;
 	}
 }
@@ -323,12 +323,12 @@ void util_hexdump(char *p, int n)
 	int i, off;
 
 	for (off = 0; n > 0; off += 16, n -= 16) {
-		printf("%s%04x:", off == 0 ? "\n" : "", off);
+		TRACE_INFO("%s%04x:", off == 0 ? "\n" : "", off);
 		i = (n >= 16 ? 16 : n);
 		do {
-			printf(" %02x", *p++ & 0xff);
+			TRACE_INFO(" %02x", *p++ & 0xff);
 		} while (--i);
-		printf("\n");
+		TRACE_INFO("\n");
 	}
 }
 

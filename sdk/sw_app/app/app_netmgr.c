@@ -413,7 +413,7 @@ static void __netmgr_dev_ip_status_handler(void)
 static void __netmgr_rssi_status_handler(int level)
 {
 	if (level < 0) {
-		LOGD("Wi-Fi RSSI is minus, connection closed...\n");
+		LOGD("[main] Wi-Fi Signal Strength is very weak, connection closed...\n");
 	} else {					
 		//TRACE_INFO("current rssi level is (%d/100)\n", level);	
 		/* level 값을 확인 후 추가적인 작업이 필요할 경우를 위해서....*/
@@ -540,19 +540,14 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_DEV_DETECT:
 			__netmgr_hotplug_noty();
-			LOGD("[APP_NET] netdevice type %s, state %s\n", 
-						netdev_str(inetmgr->device), inetmgr->insert?"insert":"remove");
 			break;
 		
 		case NETMGR_CMD_DEV_LINK_STATUS:
 			__netmgr_dev_link_status_handler();
-			LOGD("[APP_NET] device type %s, link status 0x%x\n", 
-						netdev_str(inetmgr->device), inetmgr->link_status);
 			break;
 		
 		case NETMGR_CMD_DEV_IP_STATUS:
 			__netmgr_dev_ip_status_handler();
-			LOGD("[APP_NET] Get device type %s, ip status!\n", netdev_str(inetmgr->device));
 			break;
 			
 		case NETMGR_CMD_WLAN_CLIENT_RSSI:
@@ -562,7 +557,7 @@ static void *THR_netmgr_recv_msg(void *prm)
 			
 		case NETMGR_CMD_PROG_EXIT:
 			exit = 1;
-			LOGD("[APP_NET] netmgr exit!\n");
+			LOGD("[main] netmgr exit!\n");
 			break;
 		default:
 			break;	

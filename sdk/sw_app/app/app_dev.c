@@ -415,16 +415,16 @@ static void *THR_dev(void *prm)
 					// value 2, SOS Rec  , Value 1 Normal/Event REc
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_sos_send_stop(ON) ;
-					LOGD("[APP_SOS] End SOS Event !! \n");	
+					LOGD("[main] Stopping SOS Event !! \n");	
 				} else {
 					//  Rec off or normal/event rec -> SOS ON
 					app_rec_stop(ON) ;  //  ON --> rollback pre_rec status, OFF ignore pre_rec status
 					app_rec_evt(ON) ;  // SOS REC
-					LOGD("[APP_SOS] Occurs SOS Event !! \n");
+					LOGD("[main] Starting SOS Event !! \n");
 				}
-				TRACE_INFO("SOS Short Key Pressed!\n");
+				TRACE_INFO("[DEV] Short Key Pressed!\n");
 			} else if (skey == KEY_LONG) {	
-				TRACE_INFO("SOS Long Key Pressed!\n");
+				TRACE_INFO("[DEV] Long Key Pressed!\n");
 			}
 		}
 		app_msleep(TIME_DEV_CYCLE);

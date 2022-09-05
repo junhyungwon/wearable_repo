@@ -210,17 +210,17 @@ static snd_pcm_t * __snd_out_init(int ch, int rate, int period_frames)
     if (snd_pcm_hw_params(handle, hw_params) < 0)
 		goto out;
 
-#if 1	
+#if 0	
 	/* returned approximate maximum buffer size in frames  */
 	snd_pcm_hw_params_get_period_size(hw_params, &period_size, 0);
 	snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size);
-	printf(" ALSA Period Size %ld\n", period_size);
-	printf(" ALSA Buffer Size %ld\n", buffer_size);
+	TRACE_INFO(" ALSA Period Size %ld\n", period_size);
+	TRACE_INFO(" ALSA Buffer Size %ld\n", buffer_size);
 #endif
 
 	/* prepare for audio device */
 	if (snd_pcm_prepare(handle) < 0) {
-        TRACE_INFO("Could not prepare handle!\n");
+        TRACE_ERR("Could not prepare handle!\n");
         goto out;
     }
 	return (snd_pcm_t *)handle;
@@ -374,7 +374,7 @@ static void *THR_snd_bcplay_main(void *prm)
 		return NULL;
 	}
 	
-	LOGD("Initializing Backchannel Audio Device success!\n");
+	LOGD("[main] Initializing Backchannel Audio Device success!\n");
 	__snd_set_swparam(h_pcm, pframes);
 	sampv = (unsigned short *)malloc(BC_SAMPLE_BUFFER_SZ); //# 최대 크기로 가정함.
 	if (sampv == NULL) {
@@ -385,7 +385,7 @@ static void *THR_snd_bcplay_main(void *prm)
 #ifdef DBG_SND_DUMP
 	file = fopen("/mmc/record.wav", "w+");
 	if (file == NULL) {
-		fprintf(stderr, "Failed to open file!\n");
+		TRACE_INFO("Failed to open file!\n");
 	}
 	
 	/* init wave header */
@@ -422,7 +422,7 @@ static void *THR_snd_bcplay_main(void *prm)
 			switch (cmd)
 			{
 				case BCPLAY_CMD_READY:
-					LOGD("Backchannel Audio Process Ready!\n");
+					LOGD("[main] Backchannel Audio Process Ready!\n");
 					break;
 					
 				case BCPLAY_CMD_AUD_DATA:
@@ -459,7 +459,7 @@ static void *THR_snd_bcplay_main(void *prm)
 							fclose(file);
 							file = NULL;
 							sync();
-							fprintf(stderr, "wave dump done!!\n");
+							TRACE_INFO("wave dump done!!\n");
 						}
 					}
 					#endif
@@ -470,7 +470,7 @@ static void *THR_snd_bcplay_main(void *prm)
 				break;
 			} /* end of switch (cmd) */
 		} else {
-			LOGE("Failed to initialize Backchannel audio process!(for ipc)\n");
+			LOGE("[main] Failed to initialize Backchannel audio process!(for ipc)\n");
 			OSA_waitMsecs(1000);
 			continue;
 		}

@@ -151,7 +151,7 @@ static int cmenu_register_user(int network, int enable, short port, int level, c
 					UA_PREFIX, call_num, server_addr, port, passwd);	
 	}
 	
-	sysprint("Creating UA for %s ....\n", ui_buf);
+	aprintf("Creating UA for %s ....\n", ui_buf);
 	err = ua_alloc(&ua, ui_buf);
 	if (err) {
 		aprintf("create_ua failed: %x\n", err);
@@ -224,7 +224,7 @@ static int cmenu_dialer_user(const char *call_num)
 		//# 8617001 형태로 입력
 		ua = uag_find_requri(call_num);
 		if (!ua) {
-			sysprint("could not find UA for %s\n", call_num);
+			aprintf("could not find UA for %s\n", call_num);
 			return -1;
 		}
 		
@@ -235,7 +235,7 @@ static int cmenu_dialer_user(const char *call_num)
 		//# 완성형으로 작성해야 함. (sip:8617001@52.78.124.88:6060)
 		err = account_uri_complete(ua_account(ua), uribuf, call_num);
 		if (err) {
-			sysprint("ua_connect failed to complete uri\n");
+			aprintf("ua_connect failed to complete uri\n");
 			return -1;
 		}
 		
@@ -247,7 +247,7 @@ static int cmenu_dialer_user(const char *call_num)
 		aprintf("cmenu: account uri complete ->%s\n", uri);	
 		err = ua_connect(ua, &call, NULL, uri, VIDMODE_OFF);
 		if (err) {
-			sysprint("cmenu: ua_connect failed!\n");
+			aprintf("cmenu: ua_connect failed!\n");
 			goto out;
 		}
 		
