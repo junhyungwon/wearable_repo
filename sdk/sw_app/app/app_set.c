@@ -119,9 +119,9 @@ static void set_uid()
 	    if(!strncmp(uid, "LFS", 3))
 	    {
             sprintf(app_set->sys_info.uid, "%s", uid); 
-			LOGD("P2P UID Registration succeed!!")
+			LOGD("P2P UID Registration succeed!!");
 	        sprintf(app_set->voip.userid, "%d%d%s", 'A', 1, &uid[12]);
-			LOGD("VOIP User ID Registration succeed!!")
+			LOGD("VOIP User ID Registration succeed!!");
 			if(!strcmp(app_set->voip.peerid, "")) 
                 sprintf(app_set->voip.peerid, "%d%d%s", 'V', 1, &uid[12]);
 

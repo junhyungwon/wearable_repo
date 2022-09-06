@@ -671,7 +671,7 @@ int ctrl_vid_framerate(int ch, int framerate)
 	}
     Venc_setInputFrameRate(ch, DEFAULT_FPS);
     Venc_setDynamicParam(ch, 0, &params, VENC_FRAMERATE);
-// to do rec start
+	// to do rec start
     if(ch != MODEL_CH_NUM)
 	{
 	    if (ret) {

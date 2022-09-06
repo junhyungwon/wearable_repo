@@ -100,7 +100,7 @@ int createSignedCertificate()
 	return 0;
 }
 
-int     app_web_boot_passwordfile()
+int app_web_boot_passwordfile()
 {
 	// check default
 	if( 0 == strcmp(app_set->account_info.webuser.pw, WEB_DEFAULT_PW)){
