@@ -33,7 +33,7 @@
 #include <sys/mount.h> //# defines BLKGETSIZE64
 #include <ctype.h>		/* for isdigit() */
 #include <errno.h>		/* ERANGE */
-#include <blkid.h>
+#include <blkid/blkid.h>
 #include <sys/ioctl.h>
 
 #include "dev_disk.h"

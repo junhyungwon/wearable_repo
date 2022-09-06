@@ -11,7 +11,7 @@ EXEC_DIR = $(ROOTDIR)/sdk/bin
 CROSS_COMPILE := $(ROOTDIR)/ti_tools/linux_devkit/bin/arm-arago-linux-gnueabi-
 
 CC = $(CROSS_COMPILE)gcc
-#CC = arm-arago-linux-gnueabi-gcc 
+#CC = arm-arago-linux-gnueabi-gcc
 
 # To use clang
 #    CC = clang
