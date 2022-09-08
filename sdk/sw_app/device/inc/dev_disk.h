@@ -34,16 +34,8 @@ extern "C" {
 #define SIZE_DIR_NAME			256
 #define SIZE_TYP_NAME			128
 
-#define MMC_SDHC_HIGH_SIZE		32768  //# 32GB
-#define MMC_SIZE_64GB			65536  //#
-#define MMC_SIZE_128GB			131072 //#
-
 #define MMC_MOUNT_POINT			"/mmc"
-#define MMC_BLK_DEV_NAME		"/dev/mmcblk0"
 #define MMC_PART_NAME			"/dev/mmcblk0p1"
-
-#define MMC_PART_TYPE_EXFAT		0x7
-#define MMC_PART_TYPE_FAT32		0xc
 
 typedef struct {
 	char dev[SIZE_DEV_NAME];
@@ -77,30 +69,16 @@ typedef enum {
 
 } DEV_DISK_STATE;
 
-struct mmc_part_info {
-	int part_no;
-	int part_type;
-	unsigned long part_size; //# MB unit.
-};
-
 /*
  * Declare Function Prototype.
  */
 int dev_disk_get_info(dev_disk_info_t *ddi);
-int dev_disk_run_fdisk(const char *dev);
 int dev_disk_get_size(char *mount_name, unsigned long *total,
 					unsigned long *used);
-int dev_disk_mmc_part_check_info(const char *blk_path,
-					struct mmc_part_info *part_info);
-int dev_disk_mmc_part_unmount(const char *target_path);
-int dev_disk_mmc_part_delete(int part_no);
-int dev_disk_mmc_part_create(void);
+					
 int dev_disk_mmc_part_format(unsigned long size);
-int dev_disk_mmc_part_set_bootsector(int part_no, int on);
-int dev_disk_mmc_part_set_lba_mode(int part_no, int on);
+int dev_disk_mmc_check_writable(void);
 int dev_disk_check_mount(const char *mount_point);
-int dev_disk_find_hdd_path(char *node);
-int dev_disk_check_usb_disk_path(char *node);
 
 #ifdef __cplusplus
 }
