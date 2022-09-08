@@ -165,7 +165,7 @@ static int __mmc_prepare(void)
 	
 	/* mmc mount 확인 */
 	app_cfg->ste.b.mmc = 0; //# default 0
-	if (ctrl_mmc_check_writable() > 0) { 
+	if (dev_disk_mmc_check_writable() > 0) { 
 		/* log 디렉토리 생성 */
 		logdir = opendir("/mmc/log") ;
 		if (logdir == NULL) {
@@ -423,7 +423,6 @@ int app_cfg_init(void)
 *****************************************************************************/
 int main(int argc, char **argv)
 {
-	unsigned long part_size = 0;
 	int mmc_ste, mcu_ste, led_ste;	
 	
 	/* micom ready 신호 전달 */
@@ -433,12 +432,12 @@ int main(int argc, char **argv)
 	app_cfg_init();
 	
 	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
-	if (ctrl_mmc_check_exfat(&part_size) == 1)
-		ctrl_mmc_exFAT_format(part_size);
-	
+	dev_disk_mmc_check();
 	/* SD 카드 fsck 실행 */
-	system("/bin/umount /mmc"); /* umount */
-	app_msleep(100);
+	if (dev_disk_check_mount(MMC_MOUNT_POINT)) {
+		system("/bin/umount /mmc"); /* umount */
+		app_msleep(100);
+	}
 	//# execute to repair
 	system("/sbin/fsck.fat -a -w /dev/mmcblk0p1");
 	//# mount sd card.

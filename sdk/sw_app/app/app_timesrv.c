@@ -307,7 +307,7 @@ int set_time_by_ntp()
 	}
 	
 	/* SD 카드에 error 발생 시 readonly로 변경됨. ntp.txt 저장 안 됨.*/
-	if (ctrl_mmc_check_writable() > 0) {
+	if (dev_disk_mmc_check_writable() > 0) {
     	sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
     	system(buff) ;
 	} else {
@@ -376,7 +376,7 @@ int gettime_from_ntp(char *server_addr)
 		}
 		
 		/* SD 카드에 error 발생 시 readonly로 변경됨. ntp.txt 저장 안 됨.*/
-		if (ctrl_mmc_check_writable() > 0) {
+		if (dev_disk_mmc_check_writable() > 0) {
         	sprintf(buff,"/opt/fit/bin/ntpclient -h %s -d -s -i 4 > /mmc/ntp.txt",server_addr) ;
 			system(buff) ;
 		} else {

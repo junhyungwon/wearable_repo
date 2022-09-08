@@ -281,6 +281,12 @@ typedef struct {
 
 } disk_info_t;
 
+struct mmc_part_info {
+	int part_no;
+	int part_type;
+	unsigned long part_size; //# MB unit.
+};
+
 /*----------------------------------------------------------------------------
  local function
 -----------------------------------------------------------------------------*/
@@ -325,34 +331,6 @@ static int mmc_is_inserted(void)
 	fclose(procfs);
 
 	return 0;
-}
-
-static int mmc_get_minor(void)
-{
-	DIR *mmcdir;
-	char sysdir[256] = {0,};
-
-	int minor = 0;
-
-	/* find mmcblk* minor */
-	for (minor = 0; minor <= 256; minor++) {
-		snprintf(sysdir, sizeof(sysdir), "/sys/block/mmcblk%d/", minor);
-		if (access(sysdir, F_OK) == 0)
-			break;
-	}
-	if (minor >= 256) {
-		dev_dbg("couldn't find mmcblk**\n");
-		return -1;
-	}
-
-	mmcdir = opendir(sysdir);
-	if (mmcdir == NULL) {
-		dev_dbg("invalid mmcblkid %s\n", sysdir);
-		return -1;
-	}
-	closedir(mmcdir);
-
-	return minor;
 }
 
 static char *partname(char *dev, int pno)
@@ -859,16 +837,6 @@ int dev_disk_get_info(dev_disk_info_t *ddi)
 	return 0;
 }
 
-int dev_disk_run_fdisk(const char *dev)
-{
-	char buf[256] = {};
-
-	sprintf(buf, "fdisk %s <<'EOF'\nn\np\n\n\n\nw\nEOF", dev);
-	system(buf);
-
-	return 0;
-}
-
 /****************************************************
  * NAME : int dev_disk_get_size(char *mount_name, unsigned long *total,
 					unsigned long *used)
@@ -895,34 +863,36 @@ int dev_disk_get_size(char *mount_name, unsigned long *total,
 	return 0;
 }
 
-/****************************************************
- * NAME : int dev_disk_mmc_part_check_info(const char *blk_path,
- *					struct mmc_part_info *part_info)
- *
- ****************************************************/
-int dev_disk_mmc_part_check_info(const char *blk_path,
-					struct mmc_part_info *part_info)
+
+
+/*****************************************************************************
+ * @brief    mmc partition check function
+ * @section  DESC Description
+ *   - desc
+ *****************************************************************************/
+int dev_disk_mmc_check(void)
 {
 	blkid_probe pr;
 	blkid_partlist ls;
 	blkid_partition par;
 
-	int nparts;
-	int ret = 0;
-
-	if (part_info == NULL || !mmc_is_inserted()) {
+	struct mmc_part_info mmc_part = {
+		.part_no = 0,
+		.part_type = 0,
+		.part_size = 0
+	};
+	int nparts, i;
+	
+	if (mmc_is_inserted() == 0) {
 		dev_err("sd card is not inserted\n");
 		return -1;
 	}
 
-	pr = blkid_new_probe_from_filename(blk_path);
+	pr = blkid_new_probe_from_filename("/dev/mmcblk0");
 	if (!pr) {
-		dev_err("%s: faild to create a new libblkid probe", blk_path);
+		dev_err("Faild to create a new libblkid probe on /dev/mmcblk0");
 		return -1;
 	}
-
-	part_info->part_no = 0;
-	part_info->part_type = 0;
 
 	/* Binary interface */
 	ls = blkid_probe_get_partitions(pr);
@@ -932,178 +902,94 @@ int dev_disk_mmc_part_check_info(const char *blk_path,
 	nparts = blkid_partlist_numof_partitions(ls);
 	/* not supported multi partitions */
 	if (!nparts) {
-		part_info->part_no = 0;
-		goto done;
+		blkid_free_probe(pr);
+		return -1;
 	}
 
 #if 0
 	/* %j -> C99 intmax_t */
-	printf("size: %jd\n", blkid_probe_get_size(pr));
+	dev_dbg("size: %jd\n", blkid_probe_get_size(pr));
 #endif
 
 	par = blkid_partlist_get_partition(ls, 0); //# fixed 0
-	part_info->part_no = nparts;
-	part_info->part_type = blkid_partition_get_type(par);
-	part_info->part_size = (unsigned long)(blkid_probe_get_size(pr) / MMC_MB);
-
-done:
 	blkid_free_probe(pr);
-
-	return ret;
-}
-
-/****************************************************
- * NAME : int dev_disk_mmc_part_unmount(const char *target_path)
- ****************************************************/
-int dev_disk_mmc_part_unmount(const char *target_path)
-{
-	char cmd[512] = {};
-	FILE *file = NULL;
-
-#if 0
-	snprintf(cmd, sizeof(cmd), "fuser -mk %s", target_path);
-	file = popen(cmd, "r");
-	if (file == NULL) {
-		dev_err("couldn't exec %s\n", cmd);
+	
+	mmc_part.part_no = nparts;
+	mmc_part.part_type = blkid_partition_get_type(par);
+	mmc_part.part_size = (unsigned long)(blkid_probe_get_size(pr) / MMC_MB);
+	
+	 /* 128GB or multi partition */
+	if ((mmc_part.part_size > 131072) || (mmc_part.part_no != 1)) {
+		dev_err("Not suppoted MMC card (%lu MB, %d)!!\n", mmc_part.part_size, mmc_part.part_no);
 		return -1;
 	}
-	pclose(file);
-#endif
-
-	//# Todo : fuser or lsof check??
-	/* if device busy condition */
-	memset(cmd, 0, sizeof(cmd));
-	snprintf(cmd, sizeof(cmd), "umount %s", target_path);
-	file = popen(cmd, "r");
-	if (file == NULL) {
-		dev_err("couldn't exec %s\n", cmd);
-		return -1;
+	
+	 /* format from exFAT to VFAT */
+	if (mmc_part.part_type == 0x7) 
+	{
+		DIR *mount_dir = NULL;
+		/* A system reset is required after partition delete. */
+		/* To avoid reset, repeat partition delete. */
+		/* fdisk delete */
+		system("/sbin/fdisk /dev/mmcblk0 <<'EOF'\nd\nw\nEOF");
+		usleep(500000); //# wait for done!
+		/* create partition delete exFAT->Y , change->t, FAT32 LBA->c */
+		system("/sbin/fdisk /dev/mmcblk0 <<'EOF'\nn\np\n\n\n\nY\nt\nc\nw\nEOF");
+		usleep(500000); //# wait for done!
+		system("/sbin/mkfs.fat -s 64 -F 32 /dev/mmcblk0p1");
+		//# check /mmc directory.
+		mount_dir = opendir("/mmc");
+		if (mount_dir == NULL) 
+			mkdir("/mmc", 0775);
+		else
+			closedir(mount_dir);
+		sync();
 	}
-	pclose(file);
 
 	return 0;
 }
 
-/****************************************************
- * NAME : int dev_disk_mmc_part_delete(int part_no)
- ****************************************************/
-int dev_disk_mmc_part_delete(int part_no)
+/*****************************************************************************
+ * @brief    int dev_disk_mmc_check_writable(void)
+ * @section  DESC Description
+ *   - desc
+ *****************************************************************************/
+int dev_disk_mmc_check_writable(void)
 {
-	char cmd[512] = {};
-	FILE *file = NULL;
-
-	snprintf(cmd, sizeof(cmd), "parted -s %s rm %d",
-						MMC_BLK_DEV_NAME, part_no);
-
-	file = popen(cmd, "r");
-	if (file == NULL) {
-		dev_err("couldn't exec %s\n", cmd);
-		return -1;
+	FILE *f=NULL;
+	char buf[256 + 1]={0,};
+	char mntd[64]={0,};
+	
+	/* SD 카드 속성확인 (read only file system) */
+	f = fopen("/proc/mounts", "r");
+	if (f == NULL) {
+		/* assume readonly fs */
+		return 0;
 	}
-	pclose(file);
-
-	return 0;
-}
-
-/****************************************************
- * NAME : int dev_disk_mmc_part_create(void)
- ****************************************************/
-int dev_disk_mmc_part_create(void)
-{
-	char cmd[512] = {0,};
-	FILE *file = NULL;
-
-	snprintf(cmd, sizeof(cmd), "parted -s %s -- mkpart primary fat32 2048s -1s",
-							   MMC_BLK_DEV_NAME);
-
-	file = popen(cmd, "r");
-	if (file == NULL) {
-		dev_dbg("couldn't exec %s\n", cmd);
-		return -1;
+	
+	/* 
+	 * normal fs       -> /dev/mmcblk0p1 /mmc vfat rw,noatime,nodiratime,fmask=0000,
+	 * if read-only fs -> /dev/mmcblk0p1 /mmc vfat ro,noatime,......
+	 */
+	while (fgets(buf, 256, f) != NULL) 
+	{
+		char *tmp, *tmp2;
+		/* %*s->discard input */
+		sscanf(buf, "%*s%s", mntd);
+		if (strcmp(mntd, "/mmc") == 0) {
+			tmp = strtok(buf, ",");
+			if (tmp != NULL) {
+				tmp2 = strstr(tmp, "rw");
+				if (tmp2 != NULL) {
+					fclose(f);
+					return 1;
+				}
+			}
+		}
 	}
-	pclose(file);
-
-	return 0;
-}
-
-/****************************************************
- * NAME : int dev_disk_mmc_part_format(void)
- ****************************************************/
-int dev_disk_mmc_part_format(unsigned long size)
-{
-	FILE *file = NULL;
-	int blkid = 0;
-
-	char buffer[256] = {0,};
-
-	blkid = mmc_get_minor();
-	if (blkid < 0) {
-		dev_err("couldn't find mmc partition\n");
-		return -1;
-	}
-
-	snprintf(buffer, sizeof(buffer), "/dev/mmcblk%d", blkid);
-	if (dev_disk_check_mount(MMC_MOUNT_POINT))
-		dev_disk_mmc_part_unmount(buffer);
-
-	memset(buffer, 0, sizeof(buffer));
-
-	if (size >= MMC_SIZE_128GB)
-		/* sector size 512B, 64KB sector per cluster */
-		snprintf(buffer, sizeof(buffer), "mkfs.fat -s 128 -F 32 /dev/mmcblk%dp1", blkid);
-	else
-		/* sector size 512B, 32KB sector per cluster */
-		snprintf(buffer, sizeof(buffer), "mkfs.fat -s 64 -F 32 /dev/mmcblk%dp1", blkid);
-
-	file = popen(buffer, "r");
-	if (file == NULL) {
-		dev_err("couldn't run %s\n", buffer);
-		return -1;
-	}
-	pclose(file);
-
-	return blkid;
-}
-
-/*******************************************************
- * NAME : int dev_disk_mmc_part_set_bootsector(int part_no, int on)
- *******************************************************/
-int dev_disk_mmc_part_set_bootsector(int part_no, int on)
-{
-	char cmd[512] = {0,};
-	FILE *file = NULL;
-
-	snprintf(cmd, sizeof(cmd), "parted -s %s -- set %d boot %s",
-							   MMC_BLK_DEV_NAME, part_no, on?"on":"off");
-
-	file = popen(cmd, "r");
-	if (file == NULL) {
-		dev_dbg("couldn't exec %s\n", cmd);
-		return -1;
-	}
-	pclose(file);
-
-	return 0;
-}
-
-/*******************************************************
- * NAME : int dev_disk_mmc_part_set_lba_mode(int part_no, int on)
- *******************************************************/
-int dev_disk_mmc_part_set_lba_mode(int part_no, int on)
-{
-	char cmd[512] = {0,};
-	FILE *file = NULL;
-
-	snprintf(cmd, sizeof(cmd), "parted -s %s -- set %d lba %s",
-							   MMC_BLK_DEV_NAME, part_no, on?"on":"off");
-
-	file = popen(cmd, "r");
-	if (file == NULL) {
-		dev_dbg("couldn't exec %s\n", cmd);
-		return -1;
-	}
-	pclose(file);
-
+	
+	dev_dbg("sd card read-only filesystem!!\n");
+	fclose(f);
 	return 0;
 }
 
@@ -1136,90 +1022,4 @@ int dev_disk_check_mount(const char *mount_point)
     fclose(procfs);
 
 	return (found ? 1: 0);
-}
-
-/****************************************************
- * NAME : int dev_disk_find_hdd_path(char *node)
- *
- * Desc : return sata device node.. (sda, sdb, sdc...)
- ****************************************************/
-int dev_disk_find_hdd_path(char *node)
-{
-	char buf[256] = {0,};
-	char search_path[3] = {'a', 'b', 'c'};
-	FILE *path;
-
-	int i, val, r;
-	/* from /sys/block/?/removable
-	 * ?-> sda, sdb, sdc ...
-	 */
-	for (i = 0; i < (sizeof(search_path) / sizeof(char)); i++)
-	{
-		memset(buf, 0, sizeof(buf));
-		snprintf(buf, sizeof(buf), "/sys/block/sd%c/removable", search_path[i]);
-		path = fopen(buf, "r");
-		if (path == NULL)
-			continue;
-
-		r = fscanf(path, "%d", &val);
-		fclose(path);
-		path = NULL;
-
-		if (r > 0) {
-			if (val == 0) {
-				/* non-removable device --> HDD */
-				sprintf(node, "sd%c", search_path[i]);
-				return 0;
-			}
-		}
-	}
-
-	/* not found hdd path */
-	return -1;
-}
-
-/****************************************************
- * NAME : int dev_disk_check_usb_disk_path(char *path)
- *
- * arg: sda, sdb, sdc...
- * Desc : return 0:valid usb disk path -1:not valid
- ****************************************************/
-int dev_disk_check_usb_disk_path(char *node)
-{
-	char buf[256] = {0,};
-	FILE *path;
-
-	int val ;
-	/* from /sys/block/?/removable
-	 * ?-> sda, sdb, sdc ...
-	 */
-	if (node == NULL)
-		return -1;
-
-	if ((strncmp(node, "sda", 3) != 0) &&
-		(strncmp(node, "sdb", 3) != 0) &&
-		(strncmp(node, "sdc", 3) != 0)) {
-		dev_err("required sda or sdb or sdc(input = %s)\n", node);
-		return -1;
-	}
-
-	memset(buf, 0, sizeof(buf));
-	snprintf(buf, sizeof(buf), "/sys/block/%s/removable", node);
-	path = fopen(buf, "r");
-	if (path == NULL) {
-		dev_err("couln't open %s\n", buf);
-		return -1;
-	}
-
-	val = 0;
-	fscanf(path, "%d", &val);
-	fclose(path);
-
-	if (val == 1) {
-		/* removable device */
-		return 0;
-	}
-
-	/* not found removable path */
-	return -1;
 }
