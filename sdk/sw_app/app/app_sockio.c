@@ -132,10 +132,13 @@ static Void THR_csock(Void *prm)
 
 static Void *THR_ddns(Void *prm)
 {
-    int exit =0, interval = 0, cmp_interval = 0, cmd ;
-    char start_buffer[MAX_CHAR_64] ;
-    char stop_buffer[MAX_CHAR_64] ;
-
+    int exit =0, interval = 0;
+	int cmp_interval = 0, cmd, valid;
+    char start_buffer[MAX_CHAR_128] ;
+    char stop_buffer[MAX_CHAR_128] ;
+	char data_buf[128]={0,};
+	char *start=NULL;
+	
     app_thr_obj *tObj = &inet->ddnsObj ;
 
     while(!app_cfg->ste.b.cap) 
@@ -144,20 +147,28 @@ static Void *THR_ddns(Void *prm)
     }
 
     tObj->active = 1 ;
+	
+	/* split "http://"" token */
+	valid = 0;
+	if (strstr(app_set->ddns_info.serveraddr, "http:") != NULL) {
+		start = app_set->ddns_info.serveraddr+7; /* after -> (http://)  */
+		valid = 1;
+		strcpy(data_buf, start);
+		/* replaced by busybox wget, wget of busybox not supported user, password option. */
+		sprintf(start_buffer, "/usr/bin/wget -O - \"http://%s:%s@%s?hostname=%s\"", app_set->ddns_info.userId, 
+																				app_set->ddns_info.passwd, 
+																				data_buf, 
+																				app_set->ddns_info.hostname) ;
+		sprintf(stop_buffer, "killall -9 wget") ;
+		if(app_set->ddns_info.interval > 0 && app_set->ddns_info.interval < 60)  // 1min ~ 59Min
+			interval = app_set->ddns_info.interval * 60 * 1000 ;
+		else
+			interval = 60 * 1000 ; // l min
 
-    sprintf(start_buffer, "/usr/bin/wget -O - --http-user=%s --http-passwd=%s \"%s?hostname=%s\"",app_set->ddns_info.userId, app_set->ddns_info.passwd, app_set->ddns_info.serveraddr, app_set->ddns_info.hostname) ;
-
-    sprintf(stop_buffer, "killall -9 wget") ;
-
-    if(app_set->ddns_info.interval > 0 && app_set->ddns_info.interval < 60)  // 1min ~ 59Min
-        interval = app_set->ddns_info.interval * 60 * 1000 ;
-    else
-		interval = 60 * 1000 ; // l min
-
-    if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
-    {
-        system(start_buffer) ;
-    }
+		if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run) {
+			system(start_buffer) ;
+		}
+	}
 
     while(!exit)
     {
@@ -165,25 +176,27 @@ static Void *THR_ddns(Void *prm)
         if (cmd == APP_CMD_STOP) {
             break;
         } 
- 
-        if(app_set->ddns_info.ON_OFF)  // change ddns setting in run time 
-        {
-            if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
-            {
-                if(interval <= cmp_interval )
-                {   
-                    TRACE_INFO("interval = %d cmp_interval = %d\n",interval, cmp_interval) ;                
-                    system(stop_buffer) ;
-                    system(start_buffer) ;
-                    cmp_interval = 0 ;
-                }
-            }  
-             
-            cmp_interval += DDNS_LOOP_INTERVAL ;
-            if(interval*2 <= cmp_interval )
-                cmp_interval = 0 ;
-        }  
-
+		
+		if (valid)
+		{
+			if(app_set->ddns_info.ON_OFF)  // change ddns setting in run time 
+			{
+				if (app_cfg->ste.b.usbnet_run || app_cfg->ste.b.cradle_net_run)
+				{
+					if(interval <= cmp_interval )
+					{   
+						TRACE_INFO("interval = %d cmp_interval = %d\n",interval, cmp_interval) ;                
+						system(stop_buffer) ;
+						system(start_buffer) ;
+						cmp_interval = 0 ;
+					}
+				}  
+				
+				cmp_interval += DDNS_LOOP_INTERVAL ;
+				if(interval*2 <= cmp_interval )
+					cmp_interval = 0 ;
+			}  
+		}
         app_msleep(DDNS_LOOP_INTERVAL);//#?????
     }
     system(stop_buffer) ;

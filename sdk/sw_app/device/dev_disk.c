@@ -960,7 +960,7 @@ int dev_disk_mmc_check_writable(void)
 	char buf[256 + 1]={0,};
 	char mntd[64]={0,};
 	
-	/* SD Ä«µå ¼Ó¼ºÈ®ÀÎ (read only file system) */
+	/* SD ì¹´ë“œ ì†ì„±í™•ì¸ (read only file system) */
 	f = fopen("/proc/mounts", "r");
 	if (f == NULL) {
 		/* assume readonly fs */
