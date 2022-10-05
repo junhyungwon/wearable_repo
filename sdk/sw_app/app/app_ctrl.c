@@ -45,6 +45,7 @@
 #include "app_mcu.h"
 #include "app_buzz.h"
 #include "app_watchdog.h"
+#include "app_version.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -728,6 +729,7 @@ int ctrl_vid_gop_set(int ch, int gop)
 int ctrl_vid_resolution(int resol_idx) 
 {
     int ret = 0 ;
+	char sw_ver[128] = {0, } ;
 
     //# to prevent key input
     app_cfg->ste.b.nokey = 1;
@@ -757,6 +759,9 @@ int ctrl_vid_resolution(int resol_idx)
     if (!app_set->sys_info.osd_set)
         ctrl_swosd_enable(STE_DTIME, 0, 0) ;  // osd disable
 	
+    snprintf(sw_ver, sizeof(sw_ver), "%s", FITT360_SW_VER);
+	ctrl_swosd_userstr(sw_ver, 1);
+
 	switch(resol_idx) {
 	default:
 	case 0:

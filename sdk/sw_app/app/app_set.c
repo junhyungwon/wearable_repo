@@ -236,6 +236,7 @@ static void char_memset(void)
     memset(app_set->sys_info.deviceId, CHAR_MEMSET, MAX_CHAR_32);
     app_set->sys_info.osd_set = CFG_INVALID; 
     app_set->sys_info.beep_sound = CFG_INVALID; 
+    app_set->sys_info.aes_encryption = CFG_INVALID; 
     app_set->sys_info.P2P_ON_OFF = CFG_INVALID; 
     memset(app_set->sys_info.p2p_id, CHAR_MEMSET, MAX_CHAR_32); 
     memset(app_set->sys_info.p2p_passwd, CHAR_MEMSET, MAX_CHAR_32); 
@@ -435,6 +436,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->sys_info.deviceId = %s\n", pset->sys_info.deviceId); 
     printf("pset->sys_info.osd_set  = %d\n", pset->sys_info.osd_set); 
     printf("pset->sys_info.beep_sound  = %d\n", pset->sys_info.beep_sound); 
+    printf("pset->sys_info.aes_encryption  = %d\n", pset->sys_info.aes_encryption); 
     printf("pset->sys_info.P2P_ON_OFF  = %d\n", pset->sys_info.P2P_ON_OFF); 
     
     printf("pset->sys_info.p2p_id  = %s\n", pset->sys_info.p2p_id); 
@@ -671,6 +673,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->sys_info.beep_sound < OFF || pset->sys_info.beep_sound > ON)
         pset->sys_info.beep_sound = ON ; 
 //    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)  
+    if(pset->sys_info.aes_encryption < OFF || pset->sys_info.aes_encryption > ON)
+        pset->sys_info.aes_encryption = OFF ; 
+
     pset->sys_info.P2P_ON_OFF = ON ;  // Ignore previous version values, Always ON
 
     if((int)pset->sys_info.p2p_id[0] == CHAR_INVALID)
@@ -700,7 +705,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	}
 
 	pset->sys_info.dev_cam_ch = MODEL_CH_NUM;
-	
 	//# FTP information
 	if(pset->ftp_info.port <= CFG_INVALID)
 		pset->ftp_info.port	= 21;
@@ -719,7 +723,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
     if(pset->ftp_info.file_type <= CFG_INVALID)
         pset->ftp_info.file_type = OFF ;
-
 	//# FOTA information
 	if(pset->fota_info.port <= CFG_INVALID)
 		pset->fota_info.port	= 21;
@@ -734,14 +737,13 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		strcpy(pset->fota_info.ipaddr, "192.168.40.6");
 
 	if((int)pset->fota_info.id[0] == CHAR_INVALID || (int)pset->fota_info.id[0] == 0)
-		strcpy(pset->fota_info.id, "test");
+		strcpy(pset->fota_info.id, "FTP_ID");
 
 	if((int)pset->fota_info.pwd[0]  == CHAR_INVALID || (int)pset->fota_info.pwd[0] == 0)
-		strcpy(pset->fota_info.pwd, "test");
+		strcpy(pset->fota_info.pwd, "FTP_PASSWORD");
 
 	if((int)pset->fota_info.confname[0]  == CHAR_INVALID || (int)pset->fota_info.confname[0] == 0)
 		sprintf(pset->fota_info.confname,"%s.conf", MODEL_NAME);
-
 	//# Wifi AP information
 	if(pset->wifiap.en_key != ON && pset->wifiap.en_key != OFF)
 	    pset->wifiap.en_key = ON;
@@ -758,7 +760,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if((int)pset->wifiap.pwd[0] == CHAR_INVALID ) // bk 2020.02.26 allow null password
     #endif
         strcpy(pset->wifiap.pwd,"AP_PASSWORD");
-
 	//# Wifilist information
 	for(i = 0 ; i < WIFIAP_CNT; i++)
 	{
@@ -787,7 +788,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
-
 #if defined(NEXX360C) || defined(NEXX360W_CCTV)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
@@ -804,7 +804,6 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
     if(pset->ddns_info.ON_OFF <= CFG_INVALID) 
         pset->ddns_info.ON_OFF = OFF ;
-
 	if((int)pset->ddns_info.userId[0] == CHAR_INVALID || (int)pset->ddns_info.userId[0] == 0)
 		strcpy(pset->ddns_info.userId, "ID");
 
@@ -837,8 +836,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
     printf("pset->account_info.ON_OFF		= %d\n", pset->account_info.ON_OFF) ;
 
-    if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
-        pset->account_info.enctype = 0 ;
+//    if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
+    pset->account_info.enctype = 0 ;
 	
 	/* AES를 사용하는 경우 문자열에 따라서 0xff 또는 0x00으로 시작하는 경우가 있다. */
 	/* 따라서 4byte 크기를 비교함 */
@@ -851,15 +850,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
 		if (res == 0)  // Ignore Invalid(-1) for AES encoding of special character
 		{
-			if (pset->account_info.enctype) // AES type 
-			{ 
-				encrypt_aes(RTSP_DEFAULT_ID, enc_ID, 32) ;
-				strncpy(pset->account_info.rtsp_userid, enc_ID, strlen(enc_ID)) ;
-			}
-			else
-			{
-				strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
-			}
+		    strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
 		}
 		
 		tmp_buf	= (int *)&pset->account_info.rtsp_passwd[0];
@@ -867,18 +858,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
 		if (res == 0)
 		{
-			if(pset->account_info.enctype) // AES type 
-			{ 
-				encrypt_aes(RTSP_DEFAULT_PW, enc_Passwd, 32) ;
-				strncpy(pset->account_info.rtsp_passwd, enc_Passwd, strlen(enc_Passwd)) ;
-			} 
-			else
-			{
-				strcpy(pset->account_info.rtsp_passwd, RTSP_DEFAULT_PW) ;
-			}
+			strcpy(pset->account_info.rtsp_passwd, RTSP_DEFAULT_PW) ;
 		}
 	}
-	
 	// webuser
     if((int)pset->account_info.webuser.id[0] == CHAR_INVALID || (int)pset->account_info.webuser.id[0] == 0){
 		strcpy(pset->account_info.webuser.id, WEB_DEFAULT_ID);
@@ -1198,8 +1180,8 @@ static void app_set_default(int default_type)
     app_set->fota_info.svr_info = 0;
     app_set->fota_info.ON_OFF = OFF ;
     strcpy(app_set->fota_info.ipaddr, "192.168.40.6");
-    strcpy(app_set->fota_info.id, "test");
-    strcpy(app_set->fota_info.pwd, "test");
+    strcpy(app_set->fota_info.id, "FTP_ID");
+    strcpy(app_set->fota_info.pwd, "FTP_PASSWORD");
 
 	//# Wifi AP information
     app_set->wifiap.en_key = ON;
@@ -1228,6 +1210,7 @@ static void app_set_default(int default_type)
 
     app_set->sys_info.osd_set = ON ;
     app_set->sys_info.beep_sound = ON ;
+    app_set->sys_info.aes_encryption = OFF ;
     app_set->sys_info.P2P_ON_OFF = ON ;
 	app_set->sys_info.dev_cam_ch = MODEL_CH_NUM;
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 
@@ -1240,6 +1223,7 @@ static void app_set_default(int default_type)
 	app_set->rec_info.period_idx 	= REC_PERIOD_01;
 	app_set->rec_info.overwrite 	= ON;
 	app_cfg->rec_overwrite 	= app_set->rec_info.overwrite;
+
 
 #if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
@@ -1286,19 +1270,26 @@ static void app_set_default(int default_type)
 
 	app_set->account_info.ON_OFF = ON;
     app_set->account_info.enctype = 0 ;
-    if(app_set->account_info.enctype) // 1, AES encryption
-	{
-        encrypt_aes(RTSP_DEFAULT_ID, enc_ID, 32) ;
-        strncpy(app_set->account_info.rtsp_userid, enc_ID, strlen(enc_ID)) ;
-        encrypt_aes(RTSP_DEFAULT_PW, enc_Passwd, 32) ;
-        strncpy(app_set->account_info.rtsp_passwd, enc_Passwd, strlen(enc_Passwd)) ;
-	}
-	else // 0 do not encryption
-	{
-        strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID);
-        strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
-	}
+//    if(app_set->account_info.enctype) // 1, AES encryption
 
+    strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID);
+    strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
+//  rtsp id/passwd => random(default)
+/*
+	char str_list[9] ;
+	int sub_i ;
+	 
+	srand((unsigned int)time(NULL)) ;
+	for(sub_i = 0 ; sub_i < 8; sub_i++)
+	{
+	    str_list[sub_i] = 'a' + rand() % 26 ;
+	}
+	str_list[sub_i] = 0 ;
+	printf("create rtsp id... from random() %s \n",str_list) ;
+	 
+	strcpy(app_set->account_info.rtsp_userid, str_list);
+	strcpy(app_set->account_info.rtsp_passwd, str_list);
+*/
 	app_set->account_info.webuser.lv = 0;			// 0:Administrator, 1:operator?(TBD)
 	app_set->account_info.webuser.authtype = 0;		// 0:basic, 1:digest(TBD)
 	strcpy(app_set->account_info.webuser.id, WEB_DEFAULT_ID);
@@ -1329,6 +1320,7 @@ static void app_set_default(int default_type)
 
 	memset((void*)app_set->voip.reserved, 0x00, 38);
 	//#------------- VOIP Params End ---------------------------------------------------
+
 	app_set->rtmp.ON_OFF = OFF;
 	app_set->rtmp.USE_URL = OFF;
 	app_set->rtmp.port = RTMP_SERVER_PORT; // RTMP_DEFAULT_PORT
@@ -1347,6 +1339,7 @@ static void app_set_default(int default_type)
 	app_set->sslvpn_info.encrypt_type = OFF ; // 0 aes128, 1 aes256, 2 aria128, 3 aria256, 4 lea128, 5lea256, 6 seed
 	strcpy(app_set->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
 	app_set->sslvpn_info.NI = 2 ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
+
 }
 
 /*****************************************************************************
@@ -1363,9 +1356,24 @@ int app_set_open(void)
 
 #if ENABLE_JSON_CONFIG_FILE 	
 	// try read config from json file
-	ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC);
-    if(EFAIL == ret) {
-		ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
+	if(access(NEXX_CFG_JSON_ENCRYPT_MMC, F_OK) == 0){
+		// decryption file  
+		if(openssl_aes128_decrypt_fs(NEXX_CFG_JSON_ENCRYPT_MMC, NEXX_CFG_JSON_MMC))
+		{
+			ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC) ;
+	    	if( EFAIL == ret)
+			{
+				ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
+			}
+		}
+	}
+	else
+	{
+		ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC) ;
+	   	if( EFAIL == ret)
+		{
+			ret = js_read_settings(app_set, NEXX_CFG_JSON_NAND) ;
+		}
 	}
 	
 	// data 검사..cfg_read 아래부분에 있는거 복붙..
@@ -1480,6 +1488,14 @@ int app_set_write(void)
 		TRACE_INFO("couldn't open %s file\n", path);
 	}
 #endif
+//	if(app_set->sys_info.aes_encryption)  
+	{
+		if(openssl_aes128_encrypt_fs(NEXX_CFG_JSON_MMC, NEXX_CFG_JSON_ENCRYPT_MMC))
+		{
+			printf("openssl_aes128_encrypt_fs......\n") ;
+		    remove(NEXX_CFG_JSON_MMC) ;
+		}	//add log encrypt fail... 
+	}
 	sync();
 	TRACE_INFO("CFG sync done!\n");
 

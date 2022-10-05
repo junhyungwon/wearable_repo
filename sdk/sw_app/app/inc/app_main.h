@@ -17,6 +17,12 @@
 #include "app_msg.h"
 #include "app_leds.h"
 
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/aes.h>
+#include <openssl/sha.h>
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -63,6 +69,19 @@
 
 #define NEXX_CFG_JSON_MMC		"/mmc/cfg/nexx_cfg.json"
 #define NEXX_CFG_JSON_NAND		"/media/nand/cfg/nexx_cfg.json"
+
+#define NEXX_CFG_JSON_ENCRYPT_MMC		"/mmc/cfg/nexx_enc_cfg.json"
+#define NEXX_CFG_JSON_ENCRYPT_NAND		"/media/nand/cfg/nexx_enc_cfg.json"
+
+#define BLOCK_SIZE 16
+#define FREAD_COUNT 4096
+#define KEY_BIT 128
+#define IV_SIZE 16
+#define RW_SIZE 1
+#define SUCC 1
+#define FAIL -1 
+AES_KEY aes_key_128;  
+
 
 /* micom watchdog */
 #define WD_ENC					(1<<0)

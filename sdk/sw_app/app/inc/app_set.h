@@ -66,6 +66,13 @@
 //#define SSLVPN_IPADDRESS            "211.34.58.52"
 #define SSLVPN_IPADDRESS            "192.168.40.1"
 
+
+typedef enum {
+    NO_ENCRYPTION,
+    USE_ENCRYPTION
+} app_using_encrypt ;
+
+
 typedef enum {
 	RATE_CTRL_VBR,
 	RATE_CTRL_CBR,
@@ -232,7 +239,8 @@ typedef struct {
 	char uid[MAX_CHAR_32];
 	short dev_cam_ch;		//# NEXXONE: 1, Any others: 4
     short beep_sound ;
-	char reserved[24];
+    short aes_encryption ;
+	char reserved[22];
 } app_system_t;
 //} __attribute__((packed)) app_system_t;
 
@@ -275,7 +283,7 @@ typedef struct {
 typedef struct {
     unsigned char       lv;        // 0:administrator, 1:operator, 2:viewer, 3:guest
     char                id[MAX_CHAR_32];
-    char                pw[MAX_CHAR_32];
+    char                pw[MAX_CHAR_64];
 } app_onvifuser_t; // 65
 
 typedef struct {

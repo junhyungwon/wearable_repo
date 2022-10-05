@@ -25,6 +25,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdint.h>
+#include "app_main.h"
 
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 #define Nb 4
@@ -360,19 +361,97 @@ int decrypt_aes(const char *src, char *dst, int length)
     return 0;
 }
 
+int openssl_aes128_decrypt(char* src, char*dst)
+{
+/*
+	AES_KEY dec_key_128;   
+    unsigned char aes_128_key[]         = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+                                                                0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f}; 
+    printf("===============================================\n") ;
 
+    if(AES_set_decrypt_key(aes_128_key, sizeof(aes_128_key)*8, &dec_key_128) < 0){
+        // print Error  
+    }; 
+    AES_decrypt(src, dst, &dec_key_128);
+	printf("================================================\n") ;
+*/
+    AES_KEY dec_key_128;   
+    int total_len = 0, dst_len = 0;
+    unsigned char aes_128_key[]         = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+//    unsigned char aes_128_key[]         = "aaaaaaaabbbbbbbb"; 
+//    unsigned char iv[] = {0x3d,0xaf,0xba,0x42,0x9d,0x9e,0xb4,0x30,
+//                          0xb4,0x22,0xda,0x80,0x2c,0x9f,0xac,0x41};
+//    unsigned char iv[] = "aaaaaaaabbbbbbbb";
+    unsigned char iv[]         = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+    if(AES_set_decrypt_key(aes_128_key, sizeof(aes_128_key)*8, &dec_key_128) < 0){
+        // print Error  
+    }; 
+//    AES_cbc_encrypt(src, dst, strlen(src), &dec_key_128, iv, AES_DECRYPT);
+    printf("aes128 decrypt src = %s\n",src) ;
+    printf("aes128_decrypt length of src = %d\n",strlen(src)); 
+    printf("aes128_decrypt length of src = %d\n",(strlen(src) + 16)/16*16); 
+    AES_cbc_encrypt(src, dst, (strlen(src) + 16)/16*16, &dec_key_128, iv, AES_DECRYPT);
 
+    total_len = strlen(dst) ;
+	dst_len = strlen(src) - dst[strlen(src)-1];
+    printf("total_len = %d dst_len = %d  dec padding size %d\n",total_len, dst_len);
 
+//    printf("aes128_decrypt dst value = %s dst_len = %d\n",dst, strlen(dst)) ;
+    return dst_len ;
+}
 
+int openssl_aes128_decrypt_fs(char *src,char *dst)
+{
+    unsigned char aes_128_key[]         = {0x06,0xa9,0x21,0x40,0x36,0xb8,0xa1,0x5b,
+                                                                0x51,0x2e,0x03,0xd5,0x34,0x12,0x00,0x06}; 
+    unsigned char iv[] = {0x3d,0xaf,0xba,0x42,0x9d,0x9e,0xb4,0x30,
+                          0xb4,0x22,0xda,0x80,0x2c,0x9f,0xac,0x41};
 
+    char buf[FREAD_COUNT+BLOCK_SIZE];
+	int len=0;
+	int total_size=0;
+	int save_len=0;
+    int w_len=0;
 
+    FILE *fp=fopen(src,"rb");
+	if( fp == NULL ){
+	    fprintf(stderr,"[ERROR] %d can not fopen('%s')\n",__LINE__,src);
+	    return FAIL;
+    }
 
+	FILE *wfp=fopen(dst,"wb");
+    if( wfp == NULL ){
+        fprintf(stderr,"[ERROR] %d can not fopen('%s')\n",__LINE__,dst);
+        return FAIL;
+    }
 
+	AES_set_decrypt_key(aes_128_key ,KEY_BIT ,&aes_key_128);
 
+    fseek(fp ,0 ,SEEK_END);
+	total_size=ftell(fp);
+	fseek(fp ,0 ,SEEK_SET);
+    printf("total_size %d\n",total_size);
 
+    while( len = fread( buf ,RW_SIZE ,FREAD_COUNT ,fp) ){
+        if( FREAD_COUNT == 0 ){
+            break;
+        }
+		save_len+=len;
+        w_len=len;
 
+        AES_cbc_encrypt(buf ,buf ,len ,&aes_key_128 ,iv ,AES_DECRYPT);
+		if( save_len == total_size ){ // check last block
+	        w_len=len - buf[len-1];
+	        printf("dec padding size %d\n" ,buf[len-1]);
+        }
+        fwrite(buf ,RW_SIZE ,w_len ,wfp);
+    }
 
+    fclose(wfp);
+    fclose(fp);
 
+    return SUCC;
+}
 
 
 

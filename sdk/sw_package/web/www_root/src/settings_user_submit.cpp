@@ -48,7 +48,7 @@ static int submit_settings()
 		char live_stream_account_pw[32] ={0};
 
 		char onvif_id[32] ={0};
-		char onvif_pw[32] ={0};
+		char onvif_pw[64] ={0};
 
 		T_CGI_USER_CONFIG t; memset(&t, 0, sizeof t);
 
@@ -126,12 +126,13 @@ static int submit_settings()
 			CGI_DBG("Invalid onvif id:%s\n", onvif_id);
 			return ERR_INVALID_PARAM;
 		}
-		if(strlen(onvif_pw) < 1 || strlen(onvif_pw) >16){
-			CGI_DBG("Invalid onvif pw:%s\n", onvif_pw);
+		if(strlen(onvif_pw) < 1 || strlen(onvif_pw) >64){
+			CGI_DBG("Invalid onvif pw:%s length = %d\n", onvif_pw, strlen(onvif_pw));
 			return ERR_INVALID_PARAM;
 		}
 		sprintf(t.onvif.id, "%s", onvif_id);
 		sprintf(t.onvif.pw, "%s", onvif_pw);
+		CGI_DBG("################# onvif pw:%s\n", onvif_pw);
 
 		// check not null
 #if defined(FITT360_SECURITY)

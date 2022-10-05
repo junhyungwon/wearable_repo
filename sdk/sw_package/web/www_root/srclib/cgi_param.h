@@ -19,8 +19,8 @@ typedef struct _tagBackupServer {
 	int  enable;
     int  upload_files;      // Type of record files to upload to backup server. 0:all, 1:event
 	char serveraddr[32];
-	char id[32];
-	char pw[32];
+	char id[64];
+	char pw[64];
 	int  port;
 }T_CGI_BACKUP_SERVER;
 
@@ -28,8 +28,8 @@ typedef struct _tagFotaServer {
 	int  enable;
     int  server_info; // backup server와 같은지, 아니면 직접입력할건지
 	char serveraddr[32];
-	char id[32];
-	char pw[32];
+	char id[64];
+	char pw[64];
 	int  port;
 }T_CGI_FOTA_SERVER;
 
@@ -39,8 +39,8 @@ typedef struct _tagMediaServer {
 	char full_path_url[64];
 	char serveraddr[16];
 	int  port;
-	char id[32];
-	char pw[32];
+	char id[64];
+	char pw[64];
 }T_CGI_MEDIA_SERVER;
 
 typedef struct _tagManageServer {
@@ -53,8 +53,8 @@ typedef struct _tagDdnsInfo {
 	int  enable;
 	char serveraddr[64];
 	char hostname[32];
-	char id[32];
-	char pw[32];
+	char id[64];
+	char pw[64];
 }T_CGI_DDNS_INFO;
 typedef struct _tagDnsInfo{
 	char server1[32];
@@ -92,7 +92,7 @@ typedef struct _tagCgiOnvifConfig {
     int  enable; // 1:enable, 0:disable
 	int  lv;
     char id[32]; // fixed "admin"
-    char pw[32];
+    char pw[64];
 }T_CGI_ONVIF_CONFIG;
 
 typedef struct _tagCgiP2pServerConfig {
@@ -124,6 +124,7 @@ typedef struct _tagCgiServersConfig {
 	int					time_zone;
     char 				time_zone_abbr[6] ; // timezone 문자열...
 	int					daylight_saving;
+    int aes_encryption;
 	T_CGI_HTTPS_CONFIG  https;
 	T_CGI_ONVIF_CONFIG  onvif;
     T_CGI_P2PSERVER_CONFIG p2p;
@@ -149,6 +150,7 @@ typedef struct _tagCgiOperationConfiguration {
     T_CGI_RECORDING_CONFIG rec;
     int display_datetime;
     int beep_sound;
+    int aes_encryption;
     //T_CGI_P2PSERVER_CONFIG p2p;
 }T_CGI_OPERATION_CONFIG;
 
@@ -244,6 +246,7 @@ typedef struct _tagCgiSystemConfiguration{
 }T_CGI_SYSTEM_CONFIG;
 
 typedef struct _tagCgiUserConfig {
+	int aes_encryption;
 	T_CGI_ACCOUNT      web;
 	T_CGI_ONVIF_CONFIG onvif;
 	T_CGI_RTSP_CONFIG  rtsp;

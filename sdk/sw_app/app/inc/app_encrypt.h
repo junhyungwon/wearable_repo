@@ -13,6 +13,7 @@
 #ifndef _APP_ENCRYPT_H_
 #define _APP_ENCRYPT_H_
 
+
 /*----------------------------------------------------------------------------
  Defines referenced	header files
 -----------------------------------------------------------------------------*/
@@ -34,6 +35,8 @@ extern "C"
 
 int encrypt_aes(const char *src, char *dst, int len) ;
 char *SHA256_process(char *string) ;
+void openssl_aes128_encrypt(char *src, char *dst) ;
+int openssl_aes128_encrypt_fs(char *src, char *dst) ;
 
 #ifdef __cplusplus
 }

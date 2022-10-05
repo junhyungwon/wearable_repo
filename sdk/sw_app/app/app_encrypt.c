@@ -24,11 +24,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdint.h>
-#include <openssl/rand.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/aes.h>
-#include <openssl/sha.h>
+#include "app_main.h"
 
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 #define Nb 4
@@ -259,10 +255,12 @@ static void Cipher()
 
     // The encryption process is over.
     // Copy the state array to output array.
+
     for (i = 0; i<4; i++)
         for (j = 0; j<4; j++)
             out[i * 4 + j] = state[i][j];
 }
+
 
 int encrypt_aes(const char *src, char *dst, int length)
 {
@@ -310,6 +308,7 @@ int encrypt_aes(const char *src, char *dst, int length)
     return 0;
 }
 
+
 char *SHA256_process(char *string)
 {
     int i = 0 ;
@@ -324,3 +323,69 @@ char *SHA256_process(char *string)
 
     return mdString ;
 }
+
+void openssl_aes128_encrypt(char *src, char *dst)
+{
+    unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+    unsigned char iv[]          = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+
+    int i = 0, len=0, padding_len=0 ;
+    char buf[16 + BLOCK_SIZE] ;
+
+    len = strlen(src) ;
+    AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key_128); 
+    strncpy(buf, src, len) ;
+
+    padding_len=BLOCK_SIZE - len % BLOCK_SIZE;
+    memset(buf+len, padding_len, padding_len);
+
+    AES_cbc_encrypt(buf ,dst ,len+padding_len ,&aes_key_128, iv,AES_ENCRYPT);
+}
+
+
+int openssl_aes128_encrypt_fs(char *src, char *dst)
+{
+    unsigned char aes_128_key[]         = {0x06,0xa9,0x21,0x40,0x36,0xb8,0xa1,0x5b,
+                                                                0x51,0x2e,0x03,0xd5,0x34,0x12,0x00,0x06}; 
+    unsigned char iv[] = {0x3d,0xaf,0xba,0x42,0x9d,0x9e,0xb4,0x30,
+                          0xb4,0x22,0xda,0x80,0x2c,0x9f,0xac,0x41};
+
+    int i = 0, len=0, padding_len=0 ;
+    char buf[FREAD_COUNT + BLOCK_SIZE] ;
+
+    FILE *fp = fopen(src, "rb") ;
+    if(fp == NULL) {
+        fprintf(stderr, "[ERROR] %d can not fopen('%s')\n",__LINE__,src);
+        return FAIL;
+    }
+
+    FILE *wfp=fopen(dst,"wb");
+    if( wfp == NULL ){
+        fprintf(stderr,"[ERROR] %d can not fopen('%s')\n",__LINE__,dst);
+        return FAIL;
+    }
+
+    AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key_128); 
+    while(len = fread(buf, RW_SIZE, FREAD_COUNT, fp)) {
+        if(FREAD_COUNT != len){
+            break ;
+        }
+        AES_cbc_encrypt(buf, buf, len, &aes_key_128, iv, AES_ENCRYPT);
+        fwrite(buf, RW_SIZE, len, wfp) ;
+    }
+
+    padding_len=BLOCK_SIZE - len % BLOCK_SIZE;
+	printf("enc padding len:%d\n",padding_len);
+    memset(buf+len, padding_len, padding_len);
+
+    AES_cbc_encrypt(buf ,buf ,len+padding_len ,&aes_key_128, iv,AES_ENCRYPT);
+	fwrite(buf ,RW_SIZE ,len+padding_len ,wfp);
+
+	fclose(wfp);
+	fclose(fp);
+
+    sync() ;
+    return SUCC;
+
+}
+

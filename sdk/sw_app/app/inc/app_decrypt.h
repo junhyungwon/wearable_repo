@@ -12,6 +12,8 @@
 
 #ifndef _APP_DECRYPT_H_
 #define _APP_DECRYPT_H_
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -33,7 +35,8 @@ extern "C"
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
 int decrypt_aes(const char *src, char *dst, int len) ;
-
+int openssl_aes128_decrypt(char* src, char*dst) ;
+int openssl_aes128_decrypt_fs(char* src, char*dst) ;
 
 #ifdef __cplusplus
 }
