@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "qdecoder.h"
 #include "cgi.h"
 #include "cgi_param.h"
 
@@ -141,6 +142,9 @@ static int submit_settings()
 
 int main(int argc, char *argv[])
 {
+	// sesseion check
+    validateSession();
+
 	int nError = submit_settings();
 
 	send_response(nError);

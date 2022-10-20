@@ -251,6 +251,9 @@ static int submit_settings_qcgi()
 
 int main(int argc, char *argv[])
 {
+	// sesseion check
+    validateSession();
+
 	int nError = submit_settings_qcgi();
 
 	CGI_DBG("nError:%d\n", nError);

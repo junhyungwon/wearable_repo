@@ -5,6 +5,7 @@
 
 #include <json-c/json.h>
 
+#include "qdecoder.h"
 #include "cgi.h"
 
 char g_lang[32] = "en";
@@ -253,3 +254,23 @@ int send_response(int errnum)
 
 }
 
+void validateSession() {
+	qentry_t *req = qcgireq_parse(NULL, Q_CGI_ALL);
+	qentry_t *sess = qcgisess_init(req, NULL);
+
+	char *identity  = sess->getstr(sess, "identity", false);
+
+	// must be null if not loggined.
+	if (identity == NULL) {
+		printf("status: 401\n\n");
+
+		// force exit.
+		exit(0);
+	} else {
+		// update time to now.
+		qcgisess_settimeout(sess, SESSION_TIMEOUT);
+	    qcgisess_save(sess);
+	}
+
+    sess->free(sess);
+}

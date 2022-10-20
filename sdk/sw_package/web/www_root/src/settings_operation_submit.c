@@ -264,6 +264,9 @@ static int submit_settings()
 
 int main(int argc, char *argv[])
 {
+	// sesseion check
+    validateSession();
+
 	int nError = SUBMIT_ERR;
 
 	nError = submit_settings();

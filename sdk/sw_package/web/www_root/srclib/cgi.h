@@ -25,6 +25,8 @@
 #define SYSMNG 2
 #define LOGINCHECK 3
 
+// SESSION
+#define SESSION_TIMEOUT (60*10)
 
 #define SUPPORT_LANG "en"
 #define MAX_ACCOUNT 16
@@ -87,6 +89,7 @@ char *      get_cgi_contents();
 void		remove_char_from_string(char subc, char *str);
 void		remove_rn_char_from_string(char *str);
 
+void        validateSession();
 
 #ifdef __cplusplus
 }
