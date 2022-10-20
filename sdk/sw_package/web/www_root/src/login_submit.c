@@ -28,9 +28,14 @@ int main(void)
 
     bool isValidated = false;
 
-    // fixme : authentication. check from file.
+    // fixme : authentication.
     if (strcmp(identity,"admin") == 0) {
-        isValidated = true;
+        T_CGI_ACCOUNT acc;
+        sprintf(acc.id, "%s", identity);
+        sprintf(acc.pw, "%s", password);
+        if(0 == sysctl_message(UDS_CMD_CHECK_ACCOUNT, (void*)&acc, sizeof(acc))) {
+            isValidated = true;
+        }
     }
 
     if (isValidated) {
