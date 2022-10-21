@@ -28,6 +28,7 @@ EXE =
 #LIBS += -L../lib/ -llfuds
 LIBS += -L../lib/ -ljson-c
 LIBS += -L../srclib/ -lLFCGI
+LIBS += ../srclib/cgi.o
 ##### End of variables to change
 
 ##### Files

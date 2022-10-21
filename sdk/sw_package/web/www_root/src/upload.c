@@ -13,6 +13,9 @@
 
 int main(int argc, char **argv)
 {
+	// sesseion check
+    validateSession();
+
 	int nStat = ERR_FWUPDATE;
 	int status = -1;
 	qentry_t *req = NULL;

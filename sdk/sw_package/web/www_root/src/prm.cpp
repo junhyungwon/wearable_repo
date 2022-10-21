@@ -1200,6 +1200,9 @@ int main(int argc, char *argv[])
 	char *pQuery = NULL;
     char *pContents=NULL;
 
+	// sesseion check
+    validateSession();
+
 	pQuery = getenv("REQUEST_METHOD");
 	if(pQuery != NULL){
 		if(strcmp(pQuery, "GET") == 0){
