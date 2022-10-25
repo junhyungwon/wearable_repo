@@ -808,27 +808,22 @@ int updateUser(T_CGI_USER *t)
 int checkAccount(T_CGI_ACCOUNT *acc)
 {
     size_t olen;
-	int decrypt_idlen = 0 ; 
 	int decrypt_pwlen = 0 ; 
-	unsigned char web_decrypt_id[64] = {0, } ;
 	unsigned char web_decrypt_pw[64] = {0, } ;
 
 	if(app_set->sys_info.aes_encryption)
 	{
 		DBG_UDS("old web account, id:%s, pw:%s\n", app_set->account_info.webuser.id, app_set->account_info.webuser.pw);
-		decrypt_idlen = openssl_aes128_decrypt(base64_decode(acc->id, strlen(acc->id), &olen), web_decrypt_id) ;
 		decrypt_pwlen = openssl_aes128_decrypt(base64_decode(acc->pw, strlen(acc->pw), &olen), web_decrypt_pw) ;
 		DBG_UDS("new web account pw:%s\n", web_decrypt_pw);
 
-		if(!strncmp(app_set->account_info.webuser.id, web_decrypt_id, decrypt_idlen)
-		&& !strncmp(app_set->account_info.webuser.pw, web_decrypt_pw, decrypt_pwlen)) {
+		if(!strncmp(app_set->account_info.webuser.pw, web_decrypt_pw, decrypt_pwlen)) {
 			return 0;
 		}
 	}
 	else
 	{
-		if(!strcmp(app_set->account_info.webuser.id, acc->id)
-		&& !strcmp(app_set->account_info.webuser.pw, acc->pw)) {
+		if(!strcmp(app_set->account_info.webuser.pw, acc->pw)) {
 			return 0;
 		}
 	}
@@ -1127,6 +1122,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			    memset(t->fota.id, 0x00, 64) ;
 				strncpy(t->fota.id, fota_decrypt_id, decrypt_len) ;
 			}
+
 			if (strcmp(app_set->fota_info.id, t->fota.id)) {
 				strcpy(app_set->fota_info.id, t->fota.id);
 				DBG_UDS("Updated app_set->fota_info.id=%s\n", app_set->ftp_info.id);
