@@ -255,7 +255,7 @@ int send_response(int errnum)
 }
 
 void validateSession() {
-	qentry_t *req = qcgireq_parse(NULL, Q_CGI_ALL);
+	qentry_t *req = qcgireq_parse(NULL, Q_CGI_COOKIE);
 	qentry_t *sess = qcgisess_init(req, NULL);
 
 	char *identity  = sess->getstr(sess, "identity", false);
