@@ -354,6 +354,14 @@ typedef struct {
 } app_sslvpncfg_t ;
 #pragma pack()
 
+#pragma pack(1)
+typedef struct {
+    char OpenSSH_ver[32] ;
+    char OpenSSL_ver[32] ;
+    char Webserver_ver[32] ;
+} app_module_ver_t ;
+#pragma pack()
+
 typedef struct {
 	app_ch_cfg_t			ch[TOT_CH_INFO]; // 4 + 1 = records + streaming
 	app_watchdog_t			wd;
@@ -377,9 +385,9 @@ typedef struct {
     app_voip_t              voip; //  => 72 + 40
     app_rtmp_addr_t         rtmp ; // 86 
     app_sslvpncfg_t         sslvpn_info ;
+    app_module_ver_t        module_ver ;
 //	char reserved[88];   // 1024 - 164 (ddns) - 66 (time) - 320(account) - ( 72(voip) + 40) - (168(fota)) - 102(rtmp)
                          // - 16 ( streaming cfg )
-	
 } app_set_t;
 
 /*----------------------------------------------------------------------------

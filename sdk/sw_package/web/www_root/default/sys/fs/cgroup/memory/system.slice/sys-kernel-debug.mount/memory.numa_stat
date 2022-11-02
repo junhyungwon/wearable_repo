@@ -1,0 +1,8 @@
+total=53 N0=0 N1=53
+file=53 N0=0 N1=53
+anon=0 N0=0 N1=0
+unevictable=0 N0=0 N1=0
+hierarchical_total=53 N0=0 N1=53
+hierarchical_file=53 N0=0 N1=53
+hierarchical_anon=0 N0=0 N1=0
+hierarchical_unevictable=0 N0=0 N1=0

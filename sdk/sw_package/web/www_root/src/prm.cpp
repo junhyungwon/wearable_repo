@@ -476,6 +476,10 @@ int put_json_all_config()
 
 		remove_rn_char_from_string(p.mac);
 		json_object_object_add(system_obj, "mac",   json_object_new_string(p.mac));
+		json_object_object_add(system_obj, "sshver",   json_object_new_string(p.sshver));
+		json_object_object_add(system_obj, "sslver",   json_object_new_string(p.sslver));
+		json_object_object_add(system_obj, "webver",   json_object_new_string(p.webver));
+
 	}
 	json_object_object_add(all_config, "system_settings", system_obj);
 
@@ -628,6 +632,9 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 
 	remove_rn_char_from_string(p->mac);
 	json_object_object_add(systemobj, "mac",   json_object_new_string(p->mac));
+	json_object_object_add(systemobj, "sshver", json_object_new_string(p->sshver));
+	json_object_object_add(systemobj, "sslver", json_object_new_string(p->sslver));
+	json_object_object_add(systemobj, "webver", json_object_new_string(p->webver));
 
 	json_object_object_add(myobj, "system", systemobj);
 

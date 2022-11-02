@@ -69,14 +69,14 @@ typedef enum{
 	CFG_MAX
 } app_cfg_e;
 
-const char* const RTSP_DEFAULT_ID   = "admin";
-const char* const RTSP_DEFAULT_PW   = "admin";
+const char* const RTSP_DEFAULT_ID   = "admin001!";
+const char* const RTSP_DEFAULT_PW   = "admin001!";
 const char* const P2P_DEFAULT_ID    = "linkflow";
 const char* const P2P_DEFAULT_PW    = "12345678";
 const char* const WEB_DEFAULT_ID    = "admin";
-const char* const WEB_DEFAULT_PW    = "admin";
+const char* const WEB_DEFAULT_PW    = "admin001!";
 const char* const ONVIF_DEFAULT_ID  = "admin";
-const char* const ONVIF_DEFAULT_PW  = "admin";
+const char* const ONVIF_DEFAULT_PW  = "admin001!";
 
 /*
  * Nexx360/Fitt360 --> 15,10,5 Fps
@@ -519,6 +519,66 @@ int show_all_cfg(app_set_t* pset)
 
     return 0;
 }
+
+static int check_module_version(char *SSHV, char *SSLV, char *WEBV)
+{
+	char cmd[64] = {0,}, buf[64] = {0,} ;
+	int cnt = 0, ret = 0 ;
+
+	FILE *fp = NULL, *fd = NULL;
+
+	char *ptr = NULL ;
+
+	sprintf(cmd, "ssh -V > /mmc/module.ver 2>&1") ;
+	fp = popen(cmd, "r") ;
+	pclose(fp) ;
+	
+	sprintf(cmd, "lighttpd -v cat >> /mmc/module.ver 2>&1") ;
+	fp = popen(cmd, "r") ;
+	pclose(fp) ;
+
+	while(1)
+	{
+		if(access("/mmc/module.ver", F_OK) !=0)
+		{
+			if(cnt == 3)
+			{
+				break ;
+			}
+			cnt += 1 ;
+			OSA_waitMsecs(500) ;
+		}
+		else
+		{
+			if((fd = fopen("/mmc/module.ver", "r")) != NULL)
+			{
+				int readsize = fread(buf, sizeof(buf), 1, fd) ;
+				if(readsize > 0)
+				{
+					ptr = strstr(buf, "OpenSSH") ;
+					{
+						strncpy(SSHV, &ptr[8], 5) ;
+						printf("SSHV = %s\n",SSHV) ;
+					}
+					ptr = strstr(buf, "OpenSSL") ;
+					{
+						strncpy(SSLV, &ptr[8], 6) ;
+						printf("SSLV = %s\n",SSLV) ;
+					}
+					ptr = strstr(buf, "lighttpd") ;
+					{
+						strncpy(WEBV, &ptr[9], 12) ;
+						printf("WEBV = %s\n",WEBV) ;
+					}
+					ret = TRUE ;
+					break ;
+				}
+			}
+		}
+	}
+	return ret ;
+}
+
 
 static void cfg_param_check_nexx(app_set_t *pset)
 {
@@ -1001,6 +1061,13 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->sslvpn_info.NI <= CFG_INVALID)
 		pset->sslvpn_info.NI = 2 ; // 0 eth0, 1 wlan0, 2 usb0, 3 eth1
 
+	if(!check_module_version(pset->module_ver.OpenSSH_ver, pset->module_ver.OpenSSL_ver, pset->module_ver.Webserver_ver))
+	{
+		strcpy(pset->module_ver.OpenSSH_ver, "7.9p1") ;
+		strcpy(pset->module_ver.OpenSSL_ver, "1.1.1o") ;
+		strcpy(pset->module_ver.Webserver_ver, "1.4.65(ssl)") ;
+	}
+
 	if(0 == access("/mmc/show_all_cfg", F_OK))
 		show_all_cfg(pset); // BKKIM
 }
@@ -1340,6 +1407,18 @@ static void app_set_default(int default_type)
 	strcpy(app_set->sslvpn_info.ipaddr, SSLVPN_IPADDRESS) ;
 	app_set->sslvpn_info.NI = 2 ; //  0 eth0, 1 wlan0, 2 usb0, 3 eth1
 
+	if(check_module_version(app_set->module_ver.OpenSSH_ver, app_set->module_ver.OpenSSL_ver, app_set->module_ver.Webserver_ver))
+	{
+		printf("app_set->module_ver.OpenSSH_ver = %s\n",app_set->module_ver.OpenSSH_ver) ;
+		printf("app_set->module_ver.OpenSSL_ver = %s\n",app_set->module_ver.OpenSSL_ver) ;
+		printf("app_set->module_ver.Webserver_ver = %s\n",app_set->module_ver.Webserver_ver) ;
+	}
+	else
+	{
+		strcpy(app_set->module_ver.OpenSSH_ver, "7.9p1") ;
+		strcpy(app_set->module_ver.OpenSSL_ver, "1.1.1o") ;
+		strcpy(app_set->module_ver.Webserver_ver, "1.4.65(ssl)") ;
+	}
 }
 
 /*****************************************************************************

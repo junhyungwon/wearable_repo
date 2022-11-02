@@ -1,0 +1,3 @@
+DRIVER=snd_hda_codec_realtek
+MODALIAS=hdaudio:v10EC0221r00100003a01
+

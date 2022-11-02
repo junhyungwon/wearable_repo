@@ -243,6 +243,9 @@ typedef struct _tagCgiSystemConfiguration{
 	char devid[32];
 	char mac[32];
 	char uid[32];
+	char sshver[32] ;
+	char sslver[32] ;
+	char webver[32] ;
 }T_CGI_SYSTEM_CONFIG;
 
 typedef struct _tagCgiUserConfig {

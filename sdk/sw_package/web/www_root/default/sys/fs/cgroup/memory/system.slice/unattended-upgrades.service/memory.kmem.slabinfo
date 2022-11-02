@@ -1,0 +1,21 @@
+slabinfo - version: 2.1
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+task_struct            0      0   5888    5    8 : tunables    0    0    0 : slabdata      0      0      0
+kmalloc-1024          32     32   1024   32    8 : tunables    0    0    0 : slabdata      1      1      0
+kmalloc-512           32     32    512   32    4 : tunables    0    0    0 : slabdata      1      1      0
+kmalloc-256           32     32    256   32    2 : tunables    0    0    0 : slabdata      1      1      0
+kmalloc-96             0      0     96   42    1 : tunables    0    0    0 : slabdata      0      0      0
+proc_inode_cache      47     47    688   47    8 : tunables    0    0    0 : slabdata      1      1      0
+sock_inode_cache      92     92    704   46    8 : tunables    0    0    0 : slabdata      2      2      0
+kmalloc-64           128    128     64   64    1 : tunables    0    0    0 : slabdata      2      2      0
+radix_tree_node       84     84    584   28    4 : tunables    0    0    0 : slabdata      3      3      0
+ext4_inode_cache     232    232   1096   29    8 : tunables    0    0    0 : slabdata      8      8      0
+anon_vma             184    184     88   46    1 : tunables    0    0    0 : slabdata      4      4      0
+pid                  256    256     64   64    1 : tunables    0    0    0 : slabdata      4      4      0
+vm_area_struct       234    234    208   39    2 : tunables    0    0    0 : slabdata      6      6      0
+mm_struct              0      0   2112   15    8 : tunables    0    0    0 : slabdata      0      0      0
+kmalloc-32           384    384     32  128    1 : tunables    0    0    0 : slabdata      3      3      0
+cred_jar             126    126    192   42    2 : tunables    0    0    0 : slabdata      3      3      0
+inode_cache           53     53    616   53    8 : tunables    0    0    0 : slabdata      1      1      0
+dentry               378    378    192   42    2 : tunables    0    0    0 : slabdata      9      9      0
+filp                 192    192    256   32    2 : tunables    0    0    0 : slabdata      6      6      0

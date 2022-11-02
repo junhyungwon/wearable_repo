@@ -1,0 +1,8 @@
+total=40 N0=6 N1=34
+file=1 N0=1 N1=0
+anon=39 N0=5 N1=34
+unevictable=0 N0=0 N1=0
+hierarchical_total=40 N0=6 N1=34
+hierarchical_file=1 N0=1 N1=0
+hierarchical_anon=39 N0=5 N1=34
+hierarchical_unevictable=0 N0=0 N1=0

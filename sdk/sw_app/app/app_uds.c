@@ -810,23 +810,18 @@ int checkAccount(T_CGI_ACCOUNT *acc)
     size_t olen;
 	int decrypt_pwlen = 0 ; 
 	unsigned char web_decrypt_pw[64] = {0, } ;
+	char cmd[64] = {0, };
 
-	if(app_set->sys_info.aes_encryption)
-	{
-		DBG_UDS("old web account, id:%s, pw:%s\n", app_set->account_info.webuser.id, app_set->account_info.webuser.pw);
-		decrypt_pwlen = openssl_aes128_decrypt(base64_decode(acc->pw, strlen(acc->pw), &olen), web_decrypt_pw) ;
-		DBG_UDS("new web account pw:%s\n", web_decrypt_pw);
+    FILE *fp = NULL ;
+	
+	DBG_UDS("old web account, id:%s, pw:%s\n", app_set->account_info.webuser.id, app_set->account_info.webuser.pw);
+	DBG_UDS("new web account, id:%s  pw:%s\n", acc->id, acc->pw);
+	decrypt_pwlen = openssl_aes128_decrypt(base64_decode(acc->pw, strlen(acc->pw), &olen), web_decrypt_pw) ;
+	DBG_UDS("new web account pw:%s decrypt_len = %d\n", web_decrypt_pw, decrypt_pwlen);
+	if(!strncmp(app_set->account_info.webuser.pw, web_decrypt_pw, decrypt_pwlen)) {
+		return 0 ;
+	}
 
-		if(!strncmp(app_set->account_info.webuser.pw, web_decrypt_pw, decrypt_pwlen)) {
-			return 0;
-		}
-	}
-	else
-	{
-		if(!strcmp(app_set->account_info.webuser.pw, acc->pw)) {
-			return 0;
-		}
-	}
 	return -1;
 }
 
@@ -908,51 +903,35 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 	strcpy(t->bs.serveraddr, app_set->ftp_info.ipaddr);
 
-	if(app_set->sys_info.aes_encryption)
-	{
-		DBG_UDS("Get ftp id:%s\n", app_set->ftp_info.id);
-	    openssl_aes128_encrypt(app_set->ftp_info.id, ftp_id) ;
-		DBG_UDS("Get ftp aes28 encrypte id:%s\n", ftp_id);
-		strcpy(t->bs.id, base64_encode(ftp_id, strlen(ftp_id), &olen)) ;
-		DBG_UDS("Get ftp base64 id:%s\n", t->bs.id);
+	DBG_UDS("Get ftp id:%s\n", app_set->ftp_info.id);
+    openssl_aes128_encrypt(app_set->ftp_info.id, ftp_id) ;
+	DBG_UDS("Get ftp aes28 encrypte id:%s\n", ftp_id);
+	strcpy(t->bs.id, base64_encode(ftp_id, strlen(ftp_id), &olen)) ;
+	DBG_UDS("Get ftp base64 id:%s\n", t->bs.id);
 
-		DBG_UDS("Get ftp pw:%s\n", app_set->ftp_info.pwd);
-	    openssl_aes128_encrypt(app_set->ftp_info.pwd, ftp_pw) ;
-		DBG_UDS("Get ftp aes28 encrypte pw:%s\n", ftp_pw);
-		strcpy(t->bs.pw, base64_encode(ftp_pw, strlen(ftp_pw), &olen)) ;
-		DBG_UDS("Get ftp base64 pw:%s\n", t->bs.pw);
-	}
-	else
-	{
-		strcpy(t->bs.id, app_set->ftp_info.id);
-		strcpy(t->bs.pw, app_set->ftp_info.pwd);
-	}
+	DBG_UDS("Get ftp pw:%s\n", app_set->ftp_info.pwd);
+    openssl_aes128_encrypt(app_set->ftp_info.pwd, ftp_pw) ;
+	DBG_UDS("Get ftp aes28 encrypte pw:%s\n", ftp_pw);
+	strcpy(t->bs.pw, base64_encode(ftp_pw, strlen(ftp_pw), &olen)) ;
+	DBG_UDS("Get ftp base64 pw:%s\n", t->bs.pw);
+
 	// fota server(ftp2)
 	t->fota.enable      = app_set->fota_info.ON_OFF;
 	t->fota.server_info = app_set->fota_info.svr_info;
 	t->fota.port        = app_set->fota_info.port;
 	strcpy(t->fota.serveraddr, app_set->fota_info.ipaddr);
 
-	if(app_set->sys_info.aes_encryption)
-	{
-		DBG_UDS("Get fota id:%s\n", app_set->fota_info.id);
-	    openssl_aes128_encrypt(app_set->fota_info.id, fota_id) ;
-		DBG_UDS("Get fota aes28 encrypte id:%s\n", fota_id);
-		strcpy(t->fota.id, base64_encode(fota_id, strlen(fota_id), &olen)) ;
-		DBG_UDS("Get fota base64 id:%s\n", t->fota.id);
+	DBG_UDS("Get fota id:%s\n", app_set->fota_info.id);
+    openssl_aes128_encrypt(app_set->fota_info.id, fota_id) ;
+	DBG_UDS("Get fota aes28 encrypte id:%s\n", fota_id);
+	strcpy(t->fota.id, base64_encode(fota_id, strlen(fota_id), &olen)) ;
+	DBG_UDS("Get fota base64 id:%s\n", t->fota.id);
 
-		DBG_UDS("Get fota pw:%s\n", app_set->fota_info.pwd);
-	    openssl_aes128_encrypt(app_set->fota_info.pwd, fota_pw) ;
-		DBG_UDS("Get fota aes28 encrypte pw:%s\n", fota_pw);
-		strcpy(t->fota.pw, base64_encode(fota_pw, strlen(fota_pw), &olen)) ;
-		DBG_UDS("Get fota base64 pw:%s\n", t->fota.pw);
-	}
-	else
-	{
-		strcpy(t->fota.id, app_set->fota_info.id);
-		strcpy(t->fota.pw, app_set->fota_info.pwd);
-
-	}
+	DBG_UDS("Get fota pw:%s\n", app_set->fota_info.pwd);
+    openssl_aes128_encrypt(app_set->fota_info.pwd, fota_pw) ;
+	DBG_UDS("Get fota aes28 encrypte pw:%s\n", fota_pw);
+	strcpy(t->fota.pw, base64_encode(fota_pw, strlen(fota_pw), &olen)) ;
+	DBG_UDS("Get fota base64 pw:%s\n", t->fota.pw);
 
 	// media server(rtmp)
 	t->mediaserver.enable            = app_set->rtmp.ON_OFF;
@@ -973,25 +952,18 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	strcpy(t->ddns.serveraddr, app_set->ddns_info.serveraddr); // 64
 	strcpy(t->ddns.hostname, app_set->ddns_info.hostname);     // 32
 
-	if(app_set->sys_info.aes_encryption)
-	{
-		DBG_UDS("Get ddns id:%s\n", app_set->ddns_info.userId);
-	    openssl_aes128_encrypt(app_set->ddns_info.userId, ddns_id) ;
-		DBG_UDS("Get ddns aes28 encrypte id:%s\n", ddns_id);
-		strcpy(t->ddns.id, base64_encode(ddns_id, strlen(ddns_id), &olen)) ;
-		DBG_UDS("Get ddns base64 id:%s\n", t->ddns.id);
+	DBG_UDS("Get ddns id:%s\n", app_set->ddns_info.userId);
+    openssl_aes128_encrypt(app_set->ddns_info.userId, ddns_id) ;
+	DBG_UDS("Get ddns aes28 encrypte id:%s\n", ddns_id);
+	strcpy(t->ddns.id, base64_encode(ddns_id, strlen(ddns_id), &olen)) ;
+	DBG_UDS("Get ddns base64 id:%s\n", t->ddns.id);
 
-		DBG_UDS("Get ddns pw:%s\n", app_set->ddns_info.passwd);
-	    openssl_aes128_encrypt(app_set->ddns_info.passwd, ddns_pw) ;
-		DBG_UDS("Get ddns aes28 encrypte pw:%s\n", ddns_pw);
-		strcpy(t->ddns.pw, base64_encode(ddns_pw, strlen(ddns_pw), &olen)) ;
-		DBG_UDS("Get ddns base64 pw:%s\n", t->ddns.pw);
-	}
-	else
-	{
-		strcpy(t->ddns.id, app_set->ddns_info.userId);
-		strcpy(t->ddns.pw, app_set->ddns_info.passwd);
-	}
+	DBG_UDS("Get ddns pw:%s\n", app_set->ddns_info.passwd);
+    openssl_aes128_encrypt(app_set->ddns_info.passwd, ddns_pw) ;
+	DBG_UDS("Get ddns aes28 encrypte pw:%s\n", ddns_pw);
+	strcpy(t->ddns.pw, base64_encode(ddns_pw, strlen(ddns_pw), &olen)) ;
+	DBG_UDS("Get ddns base64 pw:%s\n", t->ddns.pw);
+	
 	// dns
 	strcpy(t->dns.server1, app_set->net_info.dns_server1);
 	strcpy(t->dns.server2, app_set->net_info.dns_server2);
@@ -1061,15 +1033,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			isChanged++;
 		}
 
-		if(app_set->sys_info.aes_encryption)
-		{
-			DBG_UDS("Updated before decrypt app_set->ftp_info.id=%s\n", t->bs.id);
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->bs.id, strlen(t->bs.id), &olen), ftp_decrypt_id) ;
-			DBG_UDS("Updated after decrypt app_set->ftp_info.id=%s\n", ftp_decrypt_id);
-		    memset(t->bs.id, 0x00, 64) ;
-			strncpy(t->bs.id, ftp_decrypt_id, decrypt_len) ;
-			DBG_UDS("t->bs.id decrypt app_set->ftp_info.id=%s\n", t->bs.id);
-		}
+		DBG_UDS("Updated before decrypt app_set->ftp_info.id=%s\n", t->bs.id);
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->bs.id, strlen(t->bs.id), &olen), ftp_decrypt_id) ;
+		DBG_UDS("Updated after decrypt app_set->ftp_info.id=%s\n", ftp_decrypt_id);
+	    memset(t->bs.id, 0x00, 64) ;
+		strncpy(t->bs.id, ftp_decrypt_id, decrypt_len) ;
+		DBG_UDS("t->bs.id decrypt app_set->ftp_info.id=%s\n", t->bs.id);
 
 		if(strcmp(app_set->ftp_info.id,t->bs.id)){
 			strcpy(app_set->ftp_info.id,t->bs.id);
@@ -1077,13 +1046,10 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			isChanged++;
 		}
 
-		if(app_set->sys_info.aes_encryption)
-		{
-			DBG_UDS("Updated before decrypt app_set->ftp_info.pwd=%s\n", t->bs.pw);
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->bs.pw, strlen(t->bs.pw), &olen), ftp_decrypt_pw) ;
-		    memset(t->bs.pw, 0x00, 64) ;
-			strncpy(t->bs.pw, ftp_decrypt_pw, decrypt_len) ;
-		}
+		DBG_UDS("Updated before decrypt app_set->ftp_info.pwd=%s\n", t->bs.pw);
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->bs.pw, strlen(t->bs.pw), &olen), ftp_decrypt_pw) ;
+	    memset(t->bs.pw, 0x00, 64) ;
+		strncpy(t->bs.pw, ftp_decrypt_pw, decrypt_len) ;
 
 		if(strcmp(app_set->ftp_info.pwd,t->bs.pw)){
 			strcpy(app_set->ftp_info.pwd,t->bs.pw);
@@ -1114,14 +1080,11 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 				isChanged++;
 			}
 
-			if(app_set->sys_info.aes_encryption)
-			{
-				DBG_UDS("Updated before decrypt app_set->fota_info.id=%s\n", t->fota.id);
-				decrypt_len = openssl_aes128_decrypt(base64_decode(t->fota.id, strlen(t->fota.id), &olen), fota_decrypt_id) ;
-				DBG_UDS("Updated after decrypt app_set->fota_info.id=%s\n", fota_decrypt_id);
-			    memset(t->fota.id, 0x00, 64) ;
-				strncpy(t->fota.id, fota_decrypt_id, decrypt_len) ;
-			}
+			DBG_UDS("Updated before decrypt app_set->fota_info.id=%s\n", t->fota.id);
+			decrypt_len = openssl_aes128_decrypt(base64_decode(t->fota.id, strlen(t->fota.id), &olen), fota_decrypt_id) ;
+			DBG_UDS("Updated after decrypt app_set->fota_info.id=%s\n", fota_decrypt_id);
+		    memset(t->fota.id, 0x00, 64) ;
+			strncpy(t->fota.id, fota_decrypt_id, decrypt_len) ;
 
 			if (strcmp(app_set->fota_info.id, t->fota.id)) {
 				strcpy(app_set->fota_info.id, t->fota.id);
@@ -1129,14 +1092,11 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 				isChanged++;
 			}
 
-			if(app_set->sys_info.aes_encryption)
-			{
-				DBG_UDS("Updated before decrypt app_set->fota_info.pw=%s\n", t->fota.id);
-				decrypt_len = openssl_aes128_decrypt(base64_decode(t->fota.pw, strlen(t->fota.pw), &olen), fota_decrypt_pw) ;
-				DBG_UDS("Updated after decrypt app_set->fota_info.id=%s\n", fota_decrypt_pw);
-			    memset(t->fota.pw, 0x00, 64) ;
-				strncpy(t->fota.pw, fota_decrypt_id, decrypt_len) ;
-			}
+			DBG_UDS("Updated before decrypt app_set->fota_info.pw=%s\n", t->fota.id);
+			decrypt_len = openssl_aes128_decrypt(base64_decode(t->fota.pw, strlen(t->fota.pw), &olen), fota_decrypt_pw) ;
+			DBG_UDS("Updated after decrypt app_set->fota_info.id=%s\n", fota_decrypt_pw);
+		    memset(t->fota.pw, 0x00, 64) ;
+			strncpy(t->fota.pw, fota_decrypt_id, decrypt_len) ;
 
 			if (strcmp(app_set->fota_info.pwd, t->fota.pw)) {
 				strcpy(app_set->fota_info.pwd, t->fota.pw);
@@ -1213,14 +1173,11 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			isChanged++;
 		}
 
-		if(app_set->sys_info.aes_encryption)
-		{
-			DBG_UDS("Updated before decrypt t->ddns.id=%s\n", t->ddns.id);
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->ddns.id, strlen(t->ddns.id), &olen), ddns_decrypt_id) ;
-			DBG_UDS("Updated after decrypt ddns_decrypt_id=%s\n", ddns_decrypt_id);
-		    memset(t->ddns.id, 0x00, 64) ;
-			strncpy(t->ddns.id, ddns_decrypt_id, decrypt_len) ;
-		}
+		DBG_UDS("Updated before decrypt t->ddns.id=%s\n", t->ddns.id);
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->ddns.id, strlen(t->ddns.id), &olen), ddns_decrypt_id) ;
+		DBG_UDS("Updated after decrypt ddns_decrypt_id=%s\n", ddns_decrypt_id);
+	    memset(t->ddns.id, 0x00, 64) ;
+		strncpy(t->ddns.id, ddns_decrypt_id, decrypt_len) ;
 
 		if(strcmp(app_set->ddns_info.userId, t->ddns.id)){
 			strcpy(app_set->ddns_info.userId, t->ddns.id); // 32 
@@ -1230,14 +1187,11 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		else
 			DBG_UDS("Do not Updated decrypt app_set->ddns_info.userId=%s\n", app_set->ddns_info.userId);
 
-		if(app_set->sys_info.aes_encryption)
-		{
-			DBG_UDS("Updated before decrypt t->ddns.pw=%s\n", t->ddns.pw);
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->ddns.pw, strlen(t->ddns.pw), &olen), ddns_decrypt_pw) ;
-			DBG_UDS("Updated after decrypt ddns_decrypt_pw=%s\n", ddns_decrypt_pw);
-		    memset(t->ddns.pw, 0x00, 64) ;
-			strncpy(t->ddns.pw, ddns_decrypt_pw, decrypt_len) ;
-		}
+		DBG_UDS("Updated before decrypt t->ddns.pw=%s\n", t->ddns.pw);
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->ddns.pw, strlen(t->ddns.pw), &olen), ddns_decrypt_pw) ;
+		DBG_UDS("Updated after decrypt ddns_decrypt_pw=%s\n", ddns_decrypt_pw);
+	    memset(t->ddns.pw, 0x00, 64) ;
+		strncpy(t->ddns.pw, ddns_decrypt_pw, decrypt_len) ;
 
 		if(strcmp(app_set->ddns_info.passwd, t->ddns.pw)){
 			strcpy(app_set->ddns_info.passwd, t->ddns.pw); // 32 
@@ -1387,43 +1341,30 @@ static int getUserConfiguration(T_CGI_USER_CONFIG *t)
 	t->rtsp.enable = app_set->account_info.ON_OFF;
 	t->rtsp.enctype = app_set->account_info.enctype;
 
-	if(app_set->sys_info.aes_encryption)
-	{
-		DBG_UDS("Get rtsp id:%s\n", app_set->account_info.rtsp_userid);
-	    openssl_aes128_encrypt(app_set->account_info.rtsp_userid, rtsp_id) ;
-		DBG_UDS("Get rtsp aes28 encrypte id:%s\n", rtsp_id);
-		strcpy(t->rtsp.id, base64_encode(rtsp_id, strlen(rtsp_id), &olen)) ;
-		DBG_UDS("Get rtsp base64 id:%s\n", t->rtsp.id);
+	DBG_UDS("Get rtsp id:%s\n", app_set->account_info.rtsp_userid);
+    openssl_aes128_encrypt(app_set->account_info.rtsp_userid, rtsp_id) ;
+	DBG_UDS("Get rtsp aes28 encrypte id:%s\n", rtsp_id);
+	strcpy(t->rtsp.id, base64_encode(rtsp_id, strlen(rtsp_id), &olen)) ;
+	DBG_UDS("Get rtsp base64 id:%s\n", t->rtsp.id);
 
-		DBG_UDS("Get rtsp password:%s\n", app_set->account_info.rtsp_passwd);
- 	    openssl_aes128_encrypt(app_set->account_info.rtsp_passwd, rtsp_pw) ;
-		DBG_UDS("Get rtsp aes28 encrypte password:%s\n", rtsp_pw);
-		strcpy(t->rtsp.pw, base64_encode(rtsp_pw, strlen(rtsp_pw), &olen)) ;
-		DBG_UDS("Get rtsp base64 password:%s\n", t->rtsp.pw);
-	}
-	else
-	{
-		strcpy(t->rtsp.id, app_set->account_info.rtsp_userid);
-		strcpy(t->rtsp.pw, app_set->account_info.rtsp_passwd);
-	}
+	DBG_UDS("Get rtsp password:%s\n", app_set->account_info.rtsp_passwd);
+    openssl_aes128_encrypt(app_set->account_info.rtsp_passwd, rtsp_pw) ;
+	DBG_UDS("Get rtsp aes28 encrypte password:%s\n", rtsp_pw);
+	strcpy(t->rtsp.pw, base64_encode(rtsp_pw, strlen(rtsp_pw), &olen)) ;
+	DBG_UDS("Get rtsp base64 password:%s\n", t->rtsp.pw);
 
 	// need onvif decryption function 
     // base64 encode needed...
 
 	t->onvif.enable = app_set->net_info.enable_onvif;
 	sprintf(t->onvif.id, "%s", app_set->account_info.onvif.id);
-	if(app_set->sys_info.aes_encryption)
-	{
-		DBG_UDS("Get onvif password:%s\n", app_set->account_info.onvif.pw);
-	    openssl_aes128_encrypt(app_set->account_info.onvif.pw, onvif_pw) ;
-		DBG_UDS("Get onvif aes28 encrypte password:%s\n", onvif_pw);
-		strcpy(t->onvif.pw, base64_encode(onvif_pw, strlen(onvif_pw), &olen)) ;
-		DBG_UDS("Get onvif base64 password:%s\n", t->onvif.pw);
-	}
-	else
-	{
-		sprintf(t->onvif.pw, "%s", app_set->account_info.onvif.pw);
-	}
+
+	DBG_UDS("Get onvif password:%s\n", app_set->account_info.onvif.pw);
+    openssl_aes128_encrypt(app_set->account_info.onvif.pw, onvif_pw) ;
+	DBG_UDS("Get onvif aes28 encrypte password:%s\n", onvif_pw);
+	strcpy(t->onvif.pw, base64_encode(onvif_pw, strlen(onvif_pw), &olen)) ;
+	DBG_UDS("Get onvif base64 password:%s\n", t->onvif.pw);
+
 	return 0;
 }
 
@@ -1441,25 +1382,13 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 
 	// web part
 
-	if(app_set->sys_info.aes_encryption)
+    if(t->web.pw[0] != NULL)
 	{
- 	   if(t->web.pw[0] != NULL)
-		{
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->web.pw, strlen(t->web.pw), &olen), web_decrypt_pw) ;
-			memset(t->web.pw, 0x00, 64) ;
-			strncpy(t->web.pw, web_decrypt_pw, decrypt_len) ;
-			DBG_UDS("Updated webuser.pw=%s\n", t->web.pw);
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->web.pw, strlen(t->web.pw), &olen), web_decrypt_pw) ;
+		memset(t->web.pw, 0x00, 64) ;
+		strncpy(t->web.pw, web_decrypt_pw, decrypt_len) ;
+		DBG_UDS("Updated webuser.pw=%s\n", t->web.pw);
 
-			if(0 == app_set_web_password(t->web.id, t->web.pw, 0, 0)) {
-				DBG_UDS("Updated web password: id:%s, pw:%s\n", t->web.id, t->web.pw);
-				isChanged++;
-			}else {
-				DBG_UDS("Failed set Web Account, id:%s, pw:%s\n", t->web.id, t->web.pw);
-			}
-		}
-	}
-	else
-	{
 		if(0 == app_set_web_password(t->web.id, t->web.pw, 0, 0)) {
 			DBG_UDS("Updated web password: id:%s, pw:%s\n", t->web.id, t->web.pw);
 			isChanged++;
@@ -1468,12 +1397,9 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 		}
 	}
 
-	if(app_set->sys_info.aes_encryption)
-	{
-		decrypt_len = openssl_aes128_decrypt(base64_decode(t->onvif.pw, strlen(t->onvif.pw), &olen), onvif_decrypt_pw) ;
-	    memset(t->onvif.pw, 0x00, 64) ;
-		strncpy(t->onvif.pw, onvif_decrypt_pw, decrypt_len) ;
-	}
+	decrypt_len = openssl_aes128_decrypt(base64_decode(t->onvif.pw, strlen(t->onvif.pw), &olen), onvif_decrypt_pw) ;
+    memset(t->onvif.pw, 0x00, 64) ;
+	strncpy(t->onvif.pw, onvif_decrypt_pw, decrypt_len) ;
 
 	if(0==strcmp(t->onvif.id, "admin"))
 	{
@@ -1517,16 +1443,13 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 		}
 
 
-		if(app_set->sys_info.aes_encryption)
-		{
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->rtsp.id, strlen(t->rtsp.id), &olen), rtsp_decrypt_id) ;
-		    memset(t->rtsp.id, 0x00, 64) ;
-			strncpy(t->rtsp.id, rtsp_decrypt_id, decrypt_len) ;
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->rtsp.id, strlen(t->rtsp.id), &olen), rtsp_decrypt_id) ;
+	    memset(t->rtsp.id, 0x00, 64) ;
+		strncpy(t->rtsp.id, rtsp_decrypt_id, decrypt_len) ;
 
-			decrypt_len = openssl_aes128_decrypt(base64_decode(t->rtsp.pw, strlen(t->rtsp.pw), &olen), rtsp_decrypt_pw) ;
-		    memset(t->rtsp.pw, 0x00, 64) ;
-			strncpy(t->rtsp.pw, rtsp_decrypt_pw, decrypt_len) ;
-		}
+		decrypt_len = openssl_aes128_decrypt(base64_decode(t->rtsp.pw, strlen(t->rtsp.pw), &olen), rtsp_decrypt_pw) ;
+	    memset(t->rtsp.pw, 0x00, 64) ;
+		strncpy(t->rtsp.pw, rtsp_decrypt_pw, decrypt_len) ;
 
 		// 새로 들어온값 check
 		if(0!=strcmp(t->rtsp.id, app_set->account_info.rtsp_userid)
@@ -1590,6 +1513,9 @@ static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 	}else {
 		sprintf(t->mac, "%s", "_MACADDRESS_");
 	}
+	sprintf(t->sshver, "%s", app_set->module_ver.OpenSSH_ver);
+	sprintf(t->sslver, "%s", app_set->module_ver.OpenSSL_ver);
+	sprintf(t->webver, "%s", app_set->module_ver.Webserver_ver);
 
 	return 0;
 }
@@ -3464,6 +3390,10 @@ void *myFunc(void *arg)
 		else if (strcmp(rbuf, "ChangePassword") == 0)
 		{
 			LOGD("[main] --- UDS: ChangePassword ---\n");
+			char tmp_pw[64] = {0, };
+			char change_decrypt_pw[64] = {0, };
+			int decrypt_len = 0 ;
+			size_t olen = 0;
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -3479,10 +3409,12 @@ void *myFunc(void *arg)
 				if (ret > 0){
 
 					DBG_UDS("id:%s, pw:%s, lv:%d, authtype=%d\n", user.id, user.pw, user.lv, user.authtype);
-
-					if(0 == app_set_web_password(user.id, user.pw, user.lv, user.authtype))
+					decrypt_len = openssl_aes128_decrypt(base64_decode(user.pw, strlen(user.pw), &olen), tmp_pw) ;
+                    strncpy(change_decrypt_pw, tmp_pw, decrypt_len) ;
+//					if(0 == app_set_web_password(user.id, user.pw, user.lv, user.authtype))
+					if(0 == app_set_web_password(user.id, change_decrypt_pw, user.lv, user.authtype))
 					{
-						if( 0 == app_web_make_passwordfile(user.id, user.pw, user.lv, user.authtype)){
+						if( 0 == app_web_make_passwordfile(user.id, change_decrypt_pw, user.lv, user.authtype)){
 
 							char strOptions[128] = "OK";
 							ret = write(cs_uds, strOptions, sizeof(strOptions));
