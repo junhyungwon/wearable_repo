@@ -6,6 +6,7 @@
 #define FILE_UDS_ONVIF  "/tmp/onvif.socket"
 
 #define STR_MSG_CMD_FWUPDATE         "FWUPDATE"
+#define STR_MSG_CMD_RSAKEYUPDATE     "RSAKEY_UPDATE"
 #define STR_MSG_CMD_CHANGE_PASSWORD  "ChangePassword"
 #define STR_MSG_CMD_CHECK_ACCOUNT    "CheckAccount"
 #define STR_MSG_CMD_FACTORYDEFAULT   "SystemFactoryDefault"
@@ -42,6 +43,7 @@
 
 enum _enumUdsCmd {
     UDS_CMD_FWUPDATE,
+    UDS_CMD_RSAKEYUPDATE,
     UDS_CMD_RESTART,
     UDS_CMD_REBOOT,
     UDS_CMD_FACTORYSET,

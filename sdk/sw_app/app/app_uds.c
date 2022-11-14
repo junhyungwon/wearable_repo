@@ -2534,6 +2534,69 @@ void *myFunc(void *arg)
 				}
 			}
 		}
+		else if (strcmp(rbuf, "RSAKEY_UPDATE") == 0)
+		{
+			LOGD("[main] --- UDS: RSAKEY_UPDATE ---\n");
+
+			if (app_cfg->ste.b.ftp_run)
+			{
+				sprintf(wbuf, "FTP_RUNNING");
+				ret = write(cs_uds, wbuf, sizeof wbuf);
+			}
+			else
+			{
+				// 1. send READY
+				sprintf(wbuf, "READY");
+				ret = write(cs_uds, wbuf, sizeof wbuf);
+
+				if (ret > 0)
+				{
+					// read file path
+					memset(rbuf, 0, sizeof rbuf);
+					ret = read(cs_uds, rbuf, sizeof rbuf);
+					DBG_UDS("RSAKEY_UPDATE ret:%d, rbuf:%s\n", ret, rbuf);
+					if (ret > 0)
+					{
+						if (access(rbuf, F_OK) != 0)
+						{
+							DBG_UDS("No RSAKEY File:%s\n", rbuf);
+							sprintf(wbuf, "NO_FILE");
+							ret = write(cs_uds, wbuf, sizeof wbuf);
+						}
+						else
+						{
+							ret = ctrl_update_rsakey(rbuf) ;
+//							ret = ctrl_update_firmware_by_cgi(rbuf);
+							//ctrl_update_firmware_by_cgi("/tmp");
+							if (ret == 0)
+							{
+								sprintf(wbuf, "SUCCEED");
+								ret = write(cs_uds, wbuf, sizeof wbuf);
+								DBG_UDS("OK, Succeed Update\n");
+							}
+							else {
+								sprintf(wbuf, "INVALID_FILE");
+								ret = write(cs_uds, wbuf, sizeof wbuf);
+								DBG_UDS("Error, Failed Update\n");
+							}
+						}
+					}
+					else
+					{
+						DBG_UDS("ret:%d, ", ret);
+						perror("failed read:");
+
+						sprintf(wbuf, "NETWORK_ERROR");
+						ret = write(cs_uds, wbuf, sizeof wbuf);
+					}
+				}
+				else
+				{
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
+			}
+		}
 		else if (strcmp(rbuf, "SystemRestore") == 0)
 		{
 			LOGD("[main] --- UDS: System Restore ---\n");

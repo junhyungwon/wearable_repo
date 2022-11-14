@@ -3,6 +3,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 enum _enumCgiError{
+    ERR_RSAKEYUPDATE               = -1007,                 //  -1006,
+    ERR_RSAKEYUPDATE_NOFILE        = -1006,          // 파일 없음
+    ERR_RSAKEYUPDATE_SIZE          = -1005,            // 사이즈에 문제가 있음.
+    ERR_RSAKEYUPDATE_NOTATION      = -1004,        // 모델에 맞는 RSAKEY 검사..
+    ERR_RSAKEYUPDATE_CONTENTS      = -1003,        // RSAKEY 파일 내용 이상.
+    ERR_RSAKEYUPDATE_INVALID_FILE  = -1002,    // -985, RSAKEY 파일 내용 이상.
+    ERR_RSAKEYUPDATE_FTP_RUNNING   = -1001,
     ERR_RECORD                     = -1000,
     ERR_EXIST_ID                   = -999,
     ERR_PASSWORD                   = -998,
@@ -37,6 +44,7 @@ enum _enumCgiError{
     SUBMIT_OK     = 0,
     SUCCEED       = 0,
 	OK_FW_UPDATE  = 0,
+	OK_RSAKEY_UPDATE  = 0,
 	CGI_NO_CHANGE = 1,
 	SUBMIT_NO_CHANGE = 1,
 	SUBMIT_GET_VID = 100,

@@ -275,6 +275,8 @@ int app_main(void)
     else
     	app_call_control_init() ;
 
+	app_sshd_start() ;
+
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 
 #ifdef USE_KCMVP

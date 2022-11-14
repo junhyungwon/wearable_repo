@@ -599,6 +599,51 @@ int sysctl_message(
 			}
 			break;
 
+		case UDS_CMD_RSAKEYUPDATE:
+			{
+				// 1. write command
+				sprintf(wbuf, "%s", STR_MSG_CMD_RSAKEYUPDATE);
+				ret = write(cs, wbuf, sizeof wbuf);
+				CGI_DBG("Sent CMD : cs:(%d), CMD:%s, wrtten len = %d \n", cs, wbuf, ret);
+
+				// 2. check ready
+				ret = read(cs, rbuf, sizeof rbuf);
+				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
+				if(0==strcmp(rbuf, "FTP_RUNNING")) {
+					close(cs);
+					return ERR_FWUPDATE_FTP_RUNNING;
+				}
+
+				// 3. send , fwfile path
+				sprintf(wbuf, "%s", (char*)data);
+				ret = write(cs, wbuf, sizeof(wbuf));
+				CGI_DBG("Sent Data:%s, written len = %d\n", wbuf, ret);
+
+				// wait response and read 256 bytes for fw update status
+				ret = read(cs, rbuf, sizeof rbuf);
+				if(ret > 0){
+					CGI_DBG("read:%s\n", rbuf);
+
+					if(0==strcmp(rbuf, "NO_FILE")) {
+						close(cs);
+						return ERR_RSAKEYUPDATE_NOFILE;
+					}
+					else if(0==strcmp(rbuf, "SUCCEED")) {
+						close(cs);
+						return OK_RSAKEY_UPDATE;
+					}
+					else if(0==strcmp(rbuf, "INVALID_FILE")) {
+						close(cs);
+						return ERR_RSAKEYUPDATE_INVALID_FILE;
+					}
+					else {
+						close(cs);
+						return ERR_RSAKEYUPDATE;
+					}
+				}
+			}
+			break;
+
 		case UDS_GET_VIDEO_ENCODER_INFORMATION:
 			{
 				sprintf(wbuf, "%s", STR_MSG_GET_ENCODER_INFO);

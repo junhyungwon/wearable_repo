@@ -51,6 +51,9 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define FW_EXT       			".dat"
+#define KEY_NAME 		        "authorized_keys"
+#define RSA_PATH                "/root/.ssh/"
+#define RSA_FULL_PATH           "/root/.ssh/authorized_keys"
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -1088,6 +1091,44 @@ int ctrl_is_live_process(const char *process_name)
     return is_live;
 }
 
+int ctrl_update_rsakey(char *fwpath)
+{
+	char cmd[256] = {0, } ;
+	
+	if(access(RSA_PATH, F_OK) != 0)
+	{
+		mkdir(RSA_PATH, 0775) ;
+	}
+	sprintf(cmd, "cat %s >> %s", fwpath, RSA_FULL_PATH) ;
+	FILE *fp = popen(cmd, "r") ;
+	if(!fp)
+	{
+		TRACE_ERR("failed cat %s >> %s",fwpath, RSA_FULL_PATH) ;
+		pclose(fp) ;
+		return -1 ;
+	}
+	else
+	{
+		pclose(fp) ;
+		memset(cmd, 0x00, 256) ;
+		sprintf(cmd, "/etc/init.d/sshd.sh restart") ;
+		TRACE_INFO("%s\n","sshd restart.... ") ;
+	}
+
+	fp = popen(cmd, "w") ;
+
+	if(!fp)
+	{
+		TRACE_ERR("failed sshd start !! \n") ;
+		pclose(fp) ;
+		return -1 ;
+	}
+		TRACE_INFO("%s\n","sshd restart.... ") ;
+		pclose(fp) ;
+
+	return 0 ;		
+}
+
 /*
  * @param : fwpath : full path (maybe /tmp/rfs_fit.ubifs)
  */
@@ -1104,6 +1145,23 @@ int ctrl_update_firmware_by_cgi(char *fwpath)
 
 	return ret ;     
 }
+
+int app_sshd_start()
+{
+	char cmd[256] = {0, } ;
+	int ret = 0 ;
+
+	sprintf(cmd, "/etc/init.d/sshd.sh start") ;
+	FILE *fp = popen(cmd, "w") ;
+	if(fp)
+	{
+		TRACE_INFO("%s\n","sshd start.... ") ;
+		ret = TRUE ;
+	}
+	pclose(fp) ;	
+	return ret ;
+}
+
 
 /*
  * record stop and reboot.
