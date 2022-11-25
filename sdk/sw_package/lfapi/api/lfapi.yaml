@@ -1,0 +1,750 @@
+openapi: 3.1.0
+x-stoplight:
+  id: oe35ol4l025t9
+info:
+  title: LFAPI (prototype)
+  version: '0.1'
+  contact:
+    name: 'LINKFLOW, Co, Ltd.'
+    url: 'http://www.linkflow.co.kr'
+    email: aiden@linkflow.co.kr
+  summary: RESTful camera control protocol
+  description: |
+    This is APIs for a RESTful based interface to a specific camera (private).
+    Project details such as author, requester and purpose of use are not disclosed.
+    It is composed of basic APIs that are expected to be needed in this project, and designed based on multi-lens products for expandability. Advanced APIs will be added through mutual consultation.
+    This is a draft version, and there will be many changes in the specification and naming of the APIs, so please take it into account.
+  termsOfService: N/A
+  license:
+    name: Proprietary(confidential)
+    url: 'http://www.linkflow.co.kr'
+servers:
+  - url: 'http://localhost:8080/LFAPI/v1'
+paths:
+  /auth/token:
+    post:
+      summary: Get Token for Authorization
+      operationId: get-Auth-Token
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Admin'
+      security: []
+      description: |-
+        Get the token from the remote device using the web ID and password.
+        The token obtained here can be used for the authorization of API calls.
+      tags:
+        - Rev20221116
+  /device:
+    get:
+      summary: Get Device Information
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: get-Device-Info
+      security:
+        - apikey: []
+      description: Get static unique information of the device
+      tags:
+        - Rev20221116
+    parameters: []
+  /device/state:
+    get:
+      summary: Get Device State
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceState'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: get-Device-State
+      security:
+        - apikey: []
+      description: Check the function status of each device at the present time
+      tags:
+        - Rev20221116
+    parameters: []
+  /device/command:
+    parameters: []
+    post:
+      summary: Run a Device Command
+      operationId: execute-Command
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      security:
+        - apikey: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Command'
+        description: ''
+      description: Transmitting a command signal to the device to operate the defined function
+      tags:
+        - Rev20221116
+  /cameras/:
+    get:
+      summary: Get All Camera Configurations
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Camera'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: get-Camera-Settings
+      description: Get detailed settings of all cameras
+      security:
+        - apikey: []
+      tags:
+        - Rev20221116
+    parameters: []
+  '/cameras/{cameraId}':
+    get:
+      summary: Get a Camera Configuration
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Camera'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: get-Specified-Camera-Setting
+      description: Get detailed settings of a specific camera
+      security:
+        - apikey: []
+      tags:
+        - Rev20221116
+    parameters:
+      - schema:
+          type: string
+        name: cameraId
+        in: path
+        required: true
+        description: Target camera ID (default 1)
+    put:
+      summary: Set a Camera Configuration
+      operationId: set-Specified-Camera-Setting
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Camera'
+      description: Set detailed settings of a specific camera
+      parameters: []
+      tags:
+        - Rev20221116
+  '/cameras/{cameraId}/media/rtsp':
+    get:
+      summary: Get RTSP Stream Information
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rtsp'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: get-RTSP-Info
+      security:
+        - apikey: []
+      description: Get a unique RTSP address for watching live-view
+      tags:
+        - Rev20221116
+    parameters:
+      - schema:
+          type: string
+        name: cameraId
+        in: path
+        required: true
+        description: Target camera ID (default 1)
+  '/cameras/{cameraId}/media/rtmp':
+    get:
+      summary: Get RTMP Stream Information
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rtmp'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: get-RTMP-Info
+      security:
+        - apikey: []
+      description: |-
+        Get the publish target address for RTMP protocol streaming
+
+        *To be implemented when necessary in the scenario, excluded when not necessary.
+      x-internal: false
+      tags:
+        - Rev20221116
+      deprecated: true
+    parameters:
+      - schema:
+          type: string
+        name: cameraId
+        in: path
+        required: true
+        description: Target camera ID (default 1)
+  '/cameras/{cameraId}/files/':
+    get:
+      summary: List Files of A Camera
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/File'
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: string
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/File'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+      operationId: list-Recording-Files
+      security:
+        - apikey: []
+      x-internal: false
+      description: |-
+        Get a list of recorded files for a specified camera
+
+        *To be implemented when necessary in the scenario, excluded when not necessary.
+      tags:
+        - Rev20221116
+      deprecated: true
+    parameters:
+      - schema:
+          type: string
+        name: cameraId
+        in: path
+        required: true
+        description: Target camera ID (default 1)
+components:
+  schemas:
+    Camera:
+      title: Camera
+      x-stoplight:
+        id: mnt1vvk5a8svi
+      type: object
+      x-internal: false
+      description: The configuration a specific camera
+      properties:
+        cameraId:
+          type: string
+          default: '1'
+          example: '1'
+          description: |-
+            Unique ID of the camera.
+            Fixed at 1 for single lens cameras.
+            In the case of a multi-lens camera and a virtual camera combined with images, individual definitions are required.
+        recording:
+          type: object
+          description: Camera Recording Settings
+          properties:
+            resolution:
+              type: string
+              description: |-
+                The resolution value of the camera.
+                - enums : 1280x720, 1920x1080
+              default: 1280x720
+            framerate:
+              type: integer
+              minimum: 1
+              maximum: 30
+              default: 15
+              description: The video frames per second
+            bitrate:
+              type: string
+              description: |-
+                The bitrates of the video
+                - enums : 0.5Mbps, 1Mbps, 2Mbps, 4Mbps
+              default: 1Mbps
+            bitrateMode:
+              type: string
+              description: |-
+                The bitrate mode of video : Variable / Constant
+                - enums : VBR, CBR
+              default: VBR
+        streaming:
+          type: object
+          description: Camera Streaming Settings
+          properties:
+            resolution:
+              type: string
+              description: |-
+                The resolution value of the camera.
+                - enums: 1280x720, 1920x1080
+              default: 1280x720
+            framerate:
+              type: integer
+              minimum: 1
+              maximum: 30
+              default: 15
+              description: The video frames per second
+            bitrate:
+              type: string
+              description: |-
+                The bitrates of the video
+                - enums : 0.5Mbps, 1Mbps, 2Mbps, 4Mbps
+              default: 1Mbps
+            bitrateMode:
+              type: string
+              description: |-
+                The bitrate mode of video : Variable / Constant
+                - enums : VBR, CBR
+              default: VBR
+        adjustment:
+          type: object
+          description: Detailed image quality settings of the camera
+          properties:
+            brightness:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            contrast:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            backlightCompensation:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            saturation:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            redGain:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            blueGain:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            sharpness:
+              type: integer
+              minimum: 1
+              maximum: 10
+              default: 5
+              example: 5
+            powerLine:
+              type: integer
+              example: 50
+            noiseReduction:
+              type: integer
+              example: 5
+              minimum: 1
+              maximum: 10
+        option:
+          type: object
+          properties:
+            showDateTime:
+              type: boolean
+              default: true
+              description: show overlayed date time
+      required:
+        - cameraId
+    Token:
+      title: Token
+      x-stoplight:
+        id: v74o6s6khx1bq
+      type: object
+      description: A bearer access token
+      properties:
+        access_token:
+          type: string
+          description: Authentication token used when making API calls
+      required:
+        - access_token
+    Device:
+      title: Device
+      x-stoplight:
+        id: rxaf4l4phqgpx
+      type: object
+      description: The device's static information
+      properties:
+        deviceId:
+          type: string
+          description: Unique ID of the device
+          example: SITE-0001-JP
+          readOnly: true
+        model:
+          type: string
+          description: Model name of the device
+          example: LF1234JP
+          readOnly: true
+        version:
+          type: string
+          example: '1.0'
+          description: Firmware version
+          readOnly: true
+      required:
+        - deviceId
+        - model
+        - version
+    File:
+      title: File
+      x-stoplight:
+        id: 138e63b782cdf138e63b782cdf
+      type: object
+      description: The recording file information
+      properties:
+        fileId:
+          type: string
+          example: 1-20221108-054000.avi
+          description: Unique ID of the file (filename)
+          readOnly: true
+        timestamp:
+          type:
+            - string
+            - 'null'
+          format: date-time
+          description: 'Start time the file was recorded (unit: UTC)'
+          readOnly: true
+        size:
+          type:
+            - integer
+            - 'null'
+          description: file size in bytes
+          example: 1000000
+          readOnly: true
+      required:
+        - fileId
+    Rtsp:
+      title: Rtsp
+      x-stoplight:
+        id: 75063d3a122e7
+      type: object
+      description: The RTSP access point information
+      properties:
+        path:
+          type: string
+          example: /all
+          description: |-
+            Sub-address value used when connecting.
+            Append after IP and port value when connecting.
+          readOnly: true
+        port:
+          type: integer
+          example: 8554
+          description: |-
+            The port number used when connecting.
+            The value appended to the IP value when connecting.
+          readOnly: true
+      required:
+        - path
+        - port
+    Rtmp:
+      title: Rtmp
+      type: object
+      x-stoplight:
+        id: 7d62d727cb39b
+      description: The RTMP endpoint information
+      properties:
+        url:
+          type: string
+          example: 'rtmp://1.2.3.4:1935/live'
+          description: Target server address for RTMP publishing
+          readOnly: true
+      required:
+        - url
+    Admin:
+      title: Admin
+      x-stoplight:
+        id: xdkgo5ezhbwm2
+      type: object
+      x-internal: false
+      description: The user's web ID and password
+      properties:
+        id:
+          type: string
+          example: admin
+          maxLength: 32
+          minLength: 4
+          description: Currently set web ID
+        password:
+          type: string
+          example: admin
+          minLength: 4
+          maxLength: 32
+          description: Currently set web password
+      required:
+        - id
+        - password
+    DeviceState:
+      x-stoplight:
+        id: d7a80768fdf00
+      type: object
+      title: DeviceState
+      description: |-
+        Current device state, includes
+        - media stack(streaming) status
+        - camera status
+        - recording status
+        - current camera context
+      properties:
+        media:
+          type: array
+          description: Corresponding to media
+          items:
+            $ref: '#/components/schemas/MediaState'
+          readOnly: true
+        cameras:
+          type: array
+          description: Corresponding to camera
+          items:
+            $ref: '#/components/schemas/CameraState'
+        recording:
+          type: boolean
+          description: Whether the current recording is in progress
+          readOnly: true
+        currentCameraId:
+          type: string
+          example: '1'
+          description: |-
+            The main camera ID of the current context.
+            1 fixed for 1 eye camera.
+            For multi-lens cameras, API user's own definition and implementation is required for each camera lens and combination lens.
+          readOnly: true
+      required:
+        - cameras
+        - recording
+        - currentCameraId
+    CameraState:
+      title: CameraState
+      x-stoplight:
+        id: 6f6463002785a
+      type: object
+      description: Current status of a camera
+      properties:
+        cameraId:
+          type: string
+          example: '1'
+          description: Camera's unique ID
+          readOnly: true
+        state:
+          type: string
+          default: UNKNOWN
+          description: |-
+            Current state of a camera
+            - UNKNOWN - OK - ERROR
+          readOnly: true
+      required:
+        - cameraId
+        - state
+    MediaState:
+      type: object
+      x-stoplight:
+        id: b9f056ef15de8
+      description: Current status of a camera media
+      title: MediaState
+      properties:
+        cameraId:
+          type: string
+          example: '1'
+          readOnly: true
+        rtsp:
+          type: string
+          example: STREAMING
+          description: '- UNAVAILABLE - PREPARING - IDLE - STREAMING'
+          readOnly: true
+        rtmp:
+          type: string
+          example: PUBLISHING
+          description: '- UNAVAILABLE - PREPARING - IDLE - PUBLISHING'
+          deprecated: true
+          readOnly: true
+      required:
+        - cameraId
+    Command:
+      title: Command
+      x-stoplight:
+        id: 79hpvs24frkp6
+      type: object
+      description: The commmand object
+      properties:
+        type:
+          type: string
+          example: rtsp
+          description: |-
+            The Command type to execute
+            - rtsp(start,stop,restart)
+            - ~~rtmp(start,stop) (*Will be defined only when necessary)~~
+            - record(start,stop)
+            - power(off,reboot)
+        behavior:
+          type:
+            - integer
+            - string
+            - boolean
+          default: start
+          description: The command action to be performed
+        param:
+          type:
+            - object
+            - 'null'
+          description: |-
+            TBD.
+            A parameter object for when detailed parameters must be entered in the command.
+          properties:
+            name:
+              type: string
+            value:
+              type:
+                - string
+                - integer
+                - boolean
+      required:
+        - type
+        - behavior
+    Error:
+      title: Error
+      x-stoplight:
+        id: 8ydnjkrclytsv
+      type: object
+      description: |-
+        Defined error codes.
+        To be added continuously.
+        - 40000 Unknown error
+        - 40001 Parsing error
+        - 40002 Device busy
+        - 40003 Invalid parameter
+        - 40004 Data not found
+        - 40005 Not allowed
+        - 40006 Previous command in progress
+        - 40007 Unsupported command type
+        - 40008 Unsupported behavior
+      properties:
+        code:
+          type: string
+          example: '40001'
+          description: The error code
+        message:
+          type: string
+          example: Invalid parameter
+          description: The error message
+  securitySchemes:
+    apikey:
+      type: http
+      scheme: basic
+security:
+  - apikey: []
+tags:
+  - name: Rev20221116
