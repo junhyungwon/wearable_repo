@@ -62,7 +62,11 @@ int main(void)
     qcgisess_save(sess);
 
     // empty return
-    send_response(isValidated ? SUBMIT_OK : ERR_INVALID_ACCOUNT);
+    if (isValidated) {
+        send_response(SUBMIT_OK);
+    } else {
+        printf("status: 401\n\n");
+    }
 
     sess->free(sess);
     req->free(req);
