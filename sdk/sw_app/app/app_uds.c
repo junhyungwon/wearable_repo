@@ -818,10 +818,13 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 	DBG_UDS("new web account, id:%s  pw:%s\n", acc->id, acc->pw);
 	decrypt_pwlen = openssl_aes128_decrypt(base64_decode(acc->pw, strlen(acc->pw), &olen), web_decrypt_pw) ;
 	DBG_UDS("new web account pw:%s decrypt_len = %d\n", web_decrypt_pw, decrypt_pwlen);
-	if(!strcmp(app_set->account_info.webuser.pw, web_decrypt_pw)) {
-		return 0 ;
-	}
 
+	if(strlen(app_set->account_info.webuser.pw) == decrypt_pwlen)
+	{	
+		if(!strncmp(app_set->account_info.webuser.pw, web_decrypt_pw, decrypt_pwlen)) {
+			return 0 ;
+		}
+	}
 	return -1;
 }
 
