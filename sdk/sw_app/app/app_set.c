@@ -69,7 +69,7 @@ typedef enum{
 	CFG_MAX
 } app_cfg_e;
 
-const char* const RTSP_DEFAULT_ID   = "admin001!";
+const char* const RTSP_DEFAULT_ID   = "admin";
 const char* const RTSP_DEFAULT_PW   = "admin001!";
 const char* const P2P_DEFAULT_ID    = "linkflow";
 const char* const P2P_DEFAULT_PW    = "12345678";
@@ -237,11 +237,12 @@ static void char_memset(void)
     app_set->sys_info.osd_set = CFG_INVALID; 
     app_set->sys_info.beep_sound = CFG_INVALID; 
     app_set->sys_info.aes_encryption = CFG_INVALID; 
+    memset(app_set->sys_info.aes_key, CHAR_MEMSET, MAX_CHAR_16);
+    memset(app_set->sys_info.aes_iv, CHAR_MEMSET, MAX_CHAR_16);
     app_set->sys_info.P2P_ON_OFF = CFG_INVALID; 
     memset(app_set->sys_info.p2p_id, CHAR_MEMSET, MAX_CHAR_32); 
     memset(app_set->sys_info.p2p_passwd, CHAR_MEMSET, MAX_CHAR_32); 
     memset(app_set->sys_info.uid, CHAR_MEMSET, MAX_CHAR_32); 
-    memset(app_set->sys_info.reserved, CFG_INVALID, 30) ;
 
     //# DDNS 
     app_set->ddns_info.ON_OFF = CFG_INVALID ; 
@@ -437,6 +438,8 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->sys_info.osd_set  = %d\n", pset->sys_info.osd_set); 
     printf("pset->sys_info.beep_sound  = %d\n", pset->sys_info.beep_sound); 
     printf("pset->sys_info.aes_encryption  = %d\n", pset->sys_info.aes_encryption); 
+    printf("pset->sys_info.aes_key = %s\n", pset->sys_info.aes_key); 
+    printf("pset->sys_info.aes_iv = %s\n", pset->sys_info.aes_iv); 
     printf("pset->sys_info.P2P_ON_OFF  = %d\n", pset->sys_info.P2P_ON_OFF); 
     
     printf("pset->sys_info.p2p_id  = %s\n", pset->sys_info.p2p_id); 
@@ -579,6 +582,25 @@ static int check_module_version(char *SSHV, char *SSLV, char *WEBV)
 	return ret ;
 }
 
+void Create_random_string(char *outdata)
+{
+	char str_list[MAX_CHAR_32 + 1] = {0, };
+	char str_outlist[MAX_CHAR_32 + 1] = {0, };
+	char temp = 0;
+	int sub_i, i = 0 ;
+	int addr = 0 ;
+	int in_idx = 0, out_idx = 0 ;
+
+	srand((unsigned int)time(NULL)) ;
+	for(sub_i = 0 ; sub_i < MAX_CHAR_16; sub_i++)
+	{
+	    str_list[sub_i] = 'a' + rand() % 26 ;
+	}
+	str_list[sub_i] = 0 ;
+    sprintf(outdata, "%s", str_list) ;
+    
+	return ;
+}
 
 static void cfg_param_check_nexx(app_set_t *pset)
 {
@@ -587,7 +609,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
     char MacAddr[12]  ;
     char compbuff[32];
     char uid[MAX_CHAR_32] = {0, };
-	int ich=0, channels = 0, i = 0;
+	int ich=0, channels = 0, i = 0, retval = 0;
 	
 	channels = MODEL_CH_NUM+1;
 	//# Encoding cfg per channel
@@ -736,6 +758,16 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->sys_info.aes_encryption < OFF || pset->sys_info.aes_encryption > ON)
         pset->sys_info.aes_encryption = OFF ; 
 
+	if(((int)pset->sys_info.aes_key[0]) == CHAR_INVALID || (int)pset->sys_info.aes_key[0] == 0)
+	{
+ 		Create_random_string(pset->sys_info.aes_key) ;
+        // random하게 key create
+	}
+	if(((int)pset->sys_info.aes_iv[0]) == CHAR_INVALID || (int)pset->sys_info.aes_iv[0] == 0)
+	{
+		sprintf(pset->sys_info.aes_iv, "%s", pset->sys_info.aes_key) ;
+        // random하게 iv create
+	}
     pset->sys_info.P2P_ON_OFF = ON ;  // Ignore previous version values, Always ON
 
     if((int)pset->sys_info.p2p_id[0] == CHAR_INVALID)
@@ -910,7 +942,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
 		if (res == 0)  // Ignore Invalid(-1) for AES encoding of special character
 		{
-		    strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
+ 			Create_random_string(pset->account_info.rtsp_userid) ;
 		}
 		
 		tmp_buf	= (int *)&pset->account_info.rtsp_passwd[0];
@@ -918,7 +950,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
 		if (res == 0)
 		{
-			strcpy(pset->account_info.rtsp_passwd, RTSP_DEFAULT_PW) ;
+			sprintf(pset->account_info.rtsp_passwd, "%s", pset->account_info.rtsp_userid) ;
 		}
 	}
 	// webuser
@@ -1278,6 +1310,11 @@ static void app_set_default(int default_type)
     app_set->sys_info.osd_set = ON ;
     app_set->sys_info.beep_sound = ON ;
     app_set->sys_info.aes_encryption = OFF ;
+
+//  random 함수 이용 
+ 	Create_random_string(app_set->sys_info.aes_key) ;
+    sprintf(app_set->sys_info.aes_iv, "%s", app_set->sys_info.aes_key) ;
+
     app_set->sys_info.P2P_ON_OFF = ON ;
 	app_set->sys_info.dev_cam_ch = MODEL_CH_NUM;
     strcpy(app_set->sys_info.p2p_id,     P2P_DEFAULT_ID) ; 
@@ -1339,24 +1376,13 @@ static void app_set_default(int default_type)
     app_set->account_info.enctype = 0 ;
 //    if(app_set->account_info.enctype) // 1, AES encryption
 
-    strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID);
-    strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
-//  rtsp id/passwd => random(default)
-/*
-	char str_list[9] ;
-	int sub_i ;
-	 
-	srand((unsigned int)time(NULL)) ;
-	for(sub_i = 0 ; sub_i < 8; sub_i++)
-	{
-	    str_list[sub_i] = 'a' + rand() % 26 ;
-	}
-	str_list[sub_i] = 0 ;
-	printf("create rtsp id... from random() %s \n",str_list) ;
-	 
-	strcpy(app_set->account_info.rtsp_userid, str_list);
-	strcpy(app_set->account_info.rtsp_passwd, str_list);
-*/
+//    strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID);
+//    strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
+
+ 	Create_random_string(app_set->account_info.rtsp_userid) ;
+	printf("create rtsp id... from random() %s \n",app_set->account_info.rtsp_userid) ;
+	sprintf(app_set->account_info.rtsp_passwd, "%s", app_set->account_info.rtsp_userid);
+
 	app_set->account_info.webuser.lv = 0;			// 0:Administrator, 1:operator?(TBD)
 	app_set->account_info.webuser.authtype = 0;		// 0:basic, 1:digest(TBD)
 	strcpy(app_set->account_info.webuser.id, WEB_DEFAULT_ID);

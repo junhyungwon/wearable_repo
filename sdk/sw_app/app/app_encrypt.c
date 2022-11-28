@@ -25,6 +25,7 @@
 #include<string.h>
 #include<stdint.h>
 #include "app_main.h"
+#include "app_set.h"
 
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 #define Nb 4
@@ -327,7 +328,7 @@ char *SHA256_process(char *string)
 void openssl_aes128_encrypt(char *src, char *dst)
 {
     unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
-    unsigned char iv[]          = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+    unsigned char iv[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
 
     int i = 0, len=0, padding_len=0 ;
     char buf[16 + BLOCK_SIZE] ;
@@ -342,13 +343,9 @@ void openssl_aes128_encrypt(char *src, char *dst)
     AES_cbc_encrypt(buf ,dst ,len+padding_len ,&aes_key_128, iv,AES_ENCRYPT);
 }
 
-
 int openssl_aes128_encrypt_fs(char *src, char *dst)
 {
-    unsigned char aes_128_key[]         = {0x06,0xa9,0x21,0x40,0x36,0xb8,0xa1,0x5b,
-                                                                0x51,0x2e,0x03,0xd5,0x34,0x12,0x00,0x06}; 
-    unsigned char iv[] = {0x3d,0xaf,0xba,0x42,0x9d,0x9e,0xb4,0x30,
-                          0xb4,0x22,0xda,0x80,0x2c,0x9f,0xac,0x41};
+    unsigned char aes_128_key[16] = {0,}; 
 
     int i = 0, len=0, padding_len=0 ;
     char buf[FREAD_COUNT + BLOCK_SIZE] ;
@@ -365,12 +362,17 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
         return FAIL;
     }
 
+    for(i = 0 ; i < 16 ; i++)
+    {
+        sprintf(&aes_128_key[i], "%c", app_set->sys_info.aes_key[i]) ;
+    }
     AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key_128); 
     while(len = fread(buf, RW_SIZE, FREAD_COUNT, fp)) {
         if(FREAD_COUNT != len){
             break ;
         }
-        AES_cbc_encrypt(buf, buf, len, &aes_key_128, iv, AES_ENCRYPT);
+        AES_cbc_encrypt(buf, buf, len, &aes_key_128, aes_128_key, AES_ENCRYPT);
+//        AES_cbc_encrypt(buf, buf, len, &aes_key_128, iv, AES_ENCRYPT);
         fwrite(buf, RW_SIZE, len, wfp) ;
     }
 
@@ -378,7 +380,7 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
 	printf("enc padding len:%d\n",padding_len);
     memset(buf+len, padding_len, padding_len);
 
-    AES_cbc_encrypt(buf ,buf ,len+padding_len ,&aes_key_128, iv,AES_ENCRYPT);
+    AES_cbc_encrypt(buf ,buf ,len+padding_len ,&aes_key_128, aes_128_key, AES_ENCRYPT);
 	fwrite(buf ,RW_SIZE ,len+padding_len ,wfp);
 
 	fclose(wfp);

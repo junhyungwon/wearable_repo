@@ -125,6 +125,8 @@ typedef struct _tagCgiServersConfig {
     char 				time_zone_abbr[6] ; // timezone 문자열...
 	int					daylight_saving;
     int aes_encryption;
+    char aes_key[32];
+    char aes_iv[32];
 	T_CGI_HTTPS_CONFIG  https;
 	T_CGI_ONVIF_CONFIG  onvif;
     T_CGI_P2PSERVER_CONFIG p2p;
@@ -151,6 +153,8 @@ typedef struct _tagCgiOperationConfiguration {
     int display_datetime;
     int beep_sound;
     int aes_encryption;
+	char aes_key[32];
+	char aes_iv[32];
     //T_CGI_P2PSERVER_CONFIG p2p;
 }T_CGI_OPERATION_CONFIG;
 
@@ -250,6 +254,8 @@ typedef struct _tagCgiSystemConfiguration{
 
 typedef struct _tagCgiUserConfig {
 	int aes_encryption;
+	char aes_key[32];
+	char aes_iv[32];
 	T_CGI_ACCOUNT      web;
 	T_CGI_ONVIF_CONFIG onvif;
 	T_CGI_RTSP_CONFIG  rtsp;

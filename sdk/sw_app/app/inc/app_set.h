@@ -147,7 +147,7 @@ typedef struct{
     char id[MAX_CHAR_16];
     char pwd[MAX_CHAR_16];
     short ON_OFF ;
-	short file_type ;           // 0 : all, 1 : event
+	short file_type ;           // 0 : all, 1 : event, 2:encrypted 
 	char reserved[124];
 } app_network_ftp_t;
 
@@ -240,7 +240,8 @@ typedef struct {
 	short dev_cam_ch;		//# NEXXONE: 1, Any others: 4
     short beep_sound ;
     short aes_encryption ;
-	char reserved[22];
+    char aes_key[MAX_CHAR_32] ;
+    char aes_iv[MAX_CHAR_32] ;
 } app_system_t;
 //} __attribute__((packed)) app_system_t;
 

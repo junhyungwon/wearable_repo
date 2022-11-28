@@ -270,6 +270,8 @@ int put_json_all_config()
 		json_object_object_add(misc_obj, "display_datetime", json_object_new_int(p.display_datetime));
 		json_object_object_add(misc_obj, "beep_sound", json_object_new_int(p.beep_sound));
 		json_object_object_add(misc_obj, "aes_encryption", json_object_new_int(p.aes_encryption));
+		json_object_object_add(misc_obj, "aes_key", json_object_new_string(p.aes_key));
+		json_object_object_add(misc_obj, "aes_iv", json_object_new_string(p.aes_iv));
 		json_object_object_add(operation_obj, "misc", misc_obj);
 
 	}
@@ -594,6 +596,8 @@ void put_json_user_config(T_CGI_USER_CONFIG *p)
 
 	json_object_object_add(user_obj,  "model", json_object_new_string(MODEL_NAME));
 	json_object_object_add(user_obj,  "aes_encryption", json_object_new_int(p->aes_encryption));
+	json_object_object_add(user_obj,  "aes_key", json_object_new_string(p->aes_key));
+	json_object_object_add(user_obj,  "aes_iv", json_object_new_string(p->aes_iv));
 
 	json_object_object_add(onvif_obj, "id",    json_object_new_string(p->onvif.id));
 	json_object_object_add(onvif_obj, "pw",    json_object_new_string(p->onvif.pw));
@@ -701,6 +705,8 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 	json_object_object_add(myobj,  "aes_encryption", json_object_new_int(p->aes_encryption));
+	json_object_object_add(myobj,  "aes_key", json_object_new_string(p->aes_key));
+	json_object_object_add(myobj,  "aes_iv", json_object_new_string(p->aes_iv));
 
 	json_object_object_add(bs_obj, "enable",       json_object_new_int( p->bs.enable));
 	json_object_object_add(bs_obj, "upload_files", json_object_new_int( p->bs.upload_files));
@@ -952,6 +958,7 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	recordobj = json_object_new_object();
 	misc_obj  = json_object_new_object();
 
+
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
 	json_object_object_add(streamobj, "enable_audio",  json_object_new_int(p->stm.enable_audio));
@@ -967,6 +974,8 @@ void put_json_operation_config(T_CGI_OPERATION_CONFIG *p)
 	json_object_object_add(misc_obj, "display_datetime", json_object_new_int(p->display_datetime));
 	json_object_object_add(misc_obj, "beep_sound", json_object_new_int(p->beep_sound));
 	json_object_object_add(misc_obj, "aes_encryption", json_object_new_int(p->aes_encryption));
+	json_object_object_add(misc_obj,  "aes_key", json_object_new_string(p->aes_key));
+	json_object_object_add(misc_obj,  "aes_iv", json_object_new_string(p->aes_iv));
 	json_object_object_add(myobj, "misc", misc_obj);
 
 	PUT_CACHE_CONTROL_NOCACHE;

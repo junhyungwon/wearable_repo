@@ -818,7 +818,7 @@ int checkAccount(T_CGI_ACCOUNT *acc)
 	DBG_UDS("new web account, id:%s  pw:%s\n", acc->id, acc->pw);
 	decrypt_pwlen = openssl_aes128_decrypt(base64_decode(acc->pw, strlen(acc->pw), &olen), web_decrypt_pw) ;
 	DBG_UDS("new web account pw:%s decrypt_len = %d\n", web_decrypt_pw, decrypt_pwlen);
-	if(!strncmp(app_set->account_info.webuser.pw, web_decrypt_pw, decrypt_pwlen)) {
+	if(!strcmp(app_set->account_info.webuser.pw, web_decrypt_pw)) {
 		return 0 ;
 	}
 
@@ -900,6 +900,8 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	t->bs.upload_files = app_set->ftp_info.file_type; // 1: event, 0:all
 	t->bs.port   = app_set->ftp_info.port;
 	t->aes_encryption = app_set->sys_info.aes_encryption ;
+	strcpy(t->aes_key, app_set->sys_info.aes_key) ;
+	strcpy(t->aes_iv, app_set->sys_info.aes_iv) ;
 
 	strcpy(t->bs.serveraddr, app_set->ftp_info.ipaddr);
 
@@ -1337,6 +1339,8 @@ static int getUserConfiguration(T_CGI_USER_CONFIG *t)
 	}
 */
 	t->aes_encryption = app_set->sys_info.aes_encryption ;
+	strcpy(t->aes_key, app_set->sys_info.aes_key) ;
+	strcpy(t->aes_iv, app_set->sys_info.aes_iv) ;
 
 	t->rtsp.enable = app_set->account_info.ON_OFF;
 	t->rtsp.enctype = app_set->account_info.enctype;
@@ -3262,13 +3266,31 @@ void *myFunc(void *arg)
 				perror("failed read: ");
 			}
 		}
+		else if (strcmp(rbuf, "GetUserConfiguration") == 0) {
+			LOGD("[main] --- UDS: GetUserconfiguration ---\n");
+
+			T_CGI_USER_CONFIG t;memset(&t,0, sizeof t);
+			if(0 == getUserConfiguration(&t)){
+				ret = write(cs_uds, &t, sizeof t);
+				DBG_UDS("sent, ret=%d \n", ret);
+				if (ret > 0) {
+
+					// TODO something...
+				} else {
+					DBG_UDS("ret:%d, cs:%d", ret, cs_uds);
+					perror("failed write: ");
+				}
+			}
+		}
+
+
 		else if (strcmp(rbuf, "GetOperationConfiguration") == 0){
 			//LOGD("[main] --- GetOperationConfiguration---\n");
 
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
 			{
-				sprintf(strOptions, "%d %d %d %d %d %d %d %d %d",
+				sprintf(strOptions, "%d %d %d %d %d %d %d %d %d %s %s",
 						app_set->stm_info.enable_audio,     // 0:on, 1:off
 						app_set->rec_info.pre_rec,     // 0:on, 1:off
 						app_set->rec_info.auto_rec,    // 0:on, 1:off
@@ -3277,7 +3299,9 @@ void *myFunc(void *arg)
 						app_set->rec_info.overwrite,
 						app_set->sys_info.osd_set,
 						app_set->sys_info.beep_sound,
-						app_set->sys_info.aes_encryption);
+						app_set->sys_info.aes_encryption,
+						app_set->sys_info.aes_key,
+						app_set->sys_info.aes_iv);
 			}
 			ret = write(cs_uds, strOptions, sizeof strOptions);
 			if (ret > 0) {

@@ -500,7 +500,7 @@ int sysctl_message(
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
 					T_CGI_OPERATION_CONFIG *t = (T_CGI_OPERATION_CONFIG*)data;
-					sscanf(rbuf, "%d %d %d %d %d %d %d %d %d" , 
+					sscanf(rbuf, "%d %d %d %d %d %d %d %d %d %s %s", 
 							&t->stm.enable_audio,
 							&t->rec.pre_rec,
 							&t->rec.auto_rec,
@@ -509,7 +509,10 @@ int sysctl_message(
 							&t->rec.overwrite,
 							&t->display_datetime,
 							&t->beep_sound,
-							&t->aes_encryption);
+							&t->aes_encryption,
+							&t->aes_key,
+							&t->aes_iv);
+
 					close(cs);
 					return 0;
 				}
