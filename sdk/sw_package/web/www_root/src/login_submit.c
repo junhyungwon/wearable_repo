@@ -58,21 +58,15 @@ int main(void)
         req->putint(sess, "count", count, true);
     }
 
+    // save session & free allocated memories
+    qcgisess_save(sess);
+
     // empty return
     if (isValidated) {
-        // generate the nonce
-        char *nonce = genuniqid();
-        qcgires_setcookie(req, "nonce", nonce, 0, "/", NULL, NULL);
-        req->putstr(sess, "nonce", nonce, true);
-        free(nonce);
-
         send_response(SUBMIT_OK);
     } else {
         printf("status: 401\n\n");
     }
-
-    // save session & free allocated memories
-    qcgisess_save(sess);
 
     sess->free(sess);
     req->free(req);
