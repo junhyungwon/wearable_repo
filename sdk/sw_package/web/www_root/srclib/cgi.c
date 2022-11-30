@@ -254,67 +254,23 @@ int send_response(int errnum)
 
 }
 
-// copied from qcgisess.c
-char *genuniqid(void)
-{
-#ifdef _WIN32
-    unsigned int sec = time(NULL);
-    FILETIME ft;
-    GetSystemTimeAsFileTime(&ft);
-    unsigned int usec = ft.dwLowDateTime % 1000000;
-#else
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    unsigned int sec = tv.tv_sec;
-    unsigned int usec = tv.tv_usec;
-#endif
-    unsigned int port = 0;
-    const char *remote_port = getenv("REMOTE_PORT");
-    if (remote_port != NULL) {
-        port = atoi(remote_port);
-    }
-
-    char *uniqid = (char *)malloc(5+5+4+4+1);
-    if (snprintf(uniqid, 5+5+4+4+1, "%05x%05x%04x%04x",
-                 usec%0x100000, sec%0x100000, getpid()%0x10000, port%0x10000)
-        >= 5+5+4+4+1) uniqid[5+5+4+4] = '\0';;
-
-    return uniqid;
-}
-
 void validateSession() {
 	qentry_t *req = qcgireq_parse(NULL, Q_CGI_COOKIE);
 	qentry_t *sess = qcgisess_init(req, NULL);
 
 	char *identity  = sess->getstr(sess, "identity", false);
-	char *sessNonce  = sess->getstr(sess, "nonce", false);
-	char *reqNonce  = req->getstr(req, "nonce", false);
 
 	// must be null if not loggined.
-	if (identity == NULL || sessNonce == NULL || reqNonce == NULL) {
+	if (identity == NULL) {
 		printf("status: 401\n\n");
 
 		// force exit.
 		exit(0);
+	} else {
+		// update time to now.
+		qcgisess_settimeout(sess, SESSION_TIMEOUT);
+	    qcgisess_save(sess);
 	}
-
-	// validate
-	if (strcmp(sessNonce, reqNonce) != 0) {
-		printf("status: 401\n\n");
-
-		// force exit.
-		exit(0);
-	}
-
-	// refresh nonce
-	char *nonce = genuniqid();
-	qcgires_setcookie(req, "nonce", nonce, 0, "/", NULL, NULL);
-	req->putstr(sess, "nonce", nonce, true);
-	free(nonce);
-
-	// update time to now.
-	qcgisess_settimeout(sess, SESSION_TIMEOUT);
-	qcgisess_save(sess);
 
     sess->free(sess);
 }

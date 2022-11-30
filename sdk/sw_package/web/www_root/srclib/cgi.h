@@ -91,7 +91,6 @@ char *      get_cgi_contents();
 void		remove_char_from_string(char subc, char *str);
 void		remove_rn_char_from_string(char *str);
 
-char *      genuniqid();
 void        validateSession();
 
 #ifdef __cplusplus
