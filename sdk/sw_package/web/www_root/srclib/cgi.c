@@ -254,7 +254,6 @@ int send_response(int errnum)
 
 }
 
-
 // copied from qcgisess.c
 char *genuniqid(void)
 {
@@ -291,13 +290,16 @@ void validateSession() {
 	char *sessNonce  = sess->getstr(sess, "nonce", false);
 	char *reqNonce  = req->getstr(req, "nonce", false);
 
-	// must be null if not loggined. and validate the given nonce
-	if ((identity == NULL || sessNonce == NULL || reqNonce == NULL)
-	 || (strcmp(sessNonce, reqNonce) != 0)) {
-		// eliminate the session
-		qcgisess_destroy(sess);
+	// must be null if not loggined.
+	if (identity == NULL || sessNonce == NULL || reqNonce == NULL) {
+		printf("status: 401\n\n");
 
-		// send 401
+		// force exit.
+		exit(0);
+	}
+
+	// validate
+	if (strcmp(sessNonce, reqNonce) != 0) {
 		printf("status: 401\n\n");
 
 		// force exit.
