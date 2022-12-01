@@ -20,7 +20,7 @@
 -----------------------------------------------------------------------------*/
 #define PATH_WEB_AUTH_FILE  "/tmp/lighttpd.user" //"/etc/lighttpd/lighttpd.user"
 
-#define STR_WEB_DIGEST_REALM MODEL_NAME // this is from Rules.make
+#define STR_WEB_DIGEST_REALM "Authorized User"  // lighttpd/auth.conf auth.require.realm 와 같아야함.
 
 #define PATH_HTTPS_SSL "/mmc/ssl"
 #define PATH_SSL_ROOT  PATH_HTTPS_SSL

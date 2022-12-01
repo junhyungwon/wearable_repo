@@ -117,11 +117,11 @@ int app_web_boot_passwordfile()
 
 int app_web_make_passwordfile(char *id, char *pw, int lv, int authtype)
 {
-	char strcmd[128]={0};
+	char strcmd[1024]={0};
 	char stropt[8]={0};
 
 	// make passwd file.
-	if(authtype == 0){ // basic (default)
+	if(authtype == 0){ // basic
 
 		if( 0 == access(PATH_WEB_AUTH_FILE, F_OK))
 			sprintf(stropt, "-bm");
@@ -140,22 +140,12 @@ int app_web_make_passwordfile(char *id, char *pw, int lv, int authtype)
 
 		return 0; // succeed
 	}
-	else if(authtype == 1){ // digest
-
-		if( 0 != access(PATH_WEB_AUTH_FILE, F_OK))
-			sprintf(stropt, "-c");
-		
-		sprintf(strcmd, "/opt/fit/bin/htdigest %s %s %s %s", stropt, PATH_WEB_AUTH_FILE, STR_WEB_DIGEST_REALM, id);
-
-		// 이건, 대화형이라 popen 을 사용해야...
-		FILE *f = popen(strcmd, "w");
-		if (f == NULL) { perror("failed open:"); return -1;}
-		fprintf(f, pw);     // maybe new
-		fprintf(f, "\n");
-		fprintf(f, pw);     // maybe confirm
-		fprintf(f, "\n");
-
-		pclose(f);
+	else if(authtype == 1){ // digest (default)
+		TRACE_INFO("reset the htdigest password. %s %s %s %s\n", id, STR_WEB_DIGEST_REALM, pw, PATH_WEB_AUTH_FILE);
+		// tta인증. htdigest가 md5밖에 지원하지 않으므로, md5sum 과 sha256sum 을 이용하여 쉘로 파일 직접 생성.
+		// /opt/fit/bin/htdigest.sh 'admin' 'Authorized User' 'admin' '/tmp/lighttpd.user'
+		sprintf(strcmd, "/opt/fit/bin/htdigest.sh '%s' '%s' '%s' '%s'", id, STR_WEB_DIGEST_REALM, pw, PATH_WEB_AUTH_FILE);
+		system(strcmd);
 
 		return 0; // succeed
 	}
