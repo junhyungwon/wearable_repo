@@ -1396,7 +1396,7 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 		strncpy(t->web.pw, web_decrypt_pw, decrypt_len) ;
 		DBG_UDS("Updated webuser.pw=%s\n", t->web.pw);
 
-		if(0 == app_set_web_password(t->web.id, t->web.pw, 0, 0)) {
+		if(0 == app_set_web_password(t->web.id, t->web.pw, 0, 1)) {
 			DBG_UDS("Updated web password: id:%s, pw:%s\n", t->web.id, t->web.pw);
 			isChanged++;
 		}else {

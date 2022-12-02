@@ -265,7 +265,7 @@ static void char_memset(void)
     memset(app_set->account_info.rtsp_userid, CHAR_MEMSET, MAX_CHAR_32) ;
     memset(app_set->account_info.rtsp_passwd, CHAR_MEMSET, MAX_CHAR_32) ;
 
-    app_set->account_info.webuser.authtype = 0 ;
+    app_set->account_info.webuser.authtype = 1 ;
 	app_set->account_info.webuser.lv = 0 ;
 	memset(app_set->account_info.webuser.id, CHAR_MEMSET, MAX_CHAR_32) ; 
 	memset(app_set->account_info.webuser.pw, CHAR_MEMSET, MAX_CHAR_32) ;
@@ -958,19 +958,19 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		strcpy(pset->account_info.webuser.id, WEB_DEFAULT_ID);
 		strcpy(pset->account_info.webuser.pw, WEB_DEFAULT_PW);
 		pset->account_info.webuser.lv = 0;       // 0:Administrator default
-		pset->account_info.webuser.authtype = 0; // 0:base64(default) 1:digest
+		pset->account_info.webuser.authtype = 1; // 0:base64 1:digest(default)
 	}
     if((int)pset->account_info.webuser.pw[0] == CHAR_INVALID || (int)pset->account_info.webuser.pw[0] == 0){
 		strcpy(pset->account_info.webuser.pw, WEB_DEFAULT_PW);
 		pset->account_info.webuser.lv = 0;
-		pset->account_info.webuser.authtype = 0; // default 0
+		pset->account_info.webuser.authtype = 1; // default 0
 	}
     if(pset->account_info.webuser.lv <= CFG_INVALID || pset->account_info.webuser.lv > 2) {
 		pset->account_info.webuser.lv       = 0;
-		pset->account_info.webuser.authtype = 0; // default 0
+		pset->account_info.webuser.authtype = 1; // default 0
 	}
     if(pset->account_info.webuser.authtype <= CFG_INVALID || pset->account_info.webuser.authtype > 1)
-		pset->account_info.webuser.authtype = 0;
+		pset->account_info.webuser.authtype = 1;
 
     TRACE_INFO("pset->account_info.webuser.id		= %s\n", pset->account_info.webuser.id) ;
     TRACE_INFO("pset->account_info.webuser.pw		= %s\n", pset->account_info.webuser.pw) ;
@@ -1384,7 +1384,7 @@ static void app_set_default(int default_type)
 	sprintf(app_set->account_info.rtsp_passwd, "%s", app_set->account_info.rtsp_userid);
 
 	app_set->account_info.webuser.lv = 0;			// 0:Administrator, 1:operator?(TBD)
-	app_set->account_info.webuser.authtype = 0;		// 0:basic, 1:digest(TBD)
+	app_set->account_info.webuser.authtype = 1;		// 0:basic, 1:digest(default)
 	strcpy(app_set->account_info.webuser.id, WEB_DEFAULT_ID);
 	strcpy(app_set->account_info.webuser.pw, WEB_DEFAULT_PW);
 
