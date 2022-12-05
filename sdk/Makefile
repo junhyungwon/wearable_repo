@@ -161,6 +161,17 @@ p2p_clean:
 
 p2p_all: p2p_clean p2p p2p_install
 
+lighttpd:
+	@cd $(THIRD_PARTY)/lighttpd1.4 \
+	&& CC=$(BUILD_TOOL_PREFIX)gcc ./autogen.sh \
+	&& CFLAGS=-O3 CC=$(BUILD_TOOL_PREFIX)gcc ./configure --target=arm-arago-linux-gnueabi --host=arm-arago-linux-gnueabi --build=x86_64-pc-linux-gnu --prefix=/usr --exec-prefix=/usr --sysconfdir=/etc --localstatedir=/var --program-prefix= --disable-gtk-doc --disable-gtk-doc-html --disable-doc --disable-docs --disable-documentation --with-xmlto=no --with-fop=no --disable-dependency-tracking --enable-ipv6 --disable-nls --disable-static --enable-shared --without-wolfssl --libdir=/usr/lib/lighttpd --libexecdir=/usr/lib --with-openssl --without-pam --with-zlib --without-bzip2 --without-pcre --without-pcre2 --without-webdav-props --without-webdav-locks --without-lua \
+	&& $(MAKE) -j$(CPU_NUM)
+
+lighttpd_clean:
+	@cd $(THIRD_PARTY)/lighttpd1.4 \
+	&& $(MAKE) clean \
+	&& rm -rf CMakeFiles CMakeCache.txt
+
 libuv:
 	@cd $(THIRD_PARTY)/libuv \
 	&& CFLAGS=-O3 CC=$(BUILD_TOOL_PREFIX)gcc cmake . \
@@ -448,6 +459,9 @@ endif
 	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh
+
+# cp lighttpd's mod_auth
+	sudo /bin/cp $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_auth.so $(TARGET_FS)/usr/lib/lighttpd/mod_auth.so
 
 ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp $(KMODDIR)/wlan/88x1au_driver/8811au.ko $(TARGET_FS)/lib/modules/.
