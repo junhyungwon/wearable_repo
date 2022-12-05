@@ -26,6 +26,7 @@
 #define LOGINCHECK 3
 
 // SESSION
+#define SESSION_ENABLED (false)
 #define SESSION_TIMEOUT (60*10)
 #define LOGIN_FAILURE_TIMEOUT (60*5)
 #define LOGIN_MAX_FAILURE (5)
