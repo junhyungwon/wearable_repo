@@ -4,3 +4,6 @@
 [submodule "third_party/libuv"]
 	path = third_party/libuv
 	url = git@github.com:linkflowlab/libuv.git
+[submodule "third_party/lighttpd1.4"]
+	path = third_party/lighttpd1.4
+	url = git@github.com:linkflowlab/lighttpd1.4.git
