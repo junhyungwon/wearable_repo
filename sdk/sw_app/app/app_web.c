@@ -102,10 +102,15 @@ int createSignedCertificate()
 
 int app_web_boot_passwordfile()
 {
-	app_web_make_passwordfile( app_set->account_info.webuser.id,
-			app_set->account_info.webuser.pw,
-			app_set->account_info.webuser.lv,
-			app_set->account_info.webuser.authtype);
+	// check default
+	if( 0 == strcmp(app_set->account_info.webuser.pw, WEB_DEFAULT_PW)){
+	}
+	else {
+		app_web_make_passwordfile( app_set->account_info.webuser.id,
+				app_set->account_info.webuser.pw,
+				app_set->account_info.webuser.lv,
+				app_set->account_info.webuser.authtype);
+	}
 
 	return 0;
 }
@@ -115,7 +120,6 @@ int app_web_make_passwordfile(char *id, char *pw, int lv, int authtype)
 	char strcmd[1024]={0};
 	char stropt[8]={0};
 
-	TRACE_INFO("generating the password file. authtype : %d(%s)\n", authtype, (authtype == 0) ? "basic" : "digest");
 	// make passwd file.
 	if(authtype == 0){ // basic
 
