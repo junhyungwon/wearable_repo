@@ -120,6 +120,7 @@ int app_web_make_passwordfile(char *id, char *pw, int lv, int authtype)
 	char strcmd[1024]={0};
 	char stropt[8]={0};
 
+	TRACE_INFO("generating the password file. authtype : %d(%s)\n", authtype, (authtype == 0) ? "basic" : "digest");
 	// make passwd file.
 	if(authtype == 0){ // basic
 
@@ -192,12 +193,15 @@ if(app_set->net_info.https_mode == 1) {
 		sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", 443);
 		fputs(str, fp);
 
+		TRACE_INFO("app_set->net_info.https_mode = %d\n", app_set->net_info.https_mode);
 		if(app_set->net_info.https_mode==1) // 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
 		{
 			if( access(PATH_HTTPS_SS_PEM, F_OK)==0) {
-				sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_SS_PEM);
+				sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM);
 				fputs(str, fp);
 				bIsFile = 1;
+			} else {
+				TRACE_ERR("ssl.pemfile %s not exists!!\n", PATH_HTTPS_SS_PEM);
 			}
 		}
 		else if (app_set->net_info.https_mode==2)
