@@ -1463,7 +1463,7 @@ int app_set_open(void)
 	// try read config from json file
 	if(access(NEXX_CFG_JSON_ENCRYPT_MMC, F_OK) == 0){
 		// decryption file  
-		if(openssl_aes128_decrypt_fs(NEXX_CFG_JSON_ENCRYPT_MMC, NEXX_CFG_JSON_MMC))
+		if(app_rsa_decrypt_fs_by_private(NEXX_CFG_JSON_ENCRYPT_MMC, NEXX_CFG_JSON_MMC) == SUCC)
 		{
 			ret = js_read_settings(app_set, NEXX_CFG_JSON_MMC) ;
 	    	if( EFAIL == ret)
@@ -1595,11 +1595,12 @@ int app_set_write(void)
 #endif
 //	if(app_set->sys_info.aes_encryption)  
 	{
-		if(openssl_aes128_encrypt_fs(NEXX_CFG_JSON_MMC, NEXX_CFG_JSON_ENCRYPT_MMC))
-		{
-			printf("openssl_aes128_encrypt_fs......\n") ;
-		    remove(NEXX_CFG_JSON_MMC) ;
-		}	//add log encrypt fail... 
+		if(app_rsa_encrypt_fs_by_private(NEXX_CFG_JSON_MMC, NEXX_CFG_JSON_ENCRYPT_MMC) == SUCC) {
+			printf("app_rsa_encrypt_fs_by_private......\n") ;
+		    remove(NEXX_CFG_JSON_MMC);	// fixme : in memory
+		} else {
+			TRACE_INFO("app_rsa_encrypt_fs_by_private. failed!!\n");
+		}
 	}
 	sync();
 	TRACE_INFO("CFG sync done!\n");
