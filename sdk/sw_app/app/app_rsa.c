@@ -102,6 +102,9 @@ int app_rsa_encrypt_fs_by_private(char *src, char *dst) {
     }
 
     RSA *rsa = app_rsa_get_rsa();
+	if(rsa == NULL)
+		return 0 ;
+
     int rsa_size = RSA_size(rsa);
     int size = rsa_size - RSA_PKCS1_PADDING_SIZE;
     unsigned char buf[rsa_size];
