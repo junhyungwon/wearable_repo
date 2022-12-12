@@ -21,6 +21,7 @@ int main()
 
 	printf("<system>\n");
 	printf("<model>%s</model>\n", t.model);
+	printf("<cert_model>%s</cert_model>\n", t.cert_model);
 	printf("<fwver>%s</fwver>\n", t.fwver);
 	printf("<devid>%s</devid>\n", t.devid);
 	printf("<uid>%s</uid>\n",     t.uid);

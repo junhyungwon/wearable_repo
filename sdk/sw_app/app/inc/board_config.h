@@ -82,6 +82,7 @@
 #elif defined(LF_SYS_NEXXONE_VOIP)
 #	define NEXXONE						
 #	define MODEL_NAME					"NEXXONE"
+#	define CERT_MODEL_NAME				"LF-F310"
 #	define MODEL_CH_NUM					1
 #	define STREAM_CH_NUM				1
 #	define JPEG_CH_NUM					2

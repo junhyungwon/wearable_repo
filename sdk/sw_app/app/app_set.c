@@ -582,7 +582,7 @@ static int check_module_version(char *SSHV, char *SSLV, char *WEBV)
 	return ret ;
 }
 
-void Create_random_string(char *outdata)
+void Create_random_string(char *outdata, int length)
 {
 	char str_list[MAX_CHAR_32 + 1] = {0, };
 	char str_outlist[MAX_CHAR_32 + 1] = {0, };
@@ -592,7 +592,7 @@ void Create_random_string(char *outdata)
 	int in_idx = 0, out_idx = 0 ;
 
 	srand((unsigned int)time(NULL)) ;
-	for(sub_i = 0 ; sub_i < MAX_CHAR_16; sub_i++)
+	for(sub_i = 0 ; sub_i < length; sub_i++)
 	{
 	    str_list[sub_i] = 'a' + rand() % 26 ;
 	}
@@ -760,7 +760,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	if(((int)pset->sys_info.aes_key[0]) == CHAR_INVALID || (int)pset->sys_info.aes_key[0] == 0)
 	{
- 		Create_random_string(pset->sys_info.aes_key) ;
+ 		Create_random_string(pset->sys_info.aes_key, 16) ;
         // random하게 key create
 	}
 	if(((int)pset->sys_info.aes_iv[0]) == CHAR_INVALID || (int)pset->sys_info.aes_iv[0] == 0)
@@ -942,7 +942,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
 		if (res == 0)  // Ignore Invalid(-1) for AES encoding of special character
 		{
- 			Create_random_string(pset->account_info.rtsp_userid) ;
+// 			Create_random_string(pset->account_info.rtsp_userid) ;
+			strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
 		}
 		
 		tmp_buf	= (int *)&pset->account_info.rtsp_passwd[0];
@@ -950,7 +951,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
 		if (res == 0)
 		{
-			sprintf(pset->account_info.rtsp_passwd, "%s", pset->account_info.rtsp_userid) ;
+ 			Create_random_string(pset->account_info.rtsp_passwd, 9) ;
+//			sprintf(pset->account_info.rtsp_passwd, "%s", pset->account_info.rtsp_userid) ;
 		}
 	}
 	// webuser
@@ -1312,7 +1314,7 @@ static void app_set_default(int default_type)
     app_set->sys_info.aes_encryption = OFF ;
 
 //  random 함수 이용 
- 	Create_random_string(app_set->sys_info.aes_key) ;
+ 	Create_random_string(app_set->sys_info.aes_key, 16) ;
     sprintf(app_set->sys_info.aes_iv, "%s", app_set->sys_info.aes_key) ;
 
     app_set->sys_info.P2P_ON_OFF = ON ;
@@ -1379,9 +1381,10 @@ static void app_set_default(int default_type)
 //    strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID);
 //    strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
 
- 	Create_random_string(app_set->account_info.rtsp_userid) ;
-	printf("create rtsp id... from random() %s \n",app_set->account_info.rtsp_userid) ;
-	sprintf(app_set->account_info.rtsp_passwd, "%s", app_set->account_info.rtsp_userid);
+ 	strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
+ 	Create_random_string(app_set->account_info.rtsp_passwd, 9) ;
+	printf("create rtsp id... from random() %s \n",app_set->account_info.rtsp_passwd) ;
+ 
 
 	app_set->account_info.webuser.lv = 0;			// 0:Administrator, 1:operator?(TBD)
 	app_set->account_info.webuser.authtype = 1;		// 0:basic, 1:digest(default)

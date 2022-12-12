@@ -243,6 +243,7 @@ typedef struct _tagCgiNetworkConfiguration2 {
 
 typedef struct _tagCgiSystemConfiguration{
 	char model[32];
+	char cert_model[32];
 	char fwver[32];
 	char devid[32];
 	char mac[32];
@@ -263,6 +264,7 @@ typedef struct _tagCgiUserConfig {
 
 typedef struct _tagCgiSystemInfo{
 	char model[32];
+	char cert_model[32] ;
 	char fwver[32];
     int ftp;
     int onvif;

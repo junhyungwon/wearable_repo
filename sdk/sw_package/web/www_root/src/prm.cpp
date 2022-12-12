@@ -472,6 +472,7 @@ int put_json_all_config()
 		}
 
 		json_object_object_add(system_obj, "model", json_object_new_string(p.model));
+		json_object_object_add(system_obj, "cert_model", json_object_new_string(p.cert_model));
 		json_object_object_add(system_obj, "fwver", json_object_new_string(p.fwver));
 		json_object_object_add(system_obj, "devid", json_object_new_string(p.devid));
 		json_object_object_add(system_obj, "uid", json_object_new_string(p.uid));
@@ -545,6 +546,7 @@ void put_json_system_info(T_CGI_SYSTEM_INFO *p)
 	json_object *root_obj = json_object_new_object();
 
 	json_object_object_add(root_obj, "model", json_object_new_string(p->model));
+	json_object_object_add(root_obj, "cert_model", json_object_new_string(p->cert_model));
 	json_object_object_add(root_obj, "fwver", json_object_new_string(p->fwver));
 	json_object_object_add(root_obj, "ftp",   json_object_new_int(   p->ftp));
 	json_object_object_add(root_obj, "onvif", json_object_new_int(   p->onvif));
@@ -630,6 +632,7 @@ void put_json_system_config(T_CGI_SYSTEM_CONFIG *p)
 	json_object_object_add(myobj, "model", json_object_new_string(MODEL_NAME));
 
 	json_object_object_add(systemobj, "model", json_object_new_string(p->model));
+	json_object_object_add(systemobj, "cert_model", json_object_new_string(p->cert_model));
 	json_object_object_add(systemobj, "fwver", json_object_new_string(p->fwver));
 	json_object_object_add(systemobj, "devid", json_object_new_string(p->devid));
 	json_object_object_add(systemobj, "uid",   json_object_new_string(p->uid));
