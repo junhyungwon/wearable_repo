@@ -3516,6 +3516,10 @@ void *myFunc(void *arg)
 						}
 
 					}
+
+					// create a new rsa key with the passphrase
+					app_rsa_generate_privatekey(change_decrypt_pw);
+
 					// 1. make a password file (basic or digest)
 					// 2. save user info to system_cfg file
 					perror("failed read: ");

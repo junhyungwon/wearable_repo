@@ -22,19 +22,16 @@
 
 #define STR_WEB_DIGEST_REALM "Authorized User"  // lighttpd/auth.conf auth.require.realm 와 같아야함.
 
-#define PATH_HTTPS_SSL "/mmc/ssl"
-#define PATH_SSL_ROOT  PATH_HTTPS_SSL
-
 // SSC == Self Signed Certificate
-#define PATH_HTTPS_SS_KEY 	PATH_HTTPS_SSL"/_ssc_private.key"
-#define PATH_HTTPS_SS_CRT 	PATH_HTTPS_SSL"/_ssc_certificate.crt"
-#define PATH_HTTPS_SS_PEM 	PATH_HTTPS_SSL"/_ssc_server.pem"
+#define PATH_HTTPS_SS_KEY 	PATH_SSL_ROOT_MMC"/_ssc_private.key"
+#define PATH_HTTPS_SS_CRT 	PATH_SSL_ROOT_MMC"/_ssc_certificate.crt"
+#define PATH_HTTPS_SS_PEM 	PATH_SSL_ROOT_MMC"/_ssc_server.pem"
 
 // Normal SSLs
-#define PATH_HTTPS_KEY 	PATH_HTTPS_SSL"/private.key"
-#define PATH_HTTPS_CRT 	PATH_HTTPS_SSL"/certificate.crt"
-#define PATH_HTTPS_CA  	PATH_HTTPS_SSL"/ca-bundle.crt"
-#define PATH_HTTPS_PEM 	PATH_HTTPS_SSL"/server.pem"
+#define PATH_HTTPS_KEY 	PATH_SSL_ROOT_MMC"/private.key"
+#define PATH_HTTPS_CRT 	PATH_SSL_ROOT_MMC"/certificate.crt"
+#define PATH_HTTPS_CA  	PATH_SSL_ROOT_MMC"/ca-bundle.crt"
+#define PATH_HTTPS_PEM 	PATH_SSL_ROOT_MMC"/server.pem"
 
 
 /*----------------------------------------------------------------------------

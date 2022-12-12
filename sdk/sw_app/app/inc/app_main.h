@@ -73,6 +73,12 @@
 #define NEXX_CFG_JSON_ENCRYPT_MMC		"/mmc/cfg/nexx_enc_cfg.json"
 #define NEXX_CFG_JSON_ENCRYPT_NAND		"/media/nand/cfg/nexx_enc_cfg.json"
 
+#define PATH_SSL_ROOT_MMC        "/mmc/ssl"
+#define PATH_SSL_PASSPHRASE_NAND CFG_DIR_NAND"/passphrase"	        // fixme : better secure place?
+#define PATH_SSL_PRIVATE_NAND    CFG_DIR_NAND"/private.pem"
+#define PATH_SSL_PRIVATE_MMC     PATH_SSL_ROOT_MMC"/private.pem"    // 삭제가능(export용)
+#define RSA_BIT                  (2048)                             // aes128 rsa bit
+
 #define BLOCK_SIZE 16
 #define FREAD_COUNT 4096
 #define KEY_BIT 128

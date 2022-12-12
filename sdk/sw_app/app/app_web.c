@@ -42,8 +42,8 @@ int createSelfSignedCertificate(char *path_key, char* path_crt)
 {
 	char cmd[256];
 
-	if( access(PATH_SSL_ROOT , F_OK) != 0) {
-		mkdir(PATH_SSL_ROOT, 0775);
+	if( access(PATH_SSL_ROOT_MMC , F_OK) != 0) {
+		mkdir(PATH_SSL_ROOT_MMC, 0775);
 	}
 
 	// 입력된 정보가 올바르지 않을때, 기본으로 생성함
