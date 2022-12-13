@@ -160,6 +160,9 @@ int app_rsa_decrypt_fs_by_private(char *src, char *dst) {
     }
 
     RSA *rsa = app_rsa_get_rsa();
+	if(rsa == NULL)
+		return 0 ;
+
     int rsa_size = RSA_size(rsa);
     unsigned char enc[rsa_size];
     unsigned char dec[rsa_size];
