@@ -3,13 +3,24 @@
 -----------------------------------------------------------------------------*/
 #include "app_rsa.h"
 
-int app_rsa_generate_privatekey(char *pw) {
-
+int app_rsa_save_passphrase(char *pw) {
 	char cmd[256];
+    char mdString[SHA256_DIGEST_LENGTH*2+1];
 
 	if( access(CFG_DIR_NAND , F_OK) != 0) {
 		mkdir(CFG_DIR_NAND, 0775);
 	}
+
+    // sha256sum
+    {
+        int i;
+        unsigned char digest[SHA256_DIGEST_LENGTH];
+        SHA256((unsigned char*)pw, strlen(pw), (unsigned char*)&digest);
+
+        for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
+            sprintf(&mdString[i*2], "%02x", (unsigned int)digest[i]);
+    }
+    // TRACE_INFO("sha256 hashed the passphrase : %s(%d) %s(%d)\n", pw, strlen(pw), mdString, strlen(mdString));
 
     // nand->passphrase 파일에 암호문구 저장.
     TRACE_INFO("Save the passphrase to PATH_SSL_PASSPHRASE_NAND : %s\n", PATH_SSL_PASSPHRASE_NAND);
@@ -19,8 +30,14 @@ int app_rsa_generate_privatekey(char *pw) {
         return -1;
     }
 
-    fputs(pw, fp);
+    fputs(mdString, fp);
     fclose(fp);
+
+    return SUCC;
+}
+
+int app_rsa_generate_privatekey(char *pw) {
+	char cmd[256];
 
     // rsa key 생성
     TRACE_INFO("Generate a private key with passphrase:%s\n", pw);
@@ -32,7 +49,7 @@ int app_rsa_generate_privatekey(char *pw) {
     sprintf(cmd, "cp -f %s %s", PATH_SSL_PRIVATE_NAND, PATH_SSL_PRIVATE_MMC);
     system(cmd);
 
-    return 0;
+    return SUCC;
 }
 
 RSA* app_rsa_get_rsa() {
