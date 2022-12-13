@@ -27,6 +27,8 @@
 #include<stdint.h>
 #include "app_main.h"
 #include "app_set.h"
+#include "app_comm.h"
+
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 #define Nb 4
 // The number of rounds in AES Cipher. It is simply initiated to zero. The actual value is recieved in the program.
@@ -393,7 +395,33 @@ int openssl_aes128_decrypt(char* src, char*dst)
 
 int openssl_aes128_decrypt_fs(char *src,char *dst)
 {
-    unsigned char aes_128_key[16]   = {0, }; 
+    unsigned char aes_128_key[16] = {0,};
+    unsigned char aes_128_iv[16] = {0,};
+    char passphrase[64] = {'\0', };
+    int passphrase_len = 0;
+    {
+        FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
+        if (!f) {
+            TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
+            return NULL;
+        }
+
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+
+        fseek(f, 0, SEEK_SET);
+        fread(passphrase, fsize, 1, f);
+        fclose(f);
+
+        if (fsize > 64)
+            return FAIL;
+
+        passphrase_len = fsize;
+    }
+    if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
+        return FAIL;
+    }
+
     char buf[FREAD_COUNT+BLOCK_SIZE];
 	int len=0;
 	int total_size=0;
@@ -412,11 +440,6 @@ int openssl_aes128_decrypt_fs(char *src,char *dst)
         return FAIL;
     }
 
-    for(i = 0 ; i < 16 ; i++)
-    {
-        sprintf(&aes_128_key[i], "%c", app_set->sys_info.aes_key[i]) ;
-    }
-
 	AES_set_decrypt_key(aes_128_key ,KEY_BIT ,&aes_key_128);
 
     fseek(fp ,0 ,SEEK_END);
@@ -431,7 +454,7 @@ int openssl_aes128_decrypt_fs(char *src,char *dst)
 		save_len+=len;
         w_len=len;
 
-        AES_cbc_encrypt(buf ,buf ,len ,&aes_key_128 ,aes_128_key ,AES_DECRYPT);
+        AES_cbc_encrypt(buf ,buf ,len ,&aes_key_128 , &aes_128_iv ,AES_DECRYPT);
 		if( save_len == total_size ){ // check last block
 	        w_len=len - buf[len-1];
 	        printf("dec padding size %d\n" ,buf[len-1]);
