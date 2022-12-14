@@ -688,10 +688,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(((int)pset->net_info.eth_gateway[0]) == CHAR_INVALID)
 		strcpy(pset->net_info.eth_gateway, "192.168.1.1");
 
-    if(((int)pset->net_info.dns_server1[0]) == CHAR_INVALID)
+    if(((int)pset->net_info.dns_server1[0]) == CHAR_INVALID || ((int)pset->net_info.dns_server1[0]) == 0)
 		strcpy(pset->net_info.dns_server1, "8.8.8.8"); // google dns server address
 
-    if(((int)pset->net_info.dns_server2[0]) == CHAR_INVALID)
+    if(((int)pset->net_info.dns_server2[0]) == CHAR_INVALID || ((int)pset->net_info.dns_server2[0]) == 0)
 		strcpy(pset->net_info.dns_server2, "168.154.160.4");  // Microsoft dns
         
     if(pset->net_info.type < NET_TYPE_STATIC || pset->net_info.type > NET_TYPE_DHCP)
@@ -737,7 +737,13 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(((int)pset->srv_info.ipaddr[0]) == CHAR_INVALID || (int)pset->srv_info.ipaddr[0] == 0)
 		strcpy(pset->srv_info.ipaddr, "192.168.1.23");
 
-	if(((int)pset->sys_info.deviceId[0] == CHAR_INVALID) || strcmp(pset->sys_info.deviceId, "_MACADDRESS_")== 0)
+	if(((int)pset->sys_info.deviceId[0] == CHAR_INVALID) || (int)pset->sys_info.deviceId[0] == 0)
+	{
+		strcpy(app_set->sys_info.deviceId, MODEL_NAME);
+		strcat(app_set->sys_info.deviceId, "_0000");
+	}
+
+	if(strcmp(pset->sys_info.deviceId, "_MACADDRESS_")== 0)
     {
         if(!DefaultGetMac(MacAddr))
         {
@@ -911,10 +917,14 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->ddns_info.interval <= 0)
         pset->ddns_info.interval = 1 ;
 
-    if(pset->time_info.time_zone < 0 || pset->time_info.time_zone>26)
+    if(pset->time_info.time_zone <= 0 || pset->time_info.time_zone>26)
 		pset->time_info.time_zone = TIME_ZONE + 12;
 
-    if((int)pset->time_info.time_server[0] == CHAR_INVALID)
+
+    if((int)pset->time_info.time_zone_abbr[0] == CHAR_INVALID || (int)pset->time_info.time_zone_abbr[0] == 0)
+        strcpy(pset->time_info.time_zone_abbr, "KST") ;
+
+    if((int)pset->time_info.time_server[0] == CHAR_INVALID || (int)pset->time_info.time_server[0] == 0)
         strcpy(pset->time_info.time_server, "time.google.com") ;
 
     if(pset->time_info.daylight_saving < 0 || pset->time_info.daylight_saving > 1 )

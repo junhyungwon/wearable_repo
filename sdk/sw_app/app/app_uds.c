@@ -1497,7 +1497,7 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 static int getSystemInfo(T_CGI_SYSTEM_INFO *t){
 
 	sprintf(t->model, "%s", MODEL_NAME);
-	sprintf(t->cert_model, "%s", CERT_MODEL_NAME);
+//	sprintf(t->cert_model, "%s", CERT_MODEL_NAME);
 	sprintf(t->fwver, "%s", app_set->sys_info.fw_ver);
     t->https = app_set->net_info.https_enable;
     t->onvif = app_set->net_info.enable_onvif;

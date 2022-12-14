@@ -546,7 +546,7 @@ void put_json_system_info(T_CGI_SYSTEM_INFO *p)
 	json_object *root_obj = json_object_new_object();
 
 	json_object_object_add(root_obj, "model", json_object_new_string(p->model));
-	json_object_object_add(root_obj, "cert_model", json_object_new_string(p->cert_model));
+//	json_object_object_add(root_obj, "cert_model", json_object_new_string(p->cert_model));
 	json_object_object_add(root_obj, "fwver", json_object_new_string(p->fwver));
 	json_object_object_add(root_obj, "ftp",   json_object_new_int(   p->ftp));
 	json_object_object_add(root_obj, "onvif", json_object_new_int(   p->onvif));
