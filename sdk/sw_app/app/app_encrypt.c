@@ -26,6 +26,7 @@
 #include<stdint.h>
 #include "app_main.h"
 #include "app_set.h"
+#include "app_comm.h"
 
 // The number of columns comprising a state in AES. This is a constant in AES. Value=4
 #define Nb 4
@@ -325,6 +326,41 @@ char *SHA256_process(char *string)
     return mdString ;
 }
 
+int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char *key, unsigned char *iv) {
+    // EVP_CIPHER *cipher = EVP_aes_128_cbc();
+    EVP_MD *dgst = (EVP_MD *)EVP_sha256();
+
+    unsigned char tmpkeyiv[EVP_MAX_KEY_LENGTH + EVP_MAX_IV_LENGTH];
+    int iklen = 16; //EVP_CIPHER_get_key_length(cipher);
+    int ivlen = 16; //EVP_CIPHER_get_iv_length(cipher);
+
+    int islen = 0; // note : salt size.
+    if (!PKCS5_PBKDF2_HMAC(str, str_len, NULL /*sptr*/, 0 /*islen*/, 10000 /*iter*/, dgst, iklen+ivlen, tmpkeyiv)) {
+        char err[256];
+        ERR_error_string(ERR_get_error(), err);
+        TRACE_INFO("fail to derive the key and iv by PKCS5_PBKDF2_HMAC(). %s\n", err);
+        return FAIL;
+    }
+
+    /* split and move data back to global buffer */
+    memcpy(key, tmpkeyiv, iklen);
+    memcpy(iv, tmpkeyiv+iklen, ivlen);
+
+
+    // caution : only for debug usage!!
+#if 0
+    int i;
+    printf("key=");
+    for (i = 0; i < 16 /*EVP_CIPHER_get_key_length(cipher)*/; i++)
+        printf("%02X", key[i]);
+    printf("\n");
+    printf("iv=");
+    for (i = 0; i < 16 /*EVP_CIPHER_get_key_length(cipher)*/; i++)
+        printf("%02X", iv[i]);
+    printf("\n");
+#endif
+}
+
 void openssl_aes128_encrypt(char *src, char *dst)
 {
     unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
@@ -345,7 +381,33 @@ void openssl_aes128_encrypt(char *src, char *dst)
 
 int openssl_aes128_encrypt_fs(char *src, char *dst)
 {
-    unsigned char aes_128_key[16] = {0,}; 
+    unsigned char aes_128_key[16] = {0,};
+    unsigned char aes_128_iv[16] = {0,};
+    char passphrase[64] = {'\0', };
+    int passphrase_len = 0;
+    {
+        FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
+        if (!f) {
+            TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
+            return NULL;
+        }
+
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+
+        fseek(f, 0, SEEK_SET);
+        fread(passphrase, fsize, 1, f);
+        fclose(f);
+
+        if (fsize > 64)
+            return FAIL;
+
+        passphrase_len = fsize;
+    }
+    if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
+        return FAIL;
+    }
+
 
     int i = 0, len=0, padding_len=0 ;
     char buf[FREAD_COUNT + BLOCK_SIZE] ;
@@ -362,16 +424,12 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
         return FAIL;
     }
 
-    for(i = 0 ; i < 16 ; i++)
-    {
-        sprintf(&aes_128_key[i], "%c", app_set->sys_info.aes_key[i]) ;
-    }
     AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key_128); 
     while(len = fread(buf, RW_SIZE, FREAD_COUNT, fp)) {
         if(FREAD_COUNT != len){
             break ;
         }
-        AES_cbc_encrypt(buf, buf, len, &aes_key_128, aes_128_key, AES_ENCRYPT);
+        AES_cbc_encrypt(buf, buf, len, &aes_key_128, &aes_128_iv, AES_ENCRYPT);
 //        AES_cbc_encrypt(buf, buf, len, &aes_key_128, iv, AES_ENCRYPT);
         fwrite(buf, RW_SIZE, len, wfp) ;
     }
@@ -380,7 +438,7 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
 	printf("enc padding len:%d\n",padding_len);
     memset(buf+len, padding_len, padding_len);
 
-    AES_cbc_encrypt(buf ,buf ,len+padding_len ,&aes_key_128, aes_128_key, AES_ENCRYPT);
+    AES_cbc_encrypt(buf ,buf ,len+padding_len ,&aes_key_128, &aes_128_iv, AES_ENCRYPT);
 	fwrite(buf ,RW_SIZE ,len+padding_len ,wfp);
 
 	fclose(wfp);
