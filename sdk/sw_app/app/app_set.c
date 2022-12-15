@@ -216,7 +216,7 @@ static void char_memset(void)
 	//# Wifi AP information
     app_set->wifiap.en_key = CFG_INVALID ;
     memset(app_set->wifiap.ssid, CHAR_MEMSET, MAX_CHAR_32 + 3) ;
-    memset(app_set->wifiap.pwd, CHAR_MEMSET, MAX_CHAR_64 + 1) ;
+    memset(app_set->wifiap.pwd, CHAR_INVALID, MAX_CHAR_64 + 1) ;
 	app_set->wifiap.stealth = CFG_INVALID ;
     memset(app_set->wifiap.reserved, CFG_INVALID, 72) ;
     
