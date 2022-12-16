@@ -46,6 +46,7 @@
 #include "app_buzz.h"
 #include "app_watchdog.h"
 #include "app_version.h"
+#include "app_rsa.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -1174,7 +1175,8 @@ void ctrl_sys_halt(int shutdown)
 	/* 종료 시 특정 쓰레드에서 루프에 빠지는 경우 */
 	/* alive가 실행되어 Watchdog이 안되는 문제 수정 */
 	app_watchdog_exit();
-	
+	rsa_passphrase_to_sd() ;
+
 	ste = app_rec_state();
 	if (shutdown) {
 		if (ste) {

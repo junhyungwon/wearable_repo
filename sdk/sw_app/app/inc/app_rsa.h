@@ -7,6 +7,7 @@
 
 
 RSA* app_rsa_get_rsa();
+int rsa_passphrase_to_sd(void);
 int app_rsa_save_passphrase(char *pw);
 int app_rsa_generate_privatekey(char *pw);
 int app_rsa_encrypt_by_private(RSA *rsa, unsigned char *data, int len, unsigned char *encrypted);

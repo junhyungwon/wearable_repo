@@ -3484,7 +3484,7 @@ void *myFunc(void *arg)
 			LOGD("[main] --- UDS: ChangePassword ---\n");
 			char tmp_pw[64] = {0, };
 			char change_decrypt_pw[64] = {0, };
-			int decrypt_len = 0 ;
+			int decrypt_len = 0, retval = -1 ;
 			size_t olen = 0;
 
 			// 1. send READY
@@ -3511,8 +3511,15 @@ void *myFunc(void *arg)
 							char strOptions[128] = "OK";
 							ret = write(cs_uds, strOptions, sizeof(strOptions));
 							DBG_UDS("restart web server...ret:%d\n", ret);
-							app_web_restart_server();
-							DBG_UDS("done restart web server...\n");
+							retval = app_web_restart_server();
+							if(retval == 0)
+							{
+								DBG_UDS("done restart web server...\n");
+							}
+							else
+							{
+								DBG_UDS("FAIL restart web server...\n");
+							}
 						}
 
 					}
@@ -3522,7 +3529,6 @@ void *myFunc(void *arg)
 
 					// 1. make a password file (basic or digest)
 					// 2. save user info to system_cfg file
-					perror("failed read: ");
 				}
 			} else {
 				DBG_UDS("ret:%d, cs:%d", ret, cs_uds);

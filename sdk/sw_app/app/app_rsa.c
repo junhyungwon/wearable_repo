@@ -3,6 +3,15 @@
 -----------------------------------------------------------------------------*/
 #include "app_rsa.h"
 
+int rsa_passphrase_to_sd()
+{
+    if(access(PATH_SSL_PASSPHRASE_NAND, F_OK) ==0)
+    {
+        system("cp /media/nand/cfg/passphrase /mmc/cfg/passphrase") ;
+    }
+    return SUCC ;
+}
+
 int app_rsa_save_passphrase(char *pw) {
 	char cmd[256];
     char mdString[SHA256_DIGEST_LENGTH*2+1];

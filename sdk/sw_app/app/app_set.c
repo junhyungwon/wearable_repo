@@ -941,29 +941,14 @@ static void cfg_param_check_nexx(app_set_t *pset)
 //    if(pset->account_info.enctype <= CFG_INVALID || pset->account_info.enctype > 1)
     pset->account_info.enctype = 0 ;
 	
-	/* AES를 사용하는 경우 문자열에 따라서 0xff 또는 0x00으로 시작하는 경우가 있다. */
-	/* 따라서 4byte 크기를 비교함 */
+    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
 	{
-		int *tmp_buf;
-		int res;
+		strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
+	}
 		
-		tmp_buf	= (int *)&pset->account_info.rtsp_userid[0];
-		res     = *tmp_buf;
-	//    if((int)pset->account_info.rtsp_userid[0] == CHAR_INVALID || (int)pset->account_info.rtsp_userid[0] == 0)
-		if (res == 0)  // Ignore Invalid(-1) for AES encoding of special character
-		{
-// 			Create_random_string(pset->account_info.rtsp_userid) ;
-			strcpy(pset->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
-		}
-		
-		tmp_buf	= (int *)&pset->account_info.rtsp_passwd[0];
-		res     = *tmp_buf;
-	//	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
-		if (res == 0)
-		{
- 			Create_random_string(pset->account_info.rtsp_passwd, 9) ;
-//			sprintf(pset->account_info.rtsp_passwd, "%s", pset->account_info.rtsp_userid) ;
-		}
+	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
+	{
+		Create_random_string(pset->account_info.rtsp_passwd, 16) ;
 	}
 	// webuser
     if((int)pset->account_info.webuser.id[0] == CHAR_INVALID || (int)pset->account_info.webuser.id[0] == 0){
@@ -1392,7 +1377,7 @@ static void app_set_default(int default_type)
 //    strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
 
  	strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
- 	Create_random_string(app_set->account_info.rtsp_passwd, 9) ;
+ 	Create_random_string(app_set->account_info.rtsp_passwd, 16) ;
 	printf("create rtsp id... from random() %s \n",app_set->account_info.rtsp_passwd) ;
  
 
