@@ -461,7 +461,7 @@ endif
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh
 
 # cp lighttpd's mod_auth
-	sudo /bin/cp $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_auth.so $(TARGET_FS)/usr/lib/lighttpd/mod_auth.so
+	sudo /bin/cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_auth.so $(TARGET_FS)/usr/lib/lighttpd/mod_auth.so
 
 ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp $(KMODDIR)/wlan/88x1au_driver/8811au.ko $(TARGET_FS)/lib/modules/.
