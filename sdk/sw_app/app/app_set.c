@@ -784,7 +784,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	strcpy(compbuff, MODEL_NAME) ;
 
-	if((int)pset->sys_info.uid[0] == CHAR_INVALID)
+	if((int)pset->sys_info.uid[0] == CHAR_INVALID || (int)pset->sys_info.uid[0] == 0)
     {
 		if(strcmp(compbuff, "FITT360_Security") != 0)
 		{
