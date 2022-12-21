@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "app_main.h"
 #include "app_comm.h"
@@ -38,13 +39,24 @@ int deleteSelfSignedCertificate()
 	return 0;
 }
 
-int createSelfSignedCertificate(char *path_key, char* path_crt)
+int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 {
 	char cmd[256];
 
 	if( access(PATH_SSL_ROOT_MMC , F_OK) != 0) {
 		mkdir(PATH_SSL_ROOT_MMC, 0775);
 	}
+
+	TRACE_INFO("createSelfSignedCertificate. force = %d\n", force);
+	if (force) {
+		deleteSelfSignedCertificate();
+	} else {
+		if( access(path_crt, R_OK) == 0 && access(path_key, R_OK) == 0) {
+			TRACE_INFO("Self Signed Certificate is already created.\n");
+			return SUCC;
+		}
+	}
+
 
 	// 입력된 정보가 올바르지 않을때, 기본으로 생성함
 	if ( strlen(app_set->net_info.ssc_C) == 0 
@@ -168,17 +180,13 @@ int app_web_stop_server()
 	return 0;
 }
 
-#define CREATE_SSL_ON_BOOTTIME (0) // 막은 이유: 부팅시간을 잡아먹는다, 웹설정시 생성하도록 변경
 int app_web_ssl_setup()
 {
-#if CREATE_SSL_ON_BOOTTIME
 if(app_set->net_info.https_mode == 1) {
-	//deleteSelfSignedCertificate();
-	createSelfSignedCertificate();
+	createSelfSignedCertificate(PATH_HTTPS_SS_KEY, PATH_HTTPS_SS_CRT, false);
 } else if(app_set->net_info.https_mode == 2){
 	createSignedCertificate();
 }
-#endif
 
 	char *filepath = "/etc/lighttpd/conf.d/ssl.conf";
 	int   bIsFile = 0; // 용도: 설정이 ssl enable이지만, certificate File 없을때는 Https모드를 활성화하지 않기 위해...
@@ -290,7 +298,8 @@ int app_telnetd_enable(int en)
 
 static int __start_routine_create_ssc(void *pargs)
 {
-	int ret = createSelfSignedCertificate(PATH_HTTPS_SS_KEY, PATH_HTTPS_SS_CRT);
+	// force to create the self signed certificate by manually
+	int ret = createSelfSignedCertificate(PATH_HTTPS_SS_KEY, PATH_HTTPS_SS_CRT, true);
 
 	return ret;
 }

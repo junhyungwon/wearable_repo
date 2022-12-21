@@ -58,10 +58,10 @@
 #define MAX_ONVIF_ENABLE     1
 #define MAX_HTTP_ENABLE      1
 #define MAX_HTTPS_ENABLE     1
-#define DEFAULT_HTTPS_MODE   0
+#define DEFAULT_HTTPS_MODE   1
 #define DEFAULT_ONVIF_ENABLE 1
-#define DEFAULT_HTTP_ENABLE  1
-#define DEFAULT_HTTPS_ENABLE 0
+#define DEFAULT_HTTP_ENABLE  0
+#define DEFAULT_HTTPS_ENABLE 1
 
 typedef enum{
 	CFG_NAND=0,
@@ -1242,14 +1242,14 @@ static void app_set_default(int default_type)
     strcpy(app_set->net_info.rtsp_name, "all") ;
     app_set->net_info.wtype = NET_TYPE_DHCP ;  // wifi dhcp(from tethering of phone or from AP) or static
 
-    app_set->net_info.http_enable  = 1;
-    app_set->net_info.https_enable = 0;
+    app_set->net_info.http_enable  = DEFAULT_HTTP_ENABLE;
+    app_set->net_info.https_enable = DEFAULT_HTTPS_ENABLE;
     app_set->net_info.rtsp_enable  = 1;
     app_set->net_info.enable_onvif = 1;
     app_set->net_info.dnsFromDHCP  = 0;
     app_set->net_info.ntpFromDHCP  = 0;
 
-    app_set->net_info.https_mode   = 0;
+    app_set->net_info.https_mode   = DEFAULT_HTTPS_MODE;
 	memset(app_set->net_info.ssc_C,  0, MAX_CHAR_64);
 	memset(app_set->net_info.ssc_ST, 0, MAX_CHAR_64);
 	memset(app_set->net_info.ssc_L,  0, MAX_CHAR_64);
