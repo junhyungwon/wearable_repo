@@ -698,10 +698,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->net_info.type = NET_TYPE_DHCP;
 
     if(pset->net_info.http_port <= 0 || pset->net_info.http_port >= 65535)
-        pset->net_info.http_port = 80 ;
+        pset->net_info.http_port = DEFAULT_HTTP_PORT ;
 
     if(pset->net_info.https_port <= 0 || pset->net_info.https_port >= 65535)
-        pset->net_info.https_port = 443 ;
+        pset->net_info.https_port = DEFAULT_HTTPS_PORT ;
 
     if(pset->net_info.rtsp_port <= 0 || pset->net_info.rtsp_port >= 65535)
         pset->net_info.rtsp_port = 8551 ;
@@ -1234,8 +1234,8 @@ static void app_set_default(int default_type)
     strcpy(app_set->net_info.dns_server1, "8.8.8.8"); // google dns server
     strcpy(app_set->net_info.dns_server2, "168.154.160.4"); // Microsoft dns server
 
-    app_set->net_info.http_port  = 80;
-    app_set->net_info.https_port = 443;
+    app_set->net_info.http_port  = DEFAULT_HTTP_PORT;
+    app_set->net_info.https_port = DEFAULT_HTTPS_PORT;
     app_set->net_info.rtsp_port  = 8551;
     app_set->net_info.onvif_port = 9221;
 

@@ -66,6 +66,9 @@
 //#define SSLVPN_IPADDRESS            "211.34.58.52"
 #define SSLVPN_IPADDRESS            "192.168.40.1"
 
+#define DEFAULT_HTTP_PORT           (80)
+#define DEFAULT_HTTPS_PORT          (443)
+
 
 typedef enum {
     NO_ENCRYPTION,
