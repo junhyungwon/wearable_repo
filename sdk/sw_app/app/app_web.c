@@ -192,54 +192,62 @@ if(app_set->net_info.https_mode == 1) {
 	int   bIsFile = 0; // 용도: 설정이 ssl enable이지만, certificate File 없을때는 Https모드를 활성화하지 않기 위해...
 
 	FILE *fp = fopen(filepath, "w");
-	if(fp) {
-		char str[255];
-		// onvif와 https_port가 공유되고 있음, 분리가 필요한 상황
-		//sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", app_set->net_info.https_port);
-		fprintf(fp, "server.modules += ( \"mod_openssl\" )\n");
-		fprintf(fp, "ssl.disable-client-renegotiation = \"enable\"\n");
-		sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", 443);
-		fputs(str, fp);
+	if(!fp)
+		return FAIL;
 
-		TRACE_INFO("app_set->net_info.https_mode = %d\n", app_set->net_info.https_mode);
-		if(app_set->net_info.https_mode==1) // 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
-		{
-			if( access(PATH_HTTPS_SS_PEM, F_OK)==0) {
-				sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM);
-				fputs(str, fp);
-				bIsFile = 1;
-			} else {
-				TRACE_ERR("ssl.pemfile %s not exists!!\n", PATH_HTTPS_SS_PEM);
-			}
+	char str[255];
+
+	// onvif와 https_port가 공유되고 있음, 분리가 필요한 상황
+	//sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", app_set->net_info.https_port);
+	fprintf(fp, "server.modules += ( \"mod_openssl\" )\n");
+	fprintf(fp, "ssl.disable-client-renegotiation = \"enable\"\n");
+	sprintf(str, "$SERVER[\"socket\"] == \":%d\" {\n", DEFAULT_HTTPS_PORT);
+	fputs(str, fp);
+
+	TRACE_INFO("app_set->net_info.https_mode = %d\n", app_set->net_info.https_mode);
+	if(app_set->net_info.https_mode==1) // 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
+	{
+		if( access(PATH_HTTPS_SS_PEM, F_OK)==0) {
+			sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM);
+			fputs(str, fp);
+			bIsFile = 1;
+		} else {
+			TRACE_ERR("ssl.pemfile %s not exists!!\n", PATH_HTTPS_SS_PEM);
 		}
-		else if (app_set->net_info.https_mode==2)
-		{
-			if (access(PATH_HTTPS_PEM, F_OK) == 0)
-			{
-				sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_PEM);
-				fputs(str, fp);
-				bIsFile = 1;
-			}
-
-			if( access(PATH_HTTPS_CA, F_OK)==0) {
-				sprintf(str, "ssl.ca-file = \"%s\"", PATH_HTTPS_CA); // Optional... 실행해봐야할듯
-				fputs(str, fp);
-			}
-		}
-
-		if( bIsFile == 1 && app_set->net_info.https_mode!=0) {
-			sprintf(str, "ssl.engine = \"%s\"\n", "enable");
-		}else {
-			sprintf(str, "ssl.engine = \"%s\"\n", "disable");
-		}
-
-		fputs(str, fp);
-		fprintf(fp, "ssl.openssl.ssl-conf-cmd = (\"Protocol\" => \"-ALL, TLSv1.2, TLSv1.3\")\n");
-		fputs("}\n", fp);
-
-		fclose(fp);
 	}
-	return 0;
+	else if (app_set->net_info.https_mode==2)
+	{
+		if (access(PATH_HTTPS_PEM, F_OK) == 0)
+		{
+			sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_PEM);
+			fputs(str, fp);
+			bIsFile = 1;
+		}
+
+		if( access(PATH_HTTPS_CA, F_OK)==0) {
+			sprintf(str, "ssl.ca-file = \"%s\"", PATH_HTTPS_CA); // Optional... 실행해봐야할듯
+			fputs(str, fp);
+		}
+	}
+
+	if( bIsFile == 1 && app_set->net_info.https_mode!=0) {
+		sprintf(str, "ssl.engine = \"%s\"\n", "enable");
+	}else {
+		sprintf(str, "ssl.engine = \"%s\"\n", "disable");
+	}
+
+	fputs(str, fp);
+	fprintf(fp, "ssl.openssl.ssl-conf-cmd = (\"Protocol\" => \"-ALL, TLSv1.2, TLSv1.3\")\n");
+	fputs("}\n\n", fp);
+
+	// overwrite(:=) port
+	sprintf(str, "server.port := %d\n", app_set->net_info.https_mode == 0 ? DEFAULT_HTTP_PORT : DEFAULT_HTTPS_PORT);
+	fputs(str, fp);
+
+
+	fclose(fp);
+
+	return SUCC;
 }
 
 int app_web_start_server()
