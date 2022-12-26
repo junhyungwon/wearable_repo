@@ -91,9 +91,37 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 
 int AVIFileMainHeaderWrite(AVIFILE* pAVIFile)
 {
+#if 0   // TTA Enrypion video data
+	AVIHEADBLOCK copyHdr;
+		memcpy(&copyHdr, &pAVIFile->Head, sizeof(AVIHEADBLOCK));
+		
+		copyHdr.ck_riff.ckID	= ~(pAVIFile->Head.ck_riff.ckID);
+		copyHdr.ck_riff.ckSize	= ~(pAVIFile->Head.ck_riff.ckSize);
+		copyHdr.ck_riff.ckCodec = ~(pAVIFile->Head.ck_riff.ckCodec);
+		copyHdr.ck_hdrl.ckID	= ~(pAVIFile->Head.ck_hdrl.ckID);
+		copyHdr.ck_hdrl.ckSize	= ~(pAVIFile->Head.ck_hdrl.ckSize);
+		copyHdr.ck_hdrl.ckType	= ~(pAVIFile->Head.ck_hdrl.ckType);
+		copyHdr.ck_avih.ckID	= ~(pAVIFile->Head.ck_avih.ckID);
+		copyHdr.ck_avih.ckSize	= ~(pAVIFile->Head.ck_avih.ckSize);
+		
+		copyHdr.avih.dwMicroSecPerFrame 	= ~(pAVIFile->Head.avih.dwMicroSecPerFrame);
+		copyHdr.avih.dwMaxBytesPerSec		= ~(pAVIFile->Head.avih.dwMaxBytesPerSec);
+		copyHdr.avih.dwFlags				= ~(pAVIFile->Head.avih.dwFlags);
+		copyHdr.avih.dwTotalFrames			= ~(pAVIFile->Head.avih.dwTotalFrames);
+		copyHdr.avih.dwInitialFrames		= ~(pAVIFile->Head.avih.dwInitialFrames);
+		copyHdr.avih.dwStreams				= ~(pAVIFile->Head.avih.dwStreams);
+		copyHdr.avih.dwSuggestedBufferSize	= ~(pAVIFile->Head.avih.dwSuggestedBufferSize);
+		copyHdr.avih.dwWidth				= ~(pAVIFile->Head.avih.dwWidth);
+		copyHdr.avih.dwHeight				= ~(pAVIFile->Head.avih.dwHeight);
+		copyHdr.avih.dwRate 				= ~(pAVIFile->Head.avih.dwRate);
+		copyHdr.avih.dwScale				= ~(pAVIFile->Head.avih.dwScale);
+		
+		// write AVI main header
+		fwrite(&copyHdr, 1, sizeof(AVIHEADBLOCK), pAVIFile->pFile);
+#else
 	// write AVI main header
 	fwrite(&pAVIFile->Head, 1, sizeof(AVIHEADBLOCK), pAVIFile->pFile);
-
+#endif
 	return PROC_SUCCESS;
 }
 

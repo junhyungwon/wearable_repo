@@ -25,6 +25,7 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
+#define MAX_ENCODE_BIT 5
 
 /*----------------------------------------------------------------------------
  Declares variables
@@ -142,7 +143,7 @@ void avi_file_close(FILE *favi, char *fname)
 int avi_file_write(FILE *favi, stream_info_t *ifr)
 {
 	AVI_FRAME_PARAM frame;
-	int enc_size=0, sz;
+	int enc_size=0, sz, i = 0;
 	char *tmp=NULL;
 	
 	if (favi != NULL)
@@ -150,6 +151,15 @@ int avi_file_write(FILE *favi, stream_info_t *ifr)
 		if (ifr->d_type == DATA_TYPE_VIDEO) 
 		{
 			frame.buf			= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
+#if 0   // TTA Encrypt video data
+			if(ifr->is_key)
+			{
+				for(i = 0 ; i < MAX_ENCODE_BIT; i++)
+				{
+					frame.buf[i] = ~(frame.buf[i]) ;
+				}
+			}
+#endif 
 			frame.size			= ifr->b_size;
 			frame.data_type		= ifr->d_type;
 			frame.iskey_frame 	= ifr->is_key;			

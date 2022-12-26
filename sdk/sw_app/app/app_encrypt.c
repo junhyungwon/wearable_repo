@@ -361,13 +361,28 @@ int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char 
 #endif
 }
 
-void openssl_aes128_encrypt(char *src, char *dst)
+void openssl_aes128_encrypt(char *src, char *dst, int type)
 {
-    unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
-    unsigned char iv[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
-
     int i = 0, len=0, padding_len=0 ;
     char buf[16 + BLOCK_SIZE] ;
+
+    unsigned char aes_128_key[16] = {0, }; 
+    unsigned char iv[16] = {0, }; 
+    if(!type)   
+    {    
+        sprintf(aes_128_key, "%s", app_set->sys_info.aes_key) ;
+    }
+    else
+    {
+//      unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+        for(i = 0; i < 16; i++)
+        {
+            if(i < 8)
+                aes_128_key[i] = 0x61; 
+            else
+                aes_128_key[i] = 0x62; 
+        }
+    }
 
     len = strlen(src) ;
     AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key_128); 
@@ -376,7 +391,11 @@ void openssl_aes128_encrypt(char *src, char *dst)
     padding_len=BLOCK_SIZE - len % BLOCK_SIZE;
     memset(buf+len, padding_len, padding_len);
 
+#if 1
+    AES_cbc_encrypt(buf ,dst ,len+padding_len ,&aes_key_128, aes_128_key, AES_ENCRYPT);
+#else
     AES_cbc_encrypt(buf ,dst ,len+padding_len ,&aes_key_128, iv,AES_ENCRYPT);
+#endif 
 }
 
 int openssl_aes128_encrypt_fs(char *src, char *dst)

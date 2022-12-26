@@ -67,15 +67,42 @@
 #define FTP_RETRY_CNT       5
 #define MSIZE 8192*8  // buffer size
 #define RSIZE 1024
-//#define USE_SSL             
+#define USE_SSL             
+
+#define PB_IDXBUF_SIZE		(1800*4) //# 1min, 2ch, audio
+
+#define AVI_VIDEO	(0)
+#define AVI_AUDIO	(1)
+#define AVI_META    (2)
+
+
 
 X509* server_cert ;
 X509_NAME *certname = NULL ;
 
+typedef struct {
+	app_thr_obj *pObj;		//# playback thread
+
+	int rate;
+	int msec;
+	int cur_idx;
+	int icnt;
+	int num_ch;
+	char filepath[MAX_CHAR_128];
+	AVIINDEXENTRY idx_buf[PB_IDXBUF_SIZE];
+	AVIFile pAvi;
+
+	app_thr_obj *aObj;
+
+	unsigned char *enc_buf;
+} app_pbk_t;
 
 /*----------------------------------------------------------------------------
  Declares variable)s
 -----------------------------------------------------------------------------*/
+static app_pbk_t t_pbk;
+static app_pbk_t *ipbk=NULL;
+
 static app_ftp_t t_ftp;
 static app_ftp_t *iftp=&t_ftp;
 
@@ -194,7 +221,11 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
 		    return -1;
 	    }
 		else
+#if defined(USE_SSL)
 			ftp_dbg("SSL_WRITE .......\n") ;
+#else
+		ftp_dbg("FTP_Write.......\n") ;
+#endif
     }  
 
 	//clear the buffer
@@ -741,9 +772,10 @@ static int ftp_close(int sd)
 	}
 
 #if defined(USE_SSL)
+	SSL_shutdown(iftp->lsslHandle) ;
 	SSL_free(iftp->lsslHandle) ;
 	iftp->lsdFtp = -1 ;
-	SSL_CTX_free(iftp->dsslContext) ;
+	SSL_CTX_free(iftp->lsslContext) ;
 #endif
 
 	close(sd); //close the socket
@@ -753,6 +785,7 @@ static int ftp_close(int sd)
 static int ftp_data_close(int sd)
 {
 #if defined(USE_SSL)
+	SSL_shutdown(iftp->dsslHandle) ;
 	SSL_free(iftp->dsslHandle) ;
 	iftp->dsdFtp = -1 ;
 	SSL_CTX_free(iftp->dsslContext) ;
@@ -800,7 +833,7 @@ void SSL_Create(int sock_type)
 //		SSL_CTX_set_options(iftp->lsslContext, SSL_OP_NO_TLSv1_2) ;
 		SSL_CTX_set_options(iftp->lsslContext, SSL_OP_NO_SSLv2) ;
 		SSL_CTX_set_info_callback(iftp->lsslContext, ssl_info_callback) ;
-
+/*		
 		if(SSL_CTX_use_certificate_file(iftp->lsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0) // 공개키 ?
 		{
 			ERR_print_errors_fp(stderr) ;
@@ -818,7 +851,7 @@ void SSL_Create(int sock_type)
 			TRACE_INFO("Private key does not match the cerificate public key\n") ;
 			exit(5) ;
 		}
-	
+		
 		if(!SSL_CTX_load_verify_locations(iftp->lsslContext, CLIENT_CA_CERTF, NULL))  // 공인인증서(CA = .crt 파일)
 		{
 			ERR_print_errors_fp(stderr) ;
@@ -827,7 +860,7 @@ void SSL_Create(int sock_type)
 
 		SSL_CTX_set_verify(iftp->lsslContext, SSL_VERIFY_PEER, NULL) ;
 		SSL_CTX_set_verify_depth(iftp->lsslContext, 1);
-
+*/
 
 	// Create an SSL struct for the connection
 		iftp->lsslHandle = SSL_new(iftp->lsslContext) ;
@@ -839,7 +872,6 @@ void SSL_Create(int sock_type)
 			ERR_print_errors_fp(stderr);
 
 	// Initiate SSL handshake
-//	if(SSL_connect(iftp->lsslHandle) != 1)
 		ret = SSL_connect(iftp->lsslHandle) ;
 	    if(ret != 1)
 		{
@@ -864,11 +896,12 @@ void SSL_Create(int sock_type)
 
 			if(server_cert != NULL)
 			{
+/*				
 				if(SSL_get_verify_result(iftp->lsslHandle) == X509_V_OK)
 					TRACE_INFO("client verification with SSL_get_verify_result() succeeded. \n") ;
 	            else
 					TRACE_INFO("client verification with SSL_get_verify_result() failed.\n") ;
-
+*/
 				TRACE_INFO("Server cerificate:\n") ;
 
 				str = X509_NAME_oneline(X509_get_subject_name (server_cert), 0, 0) ;
@@ -907,6 +940,7 @@ void SSL_Create(int sock_type)
 
 		SSL_CTX_set_options(iftp->dsslContext, SSL_OP_NO_SSLv2) ;
 //		SSL_CTX_set_info_callback(iftp->dsslContext, ssl_info_callback) ;
+/*
 		if(SSL_CTX_use_certificate_file(iftp->dsslContext, CLIENT_CERTF, SSL_FILETYPE_PEM) <= 0) // 공개키 ?
 		{
 			ERR_print_errors_fp(stderr) ;
@@ -929,10 +963,9 @@ void SSL_Create(int sock_type)
 			ERR_print_errors_fp(stderr) ;
 			exit(1) ;
 		}
-
 		SSL_CTX_set_verify(iftp->dsslContext, SSL_VERIFY_PEER, NULL) ;
 		SSL_CTX_set_verify_depth(iftp->dsslContext, 1);
-
+*/
 	// Create an SSL struct for the connection
 		iftp->dsslHandle = SSL_new(iftp->dsslContext) ;
 		if(iftp->dsslHandle == NULL)
@@ -964,11 +997,12 @@ void SSL_Create(int sock_type)
 
 			if(server_cert != NULL)
 			{
+/*				
 				if(SSL_get_verify_result(iftp->dsslHandle) == X509_V_OK)
 					TRACE_INFO("client verification with SSL_get_verify_result() succeeded. \n") ;
 	            else
 					TRACE_INFO("client verification with SSL_get_verify_result() failed.\n") ;
-
+*/
 				TRACE_INFO("Server cerificate:\n") ;
 
 				str = X509_NAME_oneline(X509_get_subject_name (server_cert), 0, 0) ;
@@ -988,7 +1022,10 @@ void SSL_Create(int sock_type)
 
 			}
 			else
+			{
 				TRACE_INFO("Server certificated fail..\n") ;
+				SSL_free(iftp->lsslHandle) ;
+			}
 		}
 	}		
 }
@@ -1416,6 +1453,8 @@ static void ftp_send(void)
 	int i=0;
 	int ret = 0, retry_cnt = 0, file_cnt = 0, retval = 0;
     char FileName[MAX_CHAR_128] ;
+    char DecFileName[MAX_CHAR_128] ;
+	char buff[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
 
 	iftp->ftp_state = FTP_STATE_CONNECTING;
@@ -1518,7 +1557,23 @@ static void ftp_send(void)
 					continue ;
 				}
 			}
-			
+printf("FTP....................FileName = %s\n",FileName) ;
+/* need file decryption function for TTA */
+#if 0
+			if(strstr(FileName, "_enc") == NULL)
+			{
+				continue ;
+			}			
+			strncpy(DecFileName, FileName, strlen(FileName) - 4) ;
+			printf("DecFileName = %s\n", DecFileName) ;
+
+			if(avi_decrypt_fs(FileName, DecFileName))
+			{
+				printf("success decrypt_avi before sending file to ftpserver\n");
+			}
+#endif
+// end decrypt.
+
             strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /20190823/DeviceID
 		    if (app_cfg->ftp_enable && iftp->ftp_state == FTP_STATE_SENDING)
 		    {
@@ -1534,7 +1589,11 @@ static void ftp_send(void)
                     }
 					else
 					{
-                        retval = ftp_send_file(iftp->lsdFtp, FileName) ;
+//						if (app_set->sys_info.aes_encryption)  // send file after decryption
+//                        	retval = ftp_send_file(iftp->lsdFtp, DecFileName) ;
+//						else
+                        	retval = ftp_send_file(iftp->lsdFtp, FileName) ;
+
 						if(retval >= 0)
                         {
 							delete_ftp_send_file(FileName) ;
@@ -1542,6 +1601,12 @@ static void ftp_send(void)
 								ftp_dbg(" \n[ftp] Send image -- %s \n", FileName);
 							else
 								ftp_dbg(" \n[ftp] Destination File exist -- %s \n", FileName) ;
+/*
+							retval = access(DecFileName, R_OK|W_OK) ;
+							if((ret ==0) || (errno == EACCES)) {
+								remove(DecFileName) ;
+							}
+*/
 						}
 						else
                         {
@@ -1605,6 +1670,222 @@ int app_get_ftp_state(void)
 void app_ftp_state_reset(void)
 {
 	iftp->ftp_state = FTP_STATE_NONE;
+}
+
+
+/*----------------------------------------------------------------------------
+ Filelist function
+-----------------------------------------------------------------------------*/
+static void print_mainhdr(AVIHeadBlock* pMainHdr)
+{
+	printf("=======================\n");
+	printf("     AVIMainHeader     \n");
+	printf("=======================\n");
+/*	
+	printf("msecPerFrame : %ld\n", ~(pMainHdr->avih.dwMicroSecPerFrame));
+	printf("maxBytePerSec: %ld\n", ~(pMainHdr->avih.dwMaxBytesPerSec));
+	printf("flags        : %x\n", ~(int)pMainHdr->avih.dwFlags);
+	printf("flags        : %x\n", ~(pMainHdr->avih.dwFlags));
+	printf("totFrames    : %ld\n", ~(pMainHdr->avih.dwTotalFrames));
+	printf("initFrames   : %ld\n", ~(pMainHdr->avih.dwInitialFrames));
+	printf("streams      : %ld\n", ~(pMainHdr->avih.dwStreams));
+	printf("suggestedBuff: %ld\n", ~(pMainHdr->avih.dwSuggestedBufferSize));
+	printf("width        : %ld\n", ~(pMainHdr->avih.dwWidth));
+	printf("height       : %ld\n", ~(pMainHdr->avih.dwHeight));
+	printf("scale        : %ld\n", ~(pMainHdr->avih.dwScale));
+	printf("rate         : %ld\n", ~(pMainHdr->avih.dwRate));
+	printf("start        : %ld\n", ~(pMainHdr->avih.dwStart));
+	printf("length       : %ld\n", ~(pMainHdr->avih.dwLength));
+*/
+	printf("msecPerFrame : %ld\n", (pMainHdr->avih.dwMicroSecPerFrame));
+	printf("maxBytePerSec: %ld\n", (pMainHdr->avih.dwMaxBytesPerSec));
+	printf("flags        : %x\n", (int)pMainHdr->avih.dwFlags);
+	printf("flags        : %x\n", (pMainHdr->avih.dwFlags));
+	printf("totFrames    : %ld\n", (pMainHdr->avih.dwTotalFrames));
+	printf("initFrames   : %ld\n", (pMainHdr->avih.dwInitialFrames));
+	printf("streams      : %ld\n", (pMainHdr->avih.dwStreams));
+	printf("suggestedBuff: %ld\n", (pMainHdr->avih.dwSuggestedBufferSize));
+	printf("width        : %ld\n", (pMainHdr->avih.dwWidth));
+	printf("height       : %ld\n", (pMainHdr->avih.dwHeight));
+	printf("scale        : %ld\n", (pMainHdr->avih.dwScale));
+	printf("rate         : %ld\n", (pMainHdr->avih.dwRate));
+	printf("start        : %ld\n", (pMainHdr->avih.dwStart));
+	printf("length       : %ld\n", (pMainHdr->avih.dwLength));
+	printf("\n\n");
+}
+
+
+static void convert_id(unsigned long fccType, int *ch, int *type)
+{
+	int i;
+	char fccIdx[2];
+	unsigned long fccTmp = fccType;
+	int strmType;
+
+	for(i = 0; i < 2; i++)
+	{
+		fccIdx[i] = fccTmp&0x000000FF;
+		fccTmp = fccTmp >> 8;
+	}
+
+	if(fccTmp == cktypeDIBcompressed)
+		strmType = AVI_VIDEO;
+	else if(fccTmp == cktypeWAVEbytes)
+		strmType = AVI_AUDIO;
+    else if(fccTmp == cktypeTEXT)
+        strmType = AVI_META;
+	else
+		strmType = -1;
+
+	*ch = atoi(fccIdx);
+	*type = strmType;
+
+	//dprintf("%d, %s\n", atoi(fccIdx), strmType==AVI_VIDEO?"AVI_VIDEO":"AVI_AUDIO");
+}
+
+
+static int get_avi_info(AVIFile *pAvi, char *filepath)
+{
+	printf("filepath : %s\n", filepath);
+
+	pAvi->pFile = fopen(filepath, "rb");
+	if(pAvi->pFile == NULL) {
+		printf("fopen %s! \n", filepath);
+		return -1;
+	}
+	printf("fopen success %s! \n", filepath);
+
+	//#--- read avi main header
+	fseek(pAvi->pFile, 0, SEEK_SET);
+	fread(&pAvi->Head, sizeof(AVIHeadBlock), 1, pAvi->pFile);
+	print_mainhdr(&pAvi->Head);
+
+	if(pAvi->Head.ck_riff.ckID != formtypeRIFF || pAvi->Head.ck_riff.ckCodec != formtypeAVI ||
+		pAvi->Head.ck_hdrl.ckType != listtypeAVIHEADER || pAvi->Head.ck_avih.ckID != ckidAVIMAINHDR)
+	{
+		printf("different header information\n");
+        fclose(pAvi->pFile);
+		return -1;
+	}
+	if(pAvi->Head.avih.dwStreams == 0 || pAvi->Head.avih.dwTotalFrames == 0) {
+		printf("Empty stream data\n");
+        fclose(pAvi->pFile);
+		return -1;
+	}
+
+	//# set framerate
+	ipbk->rate = pAvi->Head.avih.dwRate;
+	ipbk->msec = (pAvi->Head.avih.dwMicroSecPerFrame/1000)-1;	//# process offset 1ms
+	printf("rate %d.%d, msec %d\n", (int)(ipbk->rate/pAvi->Head.avih.dwScale), (int)(ipbk->rate%pAvi->Head.avih.dwScale), ipbk->msec);
+
+	//#--- read movi header
+	pAvi->movi_pos = sizeof(CK_RIFF) + sizeof(CK) + pAvi->Head.ck_hdrl.ckSize;
+	fseek(pAvi->pFile, pAvi->movi_pos, SEEK_SET);
+	fread(&pAvi->Tail.ck_movi, sizeof(CK_LIST), 1, pAvi->pFile);
+
+	if(pAvi->Tail.ck_movi.ckSize == 0 && pAvi->Tail.ck_movi.ckType != listtypeAVIMOVIE) {
+		printf("Invalid movi header\n");
+        fclose(pAvi->pFile);
+		return -1;
+	}
+
+	//#--- read idx1 infomation
+	pAvi->idx1_pos = sizeof(CK_RIFF) + sizeof(CK) + pAvi->Head.ck_hdrl.ckSize + sizeof(CK) + pAvi->Tail.ck_movi.ckSize;
+	fseek(pAvi->pFile, pAvi->idx1_pos, SEEK_SET);
+	fread(&pAvi->Tail.ck_idx1, sizeof(CK), 1, pAvi->pFile);
+
+	if(pAvi->Tail.ck_idx1.ckID != ckidAVINEWINDEX)
+	{
+		printf("Invalid idx data\n");
+        fclose(pAvi->pFile);
+		return -1;
+	}
+
+//	pAvi->idx_entry = (AVIINDEXENTRY *)malloc(pAvi->Tail.ck_idx1.ckSize);
+	pAvi->idx_entry = ipbk->idx_buf;
+	pAvi->idx_cnt = pAvi->Tail.ck_idx1.ckSize/sizeof(AVIINDEXENTRY);
+	
+	if(pAvi->idx_cnt >= PB_IDXBUF_SIZE) {
+		printf("Invalid idx count[%d]!!!\n", pAvi->idx_cnt);
+        fclose(pAvi->pFile);
+		return -1;		
+	}
+
+	fread(pAvi->idx_entry, pAvi->Tail.ck_idx1.ckSize, 1, pAvi->pFile);
+	pAvi->strm_pos = pAvi->movi_pos+sizeof(CK_LIST)+4;		//# ???
+
+	int i, chId, stream_type;
+	ipbk->num_ch = 1;
+    for(i = 0; i < pAvi->idx_cnt; i++)
+    {
+        convert_id(pAvi->idx_entry[i].ckid, &chId, &stream_type);
+        if(chId == 0 && stream_type == AVI_VIDEO && pAvi->idx_entry[i].dwFlags)
+            ipbk->icnt++;
+
+		if(chId == 1 && stream_type == AVI_VIDEO && ipbk->num_ch == 1)
+			ipbk->num_ch = 2;
+    }
+
+	printf("@@@@@ I-Frm Count[%02d] num_ch[%d]@@@@@@@\n", ipbk->icnt, ipbk->num_ch);
+
+	if(ipbk->icnt <= 0) {
+        fclose(pAvi->pFile);
+		printf("Invalid I-Frm count\n");
+		return -1;
+	}
+		
+	return 0;
+}
+
+
+
+static AVIINDEXENTRY *get_frame_idx(AVIFile *pAvi)
+{
+	AVIINDEXENTRY *idx=NULL;
+
+	if(ipbk->cur_idx < pAvi->idx_cnt)
+		idx = &pAvi->idx_entry[ipbk->cur_idx++];
+
+	return idx ;
+}
+
+int avi_decrypt_fs(char *src, char *dst)
+{
+	AVIFile *pAvi ;
+	AVIINDEXENTRY *idx;
+
+	int ret = 0 ;
+	int stream_id, stream_type ;
+	ipbk = &t_pbk ;
+
+	memset(ipbk, 0, sizeof(app_pbk_t));
+
+	ipbk->icnt = 0;
+
+	//# init ipbk
+	sprintf(ipbk->filepath,"%s", src);
+	ipbk->cur_idx = 0;
+
+    pAvi = (AVIFile *)&ipbk->pAvi;
+    ret = get_avi_info(pAvi, ipbk->filepath);
+
+	while(1)
+	{
+		idx = get_frame_idx(pAvi) ;
+
+		if(idx == NULL)
+		{
+			break ;
+		}
+		convert_id(idx->ckid, &stream_id, &stream_type) ;
+
+		fseek(pAvi->pFile, pAvi->strm_pos+idx->dwChunkOffset, SEEK_SET) ;
+		if(stream_type == AVI_VIDEO)
+		{	
+			printf("STREAM TYPE VIDEO\n") ;	
+			break ;
+		}
+	}
 }
 
 /*****************************************************************************

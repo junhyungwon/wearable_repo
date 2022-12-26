@@ -363,14 +363,28 @@ int decrypt_aes(const char *src, char *dst, int length)
     return 0;
 }
 
-int openssl_aes128_decrypt(char* src, char*dst)
+int openssl_aes128_decrypt(char* src, char*dst, int type)
 {
     AES_KEY dec_key_128;   
-    int total_len = 0, dst_len = 0;
-    unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
-//    unsigned char aes_128_key[] = {'a','a','a','a','a','a','a','a','b','b','b','b','b','b','b','b'}; 
-    unsigned char iv[] = {'a','a','a','a','a','a','a','a','b','b','b','b','b','b','b','b'}; 
-//    unsigned char iv[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+    int total_len = 0, dst_len = 0, i = 0;
+
+    unsigned char aes_128_key[16] = {0, }; 
+    unsigned char iv[16] = {0, }; 
+    if(!type)
+    {
+        sprintf(aes_128_key, "%s", app_set->sys_info.aes_key) ;
+    }
+    else
+    {
+//        unsigned char aes_128_key[] = {0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x61,0x62,0x62,0x62,0x62,0x62,0x62,0x62,0x62}; 
+        for(i = 0; i < 16; i++)
+        {
+            if(i < 8)
+                aes_128_key[i] = 0x61 ;
+            else
+                aes_128_key[i] = 0x62 ;
+        }
+    }
 
     printf("111 aes_128_key = %s\n",aes_128_key) ;
     printf("111 aes iv = %s\n",iv) ;
@@ -383,7 +397,11 @@ int openssl_aes128_decrypt(char* src, char*dst)
     printf("aes128 decrypt src = %s\n",src) ;
     printf("aes128_decrypt length of src = %d\n",strlen(src)); 
     printf("aes128_decrypt length of src = %d\n",(strlen(src) + 16)/16*16); 
+#if 1
+    AES_cbc_encrypt(src, dst, (strlen(src) + 16)/16*16, &dec_key_128, aes_128_key, AES_DECRYPT);
+#else
     AES_cbc_encrypt(src, dst, (strlen(src) + 16)/16*16, &dec_key_128, iv, AES_DECRYPT);
+#endif
 
     total_len = strlen(dst) ;
 	dst_len = strlen(src) - dst[strlen(src)-1];

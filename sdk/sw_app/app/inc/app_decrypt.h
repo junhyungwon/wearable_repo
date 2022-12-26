@@ -35,7 +35,7 @@ extern "C"
  Declares a	function prototype
 -----------------------------------------------------------------------------*/
 int decrypt_aes(const char *src, char *dst, int len) ;
-int openssl_aes128_decrypt(char* src, char*dst) ;
+int openssl_aes128_decrypt(char* src, char*dst, int type) ;
 int openssl_aes128_decrypt_fs(char* src, char*dst) ;
 
 #ifdef __cplusplus
