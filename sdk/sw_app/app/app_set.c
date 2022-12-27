@@ -788,7 +788,17 @@ static void cfg_param_check_nexx(app_set_t *pset)
     {
 		if(strcmp(compbuff, "FITT360_Security") != 0)
 		{
-            strcpy(app_set->sys_info.uid ,"LFS-LSCS-A1-xxxx");
+    		if(dev_board_uid_read(uid, MAX_CHAR_16) == 0)
+    		{
+	    		if(!strncmp(uid, "LFS", 3))
+	    		{
+      			    sprintf(app_set->sys_info.uid, "%s", uid); 
+				}
+			}
+			else
+			{
+   	        	strcpy(app_set->sys_info.uid ,"LFS-LSCS-A1-xxxx");
+			}
 		}
 	}
 	else
@@ -1364,6 +1374,7 @@ static void app_set_default(int default_type)
 	}
     
 	strcpy(app_set->sys_info.uid ,"LFS-LSCS-A1-xxxx");
+
     app_set->time_info.time_zone = TIME_ZONE + 12;
     strcpy(app_set->time_info.time_server, "time.google.com") ;
     app_set->time_info.daylight_saving = 0 ;

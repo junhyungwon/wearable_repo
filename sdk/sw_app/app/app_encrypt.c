@@ -311,22 +311,9 @@ int encrypt_aes(const char *src, char *dst, int length)
 }
 
 
-char *SHA256_process(char *string)
-{
-    int i = 0 ;
-	unsigned char digest[SHA256_DIGEST_LENGTH];
-	char mdString[SHA256_DIGEST_LENGTH*2 + 1] ;
-
-	SHA256((unsigned char*)&string, strlen(string), (unsigned char *)&digest);
-
-	for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
-		sprintf(&mdString[i*2],"%02x",(unsigned int)digest[i]) ;
-	printf("SHA256 digest: %s\n",mdString) ;
-
-    return mdString ;
-}
-
 int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char *key, unsigned char *iv) {
+
+
     // EVP_CIPHER *cipher = EVP_aes_128_cbc();
     EVP_MD *dgst = (EVP_MD *)EVP_sha256();
 
@@ -334,7 +321,7 @@ int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char 
     int iklen = 16; //EVP_CIPHER_get_key_length(cipher);
     int ivlen = 16; //EVP_CIPHER_get_iv_length(cipher);
 
-    int islen = 0; // note : salt size.
+//    int islen = 0; // note : salt size.
     if (!PKCS5_PBKDF2_HMAC(str, str_len, NULL /*sptr*/, 0 /*islen*/, 10000 /*iter*/, dgst, iklen+ivlen, tmpkeyiv)) {
         char err[256];
         ERR_error_string(ERR_get_error(), err);
@@ -367,10 +354,10 @@ void openssl_aes128_encrypt(char *src, char *dst, int type)
     char buf[16 + BLOCK_SIZE] ;
 
     unsigned char aes_128_key[16] = {0, }; 
-    unsigned char iv[16] = {0, }; 
+//    unsigned char iv[16] = {0, }; 
     if(!type)   
     {    
-        sprintf(aes_128_key, "%s", app_set->sys_info.aes_key) ;
+        sprintf((char *)aes_128_key, "%s", app_set->sys_info.aes_key) ;
     }
     else
     {
@@ -392,7 +379,7 @@ void openssl_aes128_encrypt(char *src, char *dst, int type)
     memset(buf+len, padding_len, padding_len);
 
 #if 1
-    AES_cbc_encrypt(buf ,dst ,len+padding_len ,&aes_key_128, aes_128_key, AES_ENCRYPT);
+    AES_cbc_encrypt((unsigned char *)buf ,dst ,len+padding_len ,&aes_key_128, aes_128_key, AES_ENCRYPT);
 #else
     AES_cbc_encrypt(buf ,dst ,len+padding_len ,&aes_key_128, iv,AES_ENCRYPT);
 #endif 
@@ -408,7 +395,7 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
         FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
         if (!f) {
             TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
-            return NULL;
+            return FAIL;
         }
 
         fseek(f, 0, SEEK_END);
@@ -428,7 +415,7 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
     }
 
 
-    int i = 0, len=0, padding_len=0 ;
+    int len=0, padding_len=0 ;
     char buf[FREAD_COUNT + BLOCK_SIZE] ;
 
     FILE *fp = fopen(src, "rb") ;
@@ -448,7 +435,7 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
         if(FREAD_COUNT != len){
             break ;
         }
-        AES_cbc_encrypt(buf, buf, len, &aes_key_128, &aes_128_iv, AES_ENCRYPT);
+        AES_cbc_encrypt((unsigned char *)buf, (unsigned char *)buf, len, &aes_key_128, &aes_128_iv, AES_ENCRYPT);
 //        AES_cbc_encrypt(buf, buf, len, &aes_key_128, iv, AES_ENCRYPT);
         fwrite(buf, RW_SIZE, len, wfp) ;
     }
@@ -457,7 +444,7 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
 	printf("enc padding len:%d\n",padding_len);
     memset(buf+len, padding_len, padding_len);
 
-    AES_cbc_encrypt(buf ,buf ,len+padding_len ,&aes_key_128, &aes_128_iv, AES_ENCRYPT);
+    AES_cbc_encrypt((unsigned char *)buf ,(unsigned char *)buf ,len+padding_len ,&aes_key_128, &aes_128_iv, AES_ENCRYPT);
 	fwrite(buf ,RW_SIZE ,len+padding_len ,wfp);
 
 	fclose(wfp);

@@ -34,7 +34,6 @@ extern "C"
 #endif
 
 int encrypt_aes(const char *src, char *dst, int len) ;
-char *SHA256_process(char *string) ;
 void openssl_aes128_encrypt(char *src, char *dst, int type) ;
 int openssl_aes128_encrypt_fs(char *src, char *dst) ;
 
