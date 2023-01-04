@@ -386,8 +386,6 @@ int openssl_aes128_decrypt(char* src, char*dst, int type)
         }
     }
 
-    printf("111 aes_128_key = %s\n",aes_128_key) ;
-    printf("111 aes iv = %s\n",iv) ;
     if(AES_set_decrypt_key(aes_128_key, sizeof(aes_128_key)*8, &dec_key_128) < 0){
         // print Error  
     }; 

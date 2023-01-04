@@ -1388,7 +1388,7 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 
 	// web part
 
-    if(t->web.pw != NULL)
+    if(t->web.pw[0] != NULL)
 	{
 		decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->web.pw, strlen(t->web.pw), &olen), web_decrypt_pw, 0) ;
 		memset(t->web.pw, 0x00, 64) ;
@@ -1429,34 +1429,21 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 
 #if 1
 	if(t->rtsp.enable){
-//		char dec_ID[32]={0};
-//		char dec_PW[32]={0};
-
-		// 기존꺼 첵크
-/*
-		if(app_set->account_info.enctype) {// 1, AES
-			decrypt_aes(app_set->account_info.rtsp_userid, dec_ID, 32) ;
-			decrypt_aes(app_set->account_info.rtsp_passwd, dec_PW, 32) ;
-		} else {
-			strcpy(dec_ID, app_set->account_info.rtsp_userid);
-			strcpy(dec_PW, app_set->account_info.rtsp_passwd);
-		}
-*/
 		// check enctype
 		if(app_set->account_info.enctype != t->rtsp.enctype){
 			isChanged++;
 			DBG_UDS("t->account_info.enctype=%d\n", t->rtsp.enctype);
 		}
 
-
+printf("222222222222222222222222222222 t->rtsp.id = %s\n",base64_decode((unsigned char *)t->rtsp.id, strlen(t->rtsp.pw), &olen)) ;
 		decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->rtsp.id, strlen(t->rtsp.id), &olen), rtsp_decrypt_id, 0) ;
 	    memset(t->rtsp.id, 0x00, 64) ;
 		strncpy(t->rtsp.id, rtsp_decrypt_id, decrypt_len) ;
 
+printf("33333333333333333333333333333 t->rtsp.pw = %s\n",base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen)) ;
 		decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen), rtsp_decrypt_pw,0) ;
 	    memset(t->rtsp.pw, 0x00, 64) ;
 		strncpy(t->rtsp.pw, rtsp_decrypt_pw, decrypt_len) ;
-
 		// 새로 들어온값 check
 		if(0!=strcmp(t->rtsp.id, app_set->account_info.rtsp_userid)
 		|| 0!=strcmp(t->rtsp.pw, app_set->account_info.rtsp_passwd)
@@ -2742,6 +2729,7 @@ void *myFunc(void *arg)
 				T_CGI_USER_CONFIG t; memset(&t, 0, sizeof t);
 				ret = read(cs_uds, &t, sizeof t);
 				DBG_UDS("Read T_CGI_USER_CONFIG, size=%d\n", ret);
+
 				if(ret > 0){
 					ret = setUserConfiguration(&t);
 
