@@ -1,8 +1,0 @@
-total=349550 N0=181468 N1=168082
-file=211405 N0=127479 N1=83926
-anon=138145 N0=53989 N1=84156
-unevictable=0 N0=0 N1=0
-hierarchical_total=349550 N0=181468 N1=168082
-hierarchical_file=211405 N0=127479 N1=83926
-hierarchical_anon=138145 N0=53989 N1=84156
-hierarchical_unevictable=0 N0=0 N1=0

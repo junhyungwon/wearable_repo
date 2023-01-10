@@ -1,8 +1,0 @@
-total=2010 N0=491 N1=1519
-file=1539 N0=148 N1=1391
-anon=471 N0=343 N1=128
-unevictable=0 N0=0 N1=0
-hierarchical_total=2010 N0=491 N1=1519
-hierarchical_file=1539 N0=148 N1=1391
-hierarchical_anon=471 N0=343 N1=128
-hierarchical_unevictable=0 N0=0 N1=0

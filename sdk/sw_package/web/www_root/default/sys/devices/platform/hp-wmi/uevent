@@ -1,2 +1,0 @@
-DRIVER=hp-wmi
-MODALIAS=platform:hp-wmi
