@@ -1348,9 +1348,12 @@ static int getUserConfiguration(T_CGI_USER_CONFIG *t)
 	t->rtsp.enctype = app_set->account_info.enctype;
 
 	DBG_UDS("Get rtsp id:%s\n", app_set->account_info.rtsp_userid);
+/*
     openssl_aes128_encrypt(app_set->account_info.rtsp_userid, rtsp_id, 0) ;
 	DBG_UDS("Get rtsp aes28 encrypte id:%s\n", rtsp_id);
 	strcpy(t->rtsp.id, (char *)base64_encode((unsigned char *)rtsp_id, strlen(rtsp_id), &olen)) ;
+*/
+	sprintf(t->rtsp.id, "%s", app_set->account_info.rtsp_userid) ;
 	DBG_UDS("Get rtsp base64 id:%s\n", t->rtsp.id);
 
 	DBG_UDS("Get rtsp password:%s\n", app_set->account_info.rtsp_passwd);
@@ -1435,48 +1438,39 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 			DBG_UDS("t->account_info.enctype=%d\n", t->rtsp.enctype);
 		}
 
-printf("222222222222222222222222222222 t->rtsp.id = %s\n",base64_decode((unsigned char *)t->rtsp.id, strlen(t->rtsp.pw), &olen)) ;
+		if(0==strcmp(t->rtsp.id, "admin"))
+		{
+/*
 		decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->rtsp.id, strlen(t->rtsp.id), &olen), rtsp_decrypt_id, 0) ;
 	    memset(t->rtsp.id, 0x00, 64) ;
 		strncpy(t->rtsp.id, rtsp_decrypt_id, decrypt_len) ;
-
+*/
 printf("33333333333333333333333333333 t->rtsp.pw = %s\n",base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen)) ;
-		decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen), rtsp_decrypt_pw,0) ;
-	    memset(t->rtsp.pw, 0x00, 64) ;
-		strncpy(t->rtsp.pw, rtsp_decrypt_pw, decrypt_len) ;
+			decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen), rtsp_decrypt_pw,0) ;
+		    memset(t->rtsp.pw, 0x00, 64) ;
+			strncpy(t->rtsp.pw, rtsp_decrypt_pw, decrypt_len) ;
 		// 새로 들어온값 check
-		if(0!=strcmp(t->rtsp.id, app_set->account_info.rtsp_userid)
-		|| 0!=strcmp(t->rtsp.pw, app_set->account_info.rtsp_passwd)
-		|| app_set->account_info.enctype != t->rtsp.enctype){
+			if(0!=strcmp(t->rtsp.id, app_set->account_info.rtsp_userid)
+			|| 0!=strcmp(t->rtsp.pw, app_set->account_info.rtsp_passwd)
+			|| app_set->account_info.enctype != t->rtsp.enctype){
 
-			app_set->account_info.enctype = t->rtsp.enctype;
+				app_set->account_info.enctype = t->rtsp.enctype;
 
-			DBG_UDS("app_set->account_info.enctype    =%d\n", t->rtsp.enctype);
-			DBG_UDS("app_set->account_info.rtsp_userid=%s\n", t->rtsp.id);
-			DBG_UDS("app_set->account_info.rtsp_passwd=%s\n", t->rtsp.pw);
+				DBG_UDS("app_set->account_info.enctype    =%d\n", t->rtsp.enctype);
+				DBG_UDS("app_set->account_info.rtsp_userid=%s\n", t->rtsp.id);
+				DBG_UDS("app_set->account_info.rtsp_passwd=%s\n", t->rtsp.pw);
 
-			strcpy(app_set->account_info.rtsp_userid, t->rtsp.id);
-			strcpy(app_set->account_info.rtsp_passwd, t->rtsp.pw);
-/*
-			if(app_set->account_info.enctype) {//1,  AES
-				char enc_ID[32]={0, };
-				char enc_PW[32]={0, };
-				openssl_aes128_encrypt(t->rtsp.id, enc_ID) ;
-				openssl_aes128_encrypt(t->rtsp.pw, enc_PW) ;
-				
-				memcpy(app_set->account_info.rtsp_userid, enc_ID, 32);
-				memcpy(app_set->account_info.rtsp_passwd, enc_PW, 32);
-			}
-			else {
 				strcpy(app_set->account_info.rtsp_userid, t->rtsp.id);
 				strcpy(app_set->account_info.rtsp_passwd, t->rtsp.pw);
+				isChanged++;
 			}
-*/
-			isChanged++;
+		}
+		else
+		{
+			DBG_UDS("Failed set RTSP Account, id:%s, pw:%s\n", t->onvif.id, t->onvif.pw);
 		}
 	}
 #endif
-
 	return isChanged;
 }
 

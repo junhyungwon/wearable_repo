@@ -958,7 +958,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		
 	if((int)pset->account_info.rtsp_passwd[0] == CHAR_INVALID || (int)pset->account_info.rtsp_passwd[0] == 0)
 	{
-		Create_random_string(pset->account_info.rtsp_passwd, 16) ;
+		Create_random_string(pset->account_info.rtsp_passwd, 9) ;
 	}
 	// webuser
     if((int)pset->account_info.webuser.id[0] == CHAR_INVALID || (int)pset->account_info.webuser.id[0] == 0){
@@ -1388,7 +1388,7 @@ static void app_set_default(int default_type)
 //    strcpy(app_set->account_info.rtsp_passwd, RTSP_DEFAULT_PW);
 
  	strcpy(app_set->account_info.rtsp_userid, RTSP_DEFAULT_ID) ;
- 	Create_random_string(app_set->account_info.rtsp_passwd, 16) ;
+ 	Create_random_string(app_set->account_info.rtsp_passwd, 9) ;
 	printf("create rtsp id... from random() %s \n",app_set->account_info.rtsp_passwd) ;
  
 
