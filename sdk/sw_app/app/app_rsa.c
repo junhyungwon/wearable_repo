@@ -3,13 +3,6 @@
 -----------------------------------------------------------------------------*/
 #include "app_rsa.h"
 
-static void urandom_value(char *outdata, int count) {
-	FILE *fp;
-	fp = fopen("/dev/urandom", "r");
-	fread(&outdata, sizeof(char), count, fp);
-	fclose(fp);
-}
-
 static inline void _internal_passphrase(char *passphrase) {
     int i, olen;
 
@@ -26,11 +19,14 @@ static inline void _internal_passphrase(char *passphrase) {
     free(decoded);
 }
 
-int rsa_passphrase_to_sd()
+int app_rsa_passphrase_to_sd()
 {
+    char cmd[256];
     if(access(PATH_SSL_PASSPHRASE_NAND, F_OK) ==0)
     {
-        system("cp /media/nand/cfg/passphrase /mmc/cfg/passphrase") ;
+        sprintf(cmd, "cp -f %s %s", PATH_SSL_PASSPHRASE_NAND, PATH_SSL_PASSPHRASE_MMC);
+        TRACE_INFO("copy the passphrase file to sdcard. cmd: %s\n", cmd);
+        system(cmd);
     }
     return SUCC ;
 }
@@ -132,6 +128,9 @@ int app_rsa_save_passphrase(char *pw) {
 
     fwrite(buf, RW_SIZE, len+padding_len, fp);
     fclose(fp);
+
+	// copy the passphrase file to sdcard
+	app_rsa_passphrase_to_sd();
 
     return SUCC;
 }

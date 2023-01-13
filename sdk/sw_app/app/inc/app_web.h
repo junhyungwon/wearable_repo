@@ -23,15 +23,18 @@
 #define STR_WEB_DIGEST_REALM "Authorized User"  // lighttpd/auth.conf auth.require.realm 와 같아야함.
 
 // SSC == Self Signed Certificate
-#define PATH_HTTPS_SS_KEY 	PATH_SSL_ROOT_MMC"/_ssc_private.key"
-#define PATH_HTTPS_SS_CRT 	PATH_SSL_ROOT_MMC"/_ssc_certificate.crt"
-#define PATH_HTTPS_SS_PEM 	PATH_SSL_ROOT_MMC"/_ssc_server.pem"
+#define PATH_HTTPS_SS_KEY_NAND 	PATH_SSL_ROOT_NAND"/_ssc_private.key"
+#define PATH_HTTPS_SS_CRT_NAND 	PATH_SSL_ROOT_NAND"/_ssc_certificate.crt"
+#define PATH_HTTPS_SS_PEM_NAND 	PATH_SSL_ROOT_NAND"/_ssc_server.pem"
+#define PATH_HTTPS_SS_KEY_MMC 	PATH_SSL_ROOT_MMC"/_ssc_private.key"
+#define PATH_HTTPS_SS_CRT_MMC 	PATH_SSL_ROOT_MMC"/_ssc_certificate.crt"
+#define PATH_HTTPS_SS_PEM_MMC 	PATH_SSL_ROOT_MMC"/_ssc_server.pem"
 
 // Normal SSLs
-#define PATH_HTTPS_KEY 	PATH_SSL_ROOT_MMC"/private.key"
-#define PATH_HTTPS_CRT 	PATH_SSL_ROOT_MMC"/certificate.crt"
-#define PATH_HTTPS_CA  	PATH_SSL_ROOT_MMC"/ca-bundle.crt"
-#define PATH_HTTPS_PEM 	PATH_SSL_ROOT_MMC"/server.pem"
+#define PATH_HTTPS_KEY 	PATH_SSL_ROOT_NAND"/private.key"
+#define PATH_HTTPS_CRT 	PATH_SSL_ROOT_NAND"/certificate.crt"
+#define PATH_HTTPS_CA  	PATH_SSL_ROOT_NAND"/ca-bundle.crt"
+#define PATH_HTTPS_PEM 	PATH_SSL_ROOT_NAND"/server.pem"
 
 
 /*----------------------------------------------------------------------------
@@ -51,4 +54,5 @@ int     app_web_restart_server();
 int		app_telnetd_enable(int en);
 
 int     app_web_https_create_ssc();
+int     app_web_https_copy_to_sdcard();
 #endif//_APP_WEB_H_
