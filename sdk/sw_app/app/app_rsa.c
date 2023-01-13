@@ -3,6 +3,29 @@
 -----------------------------------------------------------------------------*/
 #include "app_rsa.h"
 
+static void urandom_value(char *outdata, int count) {
+	FILE *fp;
+	fp = fopen("/dev/urandom", "r");
+	fread(&outdata, sizeof(char), count, fp);
+	fclose(fp);
+}
+
+static inline void _internal_passphrase(char *passphrase) {
+    int i, olen;
+
+    // openssl rand 64 | base64 -w 0
+    char aa[88+1] = "itasmMpNlyV7nE5FgyaFNSdFQtHRbykqunKlOqxBy6hpTw02k0jWbbbLKWwLvRlYCpLm9lob7cucAREOpzG10w==";
+    long long p = 264233017;
+    long long q = 218561699;
+
+    unsigned char* decoded = (char *)base64_decode(aa, strlen(aa), &olen);
+    strncpy(passphrase, decoded, olen);
+    for (i = 0; i< olen; i++) {
+        passphrase[i] = (passphrase[i] * p) % q;
+    }
+    free(decoded);
+}
+
 int rsa_passphrase_to_sd()
 {
     if(access(PATH_SSL_PASSPHRASE_NAND, F_OK) ==0)
@@ -10,6 +33,49 @@ int rsa_passphrase_to_sd()
         system("cp /media/nand/cfg/passphrase /mmc/cfg/passphrase") ;
     }
     return SUCC ;
+}
+
+int app_rsa_load_passphrase(char *passphrase, int *passphrase_len) {
+    FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
+    if (!f) {
+        TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
+        return FAIL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+
+    fseek(f, 0, SEEK_SET);
+    fread(passphrase, fsize, 1, f);
+    fclose(f);
+
+    if (fsize > 80) { // 64 + 16
+        TRACE_INFO("wrong size\n");
+        return FAIL;
+    }
+
+    {
+        char internal_passphrase[64];
+        unsigned char aes_128_key[16] = {0,};
+        unsigned char aes_128_iv[16] = {0,};
+
+        // 내부 암호문구 가져오기
+        _internal_passphrase(internal_passphrase);
+        TRACE_INFO("_internal_passphrase ok\n");
+        if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
+            TRACE_INFO("openssl_aes128_derive_key error\n");
+            return FAIL;
+        }
+        TRACE_INFO("openssl_aes128_derive_key ok : %s(%d)\n", internal_passphrase, sizeof(internal_passphrase));
+
+        AES_KEY aes_key;
+        AES_set_decrypt_key(aes_128_key, KEY_BIT, &aes_key);
+        AES_cbc_encrypt((unsigned char *)passphrase ,(unsigned char *)passphrase ,fsize ,&aes_key, &aes_128_iv, AES_DECRYPT);
+    }
+
+    *passphrase_len = 64; // fixed;
+
+    return SUCC;
 }
 
 int app_rsa_save_passphrase(char *pw) {
@@ -31,6 +97,31 @@ int app_rsa_save_passphrase(char *pw) {
     }
     // TRACE_INFO("sha256 hashed the passphrase : %s(%d) %s(%d)\n", pw, strlen(pw), mdString, strlen(mdString));
 
+    int len, padding_len;
+    char buf[SHA256_DIGEST_LENGTH*2+1 + BLOCK_SIZE];    // big enough for passphrase
+    {
+        unsigned char aes_128_key[16] = {0,};
+        unsigned char aes_128_iv[16] = {0,};
+        char internal_passphrase[64];   // 64 fixed
+
+        // 내부 암호문구 가져오기
+        _internal_passphrase(internal_passphrase);
+        TRACE_INFO("_internal_passphrase ok \n");
+        if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
+            TRACE_INFO("openssl_aes128_derive_key error\n");
+            return FAIL;
+        }
+        TRACE_INFO("openssl_aes128_derive_key ok : %s(%d)\n", internal_passphrase, sizeof(internal_passphrase));
+
+        len = sizeof(mdString);
+        padding_len=BLOCK_SIZE - len % BLOCK_SIZE;
+        memset(buf+len, padding_len, padding_len);
+
+        AES_KEY aes_key;
+        AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key);
+        AES_cbc_encrypt((unsigned char *)mdString ,(unsigned char *)buf, len+padding_len, &aes_key, &aes_128_iv, AES_ENCRYPT);
+    }
+
     // nand->passphrase 파일에 암호문구 저장.
     TRACE_INFO("Save the passphrase to PATH_SSL_PASSPHRASE_NAND : %s\n", PATH_SSL_PASSPHRASE_NAND);
     FILE *fp = fopen(PATH_SSL_PASSPHRASE_NAND, "w");
@@ -39,7 +130,7 @@ int app_rsa_save_passphrase(char *pw) {
         return -1;
     }
 
-    fputs(mdString, fp);
+    fwrite(buf, RW_SIZE, len+padding_len, fp);
     fclose(fp);
 
     return SUCC;
@@ -63,6 +154,7 @@ int app_rsa_generate_privatekey(char *pw) {
 
 RSA* app_rsa_get_rsa() {
     char passphrase[64] = {'\0', };
+    int passphrase_len = 0;
     RSA *rsa = NULL;
     BIO *bio;
 
@@ -75,22 +167,8 @@ RSA* app_rsa_get_rsa() {
         return NULL;
     }
 
-    {
-        FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
-        if (!f) {
-            TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
-            return NULL;
-        }
-
-        fseek(f, 0, SEEK_END);
-        long fsize = ftell(f);
-
-        fseek(f, 0, SEEK_SET);
-        fread(passphrase, fsize, 1, f);
-        fclose(f);
-
-        if (fsize > 64)
-            return NULL;
+    if (app_rsa_load_passphrase(passphrase, &passphrase_len) == FAIL) {
+        return NULL;
     }
 
     FILE *f = fopen(PATH_SSL_PRIVATE_NAND, "r");

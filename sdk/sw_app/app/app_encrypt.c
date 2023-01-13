@@ -391,24 +391,8 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
     unsigned char aes_128_iv[16] = {0,};
     char passphrase[64] = {'\0', };
     int passphrase_len = 0;
-    {
-        FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
-        if (!f) {
-            TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
-            return FAIL;
-        }
-
-        fseek(f, 0, SEEK_END);
-        long fsize = ftell(f);
-
-        fseek(f, 0, SEEK_SET);
-        fread(passphrase, fsize, 1, f);
-        fclose(f);
-
-        if (fsize > 64)
-            return FAIL;
-
-        passphrase_len = fsize;
+    if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+        return FAIL;
     }
     if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
         return FAIL;
