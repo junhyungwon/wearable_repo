@@ -75,7 +75,9 @@
 #define NEXX_CFG_JSON_ENCRYPT_NAND		"/media/nand/cfg/nexx_enc_cfg.json"
 
 #define PATH_SSL_ROOT_MMC        "/mmc/ssl"
+#define PATH_SSL_ROOT_NAND       "/media/nand/cfg"
 #define PATH_SSL_PASSPHRASE_NAND CFG_DIR_NAND"/passphrase"	        // fixme : better secure place?
+#define PATH_SSL_PASSPHRASE_MMC  CFG_DIR_MMC"/passphrase"
 #define PATH_SSL_PRIVATE_NAND    CFG_DIR_NAND"/private.pem"
 #define PATH_SSL_PRIVATE_MMC     PATH_SSL_ROOT_MMC"/private.pem"    // 삭제가능(export용)
 #define RSA_BIT                  (2048)                             // aes128 rsa bit

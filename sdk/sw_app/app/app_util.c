@@ -569,3 +569,13 @@ int Msg_Kill(int qid)
 
 	return 0;
 }
+
+/**
+* read /dev/urandom
+*/
+void urandom_value(char *outdata, int count) {
+	FILE *fp;
+	fp = fopen("/dev/urandom", "r");
+	fread(outdata, sizeof(char), count, fp);
+	fclose(fp);
+}

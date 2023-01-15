@@ -30,9 +30,9 @@
 
 int deleteSelfSignedCertificate()
 {
-	unlink(PATH_HTTPS_SS_KEY);
-	unlink(PATH_HTTPS_SS_CRT);
-	unlink(PATH_HTTPS_SS_PEM);
+	unlink(PATH_HTTPS_SS_KEY_NAND);
+	unlink(PATH_HTTPS_SS_CRT_NAND);
+	unlink(PATH_HTTPS_SS_PEM_NAND);
 
 	TRACE_INFO("Deleted SSC files\n");
 	
@@ -43,8 +43,8 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 {
 	char cmd[256];
 
-	if( access(PATH_SSL_ROOT_MMC , F_OK) != 0) {
-		mkdir(PATH_SSL_ROOT_MMC, 0775);
+	if( access(PATH_SSL_ROOT_NAND , F_OK) != 0) {
+		mkdir(PATH_SSL_ROOT_NAND, 0775);
 	}
 
 	TRACE_INFO("createSelfSignedCertificate. force = %d\n", force);
@@ -56,7 +56,6 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 			return SUCC;
 		}
 	}
-
 
 	// 입력된 정보가 올바르지 않을때, 기본으로 생성함
 	if ( strlen(app_set->net_info.ssc_C) == 0 
@@ -86,25 +85,27 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 
 	if( access(path_crt, R_OK) != 0 || access(path_key, R_OK) != 0) {
 		TRACE_INFO("Failed to create Self Signed Certificate\n");
-		return -1;
+		return FAIL;
 	}
 
 	TRACE_INFO("Succeed, create Self Signed Certificate\n");
 
 	// make pem file for lighttpd
-	sprintf(cmd, "cat %s %s > %s", path_key, path_crt, PATH_HTTPS_SS_PEM);
+	sprintf(cmd, "cat %s %s > %s", path_key, path_crt, PATH_HTTPS_SS_PEM_NAND);
 	TRACE_INFO("Make PEM file, cmd:%s\n", cmd);
 	system(cmd);
 
-	if( access(PATH_HTTPS_SS_PEM,  R_OK) != 0 ) {
-
+	if( access(PATH_HTTPS_SS_PEM_NAND,  R_OK) != 0 ) {
 		TRACE_INFO("Failed to create PEM file\n");
-		return -1;
+		return FAIL;
 	}
 
 	TRACE_INFO("Succeed, create SS PEM\n");
 
-	return 0;
+	// copy certs to /sdcard
+	app_web_https_copy_to_sdcard();
+
+	return SUCC;
 }
 
 int createSignedCertificate()
@@ -183,7 +184,7 @@ int app_web_stop_server()
 int app_web_ssl_setup()
 {
 if(app_set->net_info.https_mode == 1) {
-	createSelfSignedCertificate(PATH_HTTPS_SS_KEY, PATH_HTTPS_SS_CRT, false);
+	createSelfSignedCertificate(PATH_HTTPS_SS_KEY_NAND, PATH_HTTPS_SS_CRT_NAND, false);
 } else if(app_set->net_info.https_mode == 2){
 	createSignedCertificate();
 }
@@ -207,12 +208,12 @@ if(app_set->net_info.https_mode == 1) {
 	TRACE_INFO("app_set->net_info.https_mode = %d\n", app_set->net_info.https_mode);
 	if(app_set->net_info.https_mode==1) // 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
 	{
-		if( access(PATH_HTTPS_SS_PEM, F_OK)==0) {
-			sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM);
+		if( access(PATH_HTTPS_SS_PEM_NAND, F_OK)==0) {
+			sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM_NAND);
 			fputs(str, fp);
 			bIsFile = 1;
 		} else {
-			TRACE_ERR("ssl.pemfile %s not exists!!\n", PATH_HTTPS_SS_PEM);
+			TRACE_ERR("ssl.pemfile %s not exists!!\n", PATH_HTTPS_SS_PEM_NAND);
 		}
 	}
 	else if (app_set->net_info.https_mode==2)
@@ -307,7 +308,7 @@ int app_telnetd_enable(int en)
 static int __start_routine_create_ssc(void *pargs)
 {
 	// force to create the self signed certificate by manually
-	int ret = createSelfSignedCertificate(PATH_HTTPS_SS_KEY, PATH_HTTPS_SS_CRT, true);
+	int ret = createSelfSignedCertificate(PATH_HTTPS_SS_KEY_NAND, PATH_HTTPS_SS_CRT_NAND, true);
 
 	return ret;
 }
@@ -325,4 +326,42 @@ int app_web_https_create_ssc()
 		pthread_detach(tid);
 
 	return ret;
+}
+
+int app_web_https_copy_to_sdcard() {
+	// 최초, 랜덤 생성
+	char passphrase[SHA256_DIGEST_LENGTH*2+1] = {'\0', };
+	int passphrase_len, olen;
+    if(access(PATH_SSL_PASSPHRASE_NAND, F_OK) !=0) {
+		char buf[128];
+		urandom_value(buf, 64);	// read 64 bytes
+		unsigned char* encoded = (char *)base64_encode(buf, 64, &olen);
+		strncpy(passphrase, encoded, olen);
+
+		TRACE_INFO("%s not exists. create with a random bytes. %s\n", PATH_SSL_PASSPHRASE_NAND, passphrase);
+		app_rsa_save_passphrase(passphrase);
+		free(encoded);
+    }
+	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+		return FAIL;
+	}
+
+	char cmd[256];
+	sprintf(cmd, "mkdir -p %s", PATH_SSL_ROOT_MMC);
+	system(cmd);
+
+	// copy a cert
+	sprintf(cmd, "cp -f %s %s", PATH_HTTPS_SS_CRT_NAND, PATH_HTTPS_SS_CRT_MMC);
+	TRACE_INFO("copy a cert. cmd: %s\n", cmd);
+	system(cmd);
+
+	// copy & encrypt a privatekey
+	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s"
+		, PATH_HTTPS_SS_KEY_NAND
+		, passphrase
+		, PATH_HTTPS_SS_KEY_MMC);
+	TRACE_INFO("copy&encrypt a private key. cmd: %s\n", cmd);
+	system(cmd);
+
+	return SUCC;
 }
