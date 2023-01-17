@@ -44,6 +44,9 @@ func (s *Server) ListenAndServe() error {
 // for the server must be provided if neither the Server's TLSConfig.Certificates nor
 // TLSConfig.GetCertificate are populated.
 func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
+	s.TLSConfig = &tls.Config{
+		//InsecureSkipVerify: true,
+	}
 	configHasCert := len(s.TLSConfig.Certificates) > 0 || s.TLSConfig.GetCertificate != nil
 	if !configHasCert || certFile != "" || keyFile != "" {
 		var err error
@@ -81,6 +84,7 @@ func (s *Server) handleConn(conn net.Conn) {
 		rconn, err = tls.Dial("tcp", s.Target, s.TLSConfigTarget)
 	}
 	if err != nil {
+		log.Printf("%v", err)
 		return
 	}
 
