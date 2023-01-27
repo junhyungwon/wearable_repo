@@ -26,7 +26,7 @@ LIB_SUFFIX =			a
 LIBS_FOR_CONSOLE_APPLICATION =
 LIBS_FOR_GUI_APPLICATION =
 
-LDFLAGS += -lstdc++
+LDFLAGS += -lstdc++ -lcrypto
 ##### End of variables to change
 
 ##### Files

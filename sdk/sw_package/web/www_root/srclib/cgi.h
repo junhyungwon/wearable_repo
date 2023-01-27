@@ -1,3 +1,9 @@
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/buffer.h>
+
 #include "cgi_param.h"
 #include "cgi_uds.h"
 #include "cgi_debug.h"
@@ -27,6 +33,11 @@
 
 // SESSION
 #define SESSION_ENABLED (false)
+#define SESSION_RSA_ENABLED (true)
+#define PUBKEY_FILE_SIZE    (1024)
+#define PRIKEY_FILE_SIZE    (2048)
+#define SERVER_PUBKEY_PATH  "/tmp/tempkey.pub"
+#define SERVER_PRIKEY_PATH  "/tmp/tempkey.pem"
 #define SESSION_TIMEOUT (60*10)
 #define LOGIN_FAILURE_TIMEOUT (60*5)
 #define LOGIN_MAX_FAILURE (5)
@@ -93,7 +104,10 @@ void		remove_char_from_string(char subc, char *str);
 void		remove_rn_char_from_string(char *str);
 
 void        validateSession();
-
+void        validateRsaSession(RSA** cryptClient, RSA** cryptServer);
+long        read_file(char* path, char* content, int limit);
+int         base64_encode(const unsigned char *input, int length, char **output);
+int         base64_decode(char *input, unsigned char **output);
 #ifdef __cplusplus
 }
 #endif

@@ -3517,8 +3517,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "ChangePassword") == 0)  // web init
 		{
-			char tmp_pw[64] = {0, };
-			char change_decrypt_pw[64] = {0, };
+			LOGD("[main] --- UDS: ChangePassword ---\n");
 			int decrypt_len = 0, retval = -1 ;
 			size_t olen = 0;
 
@@ -3536,12 +3535,10 @@ void *myFunc(void *arg)
 				if (ret > 0){
 
 					DBG_UDS("id:%s, pw:%s, lv:%d, authtype=%d\n", user.id, user.pw, user.lv, user.authtype);
-					decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)user.pw, strlen(user.pw), &olen), tmp_pw, 1) ;
-                    strncpy(change_decrypt_pw, tmp_pw, decrypt_len) ;
 //					if(0 == app_set_web_password(user.id, user.pw, user.lv, user.authtype))
-					if(0 == app_set_web_password(user.id, change_decrypt_pw, user.lv, user.authtype))
+					if(0 == app_set_web_password(user.id, user.pw, user.lv, user.authtype))
 					{
-						if( 0 == app_web_make_passwordfile(user.id, change_decrypt_pw, user.lv, user.authtype)){
+						if( 0 == app_web_make_passwordfile(user.id, user.pw, user.lv, user.authtype)){
 
 							char strOptions[128] = "OK";
 							ret = write(cs_uds, strOptions, sizeof(strOptions));
@@ -3562,7 +3559,7 @@ void *myFunc(void *arg)
 					}
 
 					// store the passphrase to PATH_SSL_PASSPHRASE_NAND
-					app_rsa_save_passphrase(change_decrypt_pw);
+					app_rsa_save_passphrase(user.pw);
 					// re-encrypt with the new passphrase
 					app_web_https_copy_to_sdcard();
 
