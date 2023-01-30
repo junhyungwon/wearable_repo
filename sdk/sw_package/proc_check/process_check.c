@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
 {
 	FILE *f = NULL;
 	char lineBuf[256 + 1];
+	char command[256]={0,};
 	
 	while (1)
 	{
@@ -47,8 +48,11 @@ int main(int argc, char *argv[])
 				ptr = strtok(lineBuf, " "); //# delimiter space
 				if (ptr != NULL) {
 					sscanf(ptr, "%d\n", &pid);
-					kill(pid, SIGKILL); //# kill -9
-					fprintf(stderr, "Founded <defunct> PID %d killed!\n", pid);
+					//kill(pid, SIGKILL); //# kill -9
+					sprintf(command, "killall wis-streamer");
+					system(command);
+					printf("PID %d killed using %s!\n", pid, command);
+					sleep(1);
 				}
 			}
 		}
