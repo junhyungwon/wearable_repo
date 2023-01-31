@@ -114,34 +114,50 @@ static int setStreamVideoQuality( int stm_res, int stm_fps, int stm_bps, int stm
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
 	{
 	    ctrl_vid_framerate(ch, stm_fps) ;
+		LOGD("[main] --- UDS: Change framerate to %dFPS for livestream --- id : admin\n",stm_fps);
 	}
 	if(stm_bps <= MAX_STM_BITRATE && stm_bps >= MIN_STM_BITRATE && app_set->ch[ch].quality != stm_bps)
     {
 	    ctrl_vid_bitrate(ch, stm_bps) ;
+		LOGD("[main] --- UDS: Change bitrate to %dMbps for livestream --- id : admin\n",stm_bps);
 	}
 	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
 	{
 	    ctrl_vid_gop_set(ch, stm_gop) ;
+		LOGD("[main] --- UDS: Change GOP to %dMbps for livestream --- id : admin\n",stm_gop);
 	}
 	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
+	{
 		ctrl_vid_resolution(stm_res);
-	
+		if(stm_res)
+			LOGD("[main] --- UDS: Change Resolution to 720P for livestream --- id : admin\n");
+		else
+			LOGD("[main] --- UDS: Change Resolution to 480P for livestream --- id : admin\n");
+	}
 #else
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
 	{
 	    ctrl_vid_framerate(ch, stm_fps) ;
+		LOGD("[main] --- UDS: Change framerate to %dFPS for livestream SUCCESS --- id : admin\n",stm_fps);
 	}
 	if(stm_bps <= MAX_STM_BITRATE && stm_bps >= MIN_STM_BITRATE && app_set->ch[ch].quality != stm_bps)
     {
 	    ctrl_vid_bitrate(ch, stm_bps) ;
+		LOGD("[main] --- UDS: Change bitrate to %dMbps for livestream --- id : admin\n",stm_bps);
 	}
 	if(stm_gop <= DEFAULT_FPS && stm_gop > 0 && app_set->ch[ch].gop != stm_gop)
 	{
 	    ctrl_vid_gop_set(ch, stm_gop) ;
+		LOGD("[main] --- UDS: Change GOP to %dMbps for livestream --- id : admin\n",stm_gop);
 	}
 	if(stm_res < MAX_RESOL && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 	{
 		ctrl_vid_resolution(stm_res);
+
+		if(stm_res)
+			LOGD("[main] --- UDS: Change Resolution to 720P for livestream --- id : admin\n");
+		else
+			LOGD("[main] --- UDS: Change Resolution to 480P for livestream --- id : admin\n");
 	}
 
 #endif
@@ -858,10 +874,12 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 	if(app_set->voip.ON_OFF == ON) {
 		if(app_set->voip.use_stun != t->use_stun){
 			app_set->voip.use_stun = t->use_stun;
+			LOGD("[main] --- UDS: SetVoipConfiguration ues_stun = %d--- id : admin\n", app_set->voip.use_stun);
 			isChanged++;
 		}
 		if(strcmp(app_set->voip.ipaddr,t->ipaddr)){
 			strcpy(app_set->voip.ipaddr,t->ipaddr);
+			LOGD("[main] --- UDS: SetVoipConfiguration voip.ipaddress = %s--- id : admin\n", app_set->voip.ipaddr);
 			isChanged++;
 		}
 		if(app_set->voip.port != t->port){
@@ -870,6 +888,7 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 		}
 		if(strcmp( app_set->voip.userid, t->userid)){
 			strcpy(app_set->voip.userid, t->userid);
+			LOGD("[main] --- UDS: SetVoipConfiguration voip.userid = %s--- id : admin\n", app_set->voip.userid);
 			isChanged++;
 		}
 		if(strlen(t->passwd) && strcmp( app_set->voip.passwd,t->passwd)){
@@ -878,6 +897,7 @@ int setVoipConfiguration(T_CGI_VOIP_CONFIG *t)
 		}
 		if(strcmp( app_set->voip.peerid, t->peerid)){
 			strcpy(app_set->voip.peerid, t->peerid);
+			LOGD("[main] --- UDS: SetVoipConfiguration voip.peerid = %s--- id : admin\n", app_set->voip.peerid);
 			isChanged++;
 		}
 	}
@@ -1030,10 +1050,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	if(app_set->ftp_info.ON_OFF){
 		if(app_set->ftp_info.port != t->bs.port){
 			app_set->ftp_info.port = t->bs.port;
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.port = %d--- id : admin\n", app_set->ftp_info.port);
 			isChanged++;
 		}
 		if(strcmp(app_set->ftp_info.ipaddr,t->bs.serveraddr)){
 			strcpy(app_set->ftp_info.ipaddr,t->bs.serveraddr);
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.ipaddr = %s--- id : admin\n", app_set->ftp_info.ipaddr);
 			isChanged++;
 		}
 
@@ -1047,6 +1069,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		if(strcmp(app_set->ftp_info.id,t->bs.id)){
 			strcpy(app_set->ftp_info.id,t->bs.id);
 			DBG_UDS("Updated app_set->ftp_info.id=%s\n", app_set->ftp_info.id);
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.id = %s--- id : admin\n", app_set->ftp_info.id);
 			isChanged++;
 		}
 
@@ -1058,6 +1081,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		if(strcmp(app_set->ftp_info.pwd,t->bs.pw)){
 			strcpy(app_set->ftp_info.pwd,t->bs.pw);
 			DBG_UDS("Updated app_set->ftp_info.pwd=%s\n", app_set->ftp_info.pwd);
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.pwd --- id : admin\n");
 			isChanged++;
 		}
 	}
@@ -1077,10 +1101,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		{
 			if(app_set->fota_info.port != t->fota.port){
 				app_set->fota_info.port = t->fota.port;
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.port = %d--- id : admin\n", app_set->fota_info.port);
 				isChanged++;
 			}
 			if (strcmp(app_set->fota_info.ipaddr, t->fota.serveraddr)) {
 				strcpy(app_set->fota_info.ipaddr, t->fota.serveraddr);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.ipaddr = %s--- id : admin\n", app_set->fota_info.ipaddr);
 				isChanged++;
 			}
 
@@ -1093,6 +1119,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			if (strcmp(app_set->fota_info.id, t->fota.id)) {
 				strcpy(app_set->fota_info.id, t->fota.id);
 				DBG_UDS("Updated app_set->fota_info.id=%s\n", app_set->ftp_info.id);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.id = %s--- id : admin\n", app_set->fota_info.id);
 				isChanged++;
 			}
 
@@ -1105,6 +1132,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			if (strcmp(app_set->fota_info.pwd, t->fota.pw)) {
 				strcpy(app_set->fota_info.pwd, t->fota.pw);
 				DBG_UDS("Updated app_set->fota_info.pwd=%s\n", app_set->ftp_info.pwd);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.pwd --- id : admin\n");
 				isChanged++;
 			}
 		}
@@ -1124,15 +1152,18 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		{
 			if (strcmp(app_set->rtmp.FULL_URL, t->mediaserver.full_path_url)) {
 				strcpy(app_set->rtmp.FULL_URL, t->mediaserver.full_path_url);
+				LOGD("[main] --- UDS: SetServerConfiguration RTMP_Full URL = %s--- id : admin\n", app_set->rtmp.FULL_URL);
 				isChanged++;
 			}
 		} else {
 			if (strcmp(app_set->rtmp.ipaddr, t->mediaserver.serveraddr)) {
 				strcpy(app_set->rtmp.ipaddr, t->mediaserver.serveraddr);
+				LOGD("[main] --- UDS: SetServerConfiguration RTMP Server IP = %s--- id : admin\n", app_set->rtmp.ipaddr);
 				isChanged++;
 			}
 			if(app_set->rtmp.port != t->mediaserver.port){
 				app_set->rtmp.port = t->mediaserver.port;
+				LOGD("[main] --- UDS: SetServerConfiguration RTMP Server port = %d--- id : admin\n", app_set->rtmp.port);
 				isChanged++;
 			}
 			// if (strcmp(app_set->rtmp.id, t->mediaserver.id)) {
@@ -1170,10 +1201,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	if(app_set->ddns_info.ON_OFF){
 		if(strcmp(app_set->ddns_info.serveraddr, t->ddns.serveraddr)){
 			strcpy(app_set->ddns_info.serveraddr, t->ddns.serveraddr); // 64
+			LOGD("[main] --- UDS: SetServerConfiguration DDNS Server IP = %s--- id : admin\n", app_set->ddns_info.serveraddr);
 			isChanged++;
 		}
 		if(strcmp(app_set->ddns_info.hostname, t->ddns.hostname)){
 			strcpy(app_set->ddns_info.hostname, t->ddns.hostname); // 32 
+			LOGD("[main] --- UDS: SetServerConfiguration DDNS HostName = %s--- id : admin\n", app_set->ddns_info.hostname);
 			isChanged++;
 		}
 
@@ -1186,6 +1219,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		if(strcmp(app_set->ddns_info.userId, t->ddns.id)){
 			strcpy(app_set->ddns_info.userId, t->ddns.id); // 32 
 			DBG_UDS("Updated decrypt app_set->ddns_info.userId=%s\n", app_set->ddns_info.userId);
+			LOGD("[main] --- UDS: SetServerConfiguration DDNS UserID = %s--- id : admin\n", app_set->ddns_info.userId);
 			isChanged++;
 		}
 		else
@@ -1200,6 +1234,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		if(strcmp(app_set->ddns_info.passwd, t->ddns.pw)){
 			strcpy(app_set->ddns_info.passwd, t->ddns.pw); // 32 
 			DBG_UDS("Updated decrypt app_set->ddns_info.passwd=%s\n", app_set->ddns_info.passwd);
+			LOGD("[main] --- UDS: SetServerConfiguration DDNS User PASSWD = %s--- id : admin\n", app_set->ddns_info.passwd);
 			isChanged++;
 		}
 		else
@@ -1209,10 +1244,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	// dns
 	if(strcmp(app_set->net_info.dns_server1, t->dns.server1)){
 		strcpy(app_set->net_info.dns_server1, t->dns.server1);
+		LOGD("[main] --- UDS: SetServerConfiguration DNS_Server1 address = %s--- id : admin\n", app_set->net_info.dns_server1);
 		isChanged++;
 	}
 	if(strcmp(app_set->net_info.dns_server2, t->dns.server2)){
 		strcpy(app_set->net_info.dns_server2, t->dns.server2);
+		LOGD("[main] --- UDS: SetServerConfiguration DNS_Server2 address = %s--- id : admin\n", app_set->net_info.dns_server1);
 		isChanged++;
 	}
 
@@ -1224,6 +1261,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	if(app_set->time_info.timesync_type){
 		if(strcmp(app_set->time_info.time_server, t->ntp.serveraddr)){
 			strcpy(app_set->time_info.time_server, t->ntp.serveraddr); // 64
+			LOGD("[main] --- UDS: SetServerConfiguration timeserver address = %s--- id : admin\n", app_set->time_info.time_server);
 			isChanged++;
 		}
 	}
@@ -1231,10 +1269,12 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	t->time_zone += 12; // A value of +12 is for device only.
 	if(app_set->time_info.time_zone != t->time_zone){
 		app_set->time_info.time_zone = t->time_zone;
+		LOGD("[main] --- UDS: SetServerConfiguration timeserver timezone = %d--- id : admin\n", app_set->time_info.time_zone);
 		isChanged++;
 	}
 	if(app_set->time_info.daylight_saving != t->daylight_saving){
 		app_set->time_info.daylight_saving = t->daylight_saving;
+		LOGD("[main] --- UDS: SetServerConfiguration timeserver daylight saving = %d--- id : admin\n", app_set->time_info.daylight_saving);
 		isChanged++;
 	}
 
@@ -1246,6 +1286,7 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	// https
 	if(app_set->net_info.https_enable != t->https.enable){
 		app_set->net_info.https_enable = t->https.enable;
+		LOGD("[main] --- UDS: SetServerConfiguration https enable = %d--- id : admin\n", app_set->net_info.https_enable);
 		isChanged++;
 	}
 
@@ -1280,26 +1321,32 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	if(app_set->voip.ON_OFF == ON) {
 		if(app_set->voip.use_stun != t->voip.use_stun){
 			app_set->voip.use_stun = t->voip.use_stun;
+		    LOGD("[main] --- UDS: SetServerConfiguration voip server use STUN ON/OFF = %d--- id : admin\n", app_set->voip.use_stun);
 			isChanged++;
 		}
 		if(strcmp(app_set->voip.ipaddr,t->voip.ipaddr)){
 			strcpy(app_set->voip.ipaddr,t->voip.ipaddr);
+		    LOGD("[main] --- UDS: SetServerConfiguration voip server ipaddr = %s--- id : admin\n", app_set->voip.ipaddr);
 			isChanged++;
 		}
 		if(app_set->voip.port != t->voip.port){
 			app_set->voip.port = t->voip.port;
+		    LOGD("[main] --- UDS: SetServerConfiguration voip server port = %d--- id : admin\n", app_set->voip.port);
 			isChanged++;
 		}
 		if(strcmp( app_set->voip.userid, t->voip.userid)){
 			strcpy(app_set->voip.userid, t->voip.userid);
+		    LOGD("[main] --- UDS: SetServerConfiguration voip userid = %s--- id : admin\n", app_set->voip.userid);
 			isChanged++;
 		}
 		if(strlen(t->voip.passwd) && strcmp( app_set->voip.passwd,t->voip.passwd)){
 			strcpy(app_set->voip.passwd,t->voip.passwd);
+		    LOGD("[main] --- UDS: SetServerConfiguration voip passwd = %s--- id : admin\n", app_set->voip.passwd);
 			isChanged++;
 		}
 		if(strcmp( app_set->voip.peerid, t->voip.peerid)){
 			strcpy(app_set->voip.peerid, t->voip.peerid);
+		    LOGD("[main] --- UDS: SetServerConfiguration voip peerid = %s--- id : admin\n", app_set->voip.peerid);
 			isChanged++;
 		}
 	}
@@ -1400,9 +1447,11 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 
 		if(0 == app_set_web_password(t->web.id, t->web.pw, 0, 1)) {
 			DBG_UDS("Updated web password: id:%s, pw:%s\n", t->web.id, t->web.pw);
+		    LOGD("[main] --- UDS: SetServerConfiguration SUCCESS web user password --- id : admin\n");
 			isChanged++;
 		}else {
 			DBG_UDS("Failed set Web Account, id:%s, pw:%s\n", t->web.id, t->web.pw);
+		    LOGD("[main] --- UDS: SetServerConfiguration FAIL web user password --- id : admin\n");
 		}
 	}
 
@@ -1416,11 +1465,13 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 		if(0!=strcmp(t->onvif.pw, app_set->account_info.onvif.pw)){
 			strcpy(app_set->account_info.onvif.pw, t->onvif.pw);
 			DBG_UDS("Updated app_set->account_info.onvif.pw=%s\n", app_set->account_info.onvif.pw);
+		    LOGD("[main] --- UDS: SetServerConfiguration SUCCESS onvif user password --- id : admin\n");
 			isChanged++;
 		}
 	}
 	else {
 		DBG_UDS("Failed set ONVIF Account, id:%s, pw:%s\n", t->onvif.id, t->onvif.pw);
+		    LOGD("[main] --- UDS: SetServerConfiguration FAIL onvif user password --- id : admin\n");
 	}
 
 	// rtsp account part
@@ -1445,7 +1496,6 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 	    memset(t->rtsp.id, 0x00, 64) ;
 		strncpy(t->rtsp.id, rtsp_decrypt_id, decrypt_len) ;
 */
-printf("33333333333333333333333333333 t->rtsp.pw = %s\n",base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen)) ;
 			decrypt_len = openssl_aes128_decrypt((char *)base64_decode((unsigned char *)t->rtsp.pw, strlen(t->rtsp.pw), &olen), rtsp_decrypt_pw,0) ;
 		    memset(t->rtsp.pw, 0x00, 64) ;
 			strncpy(t->rtsp.pw, rtsp_decrypt_pw, decrypt_len) ;
@@ -1462,12 +1512,14 @@ printf("33333333333333333333333333333 t->rtsp.pw = %s\n",base64_decode((unsigned
 
 				strcpy(app_set->account_info.rtsp_userid, t->rtsp.id);
 				strcpy(app_set->account_info.rtsp_passwd, t->rtsp.pw);
+		    	LOGD("[main] --- UDS: SetServerConfiguration SUCCESS rtsp user password --- id : admin\n");
 				isChanged++;
 			}
 		}
 		else
 		{
 			DBG_UDS("Failed set RTSP Account, id:%s, pw:%s\n", t->onvif.id, t->onvif.pw);
+		    LOGD("[main] --- UDS: SetServerConfiguration FAIL rtsp user password --- id : admin\n");
 		}
 	}
 #endif
@@ -1513,7 +1565,8 @@ static int setSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 {
 	int isChanged=0;
 	if(strlen(t->devid) > 0 && 0!=strcmp(t->devid, app_set->sys_info.deviceId)) {
-		sprintf(app_set->sys_info.deviceId, "%s", t->devid);
+		sprintf(app_set->sys_info.deviceId, "%s", t->devid);		
+	    LOGD("[main] --- UDS: SetServerConfiguration change deviceID = %s --- id : admin\n",app_set->sys_info.deviceId);
 		isChanged++;
 	}
 	else {
@@ -2391,7 +2444,7 @@ void *myFunc(void *arg)
 		////// maintenance 
 		else if (strcmp(rbuf, "SystemFactoryDefault") == 0)
 		{
-			LOGD("[main] --- UDS: System Factory Default ---\n");
+			LOGD("[main] --- UDS: System Factory Default --- id :admin\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2422,7 +2475,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SetSystemDateAndTime") == 0)
 		{
-			LOGD("[main] --- UDS: System Date and Time ---\n");
+			LOGD("[main] --- UDS: System Date and Time --- id :admin\n");
 
 			int ST=TIMESYNC_NTP; // Sync Type 0:Computer(Manual), 1:NTP
 			int DS=0;            // Daylight Savings 0:disable, 1:enable
@@ -2499,11 +2552,13 @@ void *myFunc(void *arg)
 								sprintf(wbuf, "SUCCEED");
 								ret = write(cs_uds, wbuf, sizeof wbuf);
 								DBG_UDS("OK, Succeed Update\n");
+								LOGD("[main] --- UDS: FWUPDATE SUCCESS--- FW Version = %s, id : admin\n",&rbuf[5]);
 							}
 							else {
 								sprintf(wbuf, "INVALID_FILE");
 								ret = write(cs_uds, wbuf, sizeof wbuf);
 								DBG_UDS("Error, Failed Update\n");
+								LOGD("[main] --- UDS: FWUPDATE FAIL--- INVALID_FILE, id : admin\n");
 							}
 						}
 					}
@@ -2593,7 +2648,7 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "SystemReboot") == 0)
 		{
-			LOGD("[main] --- UDS: System Reboot ---\n");
+			LOGD("[main] --- UDS: System Reboot --- id : admin\n");
 			ctrl_sys_halt(0); /* reboot */
 			sleep(10); // client에 응답을 주지 않는다. Restarting....메시지 표시 때문에...
 		}
@@ -2619,7 +2674,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetVoipConfiguration") == 0) {
-			LOGD("[main] --- UDS: SetVoipConfiguration ---\n");
+			LOGD("[main] --- UDS: SetVoipConfiguration --- id : admin\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -2650,7 +2705,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "GetServersConfiguration") == 0) {
-			LOGD("[main] --- UDS: GetServersConfiguration ---\n");
+			LOGD("[main] --- UDS: GetServersConfiguration --- \n");
 
 			T_CGI_SERVERS_CONFIG t;memset(&t,0, sizeof t);
 			if(0 == getServersConfiguration(&t)){
@@ -2667,7 +2722,7 @@ void *myFunc(void *arg)
 			}
 		}
 		else if (strcmp(rbuf, "SetServersConfiguration") == 0) {
-			LOGD("[main] --- UDS: SetServersConfiguration ---\n");
+			LOGD("[main] --- UDS: SetServersConfiguration --- id :admin\n");
 
 			// 1. send READY
 			sprintf(wbuf, "READY");
@@ -3462,7 +3517,6 @@ void *myFunc(void *arg)
 		}
 		else if (strcmp(rbuf, "ChangePassword") == 0)  // web init
 		{
-			LOGD("[main] --- UDS: ChangePassword ---\n");
 			char tmp_pw[64] = {0, };
 			char change_decrypt_pw[64] = {0, };
 			int decrypt_len = 0, retval = -1 ;
@@ -3495,6 +3549,8 @@ void *myFunc(void *arg)
 							retval = app_web_restart_server();
 							if(retval == 0)
 							{
+								LOGD("[main] --- UDS: ChangePassword SUCCESS ---\n");
+								LOGD("[main] --- UDS: Restart WEB SERVER !! ---\n");
 								DBG_UDS("done restart web server...\n");
 							}
 							else

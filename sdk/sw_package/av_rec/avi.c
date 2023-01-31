@@ -151,7 +151,7 @@ int avi_file_write(FILE *favi, stream_info_t *ifr)
 		if (ifr->d_type == DATA_TYPE_VIDEO) 
 		{
 			frame.buf			= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
-#if 0   // TTA Encrypt video data
+#if 1   // TTA Encrypt video data
 			if(ifr->is_key)
 			{
 				for(i = 0 ; i < MAX_ENCODE_BIT; i++)

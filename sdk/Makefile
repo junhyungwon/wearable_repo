@@ -89,7 +89,7 @@ gnss_clean:
 	$(MAKE) -fMakefile CC=$(BUILD_TOOL_PREFIX)gcc -C $(EXTERNAL_PACKAGE)/gnss clean
 
 ubxapp: app lighttpd app_web netdev voip av_rec gnss app_test fsupdate
-ubxapp_clean: app_clean lighttpd_clean app_web_clean netdev_clean voip_clean av_rec_clean gnss_clean app_test_clean
+ubxapp_clean: app_clean app_web_clean netdev_clean voip_clean av_rec_clean gnss_clean app_test_clean
 ubxapp_all: ubxapp_clean ubxapp
 
 ##### EXTERNAL OPENSOURCE PACKAGE BUILD #####
@@ -434,6 +434,7 @@ fsupdate:
 	sudo /bin/cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(TFTP_HOME)/process_check $(EXEC_DIR)/bin/.
+	sudo /bin/cp -f $(TFTP_HOME)/proxy $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/network_manager/net_mgr.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.

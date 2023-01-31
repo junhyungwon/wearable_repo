@@ -50,6 +50,9 @@
 #include "app_file.h"
 #include "app_version.h"
 #include "app_ctrl.h"
+#include "app_gmem.h"
+#include "avi.h"
+#include "app_dec.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -1557,8 +1560,11 @@ static void ftp_send(void)
 					continue ;
 				}
 			}
-printf("FTP....................FileName = %s\n",FileName) ;
 /* need file decryption function for TTA */
+            if(!app_decode_process(FileName))
+			{
+				LOGD("[main] Fail to decode AVI File before FTP sending !!!\n");
+			}
 #if 0
 			if(strstr(FileName, "_enc") == NULL)
 			{

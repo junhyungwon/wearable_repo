@@ -92,7 +92,7 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 int AVIFileMainHeaderWrite(AVIFILE* pAVIFile)
 {
 #if 0   // TTA Enrypion video data
-	AVIHEADBLOCK copyHdr;
+		AVIHEADBLOCK copyHdr;
 		memcpy(&copyHdr, &pAVIFile->Head, sizeof(AVIHEADBLOCK));
 		
 		copyHdr.ck_riff.ckID	= ~(pAVIFile->Head.ck_riff.ckID);
