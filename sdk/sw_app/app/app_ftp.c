@@ -1564,6 +1564,7 @@ static void ftp_send(void)
             if(!app_decode_process(FileName))
 			{
 				LOGD("[main] Fail to decode AVI File before FTP sending !!!\n");
+				continue ;
 			}
 #if 0
 			if(strstr(FileName, "_enc") == NULL)
