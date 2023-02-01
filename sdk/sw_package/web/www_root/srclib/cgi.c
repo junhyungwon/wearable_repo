@@ -277,3 +277,128 @@ void validateSession() {
 
     sess->free(sess);
 }
+
+// return client and server RSA keys.
+void validateRsaSession(RSA **cryptClient, RSA **cryptServer) {
+    if (!SESSION_RSA_ENABLED) return;
+
+	*cryptClient = RSA_new();
+	*cryptServer = RSA_new();
+
+    qentry_t *req = qcgireq_parse(NULL, Q_CGI_COOKIE);
+    qentry_t *sess = qcgisess_init(req, NULL);
+
+    char *pubkey = sess->getstr(sess, "pubkey", false);
+
+    // must be null if not client's pubkey not exists.
+    if (pubkey == NULL) {
+		CGI_DBG("pubkey is null\n");
+        goto error;
+    } else {
+        // update time to now.
+        qcgisess_settimeout(sess, SESSION_TIMEOUT);
+        qcgisess_save(sess);
+    }
+
+    {
+        BIO *bio = BIO_new_mem_buf(pubkey, -1);
+        if (!PEM_read_bio_RSA_PUBKEY(bio, cryptClient, NULL, NULL)) {
+			CGI_DBG("cryptClient is null. pubkey: %s\n", pubkey);
+			goto error;
+		}
+        BIO_free(bio);
+    }	
+
+    char server_prikey[PRIKEY_FILE_SIZE];
+    long size = read_file(SERVER_PRIKEY_PATH, server_prikey, PRIKEY_FILE_SIZE);
+    if (size <= 0) {
+		CGI_DBG("unable to read SERVER_PRIKEY_PATH: %s\n", server_prikey);
+        goto error;
+    }
+
+    {
+        BIO *bio = BIO_new_mem_buf(server_prikey, -1);
+        if (!PEM_read_bio_RSAPrivateKey(bio, cryptServer, NULL, NULL)) {
+			CGI_DBG("cryptServer is null. server_prikey len: %d\n", size);
+			goto error;
+		}
+        BIO_free(bio);
+    }
+
+    sess->free(sess);
+	CGI_DBG("rsa keys are validated. cryptClient %p, cryptServer %p\n", *cryptClient, *cryptServer);
+
+    return;
+error:
+    printf("status: 401\n\n");
+    exit(0);  // force exit.
+}
+
+long read_file(char *path, char *content, int limit) {
+    FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return -1;
+    }
+
+    // Get the file size
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    rewind(file);
+
+    if (fileSize > limit) {
+        perror("fileSize is over the limit");
+        fclose(file);
+        return -1;
+    }
+
+    // Read the contents of the file
+    size_t bytesRead = fread(content, 1, fileSize, file);
+    if (bytesRead < fileSize) {
+        perror("Error reading file");
+        free(content);
+        fclose(file);
+        return -1;
+    }
+
+    return fileSize;
+}
+
+// base64 from chatGPT!
+int base64_encode(const unsigned char *input, int length, char **output) {
+	BIO *bmem, *b64;
+	BUF_MEM *bptr;
+
+	b64 = BIO_new(BIO_f_base64());
+	bmem = BIO_new(BIO_s_mem());
+	b64 = BIO_push(b64, bmem);
+
+	BIO_write(b64, input, length);
+	BIO_flush(b64);
+
+	BIO_get_mem_ptr(b64, &bptr);
+	*output = (char *)malloc(bptr->length + 1);
+	memcpy(*output, bptr->data, bptr->length);
+	(*output)[bptr->length] = '\0';
+
+	BIO_free_all(b64);
+
+	return bptr->length;
+}
+
+int base64_decode(char *input, unsigned char **output) {
+	BIO *b64, *bmem;
+	int length = strlen(input);
+
+	b64 = BIO_new(BIO_f_base64());
+	bmem = BIO_new_mem_buf(input, length);
+	bmem = BIO_push(b64, bmem);
+
+	*output = (unsigned char *)malloc(length);
+	BIO_set_flags(bmem, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
+	length = BIO_read(bmem, *output, length);
+
+	BIO_free_all(bmem);
+
+	return length;
+}

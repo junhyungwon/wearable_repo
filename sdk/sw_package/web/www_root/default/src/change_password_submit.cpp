@@ -4,79 +4,68 @@
 
 #include "cgi.h"
 #include "cgi_param.h"
+#include "qdecoder.h"
 
 static int submit_settings()
 {
-    int isPOST = 0;
-    T_CGIPRM prm[128];
-	memset(prm, 0, sizeof prm);
+    RSA *cryptClient, *cryptServer;
+    validateRsaSession(&cryptClient, &cryptServer);
 
-    char *method = getenv("REQUEST_METHOD");
-	if(method == NULL) return ERR_INVALID_METHOD;
-    CGI_DBG("method : %s\n", method);
-
-    char *contents=NULL;
-    if(0 == strcmp(method, "POST")){
-        contents = get_cgi_contents();
-        isPOST = TRUE;
-    }
-    else {
-        contents = getenv("QUERY_STRING");
-        isPOST = FALSE;
+    if (cryptClient == NULL || cryptServer == NULL) {
+        return ERR_INVALID_PARAM;
     }
 
-	if(contents == NULL) return ERR_INVALID_PARAM;
-    CGI_DBG("contents:%s\n", contents);
+    qentry_t *req = qcgireq_parse(NULL, Q_CGI_POST);
+	if(req == NULL)
+        return ERR_INVALID_PARAM;
 
-    int cnt = parseContents(contents, prm);
-    CGI_DBG("cnt:%d\n", cnt);
+    char *pw1= req->getstr(req, "password1", false);
+    char *pw2= req->getstr(req, "password2", false);
+    int authtype = req->getint(req, "authtype");  // 0:basic, 1:digest(default)
 
-    if(cnt>0){
+    CGI_DBG("authtype:%d, pw1:%s, pw2:%s\n", authtype, pw1, pw2);
 
-        char pw1[256]={0};
-        char pw2[256]={0};
-        int  authtype= -1; // 0:basic, 1:digest(default)
-
-        for(int i=0;i<cnt;i++) {
-            CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
-            if(!strcmp(prm[i].name, "password1")){
-                sprintf(pw1, "%s", prm[i].value);
-            } 
-            else if(!strcmp(prm[i].name, "password2")){
-                sprintf(pw2, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "authtype")){
-                authtype= atoi(prm[i].value);
-            }
-        }
-
-        CGI_DBG("pw1:%s, pw2:%s, authtype:%d\n", pw1, pw2, authtype);
-
-        // Must finish parsing before free.
-        if(isPOST){ free(contents); }
-
-        // check parameter values
-        if(strlen(pw1) < 1 || strcmp(pw1, pw2) || authtype == -1){
-            CGI_DBG("Invalid parameter\n");
-            return SUBMIT_ERR;
-        }
-
-		T_CGI_USER acc;
-        acc.lv = USER_LV_ADMINISTRATOR;
-        acc.authtype = authtype;
-        sprintf(acc.id, "%s", "admin");
-        sprintf(acc.pw, "%s", pw1);
-
-        if(0!=sysctl_message(UDS_CMD_CHANGE_PASSWORD, (void*)&acc, sizeof(acc))) {
-            return SUBMIT_ERR;
-        }
-
-        return SUBMIT_OK;
+    if (pw1 == NULL || pw2 == NULL) {
+        return ERR_INVALID_PARAM;
     }
-    else {
+
+    // base64 decode -> decrypt by server's private key
+    char pw1_decrypted[256] = {'\0', };
+    char pw2_decrypted[256] = {'\0', };
+    {
+        int len, decBytes;
+        unsigned char *output;
+    
+        len = base64_decode(pw1, &output);
+        CGI_DBG("decoded pw1 len %d, pw1 base64:%s\n", len, pw1);
+        decBytes = RSA_private_decrypt(len, output, (unsigned char*)pw1_decrypted, cryptServer, RSA_PKCS1_PADDING);
+        CGI_DBG("decBytes: %d, pw1_decrypted : %s\n", decBytes, pw1_decrypted);
+        free(output);
+
+        len = base64_decode(pw2, &output);
+        CGI_DBG("decoded pw2 len %d, pw2 base64:%s\n", len, pw2);
+        decBytes = RSA_private_decrypt(len, output, (unsigned char*)pw2_decrypted, cryptServer, RSA_PKCS1_PADDING);
+        CGI_DBG("decBytes: %d, pw2_decrypted : %s\n", decBytes, pw2_decrypted);
+        free(output);
+    }
+
+    // check parameter values
+    if(strlen(pw1_decrypted) < 1 || strcmp(pw1_decrypted, pw2_decrypted) || authtype == -1){
+        CGI_DBG("Invalid parameter\n");
         return SUBMIT_ERR;
     }
 
+    T_CGI_USER acc;
+    acc.lv = USER_LV_ADMINISTRATOR;
+    acc.authtype = authtype;
+    sprintf(acc.id, "%s", "admin");
+    sprintf(acc.pw, "%s", pw1_decrypted);
+
+    if(0!=sysctl_message(UDS_CMD_CHANGE_PASSWORD, (void*)&acc, sizeof(acc))) {
+        return SUBMIT_ERR;
+    }
+
+    return SUBMIT_OK;
 }
 
 

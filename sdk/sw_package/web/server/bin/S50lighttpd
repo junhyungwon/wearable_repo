@@ -8,6 +8,12 @@ CONFIGFILE=/etc/lighttpd/lighttpd.conf
 DEFAULT_CONFIGFILE=/etc/lighttpd/default-lighttpd.conf
 
 start() {
+	echo -n "Generating a temporal rsa key(/tmp/tempkey.pem, /tmp/tempkey.pub)"
+	openssl genrsa -out /tmp/tempkey.pem 1024
+	openssl rsa -in /tmp/tempkey.pem -pubout > /tmp/tempkey.pub
+	ln -f -s /tmp/tempkey.pub /var/www/default/tempkey.pub
+	ln -f -s /tmp/tempkey.pub /var/www/tempkey.pub
+
     if [[ -e "${PASSWDFILE}" ]]; then
 	    echo -n "Starting lighttpd: "
 	    start-stop-daemon -S -q -p /var/run/lighttpd.pid --exec /usr/sbin/lighttpd -- -f ${CONFIGFILE}
