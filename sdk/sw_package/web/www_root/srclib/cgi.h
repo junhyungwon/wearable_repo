@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/bio.h>
@@ -108,6 +109,8 @@ void        validateRsaSession(RSA** cryptClient, RSA** cryptServer);
 long        read_file(char* path, char* content, int limit);
 int         base64_encode(const unsigned char *input, int length, char **output);
 int         base64_decode(char *input, unsigned char **output);
+int         rsa_base64_en(RSA* rsa, char *input, int length, unsigned char *output);
+int         rsa_base64_de(RSA* rsa, char *input, unsigned char *output);
 #ifdef __cplusplus
 }
 #endif

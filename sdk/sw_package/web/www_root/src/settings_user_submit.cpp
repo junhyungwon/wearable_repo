@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <qdecoder.h>
 
 #include "cgi.h"
 #include "cgi_param.h"
@@ -14,28 +15,15 @@ static int submit_settings()
     int isPOST = 0;
     T_CGIPRM prm[128];
 
-    char *method = getenv("REQUEST_METHOD");
-	if(method == NULL) return ERR_INVALID_METHOD;
-    CGI_DBG("method : %s\n", method);
+    RSA *cryptClient, *cryptServer;
+    validateRsaSession(&cryptClient, &cryptServer);
 
-    char *contents=NULL;
-    if(0 == strcmp(method, "POST")){
-        contents = get_cgi_contents();
-        isPOST = TRUE;
-    }
-    else {
-        contents = getenv("QUERY_STRING");
-        isPOST = FALSE;
-    }
+	// fixme : enough for rsa bitsize + base64 + padding.
+	unsigned char buffer[RSA_size(cryptClient) * 2];
 
-	if(contents == NULL) return ERR_INVALID_PARAM;
-    CGI_DBG("contents:%s\n", contents);
-
-    int cnt = parseContents(contents, prm);
-    CGI_DBG("cnt:%d\n", cnt);
-
-    if(cnt>0){
-
+    qentry_t *req = qcgireq_parse(NULL, Q_CGI_POST);
+    if (req)
+    {
 		// admin password
 		int  chk_change_web_passwd = -1;
 		char curpw[128]={0};
@@ -52,39 +40,51 @@ static int submit_settings()
 
 		T_CGI_USER_CONFIG t; memset(&t, 0, sizeof t);
 
-        for(int i=0;i<cnt;i++) {
+        char *str= req->getstr(req, "chk_change_web_passwd", false);
+        if (str != NULL) { chk_change_web_passwd = atoi(str); }
 
-            CGI_DBG("prm[%d].name=%s, prm[%d].value=%s\n", i, prm[i].name, i, prm[i].value);
-            if(!strcmp(prm[i].name, "chk_change_web_passwd")){
-				chk_change_web_passwd = atoi(prm[i].value);
-			}
-            else if(!strcmp(prm[i].name, "txt_cur_pw")){
-                sprintf(curpw, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_new_pw1")){
-                sprintf(newpw1, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_new_pw2")){
-                sprintf(newpw2, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_onvif_id")){
-                sprintf(onvif_id, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_onvif_pw")){
-                sprintf(onvif_pw, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "live_stream_account_enable")){
-                live_stream_account_enable = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "cbo_live_stream_account_enc_type")){
-                live_stream_account_enctype = atoi(prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_live_stream_account_id")){
-                sprintf(live_stream_account_id, "%s", prm[i].value);
-            }
-            else if(!strcmp(prm[i].name, "txt_live_stream_account_pw")){
-                sprintf(live_stream_account_pw, "%s", prm[i].value);
-            }
+        str= req->getstr(req, "txt_cur_pw", false);
+        if (str != NULL) {
+            CGI_DBG("txt_cur_pw  %s\n", str);
+            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            sprintf(curpw, "%s", buffer); 
+            CGI_DBG("txt_cur_pw de(rsa+base64): %s\n",  buffer);
+        }
+        str= req->getstr(req, "txt_new_pw1", false);
+        if (str != NULL) {
+            CGI_DBG("txt_new_pw1  %s\n", str);
+            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            sprintf(newpw1, "%s", buffer); 
+            CGI_DBG("txt_new_pw1 de(rsa+base64): %s\n",  buffer);
+        }
+        str= req->getstr(req, "txt_new_pw2", false);
+        if (str != NULL) {
+            CGI_DBG("txt_new_pw2  %s\n", str);
+            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            sprintf(newpw2, "%s", buffer); 
+            CGI_DBG("txt_new_pw2 de(rsa+base64): %s\n",  buffer);
+        }
+        str= req->getstr(req, "txt_onvif_id", false);
+        if (str != NULL) { sprintf(onvif_id, "%s", str); }
+        str= req->getstr(req, "txt_onvif_pw", false);
+        if (str != NULL) {
+            CGI_DBG("txt_onvif_pw  %s\n", str);
+            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            sprintf(onvif_pw, "%s", buffer); 
+            CGI_DBG("txt_onvif_pw de(rsa+base64): %s\n",  buffer);
+        }
+        str= req->getstr(req, "live_stream_account_enable", false);
+        if (str != NULL) { live_stream_account_enable = atoi(str); }
+        str= req->getstr(req, "cbo_live_stream_account_enc_type", false);
+        if (str != NULL) { live_stream_account_enctype = atoi(str); }
+        str= req->getstr(req, "txt_live_stream_account_id", false);
+        if (str != NULL) { sprintf(live_stream_account_id, "%s", str); }
+        str= req->getstr(req, "txt_live_stream_account_pw", false);
+        if (str != NULL) {
+            CGI_DBG("txt_live_stream_account_pw  %s\n", str);
+            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            sprintf(live_stream_account_pw, "%s", buffer); 
+            CGI_DBG("txt_live_stream_account_pw de(rsa+base64): %s\n",  buffer);
         }
 
 		// verify to change web password
@@ -179,9 +179,6 @@ static int submit_settings()
 		t.rtsp.enctype = live_stream_account_enctype;
 		sprintf(t.rtsp.id, "%s", live_stream_account_id);
 		sprintf(t.rtsp.pw, "%s", live_stream_account_pw);
-
-        // Must finish parsing before free.
-        if(isPOST){ free(contents); }
 
 
         if(0>sysctl_message(UDS_SET_USER_CONFIG, (void*)&t, sizeof t)) {
