@@ -57,6 +57,8 @@ endif
 	$(GPP) -c $(CFLAGS) $(INC) -o $@ $<
 
 all: clean $(OBJC) $(OBJGPP)
+# copy the rsa upload cgi
+	cp ../default/cgi-bin/rsa_exchange_submit.cgi cgi-bin/
 
 $(OBJC):%.o: %.c $(HEADER)
 	@echo Linking $@ from ...

@@ -364,14 +364,17 @@ long read_file(char *path, char *content, int limit) {
     return fileSize;
 }
 
-// base64 from chatGPT!
+// base64 from chatGPT(with bugs..)
 int base64_encode(const unsigned char *input, int length, char **output) {
 	BIO *bmem, *b64;
 	BUF_MEM *bptr;
+	int base64_length;
 
 	b64 = BIO_new(BIO_f_base64());
 	bmem = BIO_new(BIO_s_mem());
 	b64 = BIO_push(b64, bmem);
+
+	BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
 
 	BIO_write(b64, input, length);
 	BIO_flush(b64);
@@ -381,9 +384,10 @@ int base64_encode(const unsigned char *input, int length, char **output) {
 	memcpy(*output, bptr->data, bptr->length);
 	(*output)[bptr->length] = '\0';
 
+	base64_length = bptr->length;
 	BIO_free_all(b64);
 
-	return bptr->length;
+	return base64_length;
 }
 
 int base64_decode(char *input, unsigned char **output) {
@@ -401,4 +405,28 @@ int base64_decode(char *input, unsigned char **output) {
 	BIO_free_all(bmem);
 
 	return length;
+}
+
+// raw -> rsa encrypt -> base64 encode
+int rsa_base64_en(RSA* rsa, char *input, int length, unsigned char *output) {
+	int encBytes = RSA_public_encrypt(length, input, output, rsa, RSA_PKCS1_PADDING);
+	
+	unsigned char *base64_output;
+	length = base64_encode(output, encBytes, &base64_output);
+	strncpy(output, base64_output, length);
+	
+	free(base64_output);
+	return length;
+}
+
+// base64 decode -> rsa decrypt -> raw
+int rsa_base64_de(RSA* rsa, char *input, unsigned char *output) {
+	unsigned char *base64_output;
+
+	int len = base64_decode(input, &base64_output);
+	int decBytes = RSA_private_decrypt(len, base64_output, output, rsa, RSA_PKCS1_PADDING);
+	output[decBytes] = '\0';
+
+	free(base64_output);
+	return decBytes;
 }
