@@ -592,7 +592,7 @@ void put_json_user_config(T_CGI_USER_CONFIG *p, RSA *cryptClient, RSA *cryptServ
 {
 	json_object *onvif_obj, *rtsp_acc_obj, *user_obj;
 
-	// fixme : enough for rsa bitsize + base64 + padding.
+	// fixme : enough for rsa bitsize + base64 + padding. RSA_size(cryptClient) = (2048/8)
 	unsigned char buffer[RSA_size(cryptClient) * 2];
 	int len;
 

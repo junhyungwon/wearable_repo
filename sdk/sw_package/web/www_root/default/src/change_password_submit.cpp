@@ -30,23 +30,19 @@ static int submit_settings()
     }
 
     // base64 decode -> decrypt by server's private key
-    char pw1_decrypted[256] = {'\0', };
-    char pw2_decrypted[256] = {'\0', };
+    int buffer_size = RSA_size(cryptServer);
+    char pw1_decrypted[buffer_size];
+    char pw2_decrypted[buffer_size];
     {
-        int len, decBytes;
-        unsigned char *output;
-    
-        len = base64_decode(pw1, &output);
-        CGI_DBG("decoded pw1 len %d, pw1 base64:%s\n", len, pw1);
-        decBytes = RSA_private_decrypt(len, output, (unsigned char*)pw1_decrypted, cryptServer, RSA_PKCS1_PADDING);
-        CGI_DBG("decBytes: %d, pw1_decrypted : %s\n", decBytes, pw1_decrypted);
-        free(output);
+        int len;
 
-        len = base64_decode(pw2, &output);
-        CGI_DBG("decoded pw2 len %d, pw2 base64:%s\n", len, pw2);
-        decBytes = RSA_private_decrypt(len, output, (unsigned char*)pw2_decrypted, cryptServer, RSA_PKCS1_PADDING);
-        CGI_DBG("decBytes: %d, pw2_decrypted : %s\n", decBytes, pw2_decrypted);
-        free(output);
+        CGI_DBG("pw1 base64:%s\n", pw1);
+        len = rsa_base64_de(cryptServer, pw1, (unsigned char*)pw1_decrypted); // fixme : assert
+        CGI_DBG("decBytes: %d, base64 de(rsa+base64): %s\n",  len, pw1_decrypted);
+
+        CGI_DBG("pw2 base64:%s\n", pw2);
+        len = rsa_base64_de(cryptServer, pw2, (unsigned char*)pw2_decrypted); // fixme : assert
+        CGI_DBG("decBytes: %d, base64 de(rsa+base64): %s\n",  len, pw2_decrypted);
     }
 
     // check parameter values

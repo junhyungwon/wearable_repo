@@ -132,7 +132,6 @@ static int submit_settings()
 		}
 		sprintf(t.onvif.id, "%s", onvif_id);
 		sprintf(t.onvif.pw, "%s", onvif_pw);
-		CGI_DBG("################# onvif pw:%s\n", onvif_pw);
 
 		// check not null
 #if defined(FITT360_SECURITY)
