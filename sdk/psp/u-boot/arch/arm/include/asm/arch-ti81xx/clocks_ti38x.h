@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-#ifndef _CLOCKS_TI813X_H_
-#define _CLOCKS_TI813X_H_
+#ifndef _CLOCKS_TI38X_H_
+#define _CLOCKS_TI38X_H_
 
 /*
  * UDWORKS Inc.
@@ -166,4 +166,4 @@
 #define VIDEO1_M2		10
 #define VIDEO1_CLKCTRL	0x290a1001
 
-#endif	/* endif _CLOCKS_TI813X_H_ */
+#endif	/* endif _CLOCKS_TI38X_H_ */
