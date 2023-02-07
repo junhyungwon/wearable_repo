@@ -42,6 +42,7 @@ typedef struct {
 	int qid;
 	
 	int en_pre;     		//# todo
+	int encryption_rec ;    //# encryption recording of video
 	int fr;  				//# frame rate..
 	unsigned int rec_min;
 	
@@ -129,7 +130,8 @@ static int recv_msg(void)
 	irec->en_pre    = msg.en_pre;     //# todo
 	irec->fr        = msg.fr;  		  //# frame rate..
 	irec->rec_min   = msg.stime;	  //# save time
-	
+	irec->encryption_rec = msg.encryption_rec ;
+
 	if (msg.cmd != AV_CMD_REC_STOP) {
 		irec->snd_ch   = msg.snd_ch;
 		irec->snd_rate = msg.snd_rate;		//# sampling rate
@@ -295,7 +297,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		    sprintf(irec->fname, "%s", filename);
 		
 		    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
-						irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
+						irec->snd_ch, irec->snd_rate, irec->snd_btime, irec->encryption_rec);	//# open new file
 		    if (irec->fevt == NULL)
 			    return EFAIL;
 		
@@ -367,7 +369,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		        sprintf(irec->fname, "%s", filename);
 		
 		   	    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
-			    irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
+			    irec->snd_ch, irec->snd_rate, irec->snd_btime, irec->encryption_rec);	//# open new file
 			    if (irec->fevt == NULL)
 				    return EFAIL;
 		
@@ -445,7 +447,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		        memset(irec->fname, 0, sizeof(irec->fname));
 		        sprintf(irec->fname, "%s", filename);
 		   	    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
-			    irec->snd_ch, irec->snd_rate, irec->snd_btime);	//# open new file
+			    irec->snd_ch, irec->snd_rate, irec->snd_btime, irec->encryption_rec);	//# open new file
 			    if (irec->fevt == NULL)
 				    return EFAIL;
 		
@@ -464,10 +466,10 @@ static int evt_file_write(stream_info_t *ifr, int snd_on)
 	int ret = OSA_SOK;
 	
 	if (ifr->d_type==DATA_TYPE_VIDEO)
-		ret = avi_file_write(irec->fevt, ifr);
+		ret = avi_file_write(irec->fevt, ifr, irec->encryption_rec);
 	else if ((ifr->d_type==DATA_TYPE_AUDIO)) {
 		if (snd_on) {
-			ret = avi_file_write(irec->fevt, ifr);
+			ret = avi_file_write(irec->fevt, ifr, irec->encryption_rec);
 		}
 	}
 

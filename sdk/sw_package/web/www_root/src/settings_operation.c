@@ -35,7 +35,7 @@ int main()
 	printf("<rec_overwrite>%d</rec_overwrite>\n", t.rec.overwrite);
 	printf("<display_datetime>%d</display_datetime>\n", t.display_datetime);
 	printf("<beep_sound>%d</beep_sound>\n", t.beep_sound);
-	printf("<aes_encryption>%d</aes_encryption>\n", t.aes_encryption);
+	printf("<rec_encryption>%d</rec_encryption>\n", t.rec_encryption);
 
 	printf("<model_name>%s</model_name>\n", MODEL_NAME);
 

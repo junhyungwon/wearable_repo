@@ -56,6 +56,7 @@ typedef struct tag_AVI_SYSTEM_PARAM {
 	int nVidCh;
 	int bEnAudio;
 	int bEnMeta;
+	int bEncrypt;
 
 	// Video information
 	int uVideoType;
@@ -102,6 +103,7 @@ typedef WORD	TWOCC;
 #define aviTWOCC(ch0, ch1) ((WORD)(BYTE)(ch0) | ((WORD)(BYTE)(ch1) << 8))
 
 /* form types, list types, and chunk types */
+#define formtypeENCRYPT			mmioFOURCC('L', 'I', 'N', 'K')
 #define formtypeRIFF			mmioFOURCC('R', 'I', 'F', 'F')
 #define formtypeLIST			mmioFOURCC('L', 'I', 'S', 'T')
 #define formtypeAVI				mmioFOURCC('A', 'V', 'I', ' ')
@@ -218,9 +220,9 @@ int LIBAVI_closeAvi(void* handlAvi);
 int LIBAVI_recoverFile(char* filePullPath);
 char* LIBAVI_recoverGetErrMsg();
 
-FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int rate, int btime);
+FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int rate, int btime, int encrypt_vid);
 void avi_file_close(FILE *favi, char* fname);
-int avi_file_write(FILE *favi, stream_info_t *ifr);
+int avi_file_write(FILE *favi, stream_info_t *ifr, int encrypt_vid);
 int avi_file_init(unsigned int addr);
 
 #endif	/* _APP_AVI_H_ */

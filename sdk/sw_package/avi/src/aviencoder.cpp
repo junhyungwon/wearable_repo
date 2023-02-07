@@ -16,7 +16,7 @@
 
 clock_t start_fwc, end_fwc;
 
-int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
+int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName, int encrypt)
 {
 	// Alloc object
 	AVIFILE* pAVIFile;
@@ -26,6 +26,9 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 	}
 	memset(pAVIFile, 0, sizeof(AVIFILE));
 
+	printf("*************************************************************\n") ;
+	DBG2_LOG("encrypt = %d\n",encrypt);
+	printf("*************************************************************\n") ;
 	// Open file
 	#if 1
 	pAVIFile->pFile = fopen(pszFileName, "wb");
@@ -49,7 +52,12 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 	#endif
 
 	// Write AVI header
-	pAVIFile->Head.ck_riff.ckID		= mmioFOURCC('R','I','F','F');
+   // TTA Enrypion video data
+	if(encrypt)
+		pAVIFile->Head.ck_riff.ckID		= mmioFOURCC('L','I','N','K');
+	else
+		pAVIFile->Head.ck_riff.ckID		= mmioFOURCC('R','I','F','F');
+
 	pAVIFile->Head.ck_riff.ckSize	= 0;
 	pAVIFile->Head.ck_riff.ckCodec	= formtypeAVI;
 	pAVIFile->Head.ck_hdrl.ckID		= mmioFOURCC('L','I','S','T');
@@ -91,7 +99,7 @@ int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName)
 
 int AVIFileMainHeaderWrite(AVIFILE* pAVIFile)
 {
-#if 0   // TTA Enrypion video data
+#if 0
 		AVIHEADBLOCK copyHdr;
 		memcpy(&copyHdr, &pAVIFile->Head, sizeof(AVIHEADBLOCK));
 		

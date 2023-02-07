@@ -275,8 +275,9 @@ int app_main(void)
     else
     	app_call_control_init() ;
 
-	if(app_set->sys_info.aes_encryption)
-		app_sshd_start() ;
+// for ssh tunneling
+//	if(app_set->sys_info.rec_encryption)
+//		app_sshd_start() ;
 
 	app_buzz_ctrl(80, 2);	//# buzz: power on
 

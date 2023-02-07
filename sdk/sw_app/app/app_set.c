@@ -237,7 +237,7 @@ static void char_memset(void)
     memset(app_set->sys_info.deviceId, CHAR_MEMSET, MAX_CHAR_32);
     app_set->sys_info.osd_set = CFG_INVALID; 
     app_set->sys_info.beep_sound = CFG_INVALID; 
-    app_set->sys_info.aes_encryption = CFG_INVALID; 
+    app_set->sys_info.rec_encryption = CFG_INVALID; 
     memset(app_set->sys_info.aes_key, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->sys_info.aes_iv, CHAR_MEMSET, MAX_CHAR_16);
     app_set->sys_info.P2P_ON_OFF = CFG_INVALID; 
@@ -438,7 +438,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->sys_info.deviceId = %s\n", pset->sys_info.deviceId); 
     printf("pset->sys_info.osd_set  = %d\n", pset->sys_info.osd_set); 
     printf("pset->sys_info.beep_sound  = %d\n", pset->sys_info.beep_sound); 
-    printf("pset->sys_info.aes_encryption  = %d\n", pset->sys_info.aes_encryption); 
+    printf("pset->sys_info.rec_encryption  = %d\n", pset->sys_info.rec_encryption); 
     printf("pset->sys_info.aes_key = %s\n", pset->sys_info.aes_key); 
     printf("pset->sys_info.aes_iv = %s\n", pset->sys_info.aes_iv); 
     printf("pset->sys_info.P2P_ON_OFF  = %d\n", pset->sys_info.P2P_ON_OFF); 
@@ -591,11 +591,23 @@ void Create_random_string(char *outdata, int length)
 	int sub_i, i = 0 ;
 	int addr = 0 ;
 	int in_idx = 0, out_idx = 0 ;
+	
+	if(length == 9)
+	{
+		str_list[0] = '!' ;
+		str_list[1] = '1' ;
+	}
 
 	srand((unsigned int)time(NULL)) ;
 	for(sub_i = 0 ; sub_i < length; sub_i++)
 	{
-	    str_list[sub_i] = 'a' + rand() % 26 ;
+		if(length == 9)
+		{
+			if(sub_i > 1)
+				str_list[sub_i] = 'a' + rand() % 26 ;
+		}
+		else
+			str_list[sub_i] = 'a' + rand() % 26 ;
 	}
 	str_list[sub_i] = 0 ;
     sprintf(outdata, "%s", str_list) ;
@@ -762,8 +774,8 @@ static void cfg_param_check_nexx(app_set_t *pset)
     if(pset->sys_info.beep_sound < OFF || pset->sys_info.beep_sound > ON)
         pset->sys_info.beep_sound = ON ; 
 //    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)  
-    if(pset->sys_info.aes_encryption < OFF || pset->sys_info.aes_encryption > ON)
-        pset->sys_info.aes_encryption = OFF ; 
+    if(pset->sys_info.rec_encryption < OFF || pset->sys_info.rec_encryption > ON)
+        pset->sys_info.rec_encryption = OFF ; 
 
 	if(((int)pset->sys_info.aes_key[0]) == CHAR_INVALID || (int)pset->sys_info.aes_key[0] == 0)
 	{
@@ -775,6 +787,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		sprintf(pset->sys_info.aes_iv, "%s", pset->sys_info.aes_key) ;
         // random하게 iv create
 	}
+
     pset->sys_info.P2P_ON_OFF = ON ;  // Ignore previous version values, Always ON
 
     if((int)pset->sys_info.p2p_id[0] == CHAR_INVALID)
@@ -1317,9 +1330,10 @@ static void app_set_default(int default_type)
 
     app_set->sys_info.osd_set = ON ;
     app_set->sys_info.beep_sound = ON ;
-    app_set->sys_info.aes_encryption = OFF ;
+    app_set->sys_info.rec_encryption = OFF ;
 
 //  random 함수 이용 
+	
  	Create_random_string(app_set->sys_info.aes_key, 16) ;
     sprintf(app_set->sys_info.aes_iv, "%s", app_set->sys_info.aes_key) ;
 
@@ -1608,7 +1622,7 @@ int app_set_write(void)
 		TRACE_INFO("couldn't open %s file\n", path);
 	}
 #endif
-//	if(app_set->sys_info.aes_encryption)  
+//	if(app_set->sys_info.rec_encryption)  
 	{
 		if(openssl_aes128_encrypt_fs(NEXX_CFG_JSON_MMC, NEXX_CFG_JSON_ENCRYPT_MMC) == SUCC) {
 			printf("openssl_aes128_encrypt_fs......\n") ;

@@ -34,6 +34,7 @@ BOOL CAVIWriter::Open(const char* pszFilePath, SYSTEM_PARAM* pSystemParam)
 
 	m_nVidChannel	= pSystemParam->nVidChannel;
 	m_bEnableMeta	= pSystemParam->bEnableMeta;
+	m_bEncrypt      = pSystemParam->bEncrypt;
 	m_bEnableAudio	= pSystemParam->bEnableAudio;
 	m_nAudioType 	= pSystemParam->nAudioType;
 
@@ -183,9 +184,10 @@ BOOL CAVIWriter::Open(const char* pszFilePath, SYSTEM_PARAM* pSystemParam)
 	}
 
 	// Open a file
+	DBG2_LOG("AVIFileOpen m_bEncrypt = %d\n",m_bEncrypt);
 	int hr;
 	hr = AVIFileOpen(&m_pfile,			// returned file pointer
-		       pszFilePath);			// file name
+		       pszFilePath, m_bEncrypt);			// file name, Encrypt main header
 
 	if (hr != PROC_SUCCESS)
 	{

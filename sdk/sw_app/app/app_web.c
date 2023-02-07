@@ -26,7 +26,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 
-#define USE_POPEN 0
+#define USE_POPEN 1
 
 int deleteSelfSignedCertificate()
 {

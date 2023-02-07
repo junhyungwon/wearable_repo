@@ -242,7 +242,7 @@ typedef struct {
 	char uid[MAX_CHAR_32];
 	short dev_cam_ch;		//# NEXXONE: 1, Any others: 4
     short beep_sound ;
-    short aes_encryption ;
+    short rec_encryption ;
     char aes_key[MAX_CHAR_32] ;
     char aes_iv[MAX_CHAR_32] ;
 } app_system_t;

@@ -73,6 +73,7 @@ static int send_msg(int cmd)
 	msg.stime = grec_time[app_set->rec_info.period_idx];   	//# save time
 	msg.en_snd = app_set->rec_info.audio_rec;  				//# sound enable
 	msg.en_pre = app_set->rec_info.pre_rec; 				//# todo
+	msg.encryption_rec = app_set->sys_info.rec_encryption ; //# rec_encryption
 	msg.fr = 0;        										//# frame rate..
 	
 	if (cmd != AV_CMD_REC_STOP) {

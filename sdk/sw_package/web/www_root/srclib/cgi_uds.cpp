@@ -500,7 +500,7 @@ int sysctl_message(
 				CGI_DBG("read:%s, ret=%d\n", rbuf, ret);
 				if(ret > 0){
 					T_CGI_OPERATION_CONFIG *t = (T_CGI_OPERATION_CONFIG*)data;
-					sscanf(rbuf, "%d %d %d %d %d %d %d %d %d %s %s", 
+					sscanf(rbuf, "%d %d %d %d %d %d %d %d %d", 
 							&t->stm.enable_audio,
 							&t->rec.pre_rec,
 							&t->rec.auto_rec,
@@ -509,9 +509,7 @@ int sysctl_message(
 							&t->rec.overwrite,
 							&t->display_datetime,
 							&t->beep_sound,
-							&t->aes_encryption,
-							&t->aes_key,
-							&t->aes_iv);
+							&t->rec_encryption);
 
 					close(cs);
 					return 0;
@@ -541,7 +539,7 @@ int sysctl_message(
 						t.rec.overwrite, 
 						t.display_datetime,
 						t.beep_sound,
-						t.aes_encryption);
+						t.rec_encryption);
 					   	//t.p2p.enable, t.p2p.username, t.p2p.password);
 				ret = write(cs, wbuf, sizeof(wbuf));
 				CGI_DBG("Sent Data:%s, written len = %d\n", wbuf, ret);

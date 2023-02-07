@@ -129,6 +129,7 @@ typedef WORD TWOCC;
 
 
 /* form types, list types, and chunk types */
+#define formtypeENCRYPT					mmioFOURCC('L', 'I', 'N', 'K')
 #define formtypeRIFF					mmioFOURCC('R', 'I', 'F', 'F')
 #define formtypeLIST					mmioFOURCC('L', 'I', 'S', 'T')
 #define formtypeAVI             		mmioFOURCC('A', 'V', 'I', ' ')
@@ -289,7 +290,7 @@ typedef struct {
 
 // Prototype /////////////////////////////////////////////////////////
 
-int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName);
+int AVIFileOpen(AVIFILE** ppAVIFile, const char* pszFileName, int m_bEncrypt);
 int AVIFileCreateStream(AVIFILE* pAVIFile, AVISTREAM** ppavi, AVISTREAMHEADER* psi);
 int AVIFileCreateStreamSub(AVIFILE* pAVIFile, AVISTREAM** ppavi, AVISTREAMHEADER* psi);
 int AVIStreamSetFormat(AVISTREAM* pavi, long lPos, void* lpFormat, long cbFormat);

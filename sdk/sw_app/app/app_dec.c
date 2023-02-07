@@ -37,20 +37,15 @@
 
 
 typedef struct {
-	app_thr_obj *pObj;		//# playback thread
-
 	int rate;
 	int msec;
 	int cur_idx;
 	int icnt;
 	int num_ch;
+	int encrypt ;
 	char filepath[MAX_CHAR_128];
 	AVIINDEXENTRY idx_buf[PB_IDXBUF_SIZE];
 	AVIFile pAvi;
-
-	app_thr_obj *aObj;
-
-	unsigned char *enc_buf;
 } app_pbk_t;
 
 /*----------------------------------------------------------------------------
@@ -125,7 +120,7 @@ static void convert_id(unsigned long fccType, int *ch, int *type)
 //	printf("%d, %s\n", atoi(fccIdx), strmType==AVI_VIDEO?"AVI_VIDEO":"AVI_AUDIO");
 }
 
-static int get_avi_info(AVIFile *pAvi, char *filepath)
+static int get_encrypt_info(AVIFile *pAvi, char *filepath)
 {
 	pAvi->pFile = fopen(filepath, "r+");
 	if(pAvi->pFile == NULL) {
@@ -140,8 +135,40 @@ static int get_avi_info(AVIFile *pAvi, char *filepath)
 	if(pAvi->Head.ck_riff.ckID != formtypeRIFF || pAvi->Head.ck_riff.ckCodec != formtypeAVI ||
 		pAvi->Head.ck_hdrl.ckType != listtypeAVIHEADER || pAvi->Head.ck_avih.ckID != ckidAVIMAINHDR)
 	{
-        fclose(pAvi->pFile);
+		if(pAvi->Head.ck_riff.ckID != formtypeENCRYPT)
+		{
+  	        fclose(pAvi->pFile);
+			return -1;
+		}
+		else
+			ipbk->encrypt = 1 ;
+	}
+	return 0 ;
+}
+
+static int get_avi_info(AVIFile *pAvi, char *filepath)
+{
+/*	
+	pAvi->pFile = fopen(filepath, "r+");
+	if(pAvi->pFile == NULL) {
 		return -1;
+	}
+*/
+	//#--- read avi main header
+	fseek(pAvi->pFile, 0, SEEK_SET);
+	fread(&pAvi->Head, sizeof(AVIHeadBlock), 1, pAvi->pFile);
+	//print_mainhdr(&pAvi->Head);
+
+	if(pAvi->Head.ck_riff.ckID != formtypeRIFF || pAvi->Head.ck_riff.ckCodec != formtypeAVI ||
+		pAvi->Head.ck_hdrl.ckType != listtypeAVIHEADER || pAvi->Head.ck_avih.ckID != ckidAVIMAINHDR)
+	{
+		if(pAvi->Head.ck_riff.ckID != formtypeENCRYPT)
+		{
+  	        fclose(pAvi->pFile);
+			return -1;
+		}
+		else
+			ipbk->encrypt = 1 ;
 	}
 	if(pAvi->Head.avih.dwStreams == 0 || pAvi->Head.avih.dwTotalFrames == 0) {
         fclose(pAvi->pFile);
@@ -242,7 +269,7 @@ int app_decode_process(char *file_path)
 {
 	int stream_id, stream_type ;
     char InBuff[6] ;
-	unsigned long tvalue ;
+	unsigned long tvalue, riff ;
 	int retval = 0, i = 0, ret;
 	long cur_pos ;
 
@@ -259,9 +286,20 @@ int app_decode_process(char *file_path)
 	sprintf(ipbk->filepath,"%s", file_path);
 	ipbk->cur_idx = 0;
 
+	ret = get_encrypt_info(pAvi, ipbk->filepath) ;
+	if(ipbk->encrypt)
+	{
+		riff = formtypeRIFF ;
+		fseek(pAvi->pFile, 0, SEEK_SET);
+		fwrite(&riff, 1, 4, pAvi->pFile) ;
+	}
+	else
+		return 1 ;
+
     ret = get_avi_info(pAvi, ipbk->filepath);
 	if(ret != 0) {
         printf("get_avi_info failed!!");
+		return 0 ;
     }
 
 	while(1)
@@ -291,9 +329,9 @@ int app_decode_process(char *file_path)
 		    break ;
 
 	}
-		fclose(pAvi->pFile) ;
-		sync() ;
-		return 1 ;
+	fclose(pAvi->pFile) ;
+	sync() ;
+	return 1 ;
 }
 
 

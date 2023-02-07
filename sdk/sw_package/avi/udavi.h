@@ -57,6 +57,7 @@ typedef struct tag_AVI_SYSTEM_PARAM {
 	int nVidCh;
 	int bEnAudio;
 	int bEnMeta;
+	int bEncrypt ;
 
 	// Video information
 	int uVideoType;

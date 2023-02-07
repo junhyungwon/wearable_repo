@@ -48,6 +48,9 @@ void* LIBAVI_createAvi(char* filePullPath, AVI_SYSTEM_PARAM* pAviPrm)
 		sysParm.nSamplesPerSec 		= pAviPrm->nSamplesPerSec;
 
 		sysParm.bEnableMeta			= pAviPrm->bEnMeta;
+		sysParm.bEncrypt			= pAviPrm->bEncrypt;
+
+		printf("LIBAVI_createAvi pAviPrm->bEncrypt = %d\n",pAviPrm->bEncrypt) ;
 
 		switch(pAviPrm->uVideoType)
 		{

@@ -910,9 +910,9 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	t->bs.enable = app_set->ftp_info.ON_OFF;
 	t->bs.upload_files = app_set->ftp_info.file_type; // 1: event, 0:all
 	t->bs.port   = app_set->ftp_info.port;
-	t->aes_encryption = app_set->sys_info.aes_encryption ;
-	strcpy(t->aes_key, app_set->sys_info.aes_key) ;
-	strcpy(t->aes_iv, app_set->sys_info.aes_iv) ;
+//	t->aes_encryption = app_set->sys_info.rec_encryption ;
+//	strcpy(t->aes_key, app_set->sys_info.aes_key) ;
+//	strcpy(t->aes_iv, app_set->sys_info.aes_iv) ;
 
 	strcpy(t->bs.serveraddr, app_set->ftp_info.ipaddr);
 
@@ -1305,9 +1305,9 @@ static int getUserConfiguration(T_CGI_USER_CONFIG *t)
 		strcpy(rtsp_pass, app_set->account_info.rtsp_passwd);
 	}
 */
-	t->aes_encryption = app_set->sys_info.aes_encryption ;
-	strcpy(t->aes_key, app_set->sys_info.aes_key) ;
-	strcpy(t->aes_iv, app_set->sys_info.aes_iv) ;
+//	t->aes_encryption = app_set->sys_info.rec_encryption ;
+//	strcpy(t->aes_key, app_set->sys_info.aes_key) ;
+//	strcpy(t->aes_iv, app_set->sys_info.aes_iv) ;
 
 	t->rtsp.enable = app_set->account_info.ON_OFF;
 	t->rtsp.enctype = app_set->account_info.enctype;
@@ -1767,11 +1767,11 @@ static int setBeepsound(int beep_sound)
 	return 0 ;
 }
 
-static int setAesEncryption(int aes_encryption)
+static int setRecEncryption(int rec_encryption)
 {
-	printf("setAesEncryption = %d\n",aes_encryption) ;
-	if(app_set->sys_info.aes_encryption!= aes_encryption){
-		app_set->sys_info.aes_encryption = aes_encryption;
+	printf("setRecEncryption = %d\n",rec_encryption) ;
+	if(app_set->sys_info.rec_encryption!= rec_encryption){
+		app_set->sys_info.rec_encryption = rec_encryption;
 	}
 	return 0 ;
 }
@@ -3213,7 +3213,7 @@ void *myFunc(void *arg)
 			DBG_UDS("ret:%d, rbuf:%s\n", ret, rbuf);
 			char strOptions[256] = {0};
 			{
-				sprintf(strOptions, "%d %d %d %d %d %d %d %d %d %s %s",
+				sprintf(strOptions, "%d %d %d %d %d %d %d %d %d",
 						app_set->stm_info.enable_audio,     // 0:on, 1:off
 						app_set->rec_info.pre_rec,     // 0:on, 1:off
 						app_set->rec_info.auto_rec,    // 0:on, 1:off
@@ -3222,9 +3222,7 @@ void *myFunc(void *arg)
 						app_set->rec_info.overwrite,
 						app_set->sys_info.osd_set,
 						app_set->sys_info.beep_sound,
-						app_set->sys_info.aes_encryption,
-						app_set->sys_info.aes_key,
-						app_set->sys_info.aes_iv);
+						app_set->sys_info.rec_encryption) ;
 			}
 			ret = write(cs_uds, strOptions, sizeof strOptions);
 			if (ret > 0) {
@@ -3248,7 +3246,7 @@ void *myFunc(void *arg)
 				if(ret > 0){
 					int stream_enable_audio = 0;
 					int pre_rec=0, auto_rec=0, audio_rec=0, rec_interval=0, rec_overwrite=0;
-					int display_datetime=0, beep_sound = 0, aes_encryption = 0;
+					int display_datetime=0, beep_sound = 0, rec_encryption = 0;
 					sscanf(rbuf, "%d %d %d %d %d %d %d %d %d", 
 							&stream_enable_audio,
 							&pre_rec,
@@ -3258,12 +3256,12 @@ void *myFunc(void *arg)
 							&rec_overwrite,
 							&display_datetime,
 							&beep_sound,
-							&aes_encryption);
+							&rec_encryption);
 					setStreamOptions(stream_enable_audio);
 					setRecordOptions(pre_rec, auto_rec, audio_rec, rec_interval, rec_overwrite);
 					setDisplayDateTime(display_datetime);
 					setBeepsound(beep_sound) ;
-					setAesEncryption(aes_encryption) ;
+					setRecEncryption(rec_encryption) ;
 
 					char strOptions[128] = "OK";
 					ret = write(cs_uds, strOptions, sizeof strOptions);

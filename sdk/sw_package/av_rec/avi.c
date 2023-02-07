@@ -22,6 +22,7 @@
 #include "main.h"
 #include "avi.h"
 
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -89,7 +90,7 @@ static int alg_ulaw_encode(unsigned short *dst, unsigned short *src, int bufsize
 /*----------------------------------------------------------------------------
  avi file open/close function
 -----------------------------------------------------------------------------*/
-FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int rate, int btime)
+FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int rate, int btime, int encrypt_vid)
 {
     char msg[128] = {0, };
 	AVI_SYSTEM_PARAM aviInfo;
@@ -100,6 +101,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 	
 	aviInfo.nVidCh	= REC_CH_NUM;
 	aviInfo.bEnMeta	= TRUE; //# FALSE
+	aviInfo.bEncrypt = encrypt_vid ;
 	aviInfo.uVideoType	= ENCODING_H264;
 	
 	for (i = 0; i < aviInfo.nVidCh; i++) {
@@ -140,7 +142,7 @@ void avi_file_close(FILE *favi, char *fname)
 //	app_file_add(fname) ;
 }
 
-int avi_file_write(FILE *favi, stream_info_t *ifr)
+int avi_file_write(FILE *favi, stream_info_t *ifr, int encrypt_vid)
 {
 	AVI_FRAME_PARAM frame;
 	int enc_size=0, sz, i = 0;
@@ -152,11 +154,14 @@ int avi_file_write(FILE *favi, stream_info_t *ifr)
 		{
 			frame.buf			= (char *)(gmem_addr+ifr->offset); //(ifr->addr);
 #if 1   // TTA Encrypt video data
-			if(ifr->is_key)
-			{
-				for(i = 0 ; i < MAX_ENCODE_BIT; i++)
+			if(encrypt_vid)
+			{	
+				if(ifr->is_key)
 				{
-					frame.buf[i] = ~(frame.buf[i]) ;
+					for(i = 0 ; i < MAX_ENCODE_BIT; i++)
+					{
+						frame.buf[i] = ~(frame.buf[i]) ;
+					}
 				}
 			}
 #endif 

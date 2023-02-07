@@ -59,6 +59,7 @@ typedef struct {
 	//# For video recoder
 	char deviceId[32];
 	int en_pre;     		//# pre recording
+	int encryption_rec;      //# encryption recording of video
 	int fr;  				//# frame rate..
 	unsigned int stime;		//# save time
 	

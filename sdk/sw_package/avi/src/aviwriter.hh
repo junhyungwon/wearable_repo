@@ -36,6 +36,7 @@ private:
 	int		m_nVidChannel;
 	int		m_bEnableMeta;
 	int		m_bEnableAudio;
+	int     m_bEncrypt;
 	int		m_nAudioType;
 	int		m_nAudioFrameSize;
 	BOOL	m_bFirstVideo[MAX_VID_CH];

@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[4],{357:function(t,e,n){"use strict";n.r(e);var c=n(33),component=Object(c.a)({},(function(){var t=this.$createElement,e=this._self._c||t;return e("div",{staticClass:"https-page"},[e("router-view",{key:this.cgi/this.settings_setupHttps.cgi})],1)}),[],!1,null,null,null);e.default=component.exports}}]);

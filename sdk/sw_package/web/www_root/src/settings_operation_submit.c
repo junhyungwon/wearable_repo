@@ -45,7 +45,7 @@ static int submit_settings_fitt360()
 		int  rec_overwrite=-1;
 		int  display_datetime=-1;
 		int  beep_sound=-1;
-		int  aes_encryption=-1;
+		int  rec_encryption=-1;
 
 		for(;i<cnt;i++) {
 
@@ -74,8 +74,8 @@ static int submit_settings_fitt360()
 			else if(!strcmp(prm[i].name, "beep_sound")){
 				beep_sound = atoi(prm[i].value);
 			}
-			else if(!strcmp(prm[i].name, "aes_encryption")){
-				aes_encryption = atoi(prm[i].value);
+			else if(!strcmp(prm[i].name, "rec_encryption")){
+				rec_encryption = atoi(prm[i].value);
 			}
 		}
 
@@ -104,11 +104,11 @@ static int submit_settings_fitt360()
 		}
 		CGI_DBG("beep_sound:%d\n", beep_sound);
 
-		if( aes_encryption == -1 ) {
-			CGI_DBG("Invalid aes_encryption Parameter\n");
+		if( rec_encryption == -1 ) {
+			CGI_DBG("Invalid rec_encryption Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
-		CGI_DBG("aes_encryption:%d\n", aes_encryption);
+		CGI_DBG("rec_encryption:%d\n", rec_encryption);
 		// Must finish parsing before free.
 		if(isPOST){ free(contents); }
 
@@ -123,7 +123,7 @@ static int submit_settings_fitt360()
 		t.rec.overwrite    = rec_overwrite;
 		t.display_datetime = display_datetime;
 		t.beep_sound = beep_sound;
-		t.aes_encryption = aes_encryption;
+		t.rec_encryption = rec_encryption;
 
 		if(0 != sysctl_message(UDS_SET_OPERATION_CONFIG, (void*)&t, sizeof t )) {
 			return SUBMIT_ERR;
@@ -172,7 +172,7 @@ static int submit_settings()
 		int  rec_overwrite=-1;
 		int  display_datetime=-1;
 		int  beep_sound=-1;
-		int  aes_encryption=-1;
+		int  rec_encryption=-1;
 
 		for(;i<cnt;i++) {
 
@@ -201,8 +201,8 @@ static int submit_settings()
 			else if(!strcmp(prm[i].name, "beep_sound")){
 				beep_sound = atoi(prm[i].value);
 			}
-			else if(!strcmp(prm[i].name, "aes_encryption")){
-				aes_encryption = atoi(prm[i].value);
+			else if(!strcmp(prm[i].name, "rec_encryption")){
+				rec_encryption = atoi(prm[i].value);
 			}
 		}
 
@@ -229,8 +229,8 @@ static int submit_settings()
 			return ERR_INVALID_PARAM;
 		}
 
-		if( aes_encryption == -1 ) {
-			CGI_DBG("Invalid aes_encryption Parameter\n");
+		if( rec_encryption == -1 ) {
+			CGI_DBG("Invalid rec_encryption Parameter\n");
 			return ERR_INVALID_PARAM;
 		}
 
@@ -248,7 +248,7 @@ static int submit_settings()
 		t.rec.overwrite     = rec_overwrite;
 		t.display_datetime  = display_datetime;
 		t.beep_sound = beep_sound;
-		t.aes_encryption = aes_encryption;
+		t.rec_encryption = rec_encryption;
 
 		if(0 != sysctl_message(UDS_SET_OPERATION_CONFIG, (void*)&t, sizeof t )) {
 			return SUBMIT_ERR;

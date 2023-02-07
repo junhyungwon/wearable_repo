@@ -16,6 +16,7 @@ typedef struct tag_SYSTEM_PARAM {
 	int nVidChannel;
 	int bEnableAudio;
 	int bEnableMeta;
+	int bEncrypt ;
 
 	// Video information
 	int	uVideoType;
