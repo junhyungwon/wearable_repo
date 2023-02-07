@@ -206,7 +206,8 @@ if(app_set->net_info.https_mode == 1) {
 	fputs(str, fp);
 
 	TRACE_INFO("app_set->net_info.https_mode = %d\n", app_set->net_info.https_mode);
-	if(app_set->net_info.https_mode==1) // 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
+	// 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
+	if(app_set->net_info.https_mode == 0 || app_set->net_info.https_mode == 1)
 	{
 		if( access(PATH_HTTPS_SS_PEM_NAND, F_OK)==0) {
 			sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM_NAND);
@@ -231,19 +232,18 @@ if(app_set->net_info.https_mode == 1) {
 		}
 	}
 
-	if( bIsFile == 1 && app_set->net_info.https_mode!=0) {
-		sprintf(str, "ssl.engine = \"%s\"\n", "enable");
-	}else {
-		sprintf(str, "ssl.engine = \"%s\"\n", "disable");
-	}
+	// 항상, ssl enable
+	sprintf(str, "ssl.engine = \"%s\"\n", "enable");
 
 	fputs(str, fp);
 	fprintf(fp, "ssl.openssl.ssl-conf-cmd = (\"Protocol\" => \"-ALL, TLSv1.2, TLSv1.3\")\n");
 	fputs("}\n\n", fp);
 
 	// overwrite(:=) port
-	sprintf(str, "server.port := %d\n", app_set->net_info.https_mode == 0 ? DEFAULT_HTTP_PORT : DEFAULT_HTTPS_PORT);
-	fputs(str, fp);
+	if (app_set->net_info.https_mode != 0) {
+		sprintf(str, "server.port := %d\n",  DEFAULT_HTTPS_PORT);
+		fputs(str, fp);
+	}
 
 
 	fclose(fp);
