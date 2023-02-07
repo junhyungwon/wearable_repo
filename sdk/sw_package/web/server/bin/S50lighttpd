@@ -7,12 +7,17 @@ PASSWDFILE=/etc/lighttpd/lighttpd.user
 CONFIGFILE=/etc/lighttpd/lighttpd.conf
 DEFAULT_CONFIGFILE=/etc/lighttpd/default-lighttpd.conf
 
+TEMPKEY_PRI=/tmp/tempkey.pem
+TEMPKEY_PUB=/tmp/tempkey.pub
+
 start() {
-	echo -n "Generating a temporal rsa key(/tmp/tempkey.pem, /tmp/tempkey.pub)"
-	openssl genrsa -out /tmp/tempkey.pem 1024
-	openssl rsa -in /tmp/tempkey.pem -pubout > /tmp/tempkey.pub
-	ln -f -s /tmp/tempkey.pub /var/www/default/tempkey.pub
-	ln -f -s /tmp/tempkey.pub /var/www/tempkey.pub
+	if [ ! -f "${TEMPKEY_PRI}"  ] ||  [ ! -f "${TEMPKEY_PUB}" ];then
+		echo -n "Generating a temporal rsa key(${TEMPKEY_PRI}, ${TEMPKEY_PUB})"
+		openssl genrsa -out ${TEMPKEY_PRI} 2048
+		openssl rsa -in ${TEMPKEY_PRI} -pubout > ${TEMPKEY_PUB}
+		ln -f -s ${TEMPKEY_PUB} /var/www/default/tempkey.pub
+		ln -f -s ${TEMPKEY_PUB} /var/www/tempkey.pub
+	fi
 
     if [[ -e "${PASSWDFILE}" ]]; then
 	    echo -n "Starting lighttpd: "
