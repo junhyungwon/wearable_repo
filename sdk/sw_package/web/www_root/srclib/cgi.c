@@ -330,7 +330,7 @@ void validateRsaSession(RSA **cryptClient, RSA **cryptServer) {
 
     return;
 error:
-    printf("status: 401\n\n");
+    printf("status: 409\n\n");
     exit(0);  // force exit.
 }
 
