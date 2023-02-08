@@ -232,7 +232,7 @@ function SetMode(https_mode){
             <td align="left">Service Type&#160;&#160;&#160;</td>
             <td colspan="2" align="left">
                 &#160;&#160;<input type="radio" name="service_type" onclick="SetMode(0)"/>
-                    HTTP Only<br/>
+                    HTTPS + HTTP<br/>
 			    &#160;&#160;<input type="radio" name="service_type" onclick="SetMode(1)"/>
 			        HTTPS Self Signed<br/>
 			    &#160;&#160;<input type="radio" name="service_type" onclick="SetMode(2)"/>
