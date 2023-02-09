@@ -53,6 +53,9 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 	} else {
 		if( access(path_crt, R_OK) == 0 && access(path_key, R_OK) == 0) {
 			TRACE_INFO("Self Signed Certificate is already created.\n");
+
+			// copy to /tmp
+			app_web_https_copy_to_tmp();
 			return SUCC;
 		}
 	}
@@ -104,6 +107,8 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 
 	// copy certs to /sdcard
 	app_web_https_copy_to_sdcard();
+	// copy to /tmp
+	app_web_https_copy_to_tmp();
 
 	return SUCC;
 }
@@ -361,6 +366,26 @@ int app_web_https_copy_to_sdcard() {
 		, passphrase
 		, PATH_HTTPS_SS_KEY_MMC);
 	TRACE_INFO("copy&encrypt a private key. cmd: %s\n", cmd);
+	system(cmd);
+
+	return SUCC;
+}
+
+int app_web_https_copy_to_tmp() {
+	char cmd[256];
+	char passphrase[SHA256_DIGEST_LENGTH*2+1] = {'\0', };
+	int passphrase_len, olen;
+
+	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+		return FAIL;
+	}
+
+	// copy & encrypt a privatekey to /tmp
+	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s"
+		, PATH_HTTPS_SS_KEY_NAND
+		, passphrase
+		, PATH_HTTPS_SS_KEY_TMP);
+	TRACE_INFO("copy&encrypt a private key to /tmp/ cmd: %s\n", cmd);
 	system(cmd);
 
 	return SUCC;
