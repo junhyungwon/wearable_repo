@@ -278,36 +278,11 @@ void validateSession() {
     sess->free(sess);
 }
 
-// return client and server RSA keys.
-void validateRsaSession(RSA **cryptClient, RSA **cryptServer) {
+// return server RSA keys.
+void validateRsaSession(RSA **cryptServer) {
     if (!SESSION_RSA_ENABLED) return;
 
-	*cryptClient = RSA_new();
 	*cryptServer = RSA_new();
-
-    qentry_t *req = qcgireq_parse(NULL, Q_CGI_COOKIE);
-    qentry_t *sess = qcgisess_init(req, NULL);
-
-    char *pubkey = sess->getstr(sess, "pubkey", false);
-
-    // must be null if not client's pubkey not exists.
-    if (pubkey == NULL) {
-		CGI_DBG("pubkey is null\n");
-        goto error;
-    } else {
-        // update time to now.
-        qcgisess_settimeout(sess, SESSION_TIMEOUT);
-        qcgisess_save(sess);
-    }
-
-    {
-        BIO *bio = BIO_new_mem_buf(pubkey, -1);
-        if (!PEM_read_bio_RSA_PUBKEY(bio, cryptClient, NULL, NULL)) {
-			CGI_DBG("cryptClient is null. pubkey: %s\n", pubkey);
-			goto error;
-		}
-        BIO_free(bio);
-    }	
 
     char server_prikey[PRIKEY_FILE_SIZE];
     long size = read_file(SERVER_PRIKEY_PATH, server_prikey, PRIKEY_FILE_SIZE);
@@ -325,8 +300,7 @@ void validateRsaSession(RSA **cryptClient, RSA **cryptServer) {
         BIO_free(bio);
     }
 
-    sess->free(sess);
-	CGI_DBG("rsa keys are validated. cryptClient %p, cryptServer %p\n", *cryptClient, *cryptServer);
+	CGI_DBG("rsa keys are validated. cryptServer %p\n", *cryptServer);
 
     return;
 error:

@@ -8,10 +8,10 @@
 
 static int submit_settings()
 {
-    RSA *cryptClient, *cryptServer;
-    validateRsaSession(&cryptClient, &cryptServer);
+    RSA *cryptServer;
+    validateRsaSession(&cryptServer);
 
-    if (cryptClient == NULL || cryptServer == NULL) {
+    if (cryptServer == NULL) {
         return ERR_INVALID_PARAM;
     }
 

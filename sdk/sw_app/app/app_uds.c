@@ -69,6 +69,7 @@
 #define DBG_ENTER __D_FUNC_ENTER
 
 #define FILE_UDS_SYSTEM "/tmp/system.socket"
+#define UNCHANGED "UNCHANGED"	// cgi.h
 /*----------------------------------------------------------------------------
  Declares variables
 -----------------------------------------------------------------------------*/
@@ -1021,13 +1022,13 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			isChanged++;
 		}
 
-		if(strcmp(app_set->ftp_info.id,t->bs.id)){
+		if(strcmp(UNCHANGED,t->bs.id)){
 			strcpy(app_set->ftp_info.id,t->bs.id);
 			DBG_UDS("Updated app_set->ftp_info.id=%s\n", app_set->ftp_info.id);
 			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.id = %s--- id : admin\n", app_set->ftp_info.id);
 			isChanged++;
 		}
-		if(strcmp(app_set->ftp_info.pwd,t->bs.pw)){
+		if(strcmp(UNCHANGED,t->bs.pw)){
 			strcpy(app_set->ftp_info.pwd,t->bs.pw);
 			DBG_UDS("Updated app_set->ftp_info.pwd=%s\n", app_set->ftp_info.pwd);
 			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.pwd --- id : admin\n");
@@ -1059,13 +1060,13 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 				isChanged++;
 			}
 
-			if (strcmp(app_set->fota_info.id, t->fota.id)) {
+			if (strcmp(UNCHANGED, t->fota.id)) {
 				strcpy(app_set->fota_info.id, t->fota.id);
 				DBG_UDS("Updated app_set->fota_info.id=%s\n", app_set->ftp_info.id);
 				LOGD("[main] --- UDS: SetServerConfiguration fota_info.id = %s--- id : admin\n", app_set->fota_info.id);
 				isChanged++;
 			}
-			if (strcmp(app_set->fota_info.pwd, t->fota.pw)) {
+			if (strcmp(UNCHANGED, t->fota.pw)) {
 				strcpy(app_set->fota_info.pwd, t->fota.pw);
 				DBG_UDS("Updated app_set->fota_info.pwd=%s\n", app_set->ftp_info.pwd);
 				LOGD("[main] --- UDS: SetServerConfiguration fota_info.pwd --- id : admin\n");
@@ -1146,23 +1147,21 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 			isChanged++;
 		}
 
-		if(strcmp(app_set->ddns_info.userId, t->ddns.id)){
+		if(strcmp(UNCHANGED, t->ddns.id)){
 			strcpy(app_set->ddns_info.userId, t->ddns.id); // 32 
-			DBG_UDS("Updated decrypt app_set->ddns_info.userId=%s\n", app_set->ddns_info.userId);
-			LOGD("[main] --- UDS: SetServerConfiguration DDNS UserID = %s--- id : admin\n", app_set->ddns_info.userId);
+			DBG_UDS("Updated app_set->ddns_info.userId=%s\n", app_set->ddns_info.userId);
 			isChanged++;
 		}
 		else
-			DBG_UDS("Do not Updated decrypt app_set->ddns_info.userId=%s\n", app_set->ddns_info.userId);
+			DBG_UDS("Do not Updated app_set->ddns_info.userId=%s\n", app_set->ddns_info.userId);
 
-		if(strcmp(app_set->ddns_info.passwd, t->ddns.pw)){
+		if(strcmp(UNCHANGED, t->ddns.pw)){
 			strcpy(app_set->ddns_info.passwd, t->ddns.pw); // 32 
-			DBG_UDS("Updated decrypt app_set->ddns_info.passwd=%s\n", app_set->ddns_info.passwd);
-			LOGD("[main] --- UDS: SetServerConfiguration DDNS User PASSWD = %s--- id : admin\n", app_set->ddns_info.passwd);
+			DBG_UDS("Updated app_set->ddns_info.passwd=%s\n", app_set->ddns_info.passwd);
 			isChanged++;
 		}
 		else
-			DBG_UDS("Do not Updated decrypt app_set->ddns_info.passwd=%s\n", app_set->ddns_info.passwd);
+			DBG_UDS("Do not Updated app_set->ddns_info.passwd=%s\n", app_set->ddns_info.passwd);
 	}
 
 	// dns
@@ -1352,7 +1351,7 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 	if(0==strcmp(t->onvif.id, "admin"))
 	{
 		//strcpy(app_set->account_info.onvif.id, "admin"); // fixed
-		if(0!=strcmp(t->onvif.pw, app_set->account_info.onvif.pw)){
+		if(0!=strcmp(t->onvif.pw, UNCHANGED)){
 			strcpy(app_set->account_info.onvif.pw, t->onvif.pw);
 			DBG_UDS("Updated app_set->account_info.onvif.pw=%s\n", app_set->account_info.onvif.pw);
 		    LOGD("[main] --- UDS: SetServerConfiguration SUCCESS onvif user password --- id : admin\n");
@@ -1383,7 +1382,7 @@ int setUserConfiguration(T_CGI_USER_CONFIG *t)
 		{
 		// 새로 들어온값 check
 			if(0!=strcmp(t->rtsp.id, app_set->account_info.rtsp_userid)
-			|| 0!=strcmp(t->rtsp.pw, app_set->account_info.rtsp_passwd)
+			|| 0!=strcmp(t->rtsp.pw, UNCHANGED)
 			|| app_set->account_info.enctype != t->rtsp.enctype){
 
 				app_set->account_info.enctype = t->rtsp.enctype;

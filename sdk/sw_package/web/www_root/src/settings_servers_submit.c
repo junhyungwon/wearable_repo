@@ -12,11 +12,11 @@
 
 static int submit_settings_qcgi()
 {
-    RSA *cryptClient, *cryptServer;
-    validateRsaSession(&cryptClient, &cryptServer);
+    RSA *cryptServer;
+    validateRsaSession(&cryptServer);
 
 	// fixme : enough for rsa bitsize + base64 + padding.
-	unsigned char buffer[RSA_size(cryptClient) * 2];
+	unsigned char buffer[RSA_size(cryptServer) * 2];
 
     int ret=SUBMIT_NO_CHANGE;
 
