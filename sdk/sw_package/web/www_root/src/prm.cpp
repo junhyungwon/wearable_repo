@@ -26,7 +26,6 @@
 #define XML   1
 #define JSON  2
 
-
 #if 0
 // 이걸 사용할 경우, all_config, network_config, servers_config 에서 header와 contents가 구분이 안되는 증상이 발생됨.
 // PUT_CRLF를 printf를 써서 그런지도 모름.
@@ -588,13 +587,9 @@ void put_json_voip_config(T_CGI_VOIP_CONFIG *p)
 
 }
 
-void put_json_user_config(T_CGI_USER_CONFIG *p, RSA *cryptClient, RSA *cryptServer)
+void put_json_user_config(T_CGI_USER_CONFIG *p)
 {
 	json_object *onvif_obj, *rtsp_acc_obj, *user_obj;
-
-	// fixme : enough for rsa bitsize + base64 + padding. RSA_size(cryptClient) = (2048/8)
-	unsigned char buffer[RSA_size(cryptClient) * 2];
-	int len;
 
 	onvif_obj    = json_object_new_object();
 	rtsp_acc_obj = json_object_new_object();
@@ -606,22 +601,14 @@ void put_json_user_config(T_CGI_USER_CONFIG *p, RSA *cryptClient, RSA *cryptServ
 //	json_object_object_add(user_obj,  "aes_iv", json_object_new_string(p->aes_iv));
 
 	json_object_object_add(onvif_obj, "id",    json_object_new_string(p->onvif.id));
-	{
-		len = rsa_base64_en(cryptClient, p->onvif.pw, strlen(p->onvif.pw), buffer); // fixme : assert
-		CGI_DBG("p->onvif.pw=%s, en(rsa+base64): %s\n", p->onvif.pw, buffer);
-		json_object_object_add(onvif_obj, "pw",           json_object_new_string((const char*)buffer));
-	}
+	json_object_object_add(onvif_obj, "pw",    json_object_new_string(UNCHANGED));
 
 	json_object_object_add(user_obj,  "onvif", onvif_obj);
 
 	json_object_object_add(rtsp_acc_obj, "enable",  json_object_new_int(   p->rtsp.enable));
 	json_object_object_add(rtsp_acc_obj, "enctype", json_object_new_int(   p->rtsp.enctype));
 	json_object_object_add(rtsp_acc_obj, "id",      json_object_new_string(p->rtsp.id));
-	{
-		len = rsa_base64_en(cryptClient, p->rtsp.pw, strlen(p->rtsp.pw), buffer); // fixme : assert
-		CGI_DBG("p->rtsp.pw=%s, en(rsa+base64): %s\n", p->rtsp.pw, buffer);
-		json_object_object_add(rtsp_acc_obj, "pw",           json_object_new_string((const char*)buffer));
-	}
+	json_object_object_add(rtsp_acc_obj, "pw",      json_object_new_string(UNCHANGED));
 
 	json_object_object_add(user_obj, "live_stream_account", rtsp_acc_obj);
 
@@ -702,14 +689,10 @@ void put_json_https_config(T_CGI_HTTPS_CONFIG *p)
 	json_object_put(myobj);
 }
 
-void put_json_servers_config(T_CGI_SERVERS_CONFIG *p, RSA *cryptClient, RSA *cryptServer)
+void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 {
 	json_object *myobj, *bs_obj, *fota_obj, *mediaserver_obj, *msobj, *ddnsobj, *dnsobj, *ntpobj;
 	json_object *https_obj, *onvif_obj, *p2p_obj, *voip_obj;
-
-	// fixme : enough for rsa bitsize + base64 + padding.
-	unsigned char buffer[RSA_size(cryptClient) * 2];
-	int len;
 
 	myobj     = json_object_new_object();
 	bs_obj    = json_object_new_object();
@@ -733,16 +716,9 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p, RSA *cryptClient, RSA *cry
 	json_object_object_add(bs_obj, "upload_files", json_object_new_int( p->bs.upload_files));
 	json_object_object_add(bs_obj, "serveraddr",   json_object_new_string(p->bs.serveraddr));
 	json_object_object_add(bs_obj, "port",         json_object_new_int(   p->bs.port));
-	{
-		len = rsa_base64_en(cryptClient, p->bs.id, strlen(p->bs.id), buffer);
-		// fixme : assert
-		CGI_DBG("p->bs.id=%s, en(rsa+base64): %s\n", p->bs.id, buffer);
-		json_object_object_add(bs_obj, "id",           json_object_new_string((const char*)buffer));
+	json_object_object_add(bs_obj, "id",           json_object_new_string(UNCHANGED));
+	json_object_object_add(bs_obj, "pw",           json_object_new_string(UNCHANGED));
 
-		len = rsa_base64_en(cryptClient, p->bs.pw, strlen(p->bs.pw), buffer);
-		CGI_DBG("p->bs.pw=%s, en(rsa+base64): %s\n", p->bs.pw, buffer);
-		json_object_object_add(bs_obj, "pw",           json_object_new_string((const char*)buffer));
-	}
 	//json_object_object_add(bs_obj, "desc",      json_object_new_string("Backup Server(FTP)"));
 	json_object_object_add(myobj, "bs", bs_obj);
 
@@ -750,16 +726,9 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p, RSA *cryptClient, RSA *cry
 	json_object_object_add(fota_obj, "server_info", json_object_new_int   (p->fota.server_info));
 	json_object_object_add(fota_obj, "serveraddr",  json_object_new_string(p->fota.serveraddr));
 	json_object_object_add(fota_obj, "port",        json_object_new_int   (p->fota.port));
-	{
-		len = rsa_base64_en(cryptClient, p->fota.id, strlen(p->fota.id), buffer);
-		// fixme : assert
-		CGI_DBG("p->fota.id=%s, en(rsa+base64): %s\n", p->fota.id, buffer);
-		json_object_object_add(fota_obj, "id",           json_object_new_string((const char*)buffer));
+	json_object_object_add(fota_obj, "id",           json_object_new_string(UNCHANGED));
+	json_object_object_add(fota_obj, "pw",           json_object_new_string(UNCHANGED));
 
-		len = rsa_base64_en(cryptClient, p->fota.pw, strlen(p->fota.pw), buffer);
-		CGI_DBG("p->fota.pw=%s, en(rsa+base64): %s\n", p->fota.pw, buffer);
-		json_object_object_add(fota_obj, "pw",           json_object_new_string((const char*)buffer));
-	}
 	json_object_object_add(myobj, "fota", fota_obj);
 
 	json_object_object_add(mediaserver_obj, "enable",            json_object_new_int   (p->mediaserver.enable));
@@ -780,16 +749,9 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p, RSA *cryptClient, RSA *cry
 	json_object_object_add(ddnsobj, "enable",     json_object_new_int(   p->ddns.enable));
 	json_object_object_add(ddnsobj, "serveraddr", json_object_new_string(p->ddns.serveraddr));
 	json_object_object_add(ddnsobj, "hostname",   json_object_new_string(p->ddns.hostname));
-	{
-		len = rsa_base64_en(cryptClient, p->ddns.id, strlen(p->ddns.id), buffer);
-		// fixme : assert
-		CGI_DBG("p->ddns.id=%s, en(rsa+base64): %s\n", p->ddns.id, buffer);
-		json_object_object_add(ddnsobj, "id",           json_object_new_string((const char*)buffer));
+	json_object_object_add(ddnsobj, "id",           json_object_new_string(UNCHANGED));
+	json_object_object_add(ddnsobj, "pw",           json_object_new_string(UNCHANGED));
 
-		len = rsa_base64_en(cryptClient, p->ddns.pw, strlen(p->ddns.pw), buffer);
-		CGI_DBG("p->ddns.pw=%s, en(rsa+base64): %s\n", p->ddns.pw, buffer);
-		json_object_object_add(ddnsobj, "pw",           json_object_new_string((const char*)buffer));
-	}
 	//json_object_object_add(ddnsobj, "desc",       json_object_new_string("Dynamic DNS"));
 	json_object_object_add(myobj, "ddns", ddnsobj);
 
@@ -1159,7 +1121,7 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 	json_object_put(myobj);
 }
 
-int do_search(char *pContents, RSA *cryptClient, RSA *cryptServer)
+int do_search(char *pContents)
 {
 	int ret=-1,i;
 
@@ -1209,7 +1171,7 @@ int do_search(char *pContents, RSA *cryptClient, RSA *cryptServer)
 				else if(!strcmp(prm[i].value, "servers_config")){
 					T_CGI_SERVERS_CONFIG t;memset(&t,0, sizeof t);
 					sysctl_message(UDS_GET_SERVERS_CONFIG, (void*)&t, sizeof t );
-					put_json_servers_config(&t, cryptClient, cryptServer);
+					put_json_servers_config(&t);
 					return 0;
 				}
 				else if(!strcmp(prm[i].value, "system_config")){
@@ -1221,7 +1183,7 @@ int do_search(char *pContents, RSA *cryptClient, RSA *cryptServer)
 				else if(!strcmp(prm[i].value, "user_config")){
 					T_CGI_USER_CONFIG t;memset(&t, 0, sizeof t);
 					sysctl_message(UDS_GET_USER_CONFIG, (void*)&t, sizeof t);
-					put_json_user_config(&t, cryptClient, cryptServer);
+					put_json_user_config(&t);
 					return 0;
 				}
 				else if(!strcmp(prm[i].value, "voip_config")){
@@ -1263,9 +1225,6 @@ int main(int argc, char *argv[])
 
 	// sesseion check
     validateSession();
-
-	RSA *cryptClient, *cryptServer;
-    validateRsaSession(&cryptClient, &cryptServer);
 
 	pQuery = getenv("REQUEST_METHOD");
 	if(pQuery != NULL){
@@ -1325,7 +1284,7 @@ int main(int argc, char *argv[])
 		NS_PRM::send_response(ERR_INVALID_PARAM);
 	}
 	else if(nAction == SEARCH){
-		ret = do_search(pContents, cryptClient, cryptServer);
+		ret = do_search(pContents);
 	}
 	else if(nAction == UPDATE){
 		ret = do_update(pContents);
@@ -1347,9 +1306,6 @@ int main(int argc, char *argv[])
 	{
 	}
 #endif
-
-	RSA_free(cryptClient);
-	RSA_free(cryptServer);
 
 	return 0;
 }

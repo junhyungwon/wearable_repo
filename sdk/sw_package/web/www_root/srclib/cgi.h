@@ -43,6 +43,7 @@
 #define LOGIN_FAILURE_TIMEOUT (60*5)
 #define LOGIN_MAX_FAILURE (5)
 
+#define UNCHANGED "UNCHANGED"
 #define SUPPORT_LANG "en"
 #define MAX_ACCOUNT 16
 #define LANGUAGE_PATH "/var/www/language"
@@ -105,7 +106,7 @@ void		remove_char_from_string(char subc, char *str);
 void		remove_rn_char_from_string(char *str);
 
 void        validateSession();
-void        validateRsaSession(RSA** cryptClient, RSA** cryptServer);
+void        validateRsaSession(RSA** cryptServer);
 long        read_file(char* path, char* content, int limit);
 int         base64_encode(const unsigned char *input, int length, char **output);
 int         base64_decode(char *input, unsigned char **output);

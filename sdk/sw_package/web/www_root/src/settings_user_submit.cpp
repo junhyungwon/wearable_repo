@@ -15,11 +15,11 @@ static int submit_settings()
     int isPOST = 0;
     T_CGIPRM prm[128];
 
-    RSA *cryptClient, *cryptServer;
-    validateRsaSession(&cryptClient, &cryptServer);
+    RSA *cryptServer;
+    validateRsaSession(&cryptServer);
 
 	// fixme : enough for rsa bitsize + base64 + padding.
-	unsigned char buffer[RSA_size(cryptClient) * 2];
+	unsigned char buffer[RSA_size(cryptServer) * 2];
 
     qentry_t *req = qcgireq_parse(NULL, Q_CGI_POST);
     if (req)
