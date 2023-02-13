@@ -74,6 +74,7 @@
 #define NEXX_CFG_JSON_ENCRYPT_MMC		"/mmc/cfg/nexx_enc_cfg.json"
 #define NEXX_CFG_JSON_ENCRYPT_NAND		"/media/nand/cfg/nexx_enc_cfg.json"
 
+#define USE_SSL_ENGINE			
 #define PATH_SSL_ROOT_MMC        "/mmc/ssl"
 #define PATH_SSL_ROOT_NAND       "/media/nand/cfg"
 #define PATH_SSL_PASSPHRASE_NAND CFG_DIR_NAND"/passphrase"	        // fixme : better secure place?

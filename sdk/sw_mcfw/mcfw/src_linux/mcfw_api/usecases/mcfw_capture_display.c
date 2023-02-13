@@ -1274,6 +1274,11 @@ void mcfw_capture_display_exit(void)
 	//# link deletion
 	//#-------------------------------------------
 	display_link_delete();
+	if (gVsysModuleContext.vsysConfig.enableIpcframes) {
+		System_linkDelete(gVcapModuleContext.ipcFramesOutVpssToHostId);
+		System_linkDelete(gVcapModuleContext.ipcFramesInHostId);
+	}
+	
 	if(gVsysModuleContext.vsysConfig.enableEncode) {
 		encoder_link_delete();
 	} else {

@@ -316,7 +316,8 @@ int app_main(void)
 
 	getStatus();
 #endif
-
+	//# rupy
+	app_gui_init();	
 	while(!exit)
 	{
 		//# wait cmd
@@ -502,7 +503,7 @@ int main(int argc, char **argv)
 	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol); 
 	g_mem_init();
     app_ipins_init();
-	app_gui_init();
+	//app_gui_init();
 	app_dev_init();
 	LOGD("[main] Initializing Input system(KEY) success!\n");
 	

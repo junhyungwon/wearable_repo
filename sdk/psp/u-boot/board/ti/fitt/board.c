@@ -34,6 +34,7 @@
 #include <pcf8575.h>
 
 #include "fitt_defs.h"
+#define SECSS_CLK_SRC 			(0x481C52EC) //# security subsystem
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -690,6 +691,9 @@ void prcm_init(u32 in_ddr)
 	iss_pll_config();
 	dss_pll_config();
     usb_pll_config();
+	/* SECSS CLK -> HDVPSS (200MHz)*/
+	//# SEC_SS clock source is USBPLL (192)
+	__raw_writel(0x1, SECSS_CLK_SRC); 
 	/*  With clk freqs setup to desired values,
 	 *  enable the required peripherals
 	 */

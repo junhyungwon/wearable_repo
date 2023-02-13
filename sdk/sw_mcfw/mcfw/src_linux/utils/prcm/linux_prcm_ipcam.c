@@ -1003,6 +1003,8 @@ void DSS_Disable(void)
 
 void secss_power_reduction(void)
 {
+	//# rupy don't put in low power state.
+#if 0	
 	WR_MEM_32(SECSS_CM3_PWR_CTRL, 0x0);
 	WR_MEM_32(SECSS_SW_CLK_DISABLE, 0x0);
 	WR_MEM_32(SECSS_AES01_S_SYSCONFIG, 0x1);
@@ -1013,6 +1015,7 @@ void secss_power_reduction(void)
 	WR_MEM_32(SECSS_DMA4_SYSCONFIG, 0x1);
 	WR_MEM_32(SECSS_CLK_SRC,0x1);
 	PRINT("secss put in low power state\n");
+#endif	
 }
 
 void tppss_power_reduction(void)
@@ -1134,7 +1137,7 @@ int main(int argc, char **argv)
 			break;
 		case 'p':		//# for ubx
 			ISS_A8_Enable();
-			secss_power_reduction();
+			//secss_power_reduction();
 			break;
 		case 'k':
 			#ifdef DSS_OFF

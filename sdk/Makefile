@@ -350,34 +350,27 @@ endif
 wlan_clean:
 ifeq ($(USE_WIFI), YES)
 	-rm -f $(TARGET_FS)/lib/modules/8811au.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x1au_driver clean
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x1au_driver clean
 	-rm -f $(TARGET_FS)/lib/modules/88x2bu.ko
-	make ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x2bu_driver clean
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KSRC=$(KERNELDIR) -C$(KMODDIR)/wlan/88x2bu_driver clean
 endif
 
 wlan_all: wlan_clean wlan
 
-##### Wi-Fi UTILS BUILD #####
-wlan_tools:
-ifeq ($(USE_WIFI),YES)
-	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd all
-	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd clean
-	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant all
-	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant clean
-endif
+##### cryptodev Driver BUILD #####
+cryptodev:
+	$(MAKE) -j$(CPU_NUM) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KERNEL_DIR=$(KERNELDIR) -C$(KMODDIR)/cryptodev-linux
 
-wlan_tools_clean:
-ifeq ($(USE_WIFI), YES)
-	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd clean
-	$(MAKE) -j$(CPU_NUM) CC=$(BUILD_TOOL_PREFIX)gcc -C$(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant clean
-endif
+cryptodev_clean:
+	-rm -f $(TARGET_FS)/lib/modules/cryptodev.ko
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(BUILD_TOOL_PREFIX) KERNEL_DIR=$(KERNELDIR) -C$(KMODDIR)/cryptodev-linux clean
 
-wlan_tools_all: wlan_tools_clean wlan_tools
+cryptodev_all: cryptodev_clean cryptodev
 
 ##### PSP (uboot, kernel, wlan) BUILD #####
-psp: uboot lsp wlan
+psp: uboot lsp wlan cryptodev
 
-psp_clean: uboot_clean lsp_clean wlan_clean
+psp_clean: uboot_clean lsp_clean wlan_clean cryptodev_clean
 
 psp_all: psp_clean psp
 
@@ -444,13 +437,6 @@ ifeq ($(USE_VOIP),YES)
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/baresip.out $(EXEC_DIR)/bin/.
 	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/*.so $(TARGET_FS)/usr/baresip/modules/.
 endif
-ifeq ($(USE_WIFI),YES)
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd_cli $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_cli $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_passphrase $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_supplicant $(TARGET_FS)/usr/sbin/.
-endif
 	sudo /bin/cp -f $(TFTP_HOME)/onvifserver $(EXEC_DIR)/bin/
 	sudo /bin/cp -f $(TFTP_HOME)/onvifconfig.xml $(EXEC_DIR)/bin/
 	sudo /bin/cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/
@@ -472,6 +458,8 @@ endif
 ifeq ($(USE_KCMVP), YES)
 	sudo /bin/cp -f $(THIRD_PARTY)/kcmvp/linux_dll/2.6_armv7l_32_44_post_limit/libMagicCrypto* $(TARGET_FS)/usr/lib/.
 endif
+
+	sudo /bin/cp $(KMODDIR)/cryptodev-linux/cryptodev.ko $(TARGET_MCFW_DIR)/kermod/.
 	@echo -e "\n--- RFS update for $(RDK_BOARD_TYPE) (`date +'%H:%M:%S'`)---\n"
 
 update:
@@ -479,9 +467,9 @@ update:
 
 ##### SYSTEM BUILD #####
 
-sys: psp syslink cmem iss hdvpss m3 wlan_tools ubxapp
+sys: psp syslink cmem iss hdvpss m3 ubxapp
 
-sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean wlan_tools_clean ubxapp_clean
+sys_clean: bin_clean rfs_clean psp_clean syslink_clean cmem_clean hdvpss_clean m3_clean ubxapp_clean
 	rm -rf $(MCFW_ROOT_PATH)/build
 	@echo -e "\n--- make sysclean done! (`date +'%H:%M:%S'`)---\n"
 

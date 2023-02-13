@@ -18,7 +18,7 @@ insmod ./kermod/ax88179_178a.ko
 #insmod ./kermod/snd-dummy.ko fake_buffer=0 model=ac97 pcm_devs=2 enable=1
 insmod ./kermod/snd-aloop.ko enable=1,1
 insmod ./kermod/tun.ko
-
+insmod ./kermod/cryptodev.ko
 #
 # enable range compression in HDMI 0..255 to 16..235.
 # This is needed for consumer HDTVs

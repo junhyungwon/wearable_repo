@@ -66,14 +66,24 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 	|| strlen(app_set->net_info.ssc_O)  == 0 
 	|| strlen(app_set->net_info.ssc_CN) == 0 ) {
 		TRACE_INFO("Make default Self Signed Certificate\n");
-
+#ifdef USE_SSL_ENGINE
+		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
+		              -keyout %s -out %s -subj \'/C=KR/O=%s/CN=%s/\' -config /etc/ssl/openssl.cnf -engine devcrypto",
+		path_key, path_crt, "Linkflow Corporation", "linkflow.co.kr");
+#else
 		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
 		              -keyout %s -out %s -subj \'/C=KR/O=%s/CN=%s/\' -config /etc/ssl/openssl.cnf",
 		path_key, path_crt, "Linkflow Corporation", "linkflow.co.kr");
+#endif		
 	}
 	else {
+#ifdef USE_SSL_ENGINE		
+		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
+		              -keyout %s -out %s -subj \'/C=%s/L=%s/ST=%s/O=%s/OU=%s/CN=%s/\' -config /etc/ssl/openssl.cnf -engine devcrypto",
+#else
 		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
 		              -keyout %s -out %s -subj \'/C=%s/L=%s/ST=%s/O=%s/OU=%s/CN=%s/\' -config /etc/ssl/openssl.cnf",
+#endif					  
 		path_key, path_crt,
 		app_set->net_info.ssc_C,
 		app_set->net_info.ssc_L,
@@ -361,10 +371,17 @@ int app_web_https_copy_to_sdcard() {
 	system(cmd);
 
 	// copy & encrypt a privatekey
+#ifdef USE_SSL_ENGINE
+	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s -engine devcrypto"
+		, PATH_HTTPS_SS_KEY_NAND
+		, passphrase
+		, PATH_HTTPS_SS_KEY_MMC);
+#else
 	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s"
 		, PATH_HTTPS_SS_KEY_NAND
 		, passphrase
 		, PATH_HTTPS_SS_KEY_MMC);
+#endif		
 	TRACE_INFO("copy&encrypt a private key. cmd: %s\n", cmd);
 	system(cmd);
 
@@ -381,10 +398,17 @@ int app_web_https_copy_to_tmp() {
 	}
 
 	// copy & encrypt a privatekey to /tmp
+#ifdef USE_SSL_ENGINE	
+	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s -engine devcrypto"
+		, PATH_HTTPS_SS_KEY_NAND
+		, passphrase
+		, PATH_HTTPS_SS_KEY_TMP);
+#else
 	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s"
 		, PATH_HTTPS_SS_KEY_NAND
 		, passphrase
 		, PATH_HTTPS_SS_KEY_TMP);
+#endif		
 	TRACE_INFO("copy&encrypt a private key to /tmp/ cmd: %s\n", cmd);
 	system(cmd);
 
