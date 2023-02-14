@@ -51,12 +51,7 @@ static int submit_settings_qcgi()
         str= req->getstr(req, "txt_bs_ip", false);
         if (str != NULL) { sprintf(t.bs.serveraddr, "%s", str); }
         str= req->getstr(req, "txt_bs_id", false);
-        if (str != NULL) {
-            CGI_DBG("txt_bs_id  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
-            sprintf(t.bs.id, "%s", buffer); 
-            CGI_DBG("txt_bs_id de(rsa+base64): %s\n",  buffer);
-        }
+        if (str != NULL) { sprintf(t.bs.id, "%s", str); }
         str= req->getstr(req, "txt_bs_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_bs_pw  %s\n", str);
@@ -76,12 +71,7 @@ static int submit_settings_qcgi()
         str= req->getstr(req, "txt_fota_ip", false);
         if (str != NULL) { sprintf(t.fota.serveraddr, "%s", str); }
         str= req->getstr(req, "txt_fota_id", false);
-        if (str != NULL) {
-            CGI_DBG("txt_fota_id  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
-            sprintf(t.fota.id, "%s", buffer); 
-            CGI_DBG("txt_fota_id de(rsa+base64): %s\n",  buffer);
-        }
+        if (str != NULL) { sprintf(t.fota.id, "%s", str); }
         str= req->getstr(req, "txt_fota_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_fota_pw  %s\n", str);
@@ -125,12 +115,7 @@ static int submit_settings_qcgi()
         str= req->getstr(req, "txt_ddns_hostname", false);
         if (str != NULL) { sprintf(t.ddns.hostname, "%s", str); }
         str= req->getstr(req, "txt_ddns_id", false);
-        if (str != NULL) {
-            CGI_DBG("txt_ddns_id  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
-            sprintf(t.ddns.id, "%s", buffer); 
-            CGI_DBG("txt_ddns_id de(rsa+base64): %s\n",  buffer);
-        }
+        if (str != NULL) { sprintf(t.ddns.id, "%s", str); }
         str= req->getstr(req, "txt_ddns_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_ddns_pw  %s\n", str);
