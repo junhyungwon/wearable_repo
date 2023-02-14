@@ -28,7 +28,7 @@ if [ -x ./bin/proxy ]; then
 		sleep 1
 
 		if [ -f /media/nand/cfg/_ssc_certificate.crt ]; then
-			./bin/proxy -lhost :4444 --rhost :8300 -ltls -lcert /media/nand/cfg/_ssc_certificate.crt -lkey /media/nand/cfg/_ssc_private.key &
+			./bin/proxy -lhost :4444 --rhost :8300 -ltls -lcert /media/nand/cfg/_ssc_certificate.crt -lkey /tmp/cfg/_ssc_private.key &
 			break ;
 		fi
 	done
