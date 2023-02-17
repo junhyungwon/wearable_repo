@@ -32,41 +32,59 @@ int app_rsa_passphrase_to_sd()
 }
 
 int app_rsa_load_passphrase(char *passphrase, int *passphrase_len) {
+    // If passphrase file doesn't exist, generate random passphrase and save it
+    if (access(PATH_SSL_PASSPHRASE_NAND, F_OK) != 0) {
+        char passphrase_new[SHA256_DIGEST_LENGTH*2+1] = {'\0', };
+        int olen;
+
+        char buf[64];
+        urandom_value(buf, sizeof(buf));
+        unsigned char* encoded = (unsigned char *)base64_encode(buf, sizeof(buf), &olen);
+        strncpy(passphrase_new, (char*)encoded, olen);
+
+        TRACE_INFO("%s doesn't exist. Creating with a random bytes. %s\n", PATH_SSL_PASSPHRASE_NAND, passphrase_new);
+        app_rsa_save_passphrase(passphrase_new);
+        free(encoded);
+    }
+
     FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
     if (!f) {
         TRACE_INFO("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
         return FAIL;
     }
 
+    // Read passphrase from file
     fseek(f, 0, SEEK_END);
     long fsize = ftell(f);
-
     fseek(f, 0, SEEK_SET);
-    fread(passphrase, fsize, 1, f);
+    if (fread(passphrase, fsize, 1, f) != 1) {
+        TRACE_INFO("Unable to read passphrase from %s\n", PATH_SSL_PASSPHRASE_NAND);
+        fclose(f);
+        return FAIL;
+    }
     fclose(f);
 
     if (fsize > 80) { // 64 + 16
-        TRACE_INFO("wrong size\n");
+        TRACE_INFO("Passphrase file size is too big: %ld\n", fsize);
         return FAIL;
     }
 
     {
+        // Decrypt passphrase using internal passphrase
         char internal_passphrase[64];
         unsigned char aes_128_key[16] = {0,};
         unsigned char aes_128_iv[16] = {0,};
 
-        // 내부 암호문구 가져오기
         _internal_passphrase(internal_passphrase);
-        TRACE_INFO("_internal_passphrase ok\n");
         if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
-            TRACE_INFO("openssl_aes128_derive_key error\n");
+            TRACE_INFO("Failed to derive AES key from internal passphrase\n");
             return FAIL;
         }
-        TRACE_INFO("openssl_aes128_derive_key ok : %s(%d)\n", internal_passphrase, sizeof(internal_passphrase));
 
         AES_KEY aes_key;
         AES_set_decrypt_key(aes_128_key, KEY_BIT, &aes_key);
-        AES_cbc_encrypt((unsigned char *)passphrase ,(unsigned char *)passphrase ,fsize ,&aes_key, &aes_128_iv, AES_DECRYPT);
+        AES_cbc_encrypt((unsigned char *)passphrase, (unsigned char *)passphrase, fsize, &aes_key, &aes_128_iv, AES_DECRYPT);
+        OPENSSL_cleanse(&aes_key, sizeof(AES_KEY));
     }
 
     *passphrase_len = 64; // fixed;
@@ -74,66 +92,53 @@ int app_rsa_load_passphrase(char *passphrase, int *passphrase_len) {
     return SUCC;
 }
 
-int app_rsa_save_passphrase(char *pw) {
-	char cmd[256];
-    char mdString[SHA256_DIGEST_LENGTH*2+1];
+int app_rsa_save_passphrase(const char* pw) {
+    int i;
 
-	if( access(CFG_DIR_NAND , F_OK) != 0) {
-		mkdir(CFG_DIR_NAND, 0775);
-	}
-
-    // sha256sum
-    {
-        int i;
-        unsigned char digest[SHA256_DIGEST_LENGTH];
-        SHA256((unsigned char*)pw, strlen(pw), (unsigned char*)&digest);
-
-        for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
-            sprintf(&mdString[i*2], "%02x", (unsigned int)digest[i]);
-    }
-    // TRACE_INFO("sha256 hashed the passphrase : %s(%d) %s(%d)\n", pw, strlen(pw), mdString, strlen(mdString));
-
-    int len, padding_len;
-    char buf[SHA256_DIGEST_LENGTH*2+1 + BLOCK_SIZE];    // big enough for passphrase
-    {
-        unsigned char aes_128_key[16] = {0,};
-        unsigned char aes_128_iv[16] = {0,};
-        char internal_passphrase[64];   // 64 fixed
-
-        // 내부 암호문구 가져오기
-        _internal_passphrase(internal_passphrase);
-        TRACE_INFO("_internal_passphrase ok \n");
-        if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
-            TRACE_INFO("openssl_aes128_derive_key error\n");
-            return FAIL;
-        }
-        TRACE_INFO("openssl_aes128_derive_key ok : %s(%d)\n", internal_passphrase, sizeof(internal_passphrase));
-
-        len = sizeof(mdString);
-        padding_len=BLOCK_SIZE - len % BLOCK_SIZE;
-        memset(buf+len, padding_len, padding_len);
-
-        AES_KEY aes_key;
-        AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key);
-        AES_cbc_encrypt((unsigned char *)mdString ,(unsigned char *)buf, len+padding_len, &aes_key, &aes_128_iv, AES_ENCRYPT);
+    // Make sure CFG_DIR_NAND directory exists
+    if (access(CFG_DIR_NAND , F_OK) != 0) {
+        mkdir(CFG_DIR_NAND, 0775);
     }
 
-    // nand->passphrase 파일에 암호문구 저장.
-    TRACE_INFO("Save the passphrase to PATH_SSL_PASSPHRASE_NAND : %s\n", PATH_SSL_PASSPHRASE_NAND);
+    // Hash the passphrase using SHA256
+    unsigned char digest[SHA256_DIGEST_LENGTH];
+    SHA256((unsigned char*)pw, strlen(pw), digest);
+    char mdString[SHA256_DIGEST_LENGTH * 2 + 1];
+    for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(&mdString[i * 2], "%02x", digest[i]);
+    }
+
+    // Encrypt the hashed passphrase using AES128
+    unsigned char aes_128_key[16] = {0,};
+    unsigned char aes_128_iv[16] = {0,};
+    char internal_passphrase[64];
+    _internal_passphrase(internal_passphrase);
+    if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
+        return FAIL;
+    }
+    int len = strlen(mdString);
+    int padding_len = BLOCK_SIZE - len % BLOCK_SIZE;
+    char buf[SHA256_DIGEST_LENGTH*2+1 + BLOCK_SIZE];
+    memset(buf+len, padding_len, padding_len);
+    AES_KEY aes_key;
+    AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key);
+    AES_cbc_encrypt((unsigned char *)mdString, (unsigned char *)buf, len + padding_len, &aes_key, &aes_128_iv, AES_ENCRYPT);
+    OPENSSL_cleanse(&aes_key, sizeof(AES_KEY));
+
+    // Write the encrypted hashed passphrase to PATH_SSL_PASSPHRASE_NAND
     FILE *fp = fopen(PATH_SSL_PASSPHRASE_NAND, "w");
-    if(!fp) {
-        TRACE_INFO("Failed to save the passphrase to PATH_SSL_PASSPHRASE_NAND : %s\n", PATH_SSL_PASSPHRASE_NAND);
-        return -1;
+    if (!fp) {
+        return FAIL;
     }
-
-    fwrite(buf, RW_SIZE, len+padding_len, fp);
+    fwrite(buf, RW_SIZE, len + padding_len, fp);
     fclose(fp);
 
-	// copy the passphrase file to sdcard
-	app_rsa_passphrase_to_sd();
+    // Copy the passphrase file to the SD card
+    app_rsa_passphrase_to_sd();
 
     return SUCC;
 }
+
 
 int app_rsa_generate_privatekey(char *pw) {
 	char cmd[256];

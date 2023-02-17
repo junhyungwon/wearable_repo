@@ -3437,9 +3437,9 @@ void *myFunc(void *arg)
 
 					}
 
-					// store the passphrase to PATH_SSL_PASSPHRASE_NAND
-					app_rsa_save_passphrase(user.pw);
-					// re-encrypt with the new passphrase
+					// reset the passphrase
+					app_web_reset_passphrase(user.pw);
+					// copy
 					app_web_https_copy_to_sdcard();
 
 					// 1. make a password file (basic or digest)
