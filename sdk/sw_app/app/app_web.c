@@ -187,6 +187,9 @@ if(app_set->net_info.https_mode == 1) {
 	createSelfSignedCertificate(PATH_HTTPS_SS_KEY_NAND, PATH_HTTPS_SS_CRT_NAND, false);
 } else if(app_set->net_info.https_mode == 2){
 	createSignedCertificate();
+} else if (app_set->net_info.https_mode == 0) {
+	// copy to /tmp
+	app_web_https_copy_to_tmp();
 }
 
 	char *filepath = "/etc/lighttpd/conf.d/ssl.conf";
@@ -218,7 +221,7 @@ if(app_set->net_info.https_mode == 1) {
 		}
 
 		if( access(PATH_HTTPS_SS_CRT_NAND, F_OK)==0) {
-			sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_SS_CRT_NAND);
+			sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_CRT_NAND);
 			fputs(str, fp);
 		}
 	}
