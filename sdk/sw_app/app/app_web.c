@@ -32,7 +32,6 @@ int deleteSelfSignedCertificate()
 {
 	unlink(PATH_HTTPS_SS_KEY_NAND);
 	unlink(PATH_HTTPS_SS_CRT_NAND);
-	unlink(PATH_HTTPS_SS_PEM_NAND);
 
 	TRACE_INFO("Deleted SSC files\n");
 	
@@ -60,6 +59,13 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 		}
 	}
 
+	char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
+	int passphrase_len;
+
+	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+		return FAIL;
+	}
+
 	// 입력된 정보가 올바르지 않을때, 기본으로 생성함
 	if ( strlen(app_set->net_info.ssc_C) == 0 
 	|| strlen(app_set->net_info.ssc_C) > 4 
@@ -67,13 +73,14 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 	|| strlen(app_set->net_info.ssc_CN) == 0 ) {
 		TRACE_INFO("Make default Self Signed Certificate\n");
 
-		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
+		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -passout pass:%s \
 		              -keyout %s -out %s -subj \'/C=KR/O=%s/CN=%s/\' -config /etc/ssl/openssl.cnf",
-		path_key, path_crt, "Linkflow Corporation", "linkflow.co.kr");
+		passphrase, path_key, path_crt, "Linkflow Corporation", "linkflow.co.kr");
 	}
 	else {
-		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
+		sprintf(cmd, "openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -passout pass:%s \
 		              -keyout %s -out %s -subj \'/C=%s/L=%s/ST=%s/O=%s/OU=%s/CN=%s/\' -config /etc/ssl/openssl.cnf",
+		passphrase,
 		path_key, path_crt,
 		app_set->net_info.ssc_C,
 		app_set->net_info.ssc_L,
@@ -92,18 +99,6 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 	}
 
 	TRACE_INFO("Succeed, create Self Signed Certificate\n");
-
-	// make pem file for lighttpd
-	sprintf(cmd, "cat %s %s > %s", path_key, path_crt, PATH_HTTPS_SS_PEM_NAND);
-	TRACE_INFO("Make PEM file, cmd:%s\n", cmd);
-	system(cmd);
-
-	if( access(PATH_HTTPS_SS_PEM_NAND,  R_OK) != 0 ) {
-		TRACE_INFO("Failed to create PEM file\n");
-		return FAIL;
-	}
-
-	TRACE_INFO("Succeed, create SS PEM\n");
 
 	// copy certs to /sdcard
 	app_web_https_copy_to_sdcard();
@@ -214,25 +209,30 @@ if(app_set->net_info.https_mode == 1) {
 	// 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
 	if(app_set->net_info.https_mode == 0 || app_set->net_info.https_mode == 1)
 	{
-		if( access(PATH_HTTPS_SS_PEM_NAND, F_OK)==0) {
-			sprintf(str, "ssl.pemfile = \"%s\"\n", PATH_HTTPS_SS_PEM_NAND);
+		if( access(PATH_HTTPS_SS_KEY_TMP, F_OK)==0) {
+			sprintf(str, "ssl.privkey = \"%s\"\n", PATH_HTTPS_SS_KEY_TMP);
 			fputs(str, fp);
 			bIsFile = 1;
 		} else {
-			TRACE_ERR("ssl.pemfile %s not exists!!\n", PATH_HTTPS_SS_PEM_NAND);
+			TRACE_ERR("ssl.privkey %s not exists!!\n", PATH_HTTPS_SS_KEY_TMP);
+		}
+
+		if( access(PATH_HTTPS_SS_CRT_NAND, F_OK)==0) {
+			sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_SS_CRT_NAND);
+			fputs(str, fp);
 		}
 	}
 	else if (app_set->net_info.https_mode==2)
 	{
-		if (access(PATH_HTTPS_PEM, F_OK) == 0)
+		if (access(PATH_HTTPS_SS_KEY_TMP, F_OK) == 0)
 		{
-			sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_PEM);
+			sprintf(str, "ssl.privkey = \"%s\"", PATH_HTTPS_SS_KEY_TMP);
 			fputs(str, fp);
 			bIsFile = 1;
 		}
 
 		if( access(PATH_HTTPS_CA, F_OK)==0) {
-			sprintf(str, "ssl.ca-file = \"%s\"", PATH_HTTPS_CA); // Optional... 실행해봐야할듯
+			sprintf(str, "ssl.pemfile = \"%s\"", PATH_HTTPS_CA); // Optional... 실행해봐야할듯
 			fputs(str, fp);
 		}
 	}
@@ -334,38 +334,20 @@ int app_web_https_create_ssc()
 }
 
 int app_web_https_copy_to_sdcard() {
-	// 최초, 랜덤 생성
-	char passphrase[SHA256_DIGEST_LENGTH*2+1] = {'\0', };
-	int passphrase_len, olen;
-    if(access(PATH_SSL_PASSPHRASE_NAND, F_OK) !=0) {
-		char buf[128];
-		urandom_value(buf, 64);	// read 64 bytes
-		unsigned char* encoded = (char *)base64_encode(buf, 64, &olen);
-		strncpy(passphrase, encoded, olen);
-
-		TRACE_INFO("%s not exists. create with a random bytes. %s\n", PATH_SSL_PASSPHRASE_NAND, passphrase);
-		app_rsa_save_passphrase(passphrase);
-		free(encoded);
-    }
-	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
-		return FAIL;
-	}
-
 	char cmd[256];
-	sprintf(cmd, "mkdir -p %s", PATH_SSL_ROOT_MMC);
-	system(cmd);
+
+	if( access(PATH_SSL_ROOT_MMC , F_OK) != 0) {
+		mkdir(PATH_SSL_ROOT_MMC, 0775);
+	}
 
 	// copy a cert
 	sprintf(cmd, "cp -f %s %s", PATH_HTTPS_SS_CRT_NAND, PATH_HTTPS_SS_CRT_MMC);
 	TRACE_INFO("copy a cert. cmd: %s\n", cmd);
 	system(cmd);
 
-	// copy & encrypt a privatekey
-	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s"
-		, PATH_HTTPS_SS_KEY_NAND
-		, passphrase
-		, PATH_HTTPS_SS_KEY_MMC);
-	TRACE_INFO("copy&encrypt a private key. cmd: %s\n", cmd);
+	// copy a key
+	sprintf(cmd, "cp -f %s %s", PATH_HTTPS_SS_KEY_NAND, PATH_HTTPS_SS_KEY_MMC);
+	TRACE_INFO("copy a key. cmd: %s\n", cmd);
 	system(cmd);
 
 	return SUCC;
@@ -373,20 +355,61 @@ int app_web_https_copy_to_sdcard() {
 
 int app_web_https_copy_to_tmp() {
 	char cmd[256];
-	char passphrase[SHA256_DIGEST_LENGTH*2+1] = {'\0', };
+	char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
 	int passphrase_len, olen;
 
 	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
 		return FAIL;
 	}
 
-	// copy & encrypt a privatekey to /tmp
-	sprintf(cmd, "openssl rsa -aes128 -in %s -passout pass:%s -out %s"
+	// copy & decrypt a privatekey to /tmp
+	sprintf(cmd, "openssl rsa -in %s -passin pass:%s -out %s"
 		, PATH_HTTPS_SS_KEY_NAND
 		, passphrase
 		, PATH_HTTPS_SS_KEY_TMP);
-	TRACE_INFO("copy&encrypt a private key to /tmp/ cmd: %s\n", cmd);
+	TRACE_INFO("copy&decrypt a private key to /tmp/ cmd: %s\n", cmd);
 	system(cmd);
 
 	return SUCC;
+}
+
+int app_web_reset_passphrase(char *new_pw) {
+    char old_pw_hash[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0'};
+    char new_pw_hash[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0'};
+    int old_pw_len, new_pw_len;
+
+    if (app_rsa_load_passphrase(old_pw_hash, &old_pw_len) != SUCC) {
+        return FAIL;
+    }
+
+    TRACE_INFO("Old passphrase hash: %s (%d)\n", old_pw_hash, old_pw_len);
+
+    // Save the new passphrase
+    if (app_rsa_save_passphrase(new_pw) != SUCC) {
+        return FAIL;
+    }
+    TRACE_INFO("New passphrase saved");
+
+	TRACE_INFO("Old passphrase hash: %s (%d)\n", old_pw_hash, old_pw_len);
+
+    // Load the new passphrase
+    if (app_rsa_load_passphrase(new_pw_hash, &new_pw_len) != SUCC) {
+        return FAIL;
+    }
+
+	TRACE_INFO("Old passphrase hash: %s (%d)\n", old_pw_hash, old_pw_len);
+    TRACE_INFO("New passphrase hash: %s (%d)\n", new_pw_hash, new_pw_len);
+
+    // Re-encrypt the private key with the new passphrase
+    char cmd[512];
+    sprintf(cmd, "openssl rsa -aes128 -in %s -passin pass:%s -passout pass:%s -out %s",
+            PATH_HTTPS_SS_KEY_NAND,
+            old_pw_hash,
+            new_pw_hash,
+            PATH_HTTPS_SS_KEY_NAND);
+    TRACE_INFO("Re-encrypted a private key with a new passphrase. %s to %s", old_pw_hash, new_pw_hash);
+    TRACE_INFO("cmd: %s\n", cmd);
+    system(cmd);
+
+    return SUCC;
 }

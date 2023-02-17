@@ -1564,7 +1564,6 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
 		unlink(PATH_SSL_PASSPHRASE_NAND); // 암호문구 삭제
 		unlink(PATH_HTTPS_SS_KEY_NAND);	// 인증서 삭제
 		unlink(PATH_HTTPS_SS_CRT_NAND);
-		unlink(PATH_HTTPS_SS_PEM_NAND);
 
         app_set_default(type);  // onvif factory default
         set_uid() ;  // read uid from nand and then set uid to app_set
