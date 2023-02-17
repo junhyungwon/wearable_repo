@@ -775,7 +775,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
         pset->sys_info.beep_sound = ON ; 
 //    if(pset->sys_info.P2P_ON_OFF < OFF || pset->sys_info.P2P_ON_OFF > ON)  
     if(pset->sys_info.rec_encryption < OFF || pset->sys_info.rec_encryption > ON)
-        pset->sys_info.rec_encryption = OFF ; 
+        pset->sys_info.rec_encryption = ON ; 
 
 	if(((int)pset->sys_info.aes_key[0]) == CHAR_INVALID || (int)pset->sys_info.aes_key[0] == 0)
 	{
@@ -1330,7 +1330,7 @@ static void app_set_default(int default_type)
 
     app_set->sys_info.osd_set = ON ;
     app_set->sys_info.beep_sound = ON ;
-    app_set->sys_info.rec_encryption = OFF ;
+    app_set->sys_info.rec_encryption = ON ;
 
 //  random 함수 이용 
 	
