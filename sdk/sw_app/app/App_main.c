@@ -270,10 +270,12 @@ int app_main(void)
         app_p2p_init() ;
 		#endif		
     }
+/*	
     if(app_set->voip.ON_OFF)
 		app_voip_init();
     else
     	app_call_control_init() ;
+*/
 
 // for ssh tunneling
 //	if(app_set->sys_info.rec_encryption)
@@ -282,6 +284,12 @@ int app_main(void)
 	app_buzz_ctrl(80, 2);	//# buzz: power on
     proxy_server_start() ;
 
+    if(app_set->voip.ON_OFF)
+		app_voip_init();
+    else
+    	app_call_control_init() ;
+
+	app_gui_init();
 #ifdef USE_KCMVP
     struct tm ts ;
 	time_t tm1 ;
@@ -503,7 +511,7 @@ int main(int argc, char **argv)
 	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol); 
 	g_mem_init();
     app_ipins_init();
-	app_gui_init();
+//	app_gui_init();
 	app_dev_init();
 	LOGD("[main] Initializing Input system(KEY) success!\n");
 	
