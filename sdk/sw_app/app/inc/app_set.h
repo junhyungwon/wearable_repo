@@ -145,7 +145,8 @@ typedef struct {
 } app_watchdog_t;
 
 typedef struct{
-    int port;
+    short type ; // transfer type. ftp/ftps
+    unsigned short port;
     char ipaddr[MAX_CHAR_16];
     char id[MAX_CHAR_16];
     char pwd[MAX_CHAR_16];

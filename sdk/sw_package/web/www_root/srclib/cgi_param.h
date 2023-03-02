@@ -17,6 +17,7 @@ typedef struct _tagCgiParam {
 /* start of servers settings */
 typedef struct _tagBackupServer {
 	int  enable;
+	int  type; // ftp or ftps
     int  upload_files;      // Type of record files to upload to backup server. 0:all, 1:event
 	char serveraddr[32];
 	char id[64];
@@ -26,6 +27,7 @@ typedef struct _tagBackupServer {
 
 typedef struct _tagFotaServer {
 	int  enable;
+	int  type; // ftp or ftps
     int  server_info; // backup server와 같은지, 아니면 직접입력할건지
 	char serveraddr[32];
 	char id[64];

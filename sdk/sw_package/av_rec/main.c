@@ -290,8 +290,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		//# get current date & time
 //          localtime_r((const time_t *)&ifr->t_sec, &ts);
 		    strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-			sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi_enc", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
-//			sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+			if(irec->encryption_rec)
+				sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi_enc", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+			else
+				sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+
+			//			sprintf(filename, "%s/%s/R_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
 		
             memset(irec->fname, 0, sizeof(irec->fname));
 		    sprintf(irec->fname, "%s", filename);

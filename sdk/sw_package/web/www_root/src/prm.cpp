@@ -371,6 +371,7 @@ int put_json_all_config()
 		}
 
 		json_object_object_add(bs_obj, "enable",       json_object_new_int   (p.bs.enable));
+		json_object_object_add(bs_obj, "type",         json_object_new_int   (p.bs.type));
 		json_object_object_add(bs_obj, "upload_files", json_object_new_int   (p.bs.upload_files));
 		json_object_object_add(bs_obj, "serveraddr",   json_object_new_string(p.bs.serveraddr));
 		json_object_object_add(bs_obj, "port",         json_object_new_int   (p.bs.port));
@@ -379,6 +380,7 @@ int put_json_all_config()
 		json_object_object_add(servers_obj, "bs", bs_obj);
 
 		json_object_object_add(fota_obj, "enable",      json_object_new_int   (p.fota.enable));
+		json_object_object_add(fota_obj, "type",        json_object_new_int   (p.fota.type));
 		json_object_object_add(fota_obj, "server_info", json_object_new_int(p.fota.server_info));
 		json_object_object_add(fota_obj, "serveraddr",  json_object_new_string(p.fota.serveraddr));
 		json_object_object_add(fota_obj, "port",        json_object_new_int   (p.fota.port));
@@ -393,7 +395,7 @@ int put_json_all_config()
 		json_object_object_add(mediaserver_obj, "port",              json_object_new_int   (p.mediaserver.port));
 		// json_object_object_add(mediaserver_obj, "id",          json_object_new_string(p.mediaserver.id));
 		// json_object_object_add(mediaserver_obj, "pw",          json_object_new_string(p.mediaserver.pw));
-		json_object_object_add(servers_obj, "fota", mediaserver_obj);
+		json_object_object_add(servers_obj, "mediaserver", mediaserver_obj);
 
 		json_object_object_add(ms_obj, "enable",     json_object_new_int   (p.ms.enable));
 		json_object_object_add(ms_obj, "serveraddr", json_object_new_string(p.ms.serveraddr));
@@ -713,6 +715,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 //	json_object_object_add(myobj,  "aes_iv", json_object_new_string(p->aes_iv));
 
 	json_object_object_add(bs_obj, "enable",       json_object_new_int( p->bs.enable));
+	json_object_object_add(bs_obj, "type",         json_object_new_int( p->bs.type));
 	json_object_object_add(bs_obj, "upload_files", json_object_new_int( p->bs.upload_files));
 	json_object_object_add(bs_obj, "serveraddr",   json_object_new_string(p->bs.serveraddr));
 	json_object_object_add(bs_obj, "port",         json_object_new_int(   p->bs.port));
@@ -723,6 +726,7 @@ void put_json_servers_config(T_CGI_SERVERS_CONFIG *p)
 	json_object_object_add(myobj, "bs", bs_obj);
 
 	json_object_object_add(fota_obj, "enable",      json_object_new_int   (p->fota.enable));
+	json_object_object_add(fota_obj, "type",        json_object_new_int   (p->fota.type));
 	json_object_object_add(fota_obj, "server_info", json_object_new_int   (p->fota.server_info));
 	json_object_object_add(fota_obj, "serveraddr",  json_object_new_string(p->fota.serveraddr));
 	json_object_object_add(fota_obj, "port",        json_object_new_int   (p->fota.port));

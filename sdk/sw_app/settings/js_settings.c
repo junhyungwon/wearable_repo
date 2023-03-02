@@ -555,8 +555,23 @@ static int	parseNetworkFtp(app_set_t* const set, json_object* rootObj)
 		printf("JSON Parsing Error --- Cannot find ftp_info\n");
 		return -1;
 	}
-	json_object* tmp = json_object_object_get(jobj, "port");
-	set->ftp_info.port = json_object_get_int(tmp);
+
+	json_object* tmp ;
+    if(json_find_obj(jobj, "type") != NULL)
+    {
+		tmp = json_object_object_get(jobj, "type");
+		set->ftp_info.type = json_object_get_int(tmp);
+	}
+	else
+	{
+		printf("ftp_info.type 항목 없음\n") ;
+		set->ftp_info.type = -1;
+	}
+
+//	json_object* tmp = json_object_object_get(jobj, "type");
+//	set->ftp_info.type = json_object_get_int(tmp);
+    tmp = json_object_object_get(jobj, "port");
+    set->ftp_info.port = json_object_get_int(tmp);
 	tmp = json_object_object_get(jobj, "ipaddr");
 	sprintf(set->ftp_info.ipaddr, "%s", json_object_get_string(tmp));
 	tmp = json_object_object_get(jobj, "id");
@@ -925,6 +940,7 @@ int js_write_settings(const app_set_t* const set, const char* fname)
 
 	// 5. ftp server information
 	json_object* network_ftp = json_object_new_object();
+	json_object_object_add(network_ftp, "type",   json_object_new_int(set->ftp_info.type));
 	json_object_object_add(network_ftp, "port",   json_object_new_int(set->ftp_info.port));
 	json_object_object_add(network_ftp, "ipaddr", json_object_new_string(set->ftp_info.ipaddr));
 	json_object_object_add(network_ftp, "id",     json_object_new_string((const char*)base64_encode((const unsigned char*)set->ftp_info.id, MAX_CHAR_16, &enc_size)));

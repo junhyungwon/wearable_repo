@@ -1164,6 +1164,23 @@ int app_sshd_start()
 }
 
 
+int proxy_server_start()
+{
+	char cmd[256] = {0, } ;
+	int ret = 0 ;
+
+	sprintf(cmd, "/opt/fit/bin/proxy -lhost :4444 --rhost :8300 -ltls -lcert /media/nand/cfg/_ssc_certificate.crt -lkey /tmp/_ssc_private.key &") ;
+	FILE *fp = popen(cmd, "w") ;
+	if(fp)
+	{
+		TRACE_INFO("%s\n","proxy server start.... ") ;
+		ret = TRUE ;
+	}
+	pclose(fp) ;	
+	return ret ;
+
+}
+
 /*
  * record stop and reboot.
  */

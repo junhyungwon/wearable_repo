@@ -909,6 +909,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 	// backup server(ftp)
 
 	t->bs.enable = app_set->ftp_info.ON_OFF;
+	t->bs.type = app_set->ftp_info.type; // 1: ftps, 0:ftp
 	t->bs.upload_files = app_set->ftp_info.file_type; // 1: event, 0:all
 	t->bs.port   = app_set->ftp_info.port;
 //	t->aes_encryption = app_set->sys_info.rec_encryption ;
@@ -922,6 +923,7 @@ int getServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 
 	// fota server(ftp2)
 	t->fota.enable      = app_set->fota_info.ON_OFF;
+	t->fota.type      = app_set->fota_info.type;
 	t->fota.server_info = app_set->fota_info.svr_info;
 	t->fota.port        = app_set->fota_info.port;
 	strcpy(t->fota.serveraddr, app_set->fota_info.ipaddr);
@@ -1011,27 +1013,33 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		isChanged++;
 	}
 	if(app_set->ftp_info.ON_OFF){
+		if(app_set->ftp_info.type != t->bs.type){
+			// 0:ftp, 1:ftps
+			app_set->ftp_info.type = t->bs.type;
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.type = %d\n", app_set->ftp_info.type);
+			isChanged++;
+		}
 		if(app_set->ftp_info.port != t->bs.port){
 			app_set->ftp_info.port = t->bs.port;
-			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.port = %d--- id : admin\n", app_set->ftp_info.port);
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.port = %d--- id : %s\n", app_set->ftp_info.port, app_set->ftp_info.id);
 			isChanged++;
 		}
 		if(strcmp(app_set->ftp_info.ipaddr,t->bs.serveraddr)){
 			strcpy(app_set->ftp_info.ipaddr,t->bs.serveraddr);
-			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.ipaddr = %s--- id : admin\n", app_set->ftp_info.ipaddr);
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.ipaddr = %s\n", app_set->ftp_info.ipaddr);
 			isChanged++;
 		}
 
 		if(strcmp(UNCHANGED,t->bs.id)){
 			strcpy(app_set->ftp_info.id,t->bs.id);
 			DBG_UDS("Updated app_set->ftp_info.id=%s\n", app_set->ftp_info.id);
-			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.id = %s--- id : admin\n", app_set->ftp_info.id);
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.id = %s---\n", app_set->ftp_info.id);
 			isChanged++;
 		}
 		if(strcmp(UNCHANGED,t->bs.pw)){
 			strcpy(app_set->ftp_info.pwd,t->bs.pw);
 			DBG_UDS("Updated app_set->ftp_info.pwd=%s\n", app_set->ftp_info.pwd);
-			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.pwd --- id : admin\n");
+			LOGD("[main] --- UDS: SetServerConfiguration ftp_info.pwd ---\n");
 			isChanged++;
 		}
 	}
@@ -1049,27 +1057,32 @@ int setServersConfiguration(T_CGI_SERVERS_CONFIG *t)
 		}
 		if (app_set->fota_info.svr_info == 1) // manual
 		{
+			if(app_set->fota_info.type != t->fota.type){
+				app_set->fota_info.type = t->fota.type;
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.type = %d--- \n", app_set->fota_info.type);
+				isChanged++;
+			}
 			if(app_set->fota_info.port != t->fota.port){
 				app_set->fota_info.port = t->fota.port;
-				LOGD("[main] --- UDS: SetServerConfiguration fota_info.port = %d--- id : admin\n", app_set->fota_info.port);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.port = %d--- id : %s\n", app_set->fota_info.port, app_set->fota_info.id);
 				isChanged++;
 			}
 			if (strcmp(app_set->fota_info.ipaddr, t->fota.serveraddr)) {
 				strcpy(app_set->fota_info.ipaddr, t->fota.serveraddr);
-				LOGD("[main] --- UDS: SetServerConfiguration fota_info.ipaddr = %s--- id : admin\n", app_set->fota_info.ipaddr);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.ipaddr = %s--- \n", app_set->fota_info.ipaddr);
 				isChanged++;
 			}
 
 			if (strcmp(UNCHANGED, t->fota.id)) {
 				strcpy(app_set->fota_info.id, t->fota.id);
-				DBG_UDS("Updated app_set->fota_info.id=%s\n", app_set->ftp_info.id);
-				LOGD("[main] --- UDS: SetServerConfiguration fota_info.id = %s--- id : admin\n", app_set->fota_info.id);
+				DBG_UDS("Updated app_set->fota_info.id=%s\n", app_set->fota_info.id);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.id = %s\n", app_set->fota_info.id);
 				isChanged++;
 			}
 			if (strcmp(UNCHANGED, t->fota.pw)) {
 				strcpy(app_set->fota_info.pwd, t->fota.pw);
-				DBG_UDS("Updated app_set->fota_info.pwd=%s\n", app_set->ftp_info.pwd);
-				LOGD("[main] --- UDS: SetServerConfiguration fota_info.pwd --- id : admin\n");
+				DBG_UDS("Updated app_set->fota_info.pwd=%s\n", app_set->fota_info.pwd);
+				LOGD("[main] --- UDS: SetServerConfiguration fota_info.pwd --- %s \n",app_set->fota_info.pwd);
 				isChanged++;
 			}
 		}

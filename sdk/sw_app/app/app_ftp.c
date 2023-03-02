@@ -141,19 +141,22 @@ static int ftpRecvResponse(int sock, char * buf, int length)
         return -1 ;
     }
 		
-#if defined(USE_SSL)
-	if(!length)
-		len = SSL_read(iftp->lsslHandle, (void *)buf, RSIZE) ;
-	else
-		len = SSL_read(iftp->lsslHandle, (void *)buf, length) ;
+	if(app_set->ftp_info.type)
+	{
+		if(!length)
+			len = SSL_read(iftp->lsslHandle, (void *)buf, RSIZE) ;
+		else
+			len = SSL_read(iftp->lsslHandle, (void *)buf, length) ;
 
-	ftp_dbg("SSL_READ Len = %d .....using lssHandle = %d\n", len, iftp->lsslHandle) ;
-#else
-	if(!length)
-		len = recv(sock, buf, RSIZE, 0);
+		ftp_dbg("SSL_READ Len = %d .....using lssHandle = %d\n", len, iftp->lsslHandle) ;
+	}
 	else
-		len =recv(sock, buf, length, 0) ;
-#endif 
+	{
+		if(!length)
+			len = recv(sock, buf, RSIZE, 0);
+		else
+			len =recv(sock, buf, length, 0) ;
+	}
 
 	if (len == -1) {//receive the data
 		perror("recv");
@@ -196,20 +199,28 @@ static int ftpNewCmd(int sock, char * buf, char * cmd, char * param)
     }
     else
     {
-#if defined(USE_SSL)
-	    if (SSL_write(iftp->lsslHandle, (void *)buf, strlen(buf)) == -1) {
-#else
-	    if (send(sock, buf, strlen(buf), 0) == -1) {
-#endif
-		    perror("send");
-		    return -1;
-	    }
+		if(app_set->ftp_info.type)
+		{
+			if (SSL_write(iftp->lsslHandle, (void *)buf, strlen(buf)) == -1) 
+			{
+				ftp_dbg("Fail SSL_WRITE .......\n") ;
+				return -1;
+			}
+			else
+			{
+				ftp_dbg("SSL_WRITE .......\n") ;
+			}
+		}
 		else
-#if defined(USE_SSL)
-			ftp_dbg("SSL_WRITE .......\n") ;
-#else
-		ftp_dbg("FTP_Write.......\n") ;
-#endif
+		{
+			if (send(sock, buf, strlen(buf), 0) == -1) 
+			{
+				perror("send");
+				return -1;
+			}
+			else
+				ftp_dbg("FTP_Write.......\n") ;
+		}
     }  
 
 	//clear the buffer
@@ -331,43 +342,46 @@ static int ftp_transfer_file(int sd, char *filename)
         }  
         else
         {
-
-#if defined(USE_SSL)
-	    	ret = SSL_write(iftp->dsslHandle, (void *)buf, len) ; 
-	    	if (ret <= 0) {
-				switch(SSL_get_error(iftp->dsslHandle, ret))
+			if(app_set->ftp_info.type)
+			{
+				ret = SSL_write(iftp->dsslHandle, (void *)buf, len) ; 
+				if (ret <= 0) 
 				{
-					case SSL_ERROR_NONE :
-						ftp_dbg("SSL_ERROR_NONE\n");
-						break ;
-					case SSL_ERROR_WANT_READ : 
-						ftp_dbg("SSL_ERROR_WANT_READ\n") ;
-						break ;
-					case SSL_ERROR_WANT_X509_LOOKUP :
-					    ftp_dbg("SSL_ERROR_WANT_X509_LOOKUP\n") ; 
-						break ;
-					case SSL_ERROR_WANT_WRITE :
-						ftp_dbg("SSL_ERROR_WANT_WRITE\n") ;
-						break ;
-					case SSL_ERROR_ZERO_RETURN :
-						ftp_dbg("SSL_ERROR_ZERO_RETURN\n") ;
-						break ;
-					case SSL_ERROR_SYSCALL :
-						ftp_dbg("SSL_ERROR_SYSCALL\n") ;
-						break ;
+					switch(SSL_get_error(iftp->dsslHandle, ret))
+					{
+						case SSL_ERROR_NONE :
+							ftp_dbg("SSL_ERROR_NONE\n");
+							break ;
+						case SSL_ERROR_WANT_READ : 
+							ftp_dbg("SSL_ERROR_WANT_READ\n") ;
+							break ;
+						case SSL_ERROR_WANT_X509_LOOKUP :
+						    ftp_dbg("SSL_ERROR_WANT_X509_LOOKUP\n") ; 
+							break ;
+						case SSL_ERROR_WANT_WRITE :
+							ftp_dbg("SSL_ERROR_WANT_WRITE\n") ;
+							break ;
+						case SSL_ERROR_ZERO_RETURN :
+							ftp_dbg("SSL_ERROR_ZERO_RETURN\n") ;
+							break ;
+						case SSL_ERROR_SYSCALL :
+							ftp_dbg("SSL_ERROR_SYSCALL\n") ;
+							break ;
 
+					}
+					perror("send using SSL") ;
+					retval = -1 ;
+					break ;
 				}
-				perror("send using SSL") ;
-				retval = -1 ;
-				break ;
+			}	
+			else
+			{
+				if (send(sd, buf, len, MSG_NOSIGNAL) == -1) {        
+					perror("send");
+					retval = -1 ;
+					break ;
+				}
 			}
-#else
-			if (send(sd, buf, len, MSG_NOSIGNAL) == -1) {        
-	 		 	perror("send");
-  	          	retval = -1 ;
-  	          	break ;
-			}
-#endif			
 		}
 		
         OSA_waitMsecs(5) ;
@@ -501,18 +515,20 @@ static int ftp_change_dir(int sd, char *dirname, int day_dir)
 static int ftp_send_file(int sd, char *filename)
 {
     char tmpHost[100];
+    char DecFileName[MAX_CHAR_128] = {0, } ;
     int tmpPort, data_sock;
     char buf[RSIZE];
 	char source_fname[64], dest_fname[64] ;
 
-#if defined(USE_SSL)
-	if(ftpNewCmd(sd, buf, "PROT", "P") != 0)
-		return -1 ;
-	if(ftpRecvResponse(sd, buf, 0) != 0)
-		return -1 ;
-    if(strncmp(buf,"200",3) != 0)
-		return -1 ;
-#endif 
+	if(app_set->ftp_info.type)
+	{
+		if(ftpNewCmd(sd, buf, "PROT", "P") != 0)
+			return -1 ;
+		if(ftpRecvResponse(sd, buf, 0) != 0)
+			return -1 ;
+		if(strncmp(buf,"200",3) != 0)
+			return -1 ;
+	}
 
 	if(ftpNewCmd(sd, buf, "TYPE", "I") != 0)
 		return -1 ;
@@ -531,85 +547,100 @@ static int ftp_send_file(int sd, char *filename)
 	{
 		ftpConvertAddy(buf, tmpHost, &tmpPort);
 
-#if defined(USE_SSL)
-        iftp->dsdFtp = createDataSock(tmpHost, tmpPort) ;
-		SSL_Create(1) ;
-		if(iftp->dsdFtp > 0)
+		if(app_set->ftp_info.type)
 		{
-//			connection_check(iftp->dsdFtp) ;
-#else		
-        data_sock = createDataSock(tmpHost, tmpPort) ;
-		if(data_sock > 0)
+			iftp->dsdFtp = createDataSock(tmpHost, tmpPort) ;
+			if(!SSL_Create(1))
+				if(iftp->dsdFtp <= 0)
+			    	return -1 ;
+		}
+		else
 		{
-#endif
+			data_sock = createDataSock(tmpHost, tmpPort) ;
+			if(data_sock <= 0)
+				return -1 ;
+		}
+
+		if(strstr(filename, "_enc") != NULL)
+		{
+			strncpy(DecFileName, filename, strlen(filename) - 4) ;
+		
+			sprintf(source_fname, "_%s",&DecFileName[strlen(iftp->path) + 1]) ;
+			sprintf(dest_fname, "%s",&DecFileName[strlen(iftp->path) + 1]) ;
+		}
+		else
+		{
 			sprintf(source_fname, "_%s",&filename[strlen(iftp->path) + 1]) ;
 			sprintf(dest_fname, "%s",&filename[strlen(iftp->path) + 1]) ;
+		}
 
-		    if(ftpNewCmd(sd,buf,"STOR", source_fname) != 0)
-                return -1 ;
+	    if(ftpNewCmd(sd,buf,"STOR", source_fname) != 0)  
+            return -1 ;
 
-		    if(ftpRecvResponse(sd, buf, 0) != 0)
-            {
-                return -1 ;
-            }
+	    if(ftpRecvResponse(sd, buf, 0) != 0)
+        {
+            return -1 ;
+        }
 
-	        ftp_dbg("ftpRecvResponse After STORE = %s\n", buf);
-		    if (strncmp(buf, "150", 3) == 0) 
-			{ //make sure response is a 150
-#if defined(USE_SSL)
-			    if (ftpSendFile(iftp->dsdFtp, filename) == 0) 
-#else
-			    if (ftpSendFile(data_sock, filename) == 0) 
-#endif
-				{
-				    if(ftpRecvResponse(sd, buf, 0) == 0)
-					{
-				        if (strncmp(buf, "226", 3) == 0) 
-					    {
-					        TRACE_INFO("%s transfer completed.\n", source_fname);
+        ftp_dbg("ftpRecvResponse After STORE = %s\n", buf);
+	    if (strncmp(buf, "150", 3) == 0) 
+		{ //make sure response is a 150
+            if(app_set->ftp_info.type)
+			{
+				if (ftpSendFile(iftp->dsdFtp, filename) != 0)
+				   return -1 ;	
+			}
+			else
+			{
+				if (ftpSendFile(data_sock, filename) != 0)
+				   return -1 ;	
+			}
+		    if(ftpRecvResponse(sd, buf, 0) == 0)
+			{
+		        if (strncmp(buf, "226", 3) == 0) 
+			    {
+			        TRACE_INFO("%s transfer completed.\n", source_fname);
 
-							if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
+					if(ftpNewCmd(sd,buf,"RNFR", source_fname) != 0)
+						return -1 ;
+
+					if(ftpRecvResponse(sd, buf, 0) == 0)
+					{		
+						if (strncmp(buf, "350", 3) == 0) 
+						{
+							if(ftpNewCmd(sd,buf,"RNTO", dest_fname) != 0)
 								return -1 ;
 
 							if(ftpRecvResponse(sd, buf, 0) == 0)
 							{		
-								if (strncmp(buf, "350", 3) == 0) 
+								if (strncmp(buf, "250", 3) == 0)
 								{
-									if(ftpNewCmd(sd,buf,"RNTO", dest_fname) != 0)
-										return -1 ;
-
-									if(ftpRecvResponse(sd, buf, 0) == 0)
-									{		
-										if (strncmp(buf, "250", 3) == 0)
-										{
-											TRACE_INFO("Rename from %s to %s \n",source_fname, dest_fname) ;
-										    return 0 ;
-										}
-										else if(strncmp(buf, "553", 3) == 0)
-										{
-											ftp_dbg("destination file exist !!\n") ;
-											if(ftpNewCmd(sd,buf,"DELE", source_fname) == 0)
-                                            {
-												ftp_dbg("delete file on FTP Server\n") ;  //one time try delete file on FTP SERVER 
-											}
-											return 1 ;
-										}
-										else
-											return -1 ;
-									}
+									TRACE_INFO("Rename from %s to %s \n",source_fname, dest_fname) ;
+								    return 0 ;
 								}
-							}	
-							else
-								return -1 ;
-				        }
-					}
+								else if(strncmp(buf, "553", 3) == 0)
+								{
+									ftp_dbg("destination file exist !!\n") ;
+									if(ftpNewCmd(sd,buf,"DELE", source_fname) == 0)
+                                    {
+										ftp_dbg("delete file on FTP Server\n") ;  //one time try delete file on FTP SERVER 
+									}
+									return 1 ;
+								}
+								else
+									return -1 ;
+							}
+						}
+					}	
 					else
-					{
 						return -1 ;
-					}
-				}	
+		        }
 			}
-		}
+			else
+			{
+				return -1 ;
+			}
+		}	
 	}
 
 	return -1;
@@ -729,9 +760,8 @@ static int ftp_connect(char *hostname, int port)
 	fcntl(sd, F_SETFL, arg);
 #endif
 
-#if defined(USE_SSL)
-	return sd ;
-#endif 
+	if(app_set->ftp_info.type)
+		return sd ;
 
 	if(ftpRecvResponse(sd, buf, 0) == 0) {  //wait for ftp server to start talking
 		if(strncmp(buf,"220",3) == 0) {  //make sure it ends with a 220
@@ -755,12 +785,13 @@ static int ftp_close(int sd)
 		TRACE_INFO("FTP OK.\n");
 	}
 
-#if defined(USE_SSL)
-	SSL_shutdown(iftp->lsslHandle) ;
-	SSL_free(iftp->lsslHandle) ;
-	iftp->lsdFtp = -1 ;
-	SSL_CTX_free(iftp->lsslContext) ;
-#endif
+	if(app_set->ftp_info.type)
+	{
+		SSL_shutdown(iftp->lsslHandle) ;
+		SSL_free(iftp->lsslHandle) ;
+		iftp->lsdFtp = -1 ;
+		SSL_CTX_free(iftp->lsslContext) ;
+	}
 
 	close(sd); //close the socket
 	return 0;
@@ -768,12 +799,13 @@ static int ftp_close(int sd)
 
 static int ftp_data_close(int sd)
 {
-#if defined(USE_SSL)
-	SSL_shutdown(iftp->dsslHandle) ;
-	SSL_free(iftp->dsslHandle) ;
-	iftp->dsdFtp = -1 ;
-	SSL_CTX_free(iftp->dsslContext) ;
-#endif
+	if(app_set->ftp_info.type)
+	{
+		SSL_shutdown(iftp->dsslHandle) ;
+		SSL_free(iftp->dsslHandle) ;
+		iftp->dsdFtp = -1 ;
+		SSL_CTX_free(iftp->dsslContext) ;
+	}
 	close(sd) ;
     return 0 ;
 
@@ -790,9 +822,9 @@ static int get_netdev_link_status(void)
 	return (state ? 1: 0);
 }				 								 													    
 
-void SSL_Create(int sock_type)
+int SSL_Create(int sock_type)
 {
-	int ret = 0 ;
+	int ret = 0, ret_val = 0 ;
 	char *str ;
 	// Register the error strings for libcrypto &libssl
 
@@ -866,6 +898,7 @@ void SSL_Create(int sock_type)
 			SSL_free(iftp->lsslHandle) ;
 			SSL_CTX_free(iftp->lsslContext) ;
 			close(iftp->lsdFtp) ;
+			ret_val = -1 ;
 		}
 		else
 		{
@@ -908,6 +941,7 @@ void SSL_Create(int sock_type)
 			{
 				TRACE_INFO("Server certificated fail..\n") ;
 				SSL_free(iftp->lsslHandle) ;
+				ret_val = -1 ;
 			}
 		}
 	}
@@ -967,6 +1001,7 @@ void SSL_Create(int sock_type)
 			int error = SSL_get_error(iftp->dsslHandle, ret) ;
 			TRACE_INFO("SSL_connect error no = %d\n",error) ;
 			ERR_print_errors_fp(stderr);
+			ret_val = -1 ;
 		}
 		else
 		{
@@ -1009,9 +1044,11 @@ void SSL_Create(int sock_type)
 			{
 				TRACE_INFO("Server certificated fail..\n") ;
 				SSL_free(iftp->lsslHandle) ;
+				ret_val = -1 ;
 			}
 		}
-	}		
+	}	
+	return ret_val ;	
 }
 
 
@@ -1304,21 +1341,25 @@ int fota_proc()
 			break;
 		}
 
-		if(app_set->fota_info.type) // use manual input ipaddress
+		if(app_set->fota_info.svr_info) // use manual input ipaddress
 			iftp->lsdFtp = ftp_connect(app_set->fota_info.ipaddr, app_set->fota_info.port);
 		else
 			iftp->lsdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
 
 		if(iftp->lsdFtp != -1)
 		{
-#if defined(USE_SSL)
-			SSL_Create(0) ;
-			connection_check(iftp->lsdFtp) ;
-#endif
+			if(app_set->fota_info.type)
+			{
+				if(!SSL_Create(0))
+					connection_check(iftp->lsdFtp) ;
+				else
+					return 1 ; 
+
+			}
 		 //read result
 			while(1)
 			{
-				if(app_set->fota_info.type) // use manual input ipaddress
+				if(app_set->fota_info.svr_info) // use manual input ipaddress
 		        	ret = ftp_login(iftp->lsdFtp, app_set->fota_info.id, app_set->fota_info.pwd);
 				else
 				    ret = ftp_login(iftp->lsdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
@@ -1437,7 +1478,6 @@ static void ftp_send(void)
 	int i=0;
 	int ret = 0, retry_cnt = 0, file_cnt = 0, retval = 0;
     char FileName[MAX_CHAR_128] ;
-    char DecFileName[MAX_CHAR_128] ;
 	char buff[MAX_CHAR_128] ;
     char temp[10] = {0, } ;
 
@@ -1465,10 +1505,13 @@ static void ftp_send(void)
 		iftp->lsdFtp = ftp_connect(app_set->ftp_info.ipaddr, app_set->ftp_info.port);
 		if(iftp->lsdFtp != -1)
 		{
-#if defined(USE_SSL)
-			SSL_Create(0) ;
-			connection_check(iftp->lsdFtp) ;
-#endif
+			if(app_set->ftp_info.type)
+			{
+				if(!SSL_Create(0))
+					connection_check(iftp->lsdFtp) ;
+				else
+					return ;
+			}
             retry_cnt = 0 ;
 		 //read result
 			while(1)
@@ -1544,22 +1587,17 @@ static void ftp_send(void)
 /* need file decryption function for TTA */
    	       	if(!app_decode_process(FileName))
 			{
-				LOGD("[main] Fail to decode AVI File before FTP sending !!!\n");
-				continue ;
+				ftp_dbg("[main] Fail to decode AVI File before FTP sending !!!\n");
+				continue;
 			}
-#if 0
-			if(strstr(FileName, "_enc") == NULL)
+/*
+			if(strstr(FileName, "_enc") != NULL)
 			{
-				continue ;
-			}			
-			strncpy(DecFileName, FileName, strlen(FileName) - 4) ;
-			printf("DecFileName = %s\n", DecFileName) ;
-
-			if(avi_decrypt_fs(FileName, DecFileName))
-			{
-				printf("success decrypt_avi before sending file to ftpserver\n");
+				strncpy(DecFileName, FileName, strlen(FileName) - 4) ;
+				memset(FileName, 0x00, MAX_CHAR_128) ;
+				strncpy(FileName, DecFileName, strlen(DecFileName)) ;
 			}
-#endif
+*/
 // end decrypt.
 
             strncpy(temp, &FileName[12], 8) ;  // create folder per date ex) /20190823/DeviceID

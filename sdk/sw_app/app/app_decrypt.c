@@ -368,8 +368,10 @@ int openssl_aes128_decrypt(char* src, char*dst, int type)
     AES_KEY dec_key_128;   
     int total_len = 0, dst_len = 0, i = 0;
 
+
     unsigned char aes_128_key[16] = {0, }; 
-    unsigned char iv[16] = {0, }; 
+    unsigned char aes_128_iv[16] = {0, }; 
+ /*   
     if(!type)
     {
         sprintf(aes_128_key, "%s", app_set->sys_info.aes_key) ;
@@ -385,28 +387,31 @@ int openssl_aes128_decrypt(char* src, char*dst, int type)
                 aes_128_key[i] = 0x62 ;
         }
     }
+*/
+    char passphrase[64] = {'\0', };
+    int passphrase_len = 0;
 
-    if(AES_set_decrypt_key(aes_128_key, sizeof(aes_128_key)*8, &dec_key_128) < 0){
+	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+        return FAIL;
+    }
+    if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
+        return FAIL;
+    }
+
+    if(AES_set_decrypt_key(aes_128_key, KEY_BIT, &dec_key_128) < 0){
         // print Error  
     }; 
 
-    printf("aes_128_key = %s\n",aes_128_key) ;
-    printf("aes iv = %s\n",iv) ;
-    printf("aes128 decrypt src = %s\n",src) ;
-    printf("aes128_decrypt length of src = %d\n",strlen(src)); 
-    printf("aes128_decrypt length of src = %d\n",(strlen(src) + 16)/16*16); 
 #if 1
-    AES_cbc_encrypt(src, dst, (strlen(src) + 16)/16*16, &dec_key_128, aes_128_key, AES_DECRYPT);
+//    AES_cbc_encrypt(src, dst, (strlen(src) + 16)/16*16, &dec_key_128, aes_128_key, AES_DECRYPT);
+//    AES_cbc_encrypt(src, dst, 1024, &dec_key_128, aes_128_iv, AES_DECRYPT);
+    AES_cbc_encrypt(src, dst, 1024, &dec_key_128, &aes_128_iv, AES_DECRYPT);
 #else
     AES_cbc_encrypt(src, dst, (strlen(src) + 16)/16*16, &dec_key_128, iv, AES_DECRYPT);
 #endif
 
-    total_len = strlen(dst) ;
-	dst_len = strlen(src) - dst[strlen(src)-1];
-    printf("total_len = %d dst_len = %d  dec padding size %d\n",total_len, dst_len);
-
 //    printf("aes128_decrypt dst value = %s dst_len = %d\n",dst, strlen(dst)) ;
-    return dst_len ;
+    return 0 ;
 }
 
 int openssl_aes128_decrypt_fs(char *src,char *dst)

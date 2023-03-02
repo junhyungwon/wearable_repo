@@ -70,6 +70,7 @@ int ctrl_is_live_process(const char *process_name);
 void ctrl_firmware_update(void);
 int ctrl_update_rsakey(char *path) ;
 int app_sshd_start() ;
+int proxy_server_start() ;
 void ctrl_sys_halt(int shutdown);
 
 #endif	/* _APP_CTRL_H_ */

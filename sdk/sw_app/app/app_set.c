@@ -193,6 +193,7 @@ static void char_memset(void)
     memset(app_set->srv_info.reserved, CFG_INVALID, 126) ;
 
 	//# FTP information
+    app_set->ftp_info.type = OFF ;
     app_set->ftp_info.port = CFG_INVALID ;
     memset(app_set->ftp_info.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->ftp_info.id, CHAR_MEMSET, MAX_CHAR_16);
@@ -204,6 +205,7 @@ static void char_memset(void)
     memset(app_set->ftp_info.reserved, CFG_INVALID, 126);
 
 	//# FOTA information
+    app_set->fota_info.type = OFF ; // OFF FTP, ON SFTP
     app_set->fota_info.port = CFG_INVALID ;
     app_set->fota_info.svr_info = CFG_INVALID ;  // manual input or use ftp ipaddress
     memset(app_set->fota_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32);
@@ -211,7 +213,6 @@ static void char_memset(void)
     memset(app_set->fota_info.pwd, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->fota_info.confname, CHAR_MEMSET, MAX_CHAR_32);
     app_set->fota_info.ON_OFF = OFF ;
-    app_set->fota_info.type = OFF ; // OFF FTP, ON SFTP
     memset(app_set->fota_info.reserved, CFG_INVALID, 64);
 
 	//# Wifi AP information
@@ -401,6 +402,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->srv_info.ON_OFF = %d\n", pset->srv_info.ON_OFF);
 	printf("\n");
 
+    printf("pset->ftp_info.type   = %d\n", pset->ftp_info.type        );
     printf("pset->ftp_info.port   = %d\n", pset->ftp_info.port        );
     printf("pset->ftp_info.ipaddr = %s\n", pset->ftp_info.ipaddr);
     printf("pset->ftp_info.id     = %s\n", pset->ftp_info.id);
@@ -409,6 +411,7 @@ int show_all_cfg(app_set_t* pset)
     printf("pset->ftp_info.file_type = %d\n", pset->ftp_info.file_type);
 	printf("\n");
 
+    printf("pset->fota_info.type   = %d\n", pset->fota_info.type        );
     printf("pset->fota_info.port   = %d\n", pset->fota_info.port        );
     printf("pset->fota_info.svr_info   = %d\n", pset->fota_info.svr_info        );
     printf("pset->fota_info.ipaddr = %s\n", pset->fota_info.ipaddr);
@@ -828,6 +831,9 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	pset->sys_info.dev_cam_ch = MODEL_CH_NUM;
 	//# FTP information
+	if(pset->ftp_info.type <= CFG_INVALID)
+		pset->ftp_info.port	= OFF;
+
 	if(pset->ftp_info.port <= CFG_INVALID)
 		pset->ftp_info.port	= 21;
  
@@ -845,7 +851,11 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
     if(pset->ftp_info.file_type <= CFG_INVALID)
         pset->ftp_info.file_type = OFF ;
+
 	//# FOTA information
+	if(pset->fota_info.type <= CFG_INVALID)
+		pset->fota_info.type	= OFF;
+
 	if(pset->fota_info.port <= CFG_INVALID)
 		pset->fota_info.port	= 21;
  
@@ -1289,6 +1299,7 @@ static void app_set_default(int default_type)
     strcpy(app_set->srv_info.ipaddr, "0.0.0.0") ;
 
 	//# FTP information
+    app_set->ftp_info.type = OFF;
     app_set->ftp_info.port = 21;
     app_set->ftp_info.ON_OFF = OFF ;
     strcpy(app_set->ftp_info.ipaddr, "192.168.1.23");
@@ -1296,6 +1307,7 @@ static void app_set_default(int default_type)
     strcpy(app_set->ftp_info.pwd, "FTP_PASSWORD");
 
 	//# FOTA information
+    app_set->fota_info.type = OFF;
     app_set->fota_info.port = 21;
     app_set->fota_info.svr_info = 0;
     app_set->fota_info.ON_OFF = OFF ;
@@ -1564,6 +1576,9 @@ void app_setting_reset(int type)  // sw reset, hw reset(include network setting)
 		unlink(PATH_SSL_PASSPHRASE_NAND); // 암호문구 삭제
 		unlink(PATH_HTTPS_SS_KEY_NAND);	// 인증서 삭제
 		unlink(PATH_HTTPS_SS_CRT_NAND);
+
+		unlink(PATH_HTTPS_SS_KEY_MMC);	// 인증서 삭제
+		unlink(PATH_HTTPS_SS_CRT_MMC);
 
         app_set_default(type);  // onvif factory default
         set_uid() ;  // read uid from nand and then set uid to app_set

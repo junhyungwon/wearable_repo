@@ -30,8 +30,10 @@ static int submit_settings_qcgi()
         t.voip.port = 6060;
 
 		int  bs_enable=-1;
+		int  bs_type=-1;
 		int  bs_upload_files=-1;
 		int  fota_enable=-1;
+        int  fota_type=-1;
 		int  mediaserver_enable=-1;
 		int  ms_enable=-1;
 		int  ddns_enable=-1;
@@ -46,6 +48,8 @@ static int submit_settings_qcgi()
         // backup server --- start
         char *str= req->getstr(req, "bs_enable", false);
         if (str != NULL) { bs_enable = atoi(str); }
+        str= req->getstr(req, "bs_type", false);
+        if (str != NULL) { bs_type = atoi(str); }
         str= req->getstr(req, "bs_upload_files", false);
         if (str != NULL) { bs_upload_files = atoi(str); }
         str= req->getstr(req, "txt_bs_ip", false);
@@ -66,6 +70,8 @@ static int submit_settings_qcgi()
         // FOTA --- start
         str= req->getstr(req, "fota_enable", false);
         if (str != NULL) { fota_enable = atoi(str); }
+        str= req->getstr(req, "fota_type", false);
+        if (str != NULL) { fota_type = atoi(str); }
         str= req->getstr(req, "fota_server_info", false);
         if (str != NULL) { t.fota.server_info = atoi(str); } // 0: same backup server info, 1: manual
         str= req->getstr(req, "txt_fota_ip", false);
@@ -236,8 +242,10 @@ static int submit_settings_qcgi()
 		CGI_DBG("dns_server2:%s\n", t.dns.server2);
 
 		t.bs.enable = bs_enable;
+		t.bs.type = bs_type;
         t.bs.upload_files = bs_upload_files;
 		t.fota.enable = fota_enable;
+		t.fota.type = fota_type;
 		t.mediaserver.enable = mediaserver_enable;
 		t.ms.enable = ms_enable;
 		t.ddns.enable = ddns_enable;

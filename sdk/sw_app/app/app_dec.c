@@ -23,13 +23,14 @@
 #include "app_gmem.h"
 #include "avi.h"
 #include "app_main.h"
+#include "app_decrypt.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
 
 #define PB_IDXBUF_SIZE                (1800*4) //# 1min, 2ch, audio
-#define MAX_ENCODE_BYTE	              (5)
+#define MAX_ENCRYPT_BYTE	          (1024)
 
 #define AVI_VIDEO	(0)
 #define AVI_AUDIO	(1)
@@ -268,7 +269,8 @@ static int change_data(char *byte)
 int app_decode_process(char *file_path)
 {
 	int stream_id, stream_type ;
-    char InBuff[6] ;
+    char InBuff[MAX_ENCRYPT_BYTE + 1] ;
+    char OutBuff[MAX_ENCRYPT_BYTE + 1] ;
 	unsigned long tvalue, riff ;
 	int retval = 0, i = 0, ret;
 	long cur_pos ;
@@ -294,7 +296,9 @@ int app_decode_process(char *file_path)
 		fwrite(&riff, 1, 4, pAvi->pFile) ;
 	}
 	else
+	{
 		return 1 ;
+	}
 
     ret = get_avi_info(pAvi, ipbk->filepath);
 	if(ret != 0) {
@@ -314,14 +318,16 @@ int app_decode_process(char *file_path)
 			{
         		if(idx->dwFlags == 0x10) // Per Iframe
 				{
-					fread(InBuff, 1, MAX_ENCODE_BYTE, pAvi->pFile);
+					fread(InBuff, 1, MAX_ENCRYPT_BYTE, pAvi->pFile);
+					openssl_aes128_decrypt(InBuff, OutBuff, 1) ;
 					cur_pos = ftell(pAvi->pFile) ;
-					fseek(pAvi->pFile, cur_pos - MAX_ENCODE_BYTE, SEEK_SET);
-					for(i = 0; i < MAX_ENCODE_BYTE; i++)
-					{
-						InBuff[i] = ~(InBuff[i]) ;
-					}
-					fwrite(InBuff, 1, MAX_ENCODE_BYTE, pAvi->pFile) ;
+					fseek(pAvi->pFile, cur_pos - MAX_ENCRYPT_BYTE, SEEK_SET);
+//					for(i = 0; i < MAX_ENCRYPT_BYTE; i++)
+//					{
+//						InBuff[i] = OutBuff[i] ;
+//					}
+					memcpy(InBuff, OutBuff, 1024) ;
+					fwrite(InBuff, 1, MAX_ENCRYPT_BYTE, pAvi->pFile) ;
 				}
 			}
 		}

@@ -30,6 +30,14 @@
 #include "board_config.h"
 #include "app_gmem.h"
 
+#include <openssl/rand.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/aes.h>
+#include <openssl/sha.h>
+#include <openssl/evp.h>
+
+
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
@@ -60,6 +68,8 @@
 #ifndef FALSE
 #define FALSE 		0
 #endif
+
+AES_KEY aes_key_128;
 
 /*----------------------------------------------------------------------------
  Declares variables

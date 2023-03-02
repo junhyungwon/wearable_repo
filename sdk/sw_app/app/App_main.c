@@ -280,6 +280,7 @@ int app_main(void)
 //		app_sshd_start() ;
 
 	app_buzz_ctrl(80, 2);	//# buzz: power on
+    proxy_server_start() ;
 
 #ifdef USE_KCMVP
     struct tm ts ;

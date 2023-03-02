@@ -18,6 +18,15 @@
 
 #define MAX_VID_CHANN	4		//# must be same as MAX_VID_CH
 
+
+// TEMP for TTA 
+#define FAIL	-1
+#define SUCC	 1
+#define CFG_DIR_MMC             "/mmc/cfg"
+#define CFG_DIR_NAND            "/media/nand/cfg"
+#define PATH_SSL_PASSPHRASE_NAND CFG_DIR_NAND"/passphrase"          // fixme : better secure place?
+#define PATH_SSL_PASSPHRASE_MMC  CFG_DIR_MMC"/passphrase"
+
 typedef enum {
     DATA_TYPE_VIDEO,
     DATA_TYPE_AUDIO,
@@ -224,5 +233,7 @@ FILE *avi_file_open(char *filename, stream_info_t *ifr, int snd_on, int ch, int 
 void avi_file_close(FILE *favi, char* fname);
 int avi_file_write(FILE *favi, stream_info_t *ifr, int encrypt_vid);
 int avi_file_init(unsigned int addr);
+
+
 
 #endif	/* _APP_AVI_H_ */

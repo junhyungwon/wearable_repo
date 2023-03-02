@@ -84,16 +84,6 @@ typedef struct {
 	char path[MAX_CHAR_128];
 } app_ftp_t;
 
-/*
-#define CLIENT_CERTF  "/mmc/server.crt"
-#define CLIENT_KEYF   "/mmc/server.crt"
-#define CLIENT_CA_CERTF  "/mmc/server.crt"
-*/
-
-#define CLIENT_CERTF "/mmc/log/my_pub_key.pem"
-#define CLIENT_KEYF "/mmc/log/my_priv_key.pem"
-#define CLIENT_CA_CERTF "/mmc/log/my_cert.pem"
-
 
 /*----------------------------------------------------------------------------
  Declares a	function prototype
