@@ -1,3 +1,8 @@
+# LF
+```
+CC=`git rev-parse --show-toplevel`/ti_tools/linux_devkit/bin/arm-arago-linux-gnueabi-gcc CGO_ENABLED=1 GOARM=7 GOARCH=arm  go build -o proxy_a cmd/tcpproxy/main.go
+```
+
 # kahlys/proxy
 
 [![godoc](https://godoc.org/github.com/kahlys/proxy?status.svg)](https://godoc.org/github.com/kahlys/proxy) 

@@ -51,7 +51,10 @@ func main() {
 
 	log.Println("Proxying from " + p.Addr + " to " + p.Target)
 	if *localTLS {
-		p.ListenAndServeTLS(*localCert, *localKey)
+		err := p.ListenAndServeTLS(*localCert, *localKey)
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
 		p.ListenAndServe()
 	}

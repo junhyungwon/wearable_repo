@@ -1,9 +1,25 @@
 package proxy
 
+/*
+#cgo CFLAGS: -I../../sw_logic/
+#cgo arm LDFLAGS: -L../../sw_logic/ -lLF -Wl,-rpath=/usr/lib
+#include "lf.h"
+*/
+import "C"
+
 import (
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/rsa"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"log"
 	"net"
+	"os"
+	"unsafe"
 )
 
 // Server is a TCP server that takes an incoming request and sends it to another
@@ -39,6 +55,26 @@ func (s *Server) ListenAndServe() error {
 	return s.serve(listener)
 }
 
+// from tls.go
+func parsePrivateKey(der []byte) (crypto.PrivateKey, error) {
+	if key, err := x509.ParsePKCS1PrivateKey(der); err == nil {
+		return key, nil
+	}
+	if key, err := x509.ParsePKCS8PrivateKey(der); err == nil {
+		switch key := key.(type) {
+		case *rsa.PrivateKey, *ecdsa.PrivateKey, ed25519.PrivateKey:
+			return key, nil
+		default:
+			return nil, errors.New("tls: found unknown private key type in PKCS#8 wrapping")
+		}
+	}
+	if key, err := x509.ParseECPrivateKey(der); err == nil {
+		return key, nil
+	}
+
+	return nil, errors.New("tls: failed to parse private key")
+}
+
 // ListenAndServeTLS acts identically to ListenAndServe, except that it uses TLS
 // protocol. Additionally, files containing a certificate and matching private key
 // for the server must be provided if neither the Server's TLSConfig.Certificates nor
@@ -50,11 +86,50 @@ func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	configHasCert := len(s.TLSConfig.Certificates) > 0 || s.TLSConfig.GetCertificate != nil
 	if !configHasCert || certFile != "" || keyFile != "" {
 		var err error
-		s.TLSConfig.Certificates = make([]tls.Certificate, 1)
-		s.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
+
+		passphrase := make([]byte, 128)
+		myCharPtr := (*C.char)(unsafe.Pointer(&passphrase[0]))
+		var len C.int
+
+		C.lf_rsa_load_passphrase(myCharPtr, &len)
+		passphrase = passphrase[:len]
+
+		// load pems
+		log.Printf("load cert,pem files : %v, %v", certFile, keyFile)
+		certPEMBlock, err := os.ReadFile(certFile)
 		if err != nil {
 			return err
 		}
+		keyPEMBlock, err := os.ReadFile(keyFile)
+		if err != nil {
+			return err
+		}
+
+		decodedPriPEM, _ := pem.Decode([]byte(keyPEMBlock))
+		decryptedPriPEM, err := x509.DecryptPEMBlock(decodedPriPEM, passphrase)
+		if err != nil {
+			return err
+		}
+		log.Printf("LF: the private key has ben decrypted.")
+
+		tlsCert := tls.Certificate{}
+
+		var certDERBlock *pem.Block
+		certDERBlock, certPEMBlock = pem.Decode(certPEMBlock)
+		if certDERBlock == nil {
+			return errors.New("wrong cert file")
+		}
+
+		tlsCert.Certificate = append(tlsCert.Certificate, certDERBlock.Bytes)
+		tlsCert.PrivateKey, err = parsePrivateKey(decryptedPriPEM)
+		if err != nil {
+			return err
+		}
+
+		s.TLSConfig.Certificates = make([]tls.Certificate, 1)
+		s.TLSConfig.Certificates[0] = tlsCert
+
+		log.Println("LF: cert,key loaded")
 	}
 	listener, err := tls.Listen("tcp", s.Addr, s.TLSConfig)
 	if err != nil {
