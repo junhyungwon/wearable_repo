@@ -27,7 +27,6 @@
 #define PATH_HTTPS_SS_CRT_NAND 	PATH_SSL_ROOT_NAND"/_ssc_certificate.crt"
 #define PATH_HTTPS_SS_KEY_MMC 	PATH_SSL_ROOT_MMC"/_ssc_private.key"    // encrypted
 #define PATH_HTTPS_SS_CRT_MMC 	PATH_SSL_ROOT_MMC"/_ssc_certificate.crt"
-#define PATH_HTTPS_SS_KEY_TMP 	"/tmp/_ssc_private.key"  // unencrypted, runtime, in-memory
 
 // Normal SSLs
 #define PATH_HTTPS_KEY 	PATH_SSL_ROOT_NAND"/private.key"
@@ -54,6 +53,5 @@ int		app_telnetd_enable(int en);
 
 int     app_web_https_create_ssc();
 int     app_web_https_copy_to_sdcard();
-int     app_web_https_copy_to_tmp();
 int     app_web_reset_passphrase(char *pw);
 #endif//_APP_WEB_H_

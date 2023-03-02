@@ -162,10 +162,12 @@ p2p_clean:
 
 p2p_all: p2p_clean p2p p2p_install
 
+# sudo apt-get install libpcre3-dev libbz2-dev
 lighttpd:
 	@cd $(THIRD_PARTY)/lighttpd1.4 \
 	&& CC=$(BUILD_TOOL_PREFIX)gcc ./autogen.sh \
-	&& CFLAGS=-O3 CC=$(BUILD_TOOL_PREFIX)gcc ./configure --target=arm-arago-linux-gnueabi --host=arm-arago-linux-gnueabi --build=x86_64-pc-linux-gnu --prefix=/usr --exec-prefix=/usr --sysconfdir=/etc --localstatedir=/var --program-prefix= --disable-gtk-doc --disable-gtk-doc-html --disable-doc --disable-docs --disable-documentation --with-xmlto=no --with-fop=no --disable-dependency-tracking --enable-ipv6 --disable-nls --disable-static --enable-shared --without-wolfssl --libdir=/usr/lib/lighttpd --libexecdir=/usr/lib --with-openssl --without-pam --with-zlib --without-bzip2 --without-pcre --without-pcre2 --without-webdav-props --without-webdav-locks --without-lua \
+	&& CFLAGS=-O3 CC=$(BUILD_TOOL_PREFIX)gcc CPPFLAGS='-D_LF -I$(LOGIC_DIR)' LDFLAGS='-L$(LOGIC_DIR) -lLF' \
+	  ./configure --target=arm-arago-linux-gnueabi --host=arm-arago-linux-gnueabi --build=x86_64-pc-linux-gnu --prefix=/usr --exec-prefix=/usr --sysconfdir=/etc --localstatedir=/var --program-prefix= --disable-gtk-doc --disable-gtk-doc-html --disable-doc --disable-docs --disable-documentation --with-xmlto=no --with-fop=no --disable-dependency-tracking --enable-ipv6 --disable-nls --disable-static --enable-shared --without-wolfssl --libdir=/usr/lib/lighttpd --libexecdir=/usr/lib --with-openssl --without-pam --with-zlib --without-bzip2 --with-pcre --without-pcre2 --without-webdav-props --without-webdav-locks --without-lua \
 	&& $(MAKE) -j$(CPU_NUM)
 
 lighttpd_clean:
