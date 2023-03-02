@@ -53,8 +53,6 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 		if( access(path_crt, R_OK) == 0 && access(path_key, R_OK) == 0) {
 			TRACE_INFO("Self Signed Certificate is already created.\n");
 
-			// copy to /tmp
-			app_web_https_copy_to_tmp();
 			return SUCC;
 		}
 	}
@@ -102,8 +100,6 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 
 	// copy certs to /sdcard
 	app_web_https_copy_to_sdcard();
-	// copy to /tmp
-	app_web_https_copy_to_tmp();
 
 	return SUCC;
 }
@@ -188,8 +184,6 @@ if(app_set->net_info.https_mode == 1) {
 } else if(app_set->net_info.https_mode == 2){
 	createSignedCertificate();
 } else if (app_set->net_info.https_mode == 0) {
-	// copy to /tmp
-	app_web_https_copy_to_tmp();
 }
 
 	char *filepath = "/etc/lighttpd/conf.d/ssl.conf";
@@ -212,12 +206,12 @@ if(app_set->net_info.https_mode == 1) {
 	// 경로 정보가 conf에 추가될 경우, https disable로 설정되어도, 저장된 경로에 file이 없다면, lighttpd 실행시 에러남
 	if(app_set->net_info.https_mode == 0 || app_set->net_info.https_mode == 1)
 	{
-		if( access(PATH_HTTPS_SS_KEY_TMP, F_OK)==0) {
-			sprintf(str, "ssl.privkey = \"%s\"\n", PATH_HTTPS_SS_KEY_TMP);
+		if( access(PATH_HTTPS_SS_KEY_NAND, F_OK)==0) {
+			sprintf(str, "ssl.privkey = \"%s\"\n", PATH_HTTPS_SS_KEY_NAND);
 			fputs(str, fp);
 			bIsFile = 1;
 		} else {
-			TRACE_ERR("ssl.privkey %s not exists!!\n", PATH_HTTPS_SS_KEY_TMP);
+			TRACE_ERR("ssl.privkey %s not exists!!\n", PATH_HTTPS_SS_KEY_NAND);
 		}
 
 		if( access(PATH_HTTPS_SS_CRT_NAND, F_OK)==0) {
@@ -227,9 +221,9 @@ if(app_set->net_info.https_mode == 1) {
 	}
 	else if (app_set->net_info.https_mode==2)
 	{
-		if (access(PATH_HTTPS_SS_KEY_TMP, F_OK) == 0)
+		if (access(PATH_HTTPS_SS_KEY_NAND, F_OK) == 0)
 		{
-			sprintf(str, "ssl.privkey = \"%s\"", PATH_HTTPS_SS_KEY_TMP);
+			sprintf(str, "ssl.privkey = \"%s\"", PATH_HTTPS_SS_KEY_NAND);
 			fputs(str, fp);
 			bIsFile = 1;
 		}
@@ -351,26 +345,6 @@ int app_web_https_copy_to_sdcard() {
 	// copy a key
 	sprintf(cmd, "cp -f %s %s", PATH_HTTPS_SS_KEY_NAND, PATH_HTTPS_SS_KEY_MMC);
 	TRACE_INFO("copy a key. cmd: %s\n", cmd);
-	system(cmd);
-
-	return SUCC;
-}
-
-int app_web_https_copy_to_tmp() {
-	char cmd[256];
-	char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
-	int passphrase_len, olen;
-
-	if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
-		return FAIL;
-	}
-
-	// copy & decrypt a privatekey to /tmp
-	sprintf(cmd, "openssl rsa -in %s -passin pass:%s -out %s"
-		, PATH_HTTPS_SS_KEY_NAND
-		, passphrase
-		, PATH_HTTPS_SS_KEY_TMP);
-	TRACE_INFO("copy&decrypt a private key to /tmp/ cmd: %s\n", cmd);
 	system(cmd);
 
 	return SUCC;
