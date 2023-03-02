@@ -6,7 +6,7 @@ UID=$(shell id -u)
 WID=www-data
 ################################################################################
 
-INC += -I. -I../srclib
+INC += -I. -I../srclib -I../../../../sw_logic/
 COMPILE_OPTS =		-g -c
 COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64
 C =			c
@@ -29,6 +29,7 @@ EXE =
 LIBS += -L../lib/ -ljson-c
 LIBS += -L../srclib/ -lLFCGI
 LIBS += ../srclib/cgi.o
+LIBS += -L../../../../sw_logic/ -lLF
 ##### End of variables to change
 
 ##### Files

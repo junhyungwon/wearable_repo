@@ -55,7 +55,7 @@ static int submit_settings_qcgi()
         str= req->getstr(req, "txt_bs_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_bs_pw  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(t.bs.pw, "%s", buffer); 
             CGI_DBG("txt_bs_pw de(rsa+base64): %s\n",  buffer);
         }
@@ -75,7 +75,7 @@ static int submit_settings_qcgi()
         str= req->getstr(req, "txt_fota_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_fota_pw  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(t.fota.pw, "%s", buffer); 
             CGI_DBG("txt_fota_pw de(rsa+base64): %s\n",  buffer);
         }
@@ -119,7 +119,7 @@ static int submit_settings_qcgi()
         str= req->getstr(req, "txt_ddns_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_ddns_pw  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(t.ddns.pw, "%s", buffer); 
             CGI_DBG("txt_ddns_pw de(rsa+base64): %s\n",  buffer);
         }

@@ -37,11 +37,11 @@ static int submit_settings()
         int len;
 
         CGI_DBG("pw1 base64:%s\n", pw1);
-        len = rsa_base64_de(cryptServer, pw1, (unsigned char*)pw1_decrypted); // fixme : assert
+        len = lf_base64_de(cryptServer, pw1, (unsigned char*)pw1_decrypted); // fixme : assert
         CGI_DBG("decBytes: %d, base64 de(rsa+base64): %s\n",  len, pw1_decrypted);
 
         CGI_DBG("pw2 base64:%s\n", pw2);
-        len = rsa_base64_de(cryptServer, pw2, (unsigned char*)pw2_decrypted); // fixme : assert
+        len = lf_base64_de(cryptServer, pw2, (unsigned char*)pw2_decrypted); // fixme : assert
         CGI_DBG("decBytes: %d, base64 de(rsa+base64): %s\n",  len, pw2_decrypted);
     }
 

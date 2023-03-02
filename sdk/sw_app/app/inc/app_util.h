@@ -71,6 +71,4 @@ int Msg_Send(int qid, void *pdata, int size);
 int Msg_Rsv(int qid, int msg_type, void *pdata , int size);
 int Msg_Send_Rsv(int qid, int msg_type, void *pdata , int size);
 
-void urandom_value(char *outdata, int count);   // read /dev/urandom
-
 #endif	/* _APP_UTIL_H_ */

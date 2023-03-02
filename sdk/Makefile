@@ -14,6 +14,7 @@ include $(ROOTDIR)/component.mk
 app:
 	$(MAKE) libuv
 	$(MAKE) librtmp
+	$(MAKE) libLF
 	$(MAKE) -fMAKEFILE.MK -C$(MCFW_ROOT_PATH)/mcfw/src_linux
 	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) app
 	@echo -e "\n--- make app done! (`date +'%H:%M:%S'`)---\n"
@@ -188,6 +189,12 @@ librtmp:
 
 librtmp_clean:
 	rm -rf $(THIRD_PARTY)/srs-librtmp/src/srs/srs_librtmp.o
+
+libLF:
+	$(MAKE) -C$(LOGIC_DIR) all
+
+libLF_clean:
+	$(MAKE) -C$(LOGIC_DIR) clean
 
 app_pkg: libavi live555
 
@@ -461,8 +468,10 @@ endif
 	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
 	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh
 
-# cp lighttpd's mod_auth
+# cp lighttpd's mod_auth, mod_openssl
+	sudo /bin/cp -f $(LOGIC_DIR)/libLF.so $(TARGET_FS)/usr/lib/.
 	sudo /bin/cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_auth.so $(TARGET_FS)/usr/lib/lighttpd/mod_auth.so
+	sudo /bin/cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_openssl.so $(TARGET_FS)/usr/lib/lighttpd/mod_openssl.so
 
 ifeq ($(USE_WIFI),YES)
 	sudo /bin/cp $(KMODDIR)/wlan/88x1au_driver/8811au.ko $(TARGET_FS)/lib/modules/.

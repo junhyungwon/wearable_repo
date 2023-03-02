@@ -415,11 +415,11 @@ int openssl_aes128_decrypt_fs(char *src,char *dst)
     unsigned char aes_128_iv[16] = {0,};
     char passphrase[64] = {'\0', };
     int passphrase_len = 0;
-    if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+    if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
         return FAIL;
     }
 
-    if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
+    if (lf_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
         return FAIL;
     }
 

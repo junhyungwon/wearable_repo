@@ -311,43 +311,6 @@ int encrypt_aes(const char *src, char *dst, int length)
 }
 
 
-int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char *key, unsigned char *iv) {
-
-
-    // EVP_CIPHER *cipher = EVP_aes_128_cbc();
-    EVP_MD *dgst = (EVP_MD *)EVP_sha256();
-
-    unsigned char tmpkeyiv[EVP_MAX_KEY_LENGTH + EVP_MAX_IV_LENGTH];
-    int iklen = 16; //EVP_CIPHER_get_key_length(cipher);
-    int ivlen = 16; //EVP_CIPHER_get_iv_length(cipher);
-
-//    int islen = 0; // note : salt size.
-    if (!PKCS5_PBKDF2_HMAC(str, str_len, NULL /*sptr*/, 0 /*islen*/, 10000 /*iter*/, dgst, iklen+ivlen, tmpkeyiv)) {
-        char err[256];
-        ERR_error_string(ERR_get_error(), err);
-        TRACE_INFO("fail to derive the key and iv by PKCS5_PBKDF2_HMAC(). %s\n", err);
-        return FAIL;
-    }
-
-    /* split and move data back to global buffer */
-    memcpy(key, tmpkeyiv, iklen);
-    memcpy(iv, tmpkeyiv+iklen, ivlen);
-
-
-    // caution : only for debug usage!!
-#if 0
-    int i;
-    printf("key=");
-    for (i = 0; i < 16 /*EVP_CIPHER_get_key_length(cipher)*/; i++)
-        printf("%02X", key[i]);
-    printf("\n");
-    printf("iv=");
-    for (i = 0; i < 16 /*EVP_CIPHER_get_key_length(cipher)*/; i++)
-        printf("%02X", iv[i]);
-    printf("\n");
-#endif
-}
-
 void openssl_aes128_encrypt(char *src, char *dst, int type)
 {
     int i = 0, len=0, padding_len=0 ;
@@ -391,10 +354,10 @@ int openssl_aes128_encrypt_fs(char *src, char *dst)
     unsigned char aes_128_iv[16] = {0,};
     char passphrase[64] = {'\0', };
     int passphrase_len = 0;
-    if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+    if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
         return FAIL;
     }
-    if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
+    if (lf_aes128_derive_key(passphrase, passphrase_len, aes_128_key, aes_128_iv) == FAIL) {
         return FAIL;
     }
 

@@ -36,8 +36,6 @@ extern "C"
 int encrypt_aes(const char *src, char *dst, int len) ;
 void openssl_aes128_encrypt(char *src, char *dst, int type) ;
 int openssl_aes128_encrypt_fs(char *src, char *dst) ;
-
-int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char *key, unsigned char *iv);
 #ifdef __cplusplus
 }
 #endif

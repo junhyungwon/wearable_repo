@@ -62,7 +62,6 @@
 #define CFG_DIR_MMC             "/mmc/cfg"
 #define CFG_FILE_MMC            "/mmc/cfg/fbx_cfg.ini"
 
-#define CFG_DIR_NAND            "/media/nand/cfg"
 #define CFG_FILE_NAND           "/media/nand/cfg/fbx_cfg.ini"
 
 #define NEXX_CFG_FILE_MMC       "/mmc/cfg/nexx_cfg.ini"
@@ -76,19 +75,9 @@
 
 #define PATH_SSL_ROOT_MMC        "/mmc/ssl"
 #define PATH_SSL_ROOT_NAND       "/media/nand/cfg"
-#define PATH_SSL_PASSPHRASE_NAND CFG_DIR_NAND"/passphrase"	        // fixme : better secure place?
-#define PATH_SSL_PASSPHRASE_MMC  CFG_DIR_MMC"/passphrase"
 #define PATH_SSL_PRIVATE_NAND    CFG_DIR_NAND"/private.pem"
 #define PATH_SSL_PRIVATE_MMC     PATH_SSL_ROOT_MMC"/private.pem"    // 삭제가능(export용)
-#define RSA_BIT                  (2048)                             // aes128 rsa bit
 
-#define BLOCK_SIZE 16
-#define FREAD_COUNT 4096
-#define KEY_BIT 128
-#define IV_SIZE 16
-#define RW_SIZE 1
-#define SUCC 1
-#define FAIL -1 
 AES_KEY aes_key_128;  
 
 
