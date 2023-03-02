@@ -46,21 +46,21 @@ static int submit_settings()
         str= req->getstr(req, "txt_cur_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_cur_pw  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(curpw, "%s", buffer); 
             CGI_DBG("txt_cur_pw de(rsa+base64): %s\n",  buffer);
         }
         str= req->getstr(req, "txt_new_pw1", false);
         if (str != NULL) {
             CGI_DBG("txt_new_pw1  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(newpw1, "%s", buffer); 
             CGI_DBG("txt_new_pw1 de(rsa+base64): %s\n",  buffer);
         }
         str= req->getstr(req, "txt_new_pw2", false);
         if (str != NULL) {
             CGI_DBG("txt_new_pw2  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(newpw2, "%s", buffer); 
             CGI_DBG("txt_new_pw2 de(rsa+base64): %s\n",  buffer);
         }
@@ -69,7 +69,7 @@ static int submit_settings()
         str= req->getstr(req, "txt_onvif_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_onvif_pw  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(onvif_pw, "%s", buffer); 
             CGI_DBG("txt_onvif_pw de(rsa+base64): %s\n",  buffer);
         }
@@ -82,7 +82,7 @@ static int submit_settings()
         str= req->getstr(req, "txt_live_stream_account_pw", false);
         if (str != NULL) {
             CGI_DBG("txt_live_stream_account_pw  %s\n", str);
-            int len = rsa_base64_de(cryptServer, str, buffer); // fixme : assert
+            int len = lf_base64_de(cryptServer, str, buffer); // fixme : assert
             sprintf(live_stream_account_pw, "%s", buffer); 
             CGI_DBG("txt_live_stream_account_pw de(rsa+base64): %s\n",  buffer);
         }

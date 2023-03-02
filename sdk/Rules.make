@@ -243,6 +243,7 @@ TARGET_FS_DIR     := $(TARGET_FS)/opt/bin
 # The directory that points RDK source code
 APP_DIR           := $(RDK_INSTALL_DIR)/sw_app
 MCFW_ROOT_PATH    := $(RDK_INSTALL_DIR)/sw_mcfw
+LOGIC_DIR         := $(RDK_INSTALL_DIR)/sw_logic
 TFTP_HOME     	  := $(RDK_INSTALL_DIR)/bin
 APP_INC_DIR       := $(APP_DIR)/app
 
@@ -370,6 +371,7 @@ export TARGET_FS_DIR
 export TEARDOWN_LOAD_UNLOAD
 export APP_DIR
 export APP_INC_DIR
+export LOGIC_DIR
 export UBX_TARGET
 export SYSTEM_PLATFORM
 export USE_ISP

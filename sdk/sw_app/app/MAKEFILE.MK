@@ -11,11 +11,12 @@ INCLUDE += -I$(THIRD_PARTY)/libuv/include/
 INCLUDE += -I$(THIRD_PARTY)/libuv/src/
 INCLUDE += -I$(THIRD_PARTY)/kcmvp/include/
 INCLUDE += -I$(THIRD_PARTY)/srs-librtmp/src/srs/
+INCLUDE += -I$(LOGIC_DIR)
 
 LIBS= $(LIB_DIR)/app_fitt.a $(MCFW_LIBS) $(AUDIO_LIBS) $(CMEM_LIB) $(BLKID_LIBS)
 
 # app addition
-LIBS += -L$(SHLIB_DIR) -lfont_db -ljson-c
+LIBS += -L$(SHLIB_DIR) -L$(LOGIC_DIR) -lfont_db -ljson-c -lLF
 
 ifeq ($(USE_KCMVP), YES)
 LIBS += -L$(THIRD_PARTY)/kcmvp/linux_dll/2.6_armv7l_32_44_post_limit/ -lMagicCrypto

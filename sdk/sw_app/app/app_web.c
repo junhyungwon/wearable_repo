@@ -62,7 +62,7 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 	char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
 	int passphrase_len;
 
-	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+	if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
 		return FAIL;
 	}
 
@@ -361,7 +361,7 @@ int app_web_https_copy_to_tmp() {
 	char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
 	int passphrase_len, olen;
 
-	if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+	if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
 		return FAIL;
 	}
 
@@ -381,14 +381,14 @@ int app_web_reset_passphrase(char *new_pw) {
     char new_pw_hash[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0'};
     int old_pw_len, new_pw_len;
 
-    if (app_rsa_load_passphrase(old_pw_hash, &old_pw_len) != SUCC) {
+    if (lf_rsa_load_passphrase(old_pw_hash, &old_pw_len) != SUCC) {
         return FAIL;
     }
 
     TRACE_INFO("Old passphrase hash: %s (%d)\n", old_pw_hash, old_pw_len);
 
     // Save the new passphrase
-    if (app_rsa_save_passphrase(new_pw) != SUCC) {
+    if (lf_rsa_save_passphrase(new_pw) != SUCC) {
         return FAIL;
     }
     TRACE_INFO("New passphrase saved");
@@ -396,7 +396,7 @@ int app_web_reset_passphrase(char *new_pw) {
 	TRACE_INFO("Old passphrase hash: %s (%d)\n", old_pw_hash, old_pw_len);
 
     // Load the new passphrase
-    if (app_rsa_load_passphrase(new_pw_hash, &new_pw_len) != SUCC) {
+    if (lf_rsa_load_passphrase(new_pw_hash, &new_pw_len) != SUCC) {
         return FAIL;
     }
 

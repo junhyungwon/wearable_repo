@@ -5,6 +5,7 @@
 #include <openssl/evp.h>
 #include <openssl/buffer.h>
 
+#include "lf.h"
 #include "cgi_param.h"
 #include "cgi_uds.h"
 #include "cgi_debug.h"
@@ -108,10 +109,6 @@ void		remove_rn_char_from_string(char *str);
 void        validateSession();
 void        validateRsaSession(RSA** cryptServer);
 long        read_file(char* path, char* content, int limit);
-int         base64_encode(const unsigned char *input, int length, char **output);
-int         base64_decode(char *input, unsigned char **output);
-int         rsa_base64_en(RSA* rsa, char *input, int length, unsigned char *output);
-int         rsa_base64_de(RSA* rsa, char *input, unsigned char *output);
 #ifdef __cplusplus
 }
 #endif

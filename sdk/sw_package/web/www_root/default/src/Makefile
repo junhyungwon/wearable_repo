@@ -7,7 +7,7 @@ UID=$(shell id -u)
 WID=www-data
 ################################################################################
 
-INC += -I. -I../../include -I../../srclib
+INC += -I. -I../../include -I../../srclib -I../../../../../sw_logic/
 
 COMPILE_OPTS =		-g -c
 COMPILE_OPTS +=		$(INC) -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1 -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -D$(SYSTEM_PLATFORM)
@@ -29,6 +29,7 @@ LIBS_FOR_GUI_APPLICATION =
 EXE =
 LIBS += -L../../srclib/ -lLFCGI -ljson-c
 LIBS += ../../srclib/cgi.o
+LIBS += -L../../../../../sw_logic/ -lLF
 ##### End of variables to change
 
 # dev default/cgi-bin directory 생성
