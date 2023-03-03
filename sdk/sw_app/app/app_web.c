@@ -365,7 +365,7 @@ int app_web_reset_passphrase(char *new_pw) {
     if (lf_rsa_save_passphrase(new_pw) != SUCC) {
         return FAIL;
     }
-    TRACE_INFO("New passphrase saved");
+    TRACE_INFO("New passphrase saved\n");
 
 	TRACE_INFO("Old passphrase hash: %s (%d)\n", old_pw_hash, old_pw_len);
 
@@ -384,7 +384,17 @@ int app_web_reset_passphrase(char *new_pw) {
             old_pw_hash,
             new_pw_hash,
             PATH_HTTPS_SS_KEY_NAND);
-    TRACE_INFO("Re-encrypted a private key with a new passphrase. %s to %s", old_pw_hash, new_pw_hash);
+    TRACE_INFO("Re-encrypted a private key with a new passphrase. %s to %s\n", old_pw_hash, new_pw_hash);
+    TRACE_INFO("cmd: %s\n", cmd);
+    system(cmd);
+
+	// Re-encrypt the temp private key with the new passphrase
+    sprintf(cmd, "openssl rsa -aes128 -in %s -passin pass:%s -passout pass:%s -out %s",
+            SERVER_TEMP_PRIKEY_PATH,
+            old_pw_hash,
+            new_pw_hash,
+            SERVER_TEMP_PRIKEY_PATH);
+    TRACE_INFO("Re-encrypted a temp private key with a new passphrase. %s to %s\n", old_pw_hash, new_pw_hash);
     TRACE_INFO("cmd: %s\n", cmd);
     system(cmd);
 

@@ -29,6 +29,9 @@
 #define PATH_SSL_PASSPHRASE_NAND CFG_DIR_NAND"/passphrase"	        // fixme : better secure place?
 #define PATH_SSL_PASSPHRASE_MMC  "/mmc/cfg""/passphrase"
 
+#define SERVER_TEMP_PUBKEY_PATH  "/tmp/tempkey.pub"
+#define SERVER_TEMP_PRIKEY_PATH  "/tmp/tempkey.pem"
+
 // defined in app_comm.h
 /** ANSI printf color **/
 /** black \033[30m **/

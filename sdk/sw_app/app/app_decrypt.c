@@ -388,7 +388,7 @@ int openssl_aes128_decrypt(char* src, char*dst, int type)
         }
     }
 */
-    char passphrase[64] = {'\0', };
+    char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
     int passphrase_len = 0;
 
 	if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
@@ -418,7 +418,7 @@ int openssl_aes128_decrypt_fs(char *src,char *dst)
 {
     unsigned char aes_128_key[16] = {0,};
     unsigned char aes_128_iv[16] = {0,};
-    char passphrase[64] = {'\0', };
+    char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
     int passphrase_len = 0;
     if (lf_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
         return FAIL;
