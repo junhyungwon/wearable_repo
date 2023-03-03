@@ -1169,7 +1169,7 @@ int proxy_server_start()
 	char cmd[256] = {0, } ;
 	int ret = 0 ;
 
-	sprintf(cmd, "/opt/fit/bin/proxy -lhost :4444 --rhost :8300 -ltls -lcert /media/nand/cfg/_ssc_certificate.crt -lkey /tmp/_ssc_private.key &") ;
+	sprintf(cmd, "/opt/fit/bin/proxy -lhost :4444 --rhost :8300 -ltls -lcert /media/nand/cfg/_ssc_certificate.crt -lkey /media/nand/cfg/_ssc_private.key &") ;
 	FILE *fp = popen(cmd, "w") ;
 	if(fp)
 	{
