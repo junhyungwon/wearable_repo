@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/kahlys/proxy"
+	"lfproxy/pkg/proxy"
+	"lfproxy/pkg/tempkey"
 )
 
 var (
@@ -24,10 +25,18 @@ var (
 	targetTLS  = flag.Bool("rtls", false, "tls/ssl between proxy and target, you must set 'rcert' and 'rkey'")
 	targetCert = flag.String("rcert", "", "certificate file for proxy client side")
 	// targetKey  = flag.String("rkey", "", "key x509 file for proxy client side")
+
+	// 임시키 생성을 위한 플래그
+	generateTempkey = flag.Bool("generate-tempkey", false, "generate a temporal encrypted private key in /tmp/tempkey.pem")
 )
 
 func main() {
 	flag.Parse()
+
+	if *generateTempkey {
+		tempkey.GenerateOpenssl() // openssl 이 좀더 빠름.
+		return
+	}
 
 	p := proxy.Server{
 		Addr:   *localAddr,

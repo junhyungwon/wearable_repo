@@ -20,7 +20,7 @@ int app_rsa_generate_privatekey(char *pw) {
 }
 
 RSA* app_rsa_get_rsa() {
-    char passphrase[64] = {'\0', };
+    char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
     int passphrase_len = 0;
     RSA *rsa = NULL;
     BIO *bio;

@@ -1,3 +1,3 @@
-module github.com/kahlys/proxy
+module lfproxy
 
 go 1.19

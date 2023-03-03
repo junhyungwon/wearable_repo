@@ -282,18 +282,25 @@ void validateSession() {
 void validateRsaSession(RSA **cryptServer) {
     if (!SESSION_RSA_ENABLED) return;
 
-	*cryptServer = RSA_new();
-
+    char passphrase[SHA256_DIGEST_LENGTH*2+BLOCK_SIZE] = {'\0', };
+    int passphrase_len = 0;
     char server_prikey[PRIKEY_FILE_SIZE];
-    long size = read_file(SERVER_PRIKEY_PATH, server_prikey, PRIKEY_FILE_SIZE);
+
+    if (lf_rsa_load_passphrase(passphrase, &passphrase_len) == FAIL) {
+		CGI_DBG("unable to load the passphrase\n");
+        goto error;
+    }
+
+	*cryptServer = RSA_new();
+    long size = read_file(SERVER_TEMP_PRIKEY_PATH, server_prikey, PRIKEY_FILE_SIZE);
     if (size <= 0) {
-		CGI_DBG("unable to read SERVER_PRIKEY_PATH: %s\n", server_prikey);
+		CGI_DBG("unable to read SERVER_TEMP_PRIKEY_PATH: %s\n", server_prikey);
         goto error;
     }
 
     {
         BIO *bio = BIO_new_mem_buf(server_prikey, -1);
-        if (!PEM_read_bio_RSAPrivateKey(bio, cryptServer, NULL, NULL)) {
+        if (!PEM_read_bio_RSAPrivateKey(bio, cryptServer, NULL, passphrase)) {
 			CGI_DBG("cryptServer is null. server_prikey len: %d\n", size);
 			goto error;
 		}

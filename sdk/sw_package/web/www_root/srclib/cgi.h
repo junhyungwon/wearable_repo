@@ -38,8 +38,6 @@
 #define SESSION_RSA_ENABLED (true)
 #define PUBKEY_FILE_SIZE    (1024)
 #define PRIKEY_FILE_SIZE    (2048)
-#define SERVER_PUBKEY_PATH  "/tmp/tempkey.pub"
-#define SERVER_PRIKEY_PATH  "/tmp/tempkey.pem"
 #define SESSION_TIMEOUT (60*10)
 #define LOGIN_FAILURE_TIMEOUT (60*5)
 #define LOGIN_MAX_FAILURE (5)

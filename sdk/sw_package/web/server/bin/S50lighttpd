@@ -13,8 +13,7 @@ TEMPKEY_PUB=/tmp/tempkey.pub
 start() {
 	if [ ! -f "${TEMPKEY_PRI}"  ] ||  [ ! -f "${TEMPKEY_PUB}" ];then
 		echo -n "Generating a temporal rsa key(${TEMPKEY_PRI}, ${TEMPKEY_PUB})"
-		openssl genrsa -out ${TEMPKEY_PRI} 2048
-		openssl rsa -in ${TEMPKEY_PRI} -pubout > ${TEMPKEY_PUB}
+		/opt/fit/bin/proxy -generate-tempkey
 		ln -f -s ${TEMPKEY_PUB} /var/www/default/tempkey.pub
 		ln -f -s ${TEMPKEY_PUB} /var/www/tempkey.pub
 	fi

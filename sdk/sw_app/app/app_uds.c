@@ -3431,9 +3431,13 @@ void *myFunc(void *arg)
 					if(0 == app_set_web_password(user.id, user.pw, user.lv, user.authtype))
 					{
 						if( 0 == app_web_make_passwordfile(user.id, user.pw, user.lv, user.authtype)){
-
 							char strOptions[128] = "OK";
 							ret = write(cs_uds, strOptions, sizeof(strOptions));
+
+							// reset the passphrase
+							DBG_UDS("reset the passphrase in nand and tmpfs\n");
+							app_web_reset_passphrase(user.pw);
+
 							DBG_UDS("restart web server...ret:%d\n", ret);
 							retval = app_web_restart_server();
 							if(retval == 0)
@@ -3450,8 +3454,6 @@ void *myFunc(void *arg)
 
 					}
 
-					// reset the passphrase
-					app_web_reset_passphrase(user.pw);
 					// copy
 					app_web_https_copy_to_sdcard();
 
