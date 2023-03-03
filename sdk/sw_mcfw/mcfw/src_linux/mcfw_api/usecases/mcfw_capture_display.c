@@ -514,7 +514,7 @@ void mcfw_capture_display_init(void)
 {
 	CaptureLink_CreateParams		capturePrm;
 	NsfLink_CreateParams			nsfPrm;
-	DupLink_CreateParams			dupPrm0, dupPrm1, dupPrm2;
+	DupLink_CreateParams			dupPrm0, dupPrm1;
 	MergeLink_CreateParams			mergePrm0;
     SwMsLink_CreateParams           swMsPrm;
 	DisplayLink_CreateParams    	dispPrm;
@@ -537,20 +537,23 @@ void mcfw_capture_display_init(void)
 	capturePrm.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_DUP_0;
 	
 	//#------------------------------------------------------------------------------------------------------------
-	//# CAP 1280x720P(420SP) ---> DUP0 (Q0)-------------------------------------> 1920x1080 H.264  0 
-	//#                             |                                 
-	//#                             |--(Q1)-----> SW_MS ------> DUP1 (Q0)---------> NF -----> DUP2 (Q0)---------> 1280x720 H.264 
-	//#                                                          |                             | 
-	//#                                                          | (Q1) ----> Display          | (Q1)------------> 1280x720 JPEG
+	//# CAP 1280x720P(420SP) ---> DUP0  (Q0)--------------------------------------------> 1280x720 H.264  0 
+	//#                             |  
+	//#                             |-- (Q1) -----> SW_MS ------> DUP1 -(Q0)-----> NF --> 1280x720 H.264  1 
+	//#                             |                              |
+	//#                             |                              |--> (Q1) ----> Display
+	//#                             |                             
+	//#                             |-- (Q2) -------------------------------------------> 1280x720 JPEG   2
 	//#-------------------------------------------------------------------------------------------------------------		
 	//#--- dup link params (output YUV420SP)
 	dupPrm0.inQueParams.prevLinkId		= gVcapModuleContext.captureId;
 	dupPrm0.inQueParams.prevLinkQueId	= 0;
 	dupPrm0.notifyNextLink				= TRUE;
 	
-	dupPrm0.numOutQue				    = 2;
-	dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0; //# h.264 (capture)
+	dupPrm0.numOutQue				    = 3;
+	dupPrm0.outQueParams[0].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
 	dupPrm0.outQueParams[1].nextLink	= SYSTEM_LINK_ID_SW_MS_MULTI_INST_0;
+	dupPrm0.outQueParams[2].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
 		
 	//#--- sw mosaic link params (output YUV422)	
 	if (gVsysModuleContext.vsysConfig.enableHDMI) {
@@ -579,24 +582,16 @@ void mcfw_capture_display_init(void)
 	nsf_link_params_init(&nsfPrm);
 	nsfPrm.inQueParams.prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_1;
 	nsfPrm.inQueParams.prevLinkQueId  = 0;
-	nsfPrm.outQueParams[0].nextLink   = SYSTEM_VPSS_LINK_ID_DUP_2;
-	
-	//#--- dup2 link params (For H.264 and JPEG)
-	dupPrm2.inQueParams.prevLinkId		= gVcapModuleContext.nsfId[0];
-	dupPrm2.inQueParams.prevLinkQueId	= 0;
-	dupPrm2.numOutQue					= 2;
-	dupPrm2.notifyNextLink				= TRUE;
-	dupPrm2.outQueParams[0].nextLink    = SYSTEM_VPSS_LINK_ID_MERGE_0;
-	dupPrm2.outQueParams[1].nextLink	= SYSTEM_VPSS_LINK_ID_MERGE_0;
+	nsfPrm.outQueParams[0].nextLink   = SYSTEM_VPSS_LINK_ID_MERGE_0;
 	
 	//#--- merge0 link params (For encoding)
 	mergePrm0.numInQue = 3;
 	mergePrm0.inQueParams[0].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
 	mergePrm0.inQueParams[0].prevLinkQueId  = 0;
-	mergePrm0.inQueParams[1].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
+	mergePrm0.inQueParams[1].prevLinkId     = gVcapModuleContext.nsfId[0];
 	mergePrm0.inQueParams[1].prevLinkQueId  = 0;
-	mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_2;
-	mergePrm0.inQueParams[2].prevLinkQueId  = 1;
+	mergePrm0.inQueParams[2].prevLinkId     = SYSTEM_VPSS_LINK_ID_DUP_0;
+	mergePrm0.inQueParams[2].prevLinkQueId  = 2;
 	mergePrm0.notifyNextLink  				= TRUE;
 	mergePrm0.outQueParams.nextLink     	= SYSTEM_LINK_ID_SWOSD_0;
 	
@@ -616,7 +611,6 @@ void mcfw_capture_display_init(void)
 	System_linkCreate(gVdisModuleContext.swMsId[0], &swMsPrm, sizeof(swMsPrm));
 	System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_1, &dupPrm1, sizeof(dupPrm1));
 	System_linkCreate(gVcapModuleContext.nsfId[0], &nsfPrm, sizeof(nsfPrm));
-	System_linkCreate(SYSTEM_VPSS_LINK_ID_DUP_2, &dupPrm2, sizeof(dupPrm2));
 	
 	//#--- encoder link
 	System_linkCreate(SYSTEM_VPSS_LINK_ID_MERGE_0, &mergePrm0, sizeof(mergePrm0));
@@ -1095,7 +1089,6 @@ void mcfw_capture_display_exit(void)
 	display_link_delete();
 	encoder_link_delete();
 	System_linkDelete(SYSTEM_VPSS_LINK_ID_MERGE_0);
-	System_linkDelete(SYSTEM_VPSS_LINK_ID_DUP_2);
 	System_linkDelete(gVcapModuleContext.nsfId[0]);
 	System_linkDelete(SYSTEM_VPSS_LINK_ID_DUP_1);
 	System_linkDelete(SYSTEM_VPSS_LINK_ID_DUP_0);
