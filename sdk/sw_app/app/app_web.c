@@ -96,6 +96,10 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 		return FAIL;
 	}
 
+	// -x509 옵션은 기본적으로 pkcs#8 로 생성함. pkcs#1 로 재암호화. 
+	// 현시점 proxy golang crypto 라이브러리에서 pkcs#8 지원안함.
+	app_web_reset_passphrase(passphrase);
+
 	TRACE_INFO("Succeed, create Self Signed Certificate\n");
 
 	// copy certs to /sdcard
