@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"log"
 	"net"
+	"strings"
 
 	"lfproxy/internal/libLF"
 )
@@ -48,6 +49,8 @@ func (s *Server) ListenAndServe() error {
 func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
 	s.TLSConfig = &tls.Config{
 		//InsecureSkipVerify: true,
+		MinVersion: tls.VersionTLS12,
+		MaxVersion: tls.VersionTLS12,
 	}
 	configHasCert := len(s.TLSConfig.Certificates) > 0 || s.TLSConfig.GetCertificate != nil
 	if !configHasCert || certFile != "" || keyFile != "" {
@@ -62,6 +65,19 @@ func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
 
 		log.Println("LF: cert,key loaded")
 	}
+
+	// TTA: CHACHA20 알고리듬 제외
+	cipherSuites := make([]uint16, 0)
+	cipherSuitesList := make([]string, 0)
+	for _, cipher := range tls.CipherSuites() {
+		if !strings.Contains(cipher.Name, "CHACHA20") {
+			cipherSuites = append(cipherSuites, cipher.ID)
+			cipherSuitesList = append(cipherSuitesList, cipher.Name)
+		}
+	}
+	s.TLSConfig.CipherSuites = cipherSuites
+	log.Printf("cipher suits: %v", cipherSuitesList)
+
 	listener, err := tls.Listen("tcp", s.Addr, s.TLSConfig)
 	if err != nil {
 		return err
