@@ -142,7 +142,7 @@ void app_leds_init(void)
 	}
 	OSA_mutexUnlock(&led_lock);
 	
-	TRACE_INFO("LED init Success!\n");
+	printf("LED init Success!\n");
 }
 
 void app_leds_exit(void)

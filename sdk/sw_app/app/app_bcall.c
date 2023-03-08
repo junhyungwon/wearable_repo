@@ -254,7 +254,7 @@ static void *THR_call(void *prm)
 					if(buzz_cnt <= 20 )
 					{
 						set_calling_state(APP_STATE_INCOMING);
-						app_buzz_ctrl(100, 2) ;
+						app_buzz_ctrl(100, 2, 0) ;
 						buzz_cnt += 1 ;
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_start(RING_WAV, 1) ;
@@ -286,7 +286,7 @@ static void *THR_call(void *prm)
 				buzzer_interval = 0 ;
 				buzz_cnt = 0 ;
 				tObj->cmd = APP_CMD_NONE ;
-				app_buzz_ctrl(100, 2) ;
+				app_buzz_ctrl(100, 2, 0) ;
 				if(tObj->param0)
 					set_calling_state(APP_STATE_CANCEL);
 				else
@@ -333,7 +333,7 @@ static void *THR_call(void *prm)
 					{
 						send_call_close() ;
 					}
-					app_buzz_ctrl(100, 2) ;
+					app_buzz_ctrl(100, 2, 0) ;
 					app_cfg->stream_enable_audio = 0 ;
 					buzzer_interval = 0 ;
 					buzz_cnt = 0 ;
@@ -364,7 +364,7 @@ static void *THR_call(void *prm)
 							if(send_call_req())
 							{
 								set_calling_state(APP_STATE_OUTCOMING);
-								app_buzz_ctrl(100, 2) ;
+								app_buzz_ctrl(100, 2, 0) ;
 								buzz_cnt += 1 ;
 #if SYS_CONFIG_SND_OUT
 	app_snd_iplay_start(RING_BACK_WAV, 1) ;

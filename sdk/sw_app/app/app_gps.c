@@ -399,7 +399,7 @@ static void *THR_gps_recv_msg(void *prm)
 			{
 				app_sys_time(&igps->r_data.gtm);
 				sync_time = 0;
-				app_buzz_ctrl(100, 3);	//# gps time sync
+				app_buzz_ctrl(100, 3, 0);	//# gps time sync
 			}
 
 			//Send to client

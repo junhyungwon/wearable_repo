@@ -257,7 +257,7 @@ static int __normal_update(void)
 	TRACE_INFO("start...\n");
 	
 	//# buzz: update
-	app_buzz_ctrl(50, 3);
+	app_buzz_ctrl(50, 3, 0);
 	
 	/* firmware update 시 종료키 이벤트 skip */
 	app_cfg->ste.b.busy = 1;
@@ -315,7 +315,7 @@ static int __emergency_update(void)
 	
 	//# buzz: update
 	TRACE_INFO("start...\n");
-	app_buzz_ctrl(50, 3);
+	app_buzz_ctrl(50, 3, 0);
 	
 	/* unpack firmware */
 	sprintf(cmd, "/bin/tar xvf %s -C %s", pFile, FW_DIR);
@@ -406,7 +406,7 @@ void *thrRunFWUpdate(void *arg)
 {
 	LOGD("[main] Web Remote Update Temp version Firmware update done....\n");
 
-	app_buzz_ctrl(50, 3); //# buzz: update
+	app_buzz_ctrl(50, 3, 0); //# buzz: update
 	dev_fw_setenv("nand_update", "1", 0);
 	sync();
 
@@ -748,7 +748,7 @@ int ctrl_vid_resolution(int resol_idx)
 	app_cfg->ste.b.rec = 1; // previous flag for capture start
 		
     app_cap_stop() ;
-    app_buzz_ctrl(100, 1);
+    app_buzz_ctrl(100, 1, 0);
     app_msleep(200);
 
 	app_set->ch[MODEL_CH_NUM].resol = resol_idx;
@@ -818,7 +818,7 @@ int ctrl_full_vid_setting(int ch, int resol, int bitrate, int fps, int gop)
 		}
 
 		app_cap_stop();
-		app_buzz_ctrl(100, 1);
+		app_buzz_ctrl(100, 1, 0);
 		app_msleep(200);
 		app_set->ch[ch].resol = resol;
 		Vdis_disp_ctrl_init(resol);
@@ -1199,7 +1199,7 @@ void ctrl_sys_halt(int shutdown)
 		if (ste) {
 			app_rec_stop(OFF);
 		}
-		app_buzz_ctrl(80, 2); //# Power Off Buzzer
+		app_buzz_ctrl(80, 2, 0); //# Power Off Buzzer
 		if (ste)
 			app_msleep(1500); /* 먼저 buzzer를 울리기 위해서 */	
 	} 
@@ -1217,7 +1217,7 @@ void ctrl_sys_halt(int shutdown)
 	if (shutdown) {
 		app_mcu_pwr_off(OFF_NORMAL);
 	} else {
-		app_buzz_ctrl(80, 2); //# Power Off Buzzer
+		app_buzz_ctrl(80, 2, 0); //# Power Off Buzzer
 		app_mcu_pwr_off(OFF_RESET);
 	}
 	

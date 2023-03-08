@@ -137,7 +137,7 @@ static void *THR_rec_recv_msg(void *prm)
             send_msg(AV_CMD_REC_STOP);
 
 		    irec->rec_state = 0;
-			app_buzz_ctrl(100, 2);
+			app_buzz_ctrl(100, 2, 0);
 		    app_leds_rec_ctrl(LED_REC_OFF);
 			break;
 
@@ -147,7 +147,7 @@ static void *THR_rec_recv_msg(void *prm)
  
             send_msg(AV_CMD_REC_START);
 			irec->rec_state = 1;
-			app_buzz_ctrl(100, 1);
+			app_buzz_ctrl(100, 1, 0);
 			app_leds_rec_ctrl(LED_REC_ON);
 			break;
 			
@@ -364,7 +364,7 @@ static void *THR_evt_buzzer(void *prm)
 				if(!(buzzer_cnt % 60)) // 3초 간격
                 {
 					if(option) // SOS
-					   app_buzz_ctrl(100, 3) ;
+					   app_buzz_ctrl(100, 3, 0) ;
 
                     buzzer_cnt = 0 ;
 				}
@@ -440,7 +440,7 @@ int app_rec_start(void)
 	TRACE_INFO("Recording start!\n");
 	
 	//# Record start if captuer is not zero.
-    app_buzz_ctrl(100, 1);			//# buzz: rec start
+    app_buzz_ctrl(100, 1, 0);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_START, 0, 0);
 	
 	return SOK;
@@ -469,7 +469,7 @@ int app_rec_evt(int etype)
 	TRACE_INFO("Event Record Process Start!!\n");
 	
 	//# Record start if captuer is not zero.
-    app_buzz_ctrl(100, 3);			//# buzz: rec start
+    app_buzz_ctrl(100, 3, 0);			//# buzz: rec start
 	event_send(&irec->sObj, APP_REC_EVT, etype, 0);
 	event_send(&irec->bObj, APP_REC_EVT, etype, 0); // etype == 0 event, etype == 1 SOS
 	event_send(&irec->kObj, APP_REC_EVT, etype, 0); // etype == 0 event, etype == 1 SOS
@@ -486,7 +486,7 @@ int app_rec_stop(int prerec_flag)
 		{	
 			app_cfg->rec_overwrite = app_set->rec_info.overwrite ;
 		}
-		app_buzz_ctrl(100, 2);	//# buzz: rec stop
+		app_buzz_ctrl(100, 2, 0);	//# buzz: rec stop
 		
 		if (prerec_flag) // record 종료시 이전 record 상태를 유지 종료 후 이전 record 상태로 돌아감 
 		{
