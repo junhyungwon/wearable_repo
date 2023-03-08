@@ -23,6 +23,7 @@
 #include "app_base64.h"
 #include "main.h"
 #include "avi.h"
+#include "lf.h"
 
 /*----------------------------------------------------------------------------
  Definitions and macro
@@ -40,95 +41,17 @@ extern char *enc_buf;
 /*----------------------------------------------------------------------------
  Declares a function prototype
 -----------------------------------------------------------------------------*/
+typedef struct {
+	int excnt ;
+	int passphrase_len ;
+	char passphrase[64] ;
+	unsigned char aes_128_key[16] ;
+	unsigned char aes_128_iv[16] ;
+} encrypt_struct ;
 
-static inline void Internal_passphrase(char *passphrase) {
-    int i, olen;
+static encrypt_struct encrypt_obj ;
+encrypt_struct *encrypt_str = &encrypt_obj ;
 
-    // openssl rand 64 | base64 -w 0
-    char aa[88+1] = "itasmMpNlyV7nE5FgyaFNSdFQtHRbykqunKlOqxBy6hpTw02k0jWbbbLKWwLvRlYCpLm9lob7cucAREOpzG10w==";
-    long long p = 264233017;
-    long long q = 218561699;
-
-    unsigned char* decoded = (char *)base64_decode(aa, strlen(aa), &olen);
-    strncpy(passphrase, decoded, olen);
-    for (i = 0; i< olen; i++) {
-        passphrase[i] = (passphrase[i] * p) % q;
-    }
-    free(decoded);
-}
-
-
-/**
-* read /dev/urandom
-*/
-void urandom_value(char *outdata, int count) {
-	FILE *fp;
-	fp = fopen("/dev/urandom", "r");
-	fread(outdata, sizeof(char), count, fp);
-	fclose(fp);
-}
-int app_rsa_passphrase_to_sd()
-{
-    char cmd[256];
-    if(access(PATH_SSL_PASSPHRASE_NAND, F_OK) ==0)
-    {
-        sprintf(cmd, "cp -f %s %s", PATH_SSL_PASSPHRASE_NAND, PATH_SSL_PASSPHRASE_MMC);
- //       TRACE_INFO("copy the passphrase file to sdcard. cmd: %s\n", cmd);
-        system(cmd);
-    }
-    return SUCC ;
-}
-
-
-
-int app_rsa_save_passphrase(const char* pw) {
-    int i;
-
-    // Make sure CFG_DIR_NAND directory exists
-    if (access(CFG_DIR_NAND , F_OK) != 0) {
-        mkdir(CFG_DIR_NAND, 0775);
-    }
-
-    // Hash the passphrase using SHA256
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256((unsigned char*)pw, strlen(pw), digest);
-    char mdString[SHA256_DIGEST_LENGTH * 2 + 1];
-    for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        sprintf(&mdString[i * 2], "%02x", digest[i]);
-    }
-
-    // Encrypt the hashed passphrase using AES128
-    unsigned char aes_128_key[16] = {0,};
-    unsigned char aes_128_iv[16] = {0,};
-    char internal_passphrase[64];
-    Internal_passphrase(internal_passphrase);
-    if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
-        return FAIL;
-    }
-
-    int len = strlen(mdString);
-    int padding_len = BLOCK_SIZE - len % BLOCK_SIZE;
-    char buf[SHA256_DIGEST_LENGTH*2+1 + BLOCK_SIZE];
-    memset(buf+len, padding_len, padding_len);
-    AES_KEY aes_key;
-    AES_set_encrypt_key(aes_128_key, KEY_BIT, &aes_key);
-    AES_cbc_encrypt((unsigned char *)mdString, (unsigned char *)buf, len + padding_len, &aes_key, &aes_128_iv, AES_ENCRYPT);
-    OPENSSL_cleanse(&aes_key, sizeof(AES_KEY));
-
-    // Write the encrypted hashed passphrase to PATH_SSL_PASSPHRASE_NAND
-    FILE *fp = fopen(PATH_SSL_PASSPHRASE_NAND, "w");
-    if (!fp) {
-        return FAIL;
-    }
-//    fwrite(buf, RW_SIZE, len + padding_len, fp);
-    fwrite(buf, 1, len + padding_len, fp);
-    fclose(fp);
-
-    // Copy the passphrase file to the SD card
-    app_rsa_passphrase_to_sd();
-
-    return SUCC;
-}
 
 void packet_dump(char* buf, int size, int unit)
 {
@@ -202,97 +125,28 @@ int openssl_aes128_derive_key(const char* str, const int str_len, unsigned char 
     return 0 ;
 }
 
-int app_rsa_load_passphrase(char *passphrase, int *passphrase_len) {
-// If passphrase file doesn't exist, generate random passphrase and save it
-    if (access(PATH_SSL_PASSPHRASE_NAND, F_OK) != 0) {
-        char passphrase_new[SHA256_DIGEST_LENGTH*2+1] = {'\0', };
-        int olen;
-
-        char buf[64];
-        urandom_value(buf, sizeof(buf));
-        unsigned char* encoded = (unsigned char *)base64_encode(buf, sizeof(buf), &olen);
-        strncpy(passphrase_new, (char*)encoded, olen);
-
-        printf("%s doesn't exist. Creating with a random bytes. %s\n", PATH_SSL_PASSPHRASE_NAND, passphrase_new);
-        app_rsa_save_passphrase(passphrase_new);
-        free(encoded);
-    }
-
-		FILE *f = fopen(PATH_SSL_PASSPHRASE_NAND, "r");
-    if (!f) {
-        printf("unable to read PATH_SSL_PASSPHRASE_NAND: %s\n", PATH_SSL_PASSPHRASE_NAND);
-        return FAIL;
-    }
-
-    // Read passphrase from file
-    fseek(f, 0, SEEK_END);
-    long fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    if (fread(passphrase, fsize, 1, f) != 1) {
-        printf("Unable to read passphrase from %s\n", PATH_SSL_PASSPHRASE_NAND);
-        fclose(f);
-        return FAIL;
-    }
-    fclose(f);
-
-    if (fsize > 80) { // 64 + 16
-        printf("Passphrase file size is too big: %ld\n", fsize);
-        return FAIL;
-    }
-
-	{
-        // Decrypt passphrase using internal passphrase
-        char internal_passphrase[64];
-        unsigned char aes_128_key[16] = {0,};
-        unsigned char aes_128_iv[16] = {0,};
-
-        Internal_passphrase(internal_passphrase);
-        if (openssl_aes128_derive_key(internal_passphrase, sizeof(internal_passphrase), aes_128_key, aes_128_iv) == FAIL) {
-            printf("Failed to derive AES key from internal passphrase\n");
-            return FAIL;
-        }
-
-        AES_KEY aes_key;
-        AES_set_decrypt_key(aes_128_key, KEY_BIT, &aes_key);
-        AES_cbc_encrypt((unsigned char *)passphrase, (unsigned char *)passphrase, fsize, &aes_key, &aes_128_iv, AES_DECRYPT);
-        OPENSSL_cleanse(&aes_key, sizeof(AES_KEY));
-    }
-
-    *passphrase_len = 64; // fixed;
-
-    return SUCC;	
-}
-
-int excnt = 0 ;
-unsigned char aes_128_key_stream[16] = {0, }; 
-unsigned char aes_128_iv_stream[16] = {0, }; 
-char passphrase[64] = {'\0', };
-int passphrase_len = 0;
-
 void openssl_aes128_encrypt_nopad_nosalt(char *src, char *dst, int type)
 {
-    int i = 0, len=0, padding_len=0 ;
+    int i = 0, len=1024, padding_len=0 ;
     char buf[1024 + BLOCK_SIZE] = {0, };
-    char tbuf[1500] = {0, };
+//    char tbuf[1500] = {0, };
 
-    if(excnt == 0)
+    if(encrypt_str->excnt == 0)
     {
-	    if (app_rsa_load_passphrase(passphrase, &passphrase_len) != SUCC) {
+	    if (lf_rsa_load_passphrase(encrypt_str->passphrase, &encrypt_str->passphrase_len) != SUCC) {
            return FAIL;
         }
-        if (openssl_aes128_derive_key(passphrase, passphrase_len, aes_128_key_stream, aes_128_iv_stream) == FAIL) {
+        if (openssl_aes128_derive_key(encrypt_str->passphrase, encrypt_str->passphrase_len, encrypt_str->aes_128_key, encrypt_str->aes_128_iv) == FAIL)			{
             return FAIL;
         }
-        excnt = 1 ;
+        encrypt_str->excnt = 1 ;
     }
 
-	len = 1024 ;
-    AES_set_encrypt_key(aes_128_key_stream, KEY_BIT, &aes_key_128); 
+    AES_set_encrypt_key(encrypt_str->aes_128_key, KEY_BIT, &aes_key_128); 
     memcpy(buf, src, len) ;
 
 #if 1
-//    AES_cbc_encrypt((unsigned char *)buf ,dst ,len ,&aes_key_128, aes_128_iv, AES_ENCRYPT);
-    AES_cbc_encrypt((unsigned char *)buf ,dst ,len ,&aes_key_128, aes_128_iv_stream, AES_ENCRYPT);
+    AES_cbc_encrypt((unsigned char *)buf ,dst ,len ,&aes_key_128, encrypt_str->aes_128_iv, AES_ENCRYPT);
 //  memcpy(tbuf, dst, 1500) ; 
 //	packet_dump(tbuf, 1500, 16) ;
 #else
@@ -402,7 +256,7 @@ void avi_file_close(FILE *favi, char *fname)
 	}
 	favi = NULL;
     
-    excnt = 0 ;
+    encrypt_str->excnt = 0 ;
 //	app_file_add(fname) ;
 }
 
@@ -410,9 +264,8 @@ void avi_file_close(FILE *favi, char *fname)
 int avi_file_write(FILE *favi, stream_info_t *ifr, int encrypt_vid)
 {
 	AVI_FRAME_PARAM frame;
-	int enc_size=0, sz, i = 0;
+	int enc_size=0, sz/*, i = 0*/;
 	char *tmp=NULL;
-	char *video_data ;
 	char encbuf[1500] = {0, };
 	
 	if (favi != NULL)
@@ -428,12 +281,6 @@ int avi_file_write(FILE *favi, stream_info_t *ifr, int encrypt_vid)
 //			packet_dump(encbuf, 1024, 16) ;
 				if(ifr->is_key)
 				{
-/*					
-					for(i = 0 ; i < MAX_ENCODE_BIT; i++)
-					{
-						frame.buf[i] = ~(frame.buf[i]) ;
-					}
-*/
 /*
 					for(i = 0 ; i < MAX_ENCRYPT_BIT; i++)
 					{

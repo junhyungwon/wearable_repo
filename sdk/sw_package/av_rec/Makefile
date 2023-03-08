@@ -7,10 +7,13 @@ STRIP := $(BUILD_TOOL_PREFIX)strip
 TARGET = av_rec.out
 
 INCLUDE = -I. -I$(APP_INC_DIR)/inc -I$(CMEM_INC_DIR) -I$(APP_DIR)/lib/include
+INCLUDE += -I$(LOGIC_DIR)
+
 C_FLAGS += -Wall -Warray-bounds -O3 $(INCLUDE) -DLF_SYS_$(SYSTEM_PLATFORM)
 LDFLAGS += -lpthread -lstdc++
 LIBS = $(CMEM_LIB_DIR)/cmem.a470MV $(APP_DIR)/lib/libmulti_avi.a 
 LIBS += -L$(TLS_LIBS) -lssl -lcrypto
+LIBS += -L$(LOGIC_DIR) -lLF
 
 SOURCES  = $(wildcard *.c)
 OBJFILES = $(SOURCES:%.c=%.o)

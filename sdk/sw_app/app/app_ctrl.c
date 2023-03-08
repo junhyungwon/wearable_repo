@@ -257,7 +257,6 @@ static int __normal_update(void)
 	TRACE_INFO("start...\n");
 	
 	//# buzz: update
-	app_buzz_ctrl(50, 3, 0);
 	
 	/* firmware update 시 종료키 이벤트 skip */
 	app_cfg->ste.b.busy = 1;
@@ -268,6 +267,9 @@ static int __normal_update(void)
 		return EFAIL;
 	}
 	
+	//# buzz: update
+	app_buzz_ctrl(50, 3, 0);
+
 	//# unpack fw file and type check, release/debug and update full or binary only
 	// pFile = /mmc/xxxxxx.dat
 	// disk  = /mmc

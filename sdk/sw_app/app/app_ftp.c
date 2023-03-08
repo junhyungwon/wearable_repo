@@ -78,8 +78,6 @@
 #define AVI_AUDIO	(1)
 #define AVI_META    (2)
 
-
-
 X509* server_cert ;
 X509_NAME *certname = NULL ;
 
@@ -1577,13 +1575,14 @@ static void ftp_send(void)
 				iftp->ftp_state = FTP_STATE_NONE;
                 break;
 			}
-
+/*
 			if (app_set->ftp_info.file_type) { // ftp send event file
 			    if (strstr(FileName, "/mmc/DCIM/R_") != NULL) {
 					OSA_waitMsecs(5);
 					continue ;
 				}
 			}
+*/
 /* need file decryption function for TTA */
    	       	if(!app_decode_process(FileName))
 			{
@@ -1618,7 +1617,7 @@ static void ftp_send(void)
 //						if (app_set->sys_info.aes_encryption)  // send file after decryption
 //                        	retval = ftp_send_file(iftp->lsdFtp, DecFileName) ;
 //						else
-                        	retval = ftp_send_file(iftp->lsdFtp, FileName) ;
+                       	retval = ftp_send_file(iftp->lsdFtp, FileName) ;
 
 						if(retval >= 0)
                         {
@@ -1651,7 +1650,6 @@ static void ftp_send(void)
                         {
                             iftp->ftp_state = FTP_STATE_NONE ;
 						}
-
 					}	
                 }
 		    }

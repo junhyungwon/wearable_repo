@@ -292,7 +292,6 @@ int app_main(void)
 //		app_sshd_start() ;
 
 	app_buzz_ctrl(80, 2, 0);	//# buzz: power on
-    proxy_server_start() ;
 
     if(app_set->voip.ON_OFF)
 		app_voip_init();

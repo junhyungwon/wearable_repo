@@ -366,9 +366,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		{
             if(irec->rec_evt_cnt > 0)
 			{
-  		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
-		        sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
-		
+				strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
+				if(irec->encryption_rec)
+					sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi_enc", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+				else
+					sprintf(filename, "%s/%s/E_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+
 		        memset(irec->fname, 0, sizeof(irec->fname));
 		        sprintf(irec->fname, "%s", filename);
 		
@@ -444,10 +447,12 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 		if (irec->fevt == NULL)  // 이전상태 record 아님 
 		{
 //          if(irec->rec_evt_cnt > 0)  // 하스퍼 
-			{
-  		        strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
+//			{
+  		    strftime(buf_time, sizeof(buf_time), "%Y%2m%2d_%2H%2M%2S", &ts);
+			if(irec->encryption_rec)
+				sprintf(filename, "%s/%s/S_%s%03d_%s_%dch.avi_enc", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
+			else
 		        sprintf(filename, "%s/%s/S_%s%03d_%s_%dch.avi", SD_MOUNT_PATH, REC_DIR, buf_time, ifr->t_msec, irec->deviceId, REC_CH_NUM);
-		
 		        memset(irec->fname, 0, sizeof(irec->fname));
 		        sprintf(irec->fname, "%s", filename);
 		   	    irec->fevt = avi_file_open(filename, ifr, irec->en_snd, 
@@ -459,7 +464,7 @@ static int evt_file_open(stream_info_t *ifr, int cmd)
 
 			    dprintf("AVI name %s opened!\n", irec->fname);
 			    return SOK;
-			}
+//			}
 	    }
     }
 	return 0;
