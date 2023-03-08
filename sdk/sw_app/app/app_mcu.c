@@ -508,18 +508,17 @@ int app_mcu_init(void)
 	mic_send_ready();
 	ver = (int)mic_get_version();
 	if(ver < SYS_MCU_VER) {
-		TRACE_INFO(" [warning] micom version is old!!!\n");
+		printf(" [warning] micom version is old!!!\n");
 	}
 	
 //	mic_exit_state(OFF_NONE, 0);	//# for test - no power off
-	TRACE_INFO("micom init done!\n");
+	printf("micom init done!\n");
 	return 0;
 }
 
 int app_mcu_exit(void)
 {
     mic_msg_exit();
-	
 	TRACE_INFO("... done!\n");
 	
 	return 0;

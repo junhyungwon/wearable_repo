@@ -181,6 +181,16 @@ static int __mmc_prepare(void)
 	return SOK;
 }
 
+static void __mmc_error_shutdown(void)
+{
+	app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
+	app_buzz_ctrl(80, 2, 1); //force alarm
+	app_msleep(5000);
+	mic_exit_state(OFF_NORMAL, 0);
+	app_msleep(100);
+	mic_msg_exit();
+}
+
 /*****************************************************************************
 * @brief    app main function
 * @section  [desc] console menu
@@ -281,7 +291,7 @@ int app_main(void)
 //	if(app_set->sys_info.rec_encryption)
 //		app_sshd_start() ;
 
-	app_buzz_ctrl(80, 2);	//# buzz: power on
+	app_buzz_ctrl(80, 2, 0);	//# buzz: power on
     proxy_server_start() ;
 
     if(app_set->voip.ON_OFF)
@@ -445,7 +455,12 @@ int main(int argc, char **argv)
 	app_cfg_init();
 	
 	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
-	dev_disk_mmc_check();
+	if (dev_disk_mmc_check() < 0) {
+		fprintf(stderr, "system will be shutdown. because mmc card is removed\n");
+		__mmc_error_shutdown();
+		return -1;
+	}
+	
 	/* SD 카드 fsck 실행 */
 	if (dev_disk_check_mount(MMC_MOUNT_POINT)) {
 		system("/bin/umount /mmc"); /* umount */
@@ -489,12 +504,7 @@ int main(int argc, char **argv)
 		/* remove update files */
 		ctrl_reset_nand_update();
 	} else {	
-		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
-		app_buzz_ctrl(100, 1);
-		app_msleep(5000);
-		mic_exit_state(OFF_NORMAL, 0);
-		app_msleep(100);
-		mic_msg_exit();
+		__mmc_error_shutdown();
 		return -1;
 	}
 	LOGD("[main] Initializing NAND Flash success!\n");
