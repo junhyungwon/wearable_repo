@@ -166,13 +166,6 @@ static int __mmc_prepare(void)
 	/* mmc mount 확인 */
 	app_cfg->ste.b.mmc = 0; //# default 0
 	if (dev_disk_mmc_check_writable() > 0) { 
-		/* log 디렉토리 생성 */
-		logdir = opendir("/mmc/log") ;
-		if (logdir == NULL) {
-			mkdir("/mmc/log", 0775);
-		} else 
-			closedir(logdir);
-		sync();		
 		/* mmc prepare 성공 */
 		app_cfg->ste.b.mmc = 1;
 	} else 
