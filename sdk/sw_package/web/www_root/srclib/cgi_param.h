@@ -253,6 +253,7 @@ typedef struct _tagCgiSystemConfiguration{
 	char sshver[32] ;
 	char sslver[32] ;
 	char webver[32] ;
+    char syslog[204800] ;
 }T_CGI_SYSTEM_CONFIG;
 
 typedef struct _tagCgiUserConfig {

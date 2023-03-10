@@ -1437,6 +1437,8 @@ static int getSystemInfo(T_CGI_SYSTEM_INFO *t){
 static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 {
 	char MacAddr[12]={0} ;
+	int total_size= 0 ;
+	FILE *in = NULL;
 
 	sprintf(t->model, "%s", MODEL_NAME);
 	sprintf(t->cert_model, "%s", CERT_MODEL_NAME);
@@ -1451,6 +1453,17 @@ static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 	sprintf(t->sshver, "%s", app_set->module_ver.OpenSSH_ver);
 	sprintf(t->sslver, "%s", app_set->module_ver.OpenSSL_ver);
 	sprintf(t->webver, "%s", app_set->module_ver.Webserver_ver);
+
+	in = fopen("/media/nand/log/message.log", "r");
+	if(in != NULL)
+	{
+		fseek(in, 0, SEEK_END) ;
+		total_size = ftell(in) ;
+		fseek(in, 0, SEEK_SET) ;
+		fread(t->syslog, sizeof(char), total_size, in) ;
+		fclose(in) ;
+	}
+
 
 	return 0;
 }
