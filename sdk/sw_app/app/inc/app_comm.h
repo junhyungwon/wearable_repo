@@ -21,9 +21,6 @@
 /*----------------------------------------------------------------------------
  Definitions and macro
 -----------------------------------------------------------------------------*/
-#define __DEBUG__
-#define USE_SYSLOGD  (1) //# 0-> disable syslogd
-
 //# error type
 #define SOK			(0)
 #define EFAIL		(-1)
