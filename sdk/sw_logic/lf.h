@@ -42,6 +42,8 @@
 /** pink  \033[35m **/
 /** teal  \033[36m **/
 /** white \033[37m **/
+#define __DEBUG__
+#define USE_SYSLOGD  (1) //# 0-> disable syslogd
 
 #ifdef __DEBUG__
 #define TRACE_INFO(x,...) do { printf(" [app ] \033[32m%s: \033[0m", __func__); printf(x, ##__VA_ARGS__); fflush(stdout); } while(0)
