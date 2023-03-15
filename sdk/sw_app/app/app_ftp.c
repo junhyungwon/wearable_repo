@@ -579,6 +579,7 @@ static int ftp_send_file(int sd, char *filename)
         {
             return -1 ;
         }
+		LOGD("[main] ftp server ip = %s id = %s upload filename = %s\n",app_set->ftp_info.ipaddr,app_set->ftp_info.id, source_fname );
 
         ftp_dbg("ftpRecvResponse After STORE = %s\n", buf);
 	    if (strncmp(buf, "150", 3) == 0) 
@@ -1516,6 +1517,7 @@ static void ftp_send(void)
 			{
 		        ret = ftp_login(iftp->lsdFtp, app_set->ftp_info.id, app_set->ftp_info.pwd);
 			ftp_dbg(" \n[ftp] FTP login ret == %d !! \n", ret);
+				LOGD("[main] ftp login Success  !!! server ip = %s id = %s, sender IP = %s\n",app_set->ftp_info.ipaddr, app_set->ftp_info.id, app_set->net_info.eth_ipaddr );
 	            if(ret == 0)
                 {
 			        iftp->ftp_state = FTP_STATE_SENDING;
@@ -1535,6 +1537,7 @@ static void ftp_send(void)
                         retry_cnt += 1 ;
 
 			        ftp_dbg("ftp login failure ID:%s, PWD:%s \n",app_set->ftp_info.id,app_set->ftp_info.pwd);
+					LOGD("[main] ftp login Fail  !!! server ip = %s id = %s\n",app_set->ftp_info.ipaddr,app_set->ftp_info.id );
                     app_leds_eth_status_ctrl(LED_FTP_ERROR);
                 }
 			}
@@ -1550,6 +1553,7 @@ static void ftp_send(void)
             retry_cnt += 1 ;
 
 		    ftp_dbg("ftp connection failure ip:%s port = %d\n", app_set->ftp_info.ipaddr, app_set->ftp_info.port);
+			LOGD("[main] ftp connection Fail !!! server ip = %s\n",app_set->ftp_info.ipaddr);
             app_leds_eth_status_ctrl(LED_FTP_ERROR);
 		}
 
@@ -1668,6 +1672,7 @@ static void ftp_send(void)
 		if(file_cnt == 0)
 		{
 			ftp_dbg(" \n[ftp] send file Done --\n");
+			LOGD("[main] ftp sender ip = %s id = %s, File Sending is completed\n",app_set->net_info.eth_ipaddr, app_set->ftp_info.id);
             app_leds_backup_state_ctrl(LED_FTP_OFF);
             app_leds_eth_status_ctrl(LED_FTP_OFF);
 		    iftp->ftp_state = FTP_STATE_SEND_DONE;
@@ -1678,6 +1683,7 @@ static void ftp_send(void)
 		else
 		{
 			ftp_dbg(" \n[ftp] File left after sending file --\n");
+			LOGD("[main] Remain File count = %d\n",iftp->file_cnt);
             app_leds_eth_status_ctrl(LED_FTP_ERROR);
             app_leds_backup_state_ctrl(LED_FTP_ERROR);
             iftp->ftp_state = FTP_STATE_NONE ;
@@ -1774,6 +1780,7 @@ static void *THR_ftp(void *prm)
 
 							app_cfg->ste.b.ftp_run = 1 ;  // rec key disable
 
+							LOGD("[main] Sending File count for FTP backup remain file count %d\n",iftp->file_cnt);
 							ftp_send() ;
 							save_filelist();
 							app_cfg->ste.b.ftp_run = 0 ;

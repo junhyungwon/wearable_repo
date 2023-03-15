@@ -15,7 +15,7 @@ char gUID[21];
 int gSID_Used[20];
 int gSID_StartTime[20];
 
-// default password if no "passwd.txt" exist
+// default password if no "p2p.txt" exist
 char gUsername[32]="linkflow";
 char gPassword[32]="12345678";
 
@@ -94,7 +94,7 @@ int TunnelSessionInfoCB(sP2PTunnelSessionInfo *sSessionInfo, void *pArg)
 		printf("Connection mode: %s\n", (sessionInfo.bMode == 0) ? "P2P" : "RLY");
 		printf("----------End of Session info :----------\n\n");
 				
-		FILE *pfd = fopen("/tmp/passwd.txt","r");
+		FILE *pfd = fopen("/tmp/p2p.txt","r");
 		if(pfd!=NULL)
 		{
 			memset(gUsername, 0, sizeof(gUsername));

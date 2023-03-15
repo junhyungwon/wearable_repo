@@ -48,6 +48,7 @@
 #include "app_set.h"
 #include "app_rec.h"
 
+
 /*------------------------------------------------------------------------------
 Defines
 ------------------------------------------------------------------------------*/
@@ -431,11 +432,18 @@ int gettime_from_ntp(char *server_addr)
 static int time_sync(void)
 {
     int retval = FALSE;
-    char buff[16], timesrv_addr[32] = {0, } ;
-    time_t timeval, time_val, set ;
-    struct tm tp, tv;
+    char buff[16], timesrv_addr[32] = {0, }, buf[100] ;
+    time_t timeval, time_val, set, now_time ;
+    struct tm tp, tv, *now_date;
     struct hostent *hp;
 	
+	time(&now_time) ;
+
+	now_date = localtime(&now_time) ;
+	strcpy(buf, asctime(now_date)) ;
+
+    LOGD("[main]--- Current time %s ---\n",buf);
+
 	//TRACE_INFO("Enter time sync!...\n");
     if(check_ipaddress(app_set->time_info.time_server)) {
 		strncpy(timesrv_addr, app_set->time_info.time_server, strlen(app_set->time_info.time_server));
@@ -464,10 +472,13 @@ static int time_sync(void)
 		gmtime_r(&timeval, &tp);
 		TRACE_INFO("ntp time: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
 				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
+		LOGD("[main]ntp time: %d-%d-%d %d:%d:%d\n", tp.tm_year + 1900, tp.tm_mon + 1,
+				tp.tm_mday, tp.tm_hour, tp.tm_min, tp.tm_sec);
 		if (dev_rtc_set_time(tp) < 0) {
             TRACE_INFO("Failed to set system time to rtc\n!!!");
         } else {
             TRACE_INFO("--- changed time from Time server ---\n");
+            LOGD("[main]--- changed time from Time server ---\n");
             sprintf(buff, "/opt/fit/bin/tz_set &") ;  // it needs file create time sync with windows browser
             system(buff) ;
             retval = TRUE;

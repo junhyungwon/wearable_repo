@@ -284,7 +284,7 @@ static int __normal_update(void)
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
 	dev_fw_setenv("nand_update", "1", 0);
-	LOGD("[main] Starting Firmware update....system will be restart!\n");
+	LOGD("[main] Starting Normal Firmware update....system will be restart!\n");
 	ret = SOK;
 	
 fw_exit:
@@ -341,6 +341,7 @@ static int __emergency_update(void)
 	sprintf(cmd, "/bin/rm -rf %s", pFile);
 	system(cmd);
 	sync();
+	LOGD("[main] Starting Emergency Firmware update....system will be restart!\n");
 	//# wait for safe
 	app_msleep(500);
 		
@@ -1214,6 +1215,7 @@ void ctrl_sys_halt(int shutdown)
 	}
 	app_file_exit(); /* 파일리스트 갱신 작업이 추가됨 */
     TRACE_INFO("file manager exit success.(while system %s!)\n", shutdown ? "shutdown" : "reboot");
+    LOGD("file manager exit success.(while system %s!)\n", shutdown ? "shutdown" : "reboot");
 	app_set_write();
 	
 	if (shutdown) {

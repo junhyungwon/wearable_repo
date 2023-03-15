@@ -531,16 +531,19 @@ static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
 
 		if(0!=strcmp(t->wireless.ipv4, app_set->net_info.wlan_ipaddr)){
 			strcpy(app_set->net_info.wlan_ipaddr, t->wireless.ipv4);
+			LOGD("[main] --- UDS: Set Wireless NETWORK IP %s--- id : admin\n", app_set->net_info.wlan_ipaddr);
 			DBG_UDS("app_set->net_info.wlan_ipaddr=%s\n", app_set->net_info.wlan_ipaddr);
 			isChanged++;
 		}
 		if(0!=strcmp(t->wireless.gw, app_set->net_info.wlan_gateway)){
 			strcpy(app_set->net_info.wlan_gateway, t->wireless.gw);
+			LOGD("[main] --- UDS: Set Wireless NETWORK Gateway %s--- id : admin\n", app_set->net_info.wlan_gateway);
 			DBG_UDS("app_set->net_info.wlan_gateway=%s\n", app_set->net_info.wlan_gateway);
 			isChanged++;
 		}
 		if(0!=strcmp(t->wireless.mask, app_set->net_info.wlan_netmask)){
 			strcpy(app_set->net_info.wlan_netmask, t->wireless.mask);
+			LOGD("[main] --- UDS: Set Wireless NETWORK Subnet %s--- id : admin\n", app_set->net_info.wlan_netmask);
 			DBG_UDS("app_set->net_info.wlan_netmask=%s\n", app_set->net_info.wlan_netmask);
 			isChanged++;
 		}
@@ -558,16 +561,19 @@ static int setNetworkConfiguration2(T_CGI_NETWORK_CONFIG2 *t)
 		if(0!=strcmp(t->cradle.ipv4, app_set->net_info.eth_ipaddr)){
 			strcpy(app_set->net_info.eth_ipaddr, t->cradle.ipv4);
 			DBG_UDS("app_set->net_info.eth_ipaddr=%s\n", app_set->net_info.eth_ipaddr);
+			LOGD("[main] --- UDS: Set Ethernet NETWORK IP %s--- id : admin\n", app_set->net_info.eth_ipaddr);
 			isChanged++;
 		}
 		if(0!=strcmp(t->cradle.gw, app_set->net_info.eth_gateway)){
 			strcpy(app_set->net_info.eth_gateway, t->cradle.gw);
 			DBG_UDS("app_set->net_info.eth_gateway=%s\n", app_set->net_info.eth_gateway);
+			LOGD("[main] --- UDS: Set Ethernet NETWORK gateway %s--- id : admin\n", app_set->net_info.eth_gateway);
 			isChanged++;
 		}
 		if(0!=strcmp(t->cradle.mask, app_set->net_info.eth_netmask)){
 			strcpy(app_set->net_info.eth_netmask, t->cradle.mask);
 			DBG_UDS("app_set->net_info.eth_netmask=%s\n", app_set->net_info.eth_netmask);
+			LOGD("[main] --- UDS: Set Ethernet NETWORK subnet %s--- id : admin\n", app_set->net_info.eth_netmask);
 			isChanged++;
 		}
 	}
@@ -1450,7 +1456,7 @@ static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 	}else {
 		sprintf(t->mac, "%s", "_MACADDRESS_");
 	}
-	sprintf(t->sshver, "%s", app_set->module_ver.OpenSSH_ver);
+//	sprintf(t->sshver, "%s", app_set->module_ver.OpenSSH_ver);
 	sprintf(t->sslver, "%s", app_set->module_ver.OpenSSL_ver);
 	sprintf(t->webver, "%s", app_set->module_ver.Webserver_ver);
 
@@ -1463,7 +1469,6 @@ static int getSystemConfiguration(T_CGI_SYSTEM_CONFIG *t)
 		fread(t->syslog, sizeof(char), total_size, in) ;
 		fclose(in) ;
 	}
-
 
 	return 0;
 }

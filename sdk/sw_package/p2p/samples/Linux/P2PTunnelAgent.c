@@ -40,7 +40,7 @@ int gRetryConnectFailedCnt[MAX_SERVER_CONNECT_NUM];
 
 int gWebPort = WEB_MAPPING_LOCAL_PORT;
 
-// default password if no "passwd.txt" exist
+// default password if no "p2p.txt" exist
 char gUsername[32]="linkflow";
 char gPassword[32]="12345678";
 int connectTime = 0x07;
@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
 	
 	sAuthData authData;
 
-	if( (pfd=fopen("passwd.txt","r")) !=NULL )
+	if( (pfd=fopen("p2p.txt","r")) !=NULL )
 	{
 		memset(gUsername, 0, sizeof(gUsername));
 		if ( fgets(gUsername, sizeof(gUsername), pfd) != NULL ) {
