@@ -193,7 +193,7 @@ static void char_memset(void)
     memset(app_set->srv_info.reserved, CFG_INVALID, 126) ;
 
 	//# FTP information
-    app_set->ftp_info.type = OFF ;
+    app_set->ftp_info.type = ON ;
     app_set->ftp_info.port = CFG_INVALID ;
     memset(app_set->ftp_info.ipaddr, CHAR_MEMSET, MAX_CHAR_16);
     memset(app_set->ftp_info.id, CHAR_MEMSET, MAX_CHAR_16);
@@ -205,7 +205,7 @@ static void char_memset(void)
     memset(app_set->ftp_info.reserved, CFG_INVALID, 126);
 
 	//# FOTA information
-    app_set->fota_info.type = OFF ; // OFF FTP, ON SFTP
+    app_set->fota_info.type = ON ; // OFF FTP, ON SFTP
     app_set->fota_info.port = CFG_INVALID ;
     app_set->fota_info.svr_info = CFG_INVALID ;  // manual input or use ftp ipaddress
     memset(app_set->fota_info.ipaddr, CHAR_MEMSET, MAX_CHAR_32);
@@ -832,10 +832,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	pset->sys_info.dev_cam_ch = MODEL_CH_NUM;
 	//# FTP information
 	if(pset->ftp_info.type <= CFG_INVALID)
-		pset->ftp_info.port	= OFF;
+		pset->ftp_info.port	= ON;
 
 	if(pset->ftp_info.port <= CFG_INVALID)
-		pset->ftp_info.port	= 21;
+		pset->ftp_info.port	= 990;
  
     if(pset->ftp_info.ON_OFF <= CFG_INVALID)
         pset->ftp_info.ON_OFF = OFF ;
@@ -854,10 +854,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
 
 	//# FOTA information
 	if(pset->fota_info.type <= CFG_INVALID)
-		pset->fota_info.type	= OFF;
+		pset->fota_info.type	= ON;
 
 	if(pset->fota_info.port <= CFG_INVALID)
-		pset->fota_info.port	= 21;
+		pset->fota_info.port	= 990;
  
 	if(pset->fota_info.svr_info <= CFG_INVALID)
 		pset->fota_info.svr_info	= 0;
@@ -1299,16 +1299,17 @@ static void app_set_default(int default_type)
     strcpy(app_set->srv_info.ipaddr, "0.0.0.0") ;
 
 	//# FTP information
-    app_set->ftp_info.type = OFF;
-    app_set->ftp_info.port = 21;
+    app_set->ftp_info.type = ON;
+    app_set->ftp_info.port = 990;
+
     app_set->ftp_info.ON_OFF = OFF ;
     strcpy(app_set->ftp_info.ipaddr, "192.168.1.23");
     strcpy(app_set->ftp_info.id, "FTP_ID");
     strcpy(app_set->ftp_info.pwd, "FTP_PASSWORD");
 
 	//# FOTA information
-    app_set->fota_info.type = OFF;
-    app_set->fota_info.port = 21;
+    app_set->fota_info.type = ON;
+    app_set->fota_info.port = 990;
     app_set->fota_info.svr_info = 0;
     app_set->fota_info.ON_OFF = OFF ;
     strcpy(app_set->fota_info.ipaddr, "192.168.40.6");
