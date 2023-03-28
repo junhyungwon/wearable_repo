@@ -57,7 +57,7 @@ int add_p2p_account()
 
     FILE *fp = NULL ;
 
-    if((fp = fopen("/tmp/p2p.txt", "w")) != NULL) 
+    if((fp = fopen("/tmp/passwd.txt", "w")) != NULL) 
     { 
 #if 0 // RTSP 계정을 공유하기로 함...
         fprintf(fp,"%s\n",app_set->sys_info.p2p_id) ;
