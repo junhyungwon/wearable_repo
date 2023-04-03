@@ -46,4 +46,4 @@ clean:
 	$(RM) $(TARGET)
 
 install: all
-	sudo cp $(TARGET) $(TARGET_PATH)/usr/lib/
+	cp $(TARGET) $(TARGET_PATH)/usr/lib/

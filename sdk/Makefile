@@ -10,8 +10,15 @@ include $(ROOTDIR)/makerules/platform.mk
 include $(ROOTDIR)/component.mk
 
 ##### APP BUILD #####
+check_directory:
+ifneq (tftp_dir, $(shell if [ -d "$(TFTP_HOME)" ]; then echo tftp_dir; fi))
+	echo "Creating TFTP HOME $(TFTP_HOME)"
+	@-mkdir -p $(TFTP_HOME)
+	chmod 755 $(TFTP_HOME)
+endif
 
 app:
+	$(MAKE) check_directory
 	$(MAKE) libuv
 	$(MAKE) librtmp
 	$(MAKE) libLF
@@ -24,17 +31,28 @@ app_clean:
 	$(MAKE) -fMAKEFILE.MK -C$(APP_DIR) clean
 
 rfs_unzip:
-	sudo tar zxvf $(TARGET_ROOT)/rfs.tar.gz -C $(TARGET_ROOT)/
+	echo "Creating rootfs directory"
+	mkdir -p $(TARGET_ROOT)/rfs
+	@tar xvf $(TARGET_ROOT)/rootfs.tar -C $(TARGET_ROOT)/rfs
+	echo "Creating MCFW target directory $(TARGET_MCFW_DIR)/kermod"
+	@mkdir -p $(TARGET_MCFW_DIR)/kermod
+	echo "creating WEB target directory"
+	mkdir -p $(TARGET_FS)/var/www
+	mkdir -p $(TARGET_FS)/var/log
+	mkdir -p $(TARGET_FS)/var/run
+	mkdir -p $(TARGET_FS)/opt/fit/bin
 
 rfs_clean:
-	sudo rm -rf $(TARGET_ROOT)/rfs
+ifeq (rfs_dir, $(shell if [ -d "$(TARGET_ROOT)/rfs" ]; then echo rfs_dir; fi))
+	rm -rf $(TARGET_ROOT)/rfs
+endif
 
 bin_clean:
 	rm -rf $(TFTP_HOME)/MLO
 	rm -rf $(TFTP_HOME)/boot.scr
 	rm -rf $(TFTP_HOME)/rfs_fit.ubifs
-	sudo rm -rf $(TFTP_HOME)/u-boot_fit.bin
-	sudo rm -rf $(TFTP_HOME)/u-boot_fit-min.nand
+	rm -rf $(TFTP_HOME)/u-boot_fit.bin
+	rm -rf $(TFTP_HOME)/u-boot_fit-min.nand
 	rm -rf $(TFTP_HOME)/uImage_fit
 	rm -rf $(TARGET_MCFW_DIR)/bin/*
 
@@ -283,8 +301,7 @@ uboot_clean:
 	$(MAKE) ubootbuild MAKE_TARGET=distclean
 
 uboot:
-	-mkdir -p $(TFTP_HOME)
-	sudo chmod 755 $(TFTP_HOME)
+	$(MAKE) check_directory
 	$(MAKE) ubootminsd
 	$(MAKE) ubootminnand
 	$(MAKE) ubootbin
@@ -328,6 +345,7 @@ lspmodule:
 	cp $(KERNELDIR)/drivers/net/tun.ko $(TARGET_MCFW_DIR)/kermod/.
 
 lsp:
+	$(MAKE) check_directory
 	$(MAKE) lspcfg
 	$(MAKE) lspbuild MAKE_TARGET=uImage
 	$(MAKE) lspbuild MAKE_TARGET=modules
@@ -400,7 +418,6 @@ syslinkbuild:
 
 syslink:
 	$(MAKE) syslinkbuild DEVICE=TI814X TARGET=syslink
-	-mkdir -p $(TARGET_MCFW_DIR)/kermod
 	cp $(syslink_OUT_DIR)/syslink.ko $(TARGET_MCFW_DIR)/kermod/.
 	@echo -e "\n--- make syslink done! (`date +'%H:%M:%S'`)---\n"
 
@@ -428,60 +445,60 @@ cmemall: cmem_clean cmem
 ##### FILESYS MAKE #####
 
 ubifs:
-	sudo $(TARGET_ROOT)/mkfs.ubifs -r $(TARGET_FS) -F -o ubifs.img -m 2KiB -e 124KiB -c 512
-	sudo $(TARGET_ROOT)/ubinize -o $(TFTP_HOME)/rfs_$(SYSTEM_CFG).ubifs -m 2048 -p 128KiB -s 512 -O 2048 $(TARGET_ROOT)/ubinize.cfg
-	sudo rm -rf ubifs.img
+	$(TARGET_ROOT)/mkfs.ubifs -r $(TARGET_FS) -F -o ubifs.img -m 2KiB -e 124KiB -c 512
+	$(TARGET_ROOT)/ubinize -o $(TFTP_HOME)/rfs_$(SYSTEM_CFG).ubifs -m 2048 -p 128KiB -s 512 -O 2048 $(TARGET_ROOT)/ubinize.cfg
+	rm -rf ubifs.img
 	@echo -e "\n--- make ubifs_image done! (`date +'%H:%M:%S'`)---\n"
 
 fsupdate:
-	-sudo /bin/mkdir -p $(EXEC_DIR)
-	-sudo /bin/mkdir -p $(EXEC_DIR)/bin
-	sudo /bin/cp $(APP_DIR)/lib/libfont_db.so $(TARGET_FS)/usr/lib/.
-	sudo /bin/cp -Rp $(TARGET_MCFW_DIR)/* $(EXEC_DIR)/.
-	sudo /bin/cp -f $(TFTP_HOME)/wis-streamer $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(TFTP_HOME)/process_check $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(TFTP_HOME)/proxy $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/network_manager/net_mgr.out $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.
+	-mkdir -p $(EXEC_DIR)
+	-mkdir -p $(EXEC_DIR)/bin
+	cp $(APP_DIR)/lib/libfont_db.so $(TARGET_FS)/usr/lib/.
+	cp -Rp $(TARGET_MCFW_DIR)/* $(EXEC_DIR)/.
+	cp -f $(TFTP_HOME)/wis-streamer $(EXEC_DIR)/bin/.
+	cp -f $(TFTP_HOME)/ntpclient $(EXEC_DIR)/bin/.
+	cp -f $(TFTP_HOME)/tz_set $(EXEC_DIR)/bin/.
+	cp -f $(TFTP_HOME)/P2PTunnelServer_ti $(EXEC_DIR)/bin/.
+	cp -f $(TFTP_HOME)/process_check $(EXEC_DIR)/bin/.
+	cp -f $(TFTP_HOME)/proxy $(EXEC_DIR)/bin/.
+	cp -f $(EXTERNAL_PACKAGE)/network_manager/net_mgr.out $(EXEC_DIR)/bin/.
+	cp -f $(EXTERNAL_PACKAGE)/av_rec/av_rec.out $(EXEC_DIR)/bin/.
+	cp -f $(EXTERNAL_PACKAGE)/gnss/app_gnss.out $(EXEC_DIR)/bin/.
 ifeq ($(USE_VOIP),YES)
-	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/re/libre.so $(TARGET_FS)/usr/lib/.
-	sudo /bin/cp $(EXTERNAL_PACKAGE)/voip/rem/librem.so $(TARGET_FS)/usr/lib/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/baresip.out $(EXEC_DIR)/bin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/voip/baresip/*.so $(TARGET_FS)/usr/baresip/modules/.
+	cp $(EXTERNAL_PACKAGE)/voip/re/libre.so $(TARGET_FS)/usr/lib/.
+	cp $(EXTERNAL_PACKAGE)/voip/rem/librem.so $(TARGET_FS)/usr/lib/.
+	cp -f $(EXTERNAL_PACKAGE)/voip/baresip/baresip.out $(EXEC_DIR)/bin/.
+	cp -f $(EXTERNAL_PACKAGE)/voip/baresip/*.so $(TARGET_FS)/usr/baresip/modules/.
 endif
 ifeq ($(USE_WIFI),YES)
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd_cli $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_cli $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_passphrase $(TARGET_FS)/usr/sbin/.
-	sudo /bin/cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_supplicant $(TARGET_FS)/usr/sbin/.
+	cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd $(TARGET_FS)/usr/sbin/.
+	cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/hostapd/hostapd_cli $(TARGET_FS)/usr/sbin/.
+	cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_cli $(TARGET_FS)/usr/sbin/.
+	cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_passphrase $(TARGET_FS)/usr/sbin/.
+	cp -f $(EXTERNAL_PACKAGE)/wlan_tools/wpa_supplicant_hostapd-0.8_rtw/wpa_supplicant/wpa_supplicant $(TARGET_FS)/usr/sbin/.
 endif
-	sudo /bin/cp -f $(TFTP_HOME)/onvifserver $(EXEC_DIR)/bin/
-	sudo /bin/cp -f $(TFTP_HOME)/onvifconfig.xml $(EXEC_DIR)/bin/
-	sudo /bin/cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/
-	sudo /bin/cp -f $(TFTP_HOME)/server.crt $(EXEC_DIR)/
-	sudo /bin/cp -f $(TFTP_HOME)/server.key $(EXEC_DIR)/
-	sudo /bin/cp -f $(TFTP_HOME)/server.pem $(EXEC_DIR)/
-	sudo /bin/chmod -Rf 755 $(EXEC_DIR)/bin
-	sudo /bin/chmod 755 $(EXEC_DIR)/*.sh
-	sudo /bin/chmod 755 $(EXEC_DIR)/scripts/*.sh
+	cp -f $(TFTP_HOME)/onvifserver $(EXEC_DIR)/bin/
+	cp -f $(TFTP_HOME)/onvifconfig.xml $(EXEC_DIR)/bin/
+	cp -f $(TFTP_HOME)/onvifsnapshot.jpg $(EXEC_DIR)/bin/
+	cp -f $(TFTP_HOME)/server.crt $(EXEC_DIR)/
+	cp -f $(TFTP_HOME)/server.key $(EXEC_DIR)/
+	cp -f $(TFTP_HOME)/server.pem $(EXEC_DIR)/
+	chmod -Rf 755 $(EXEC_DIR)/bin
+	chmod 755 $(EXEC_DIR)/*.sh
+	chmod 755 $(EXEC_DIR)/scripts/*.sh
 
 # cp lighttpd's mod_auth, mod_openssl
-	sudo /bin/cp -f $(LOGIC_DIR)/libLF.so $(TARGET_FS)/usr/lib/.
-	sudo /bin/cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_auth.so $(TARGET_FS)/usr/lib/lighttpd/mod_auth.so
-	sudo /bin/cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_openssl.so $(TARGET_FS)/usr/lib/lighttpd/mod_openssl.so
+	cp -f $(LOGIC_DIR)/libLF.so $(TARGET_FS)/usr/lib/.
+	cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_auth.so $(TARGET_FS)/usr/lib/lighttpd/mod_auth.so
+	cp -f $(THIRD_PARTY)/lighttpd1.4/src/.libs/mod_openssl.so $(TARGET_FS)/usr/lib/lighttpd/mod_openssl.so
 
 ifeq ($(USE_WIFI),YES)
-	sudo /bin/cp $(KMODDIR)/wlan/88x1au_driver/8811au.ko $(TARGET_FS)/lib/modules/.
-	sudo /bin/cp $(KMODDIR)/wlan/88x2bu_driver/88x2bu.ko $(TARGET_FS)/lib/modules/.
+	cp $(KMODDIR)/wlan/88x1au_driver/8811au.ko $(TARGET_FS)/lib/modules/.
+	cp $(KMODDIR)/wlan/88x2bu_driver/88x2bu.ko $(TARGET_FS)/lib/modules/.
 endif
 
 ifeq ($(USE_KCMVP), YES)
-	sudo /bin/cp -f $(THIRD_PARTY)/kcmvp/linux_dll/2.6_armv7l_32_44_post_limit/libMagicCrypto* $(TARGET_FS)/usr/lib/.
+	cp -f $(THIRD_PARTY)/kcmvp/linux_dll/2.6_armv7l_32_44_post_limit/libMagicCrypto* $(TARGET_FS)/usr/lib/.
 endif
 	@echo -e "\n--- RFS update for $(RDK_BOARD_TYPE) (`date +'%H:%M:%S'`)---\n"
 
