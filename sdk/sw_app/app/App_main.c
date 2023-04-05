@@ -567,6 +567,6 @@ int main(int argc, char **argv)
 	mcfw_linux_exit();
 	main_thread_exit();
 //	app_mcu_exit();		//# will power off after 200mS
-	TRACE_INFO(stderr, "--- NEXX end ---\n\n");
+	TRACE_INFO("--- NEXX end ---\n\n");
 	return 0;
 }
