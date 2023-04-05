@@ -21,50 +21,10 @@
 
 int main(int argc, char *argv[])
 {
-	FILE *f = NULL;
-	char lineBuf[256 + 1];
-	char command[256]={0,};
-	
 	while (1)
 	{
-		f = popen("/bin/ps ax", "r");
-		if (f == NULL) {
-			fprintf(stderr, "Failed to execute ps ax\n");
-			return -1;
-		}
-	
-		while (fgets(lineBuf, sizeof(lineBuf), f) != NULL)
-		{
-			char *s, *ptr;
-			int pid;
-			
-			/* find defunct: */
-			if ((s = strstr(lineBuf, "defunct")) != NULL) 
-			{
-				/*
-				* ps ax
-				* 400 ?        Z      0:00 [wis-streamer] <defunct>
-				*/
-				ptr = strtok(lineBuf, " "); //# delimiter space
-				if (ptr != NULL) {
-					sscanf(ptr, "%d\n", &pid);
-					//kill(pid, SIGKILL); //# kill -9
-					sprintf(command, "killall wis-streamer");
-					system(command);
-					printf("PID %d killed using %s!\n", pid, command);
-					sleep(1);
-				}
-			}
-		}
-		
-		if (f != NULL)
-			pclose(f);
-		
+		//system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | kill -9");
+		system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs -r kill -9");
 		sleep(2);
-		/*
-		 * zombie process일 경우 kill (xargs -I {} <- null process id 방지)
-		 */
-		//system("ps -ef | grep defunct | grep -v grep | grep wis-streamer | awk '{print $3}' | xargs -I{} kill -9");
     }
 }
-
