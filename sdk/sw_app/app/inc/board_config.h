@@ -22,6 +22,7 @@
 #if defined(LF_SYS_NEXX360W)            //# NEXX360 Wireless
 #	define NEXX360W						
 #	define MODEL_NAME					"NEXX360W"
+#	define CERT_MODEL_NAME				"LF-F110"
 #	define MODEL_CH_NUM					4
 #	define STREAM_CH_NUM				4
 #	define JPEG_CH_NUM					5
