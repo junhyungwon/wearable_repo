@@ -32,7 +32,7 @@
  Definitions and macro
 -----------------------------------------------------------------------------*/
 #define P2P_SERVER 		"/opt/fit/bin/P2PTunnelServer_ti"
-//# name size of process in /proc/../status is 16 (--> '_' ±âÈ£ ¶§¹®¿¡ _ti °¡ ¹«½ÃµÊ )
+//# name size of process in /proc/../status is 16 (--> '_' ê¸°í˜¸ ë•Œë¬¸ì— _ti ê°€ ë¬´ì‹œë¨ )
 #define P2P_NAME   		"P2PTunnelServer"
 #define CHECK_MSEC       1000
 
@@ -59,7 +59,7 @@ int add_p2p_account()
 
     if((fp = fopen("/tmp/passwd.txt", "w")) != NULL) 
     { 
-#if 0 // RTSP °èÁ¤À» °øÀ¯ÇÏ±â·Î ÇÔ...
+#if 0 // RTSP ê³„ì •ì„ ê³µìœ í•˜ê¸°ë¡œ í•¨...
         fprintf(fp,"%s\n",app_set->sys_info.p2p_id) ;
         fprintf(fp,"%s\n",app_set->sys_info.p2p_passwd) ;
 #endif
@@ -105,6 +105,8 @@ int app_p2p_start(void)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXXONE", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #elif defined(NEXX360W)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
+#elif defined(NEXX360W_CCTV)
+					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W_CCTV", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #elif defined(NEXX360W_MUX)
 					snprintf(p2p_cmd, sizeof(p2p_cmd), "%s %s %s %s %s &", P2P_SERVER, app_set->sys_info.uid ,"NEXX360W_MUX", app_set->sys_info.fw_ver, app_set->sys_info.deviceId);
 #elif defined(NEXXB)
@@ -159,7 +161,7 @@ static void *THR_p2p(void *prm)
             break;
         }
 		
-		/* P2PTunnelServer_ti--> _ ÀÎ½Ä¾ÈµÊ (P2PTunnelServer·Î È®ÀÎµÊ) */
+		/* P2PTunnelServer_ti--> _ ì¸ì‹ì•ˆë¨ (P2PTunnelServerë¡œ í™•ì¸ë¨) */
         ret = ctrl_is_live_process((const char *)P2P_NAME);
         if (!ret) {
             app_p2p_start();

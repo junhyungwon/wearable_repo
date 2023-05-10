@@ -26,6 +26,6 @@
 -----------------------------------------------------------------------------*/
 int app_buzz_init(void);
 void app_buzz_exit(void);
-void app_buzz_ctrl(int time, int cnt);
+void app_buzz_ctrl(int time, int cnt, int force);
 
 #endif	/* __APP_BUZZ_H__ */
