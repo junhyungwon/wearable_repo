@@ -30,7 +30,7 @@ endif
 #  NEXX360C: NEXX360 Basic for CCTV
 #    ====> STREAMING: OFF, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF, BUZZER: ON
 #  NEXX360W_CCTV: NEXX360 Wireless for CCTV
-#    ====> STREAMING: ON, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF, BUZZER: ON
+#    ====> STREAMING: ON, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF, BACKCHANNEL_AUDIO: ON, BUZZER: ON
 #
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
@@ -38,10 +38,10 @@ endif
 #SYSTEM_PLATFORM := NEXX360M
 #SYSTEM_PLATFORM := NEXXB
 #SYSTEM_PLATFORM := NEXXB_ONE
-#SYSTEM_PLATFORM := NEXXONE_VOIP
+SYSTEM_PLATFORM := NEXXONE_VOIP
 #SYSTEM_PLATFORM := NEXX360W_MUX
 #SYSTEM_PLATFORM := NEXX360C
-SYSTEM_PLATFORM := NEXX360W_CCTV
+#SYSTEM_PLATFORM := NEXX360W_CCTV
 ######################################################################################
 
 #--- Build Type (debug/release)
@@ -93,8 +93,6 @@ USE_CCTV = YES
 ifeq ($(SYSTEM_PLATFORM), NEXX360B)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP := NO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -103,8 +101,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP = YES
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -113,8 +109,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360M)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP = NO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -123,8 +117,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXXB)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP = YES
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -133,8 +125,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXXB_ONE)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP = YES
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -143,8 +133,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXXONE_VOIP)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP = YES
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -153,8 +141,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W_MUX)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP = NO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -163,8 +149,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360C)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP := NO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -173,8 +157,6 @@ endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W_CCTV)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
-	#--- Select VOIP method (YES/NO)
-	USE_VOIP := NO
 	#--- Select External Battery method (YES/NO)
 	EXTERNAL_BATTERY_ONLY = NO
 	#--- Select CCTV (YES/NO)
@@ -374,7 +356,6 @@ export UBX_TARGET
 export SYSTEM_PLATFORM
 export USE_ISP
 export USE_WIFI
-export USE_VOIP
 export USE_KCMVP
 export THIRD_PARTY
 export EXTERNAL_PACKAGE
