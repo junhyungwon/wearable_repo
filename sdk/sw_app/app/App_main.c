@@ -288,7 +288,7 @@ int app_main(void)
     else
     	app_call_control_init() ;
 
-	app_buzz_ctrl(80, 2);	//# buzz: power on
+	app_buzz_ctrl(80, 2, 0);	//# buzz: power on
 
 #ifdef USE_KCMVP
     struct tm ts ;
@@ -431,6 +431,17 @@ int app_cfg_init(void)
 	return 0;
 }
 
+static void __mmc_error_shutdown(void)
+{
+	app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
+	app_buzz_ctrl(80, 2, 1); //force alarm
+	app_msleep(5000);
+	mic_exit_state(OFF_NORMAL, 0);
+	app_msleep(100);
+	mic_msg_exit();
+}
+
+
 /*****************************************************************************
 * @brief    main function
 * @section  [desc]
@@ -451,9 +462,14 @@ int main(int argc, char **argv)
 	
 	//# ------- SD 카드 상태 확인 및 마운트 점검 ----------------------
 	ret = ctrl_mmc_check_exfat(&part_size);
+	if(ret == -1)
+	{
+		__mmc_error_shutdown();
+	}
 	if (ret == 1) {
 		ctrl_mmc_exFAT_format(part_size);
 	}
+
 	
 	/* SD 카드 fsck 실행 */
 	system("/bin/umount /mmc"); /* umount */
@@ -477,13 +493,8 @@ int main(int argc, char **argv)
 			return 0;
 		/* remove update files */
 		ctrl_reset_nand_update();
-	} else {	
-		app_leds_mmc_ctrl(LED_MMC_RED_BLINK);
-		app_buzz_ctrl(100, 1);
-		app_msleep(5000);
-		mic_exit_state(OFF_NORMAL, 0);
-		app_msleep(100);
-		mic_msg_exit();
+	} else {
+		__mmc_error_shutdown();	
 		return -1;
 	}
 	

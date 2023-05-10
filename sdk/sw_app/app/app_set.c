@@ -982,6 +982,11 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
    	if(pset->voip.ON_OFF <= CFG_INVALID)
 		pset->voip.ON_OFF = OFF;
+#if defined(NEXX360W_CCTV)
+	if(pset->voip.ON_OFF != ON) // Backchannel audio
+		pset->stm_info.enable_audio = ON ;
+#endif
+
 #endif	
 
 	app_cfg->voip_set_ON_OFF = pset->voip.ON_OFF ;
@@ -1351,6 +1356,11 @@ static void app_set_default(int default_type)
 #else
 	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
     app_set->voip.ON_OFF = OFF;
+#if defined(NEXX360W_CCTV)
+	if(app_set->voip.ON_OFF != ON) // Backchannel audio
+		app_set->stm_info.enable_audio = ON ;
+#endif
+
 #endif	
     
 	app_cfg->voip_set_ON_OFF = app_set->voip.ON_OFF ;

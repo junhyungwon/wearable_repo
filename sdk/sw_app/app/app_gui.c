@@ -151,7 +151,7 @@ static void *THR_gui(void *prm)
 		
 		/* VOIP Buzzer */
 		if (app_cfg->ste.b.voip_buzz) {
-			app_buzz_ctrl(100, 2);
+			app_buzz_ctrl(100, 2, 0);
 		}
 	}
 //# -------------- End of VOIP ----------------------------------------------------------------
@@ -159,7 +159,7 @@ static void *THR_gui(void *prm)
 		if (app_cfg->ste.b.mmc_err) {
 			igui->sd_err_tmr++;
 			if ((igui->sd_err_tmr % CNT_SD_ERR_CHECK) == 0) {
-				app_buzz_ctrl(100, 1); /* 5초에 한 번씩 buzzer on */
+				app_buzz_ctrl(100, 1, 0); /* 5초에 한 번씩 buzzer on */
 			} 
 			else if (igui->sd_err_tmr >= CNT_SYS_SHUTDOWN_CHECK) {
 				/* system off : 정해진 시나리오가 없다. */

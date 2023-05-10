@@ -576,7 +576,7 @@ static void *THR_file_mng(void *prm)
 							app_rec_stop(ON); 
 							app_msleep(500); /* wait for record done!! */
 						}
-						app_buzz_ctrl(80, 2); //# Power Off Buzzer
+						app_buzz_ctrl(80, 2, 0); //# Power Off Buzzer
 						app_mcu_pwr_off(OFF_RESET);
 						continue;
 					}
@@ -641,8 +641,9 @@ static void *THR_file_led_mng(void *prm)
 					if (app_rec_state()) {
 						printf("@@@@@@@@@@@@@@@@@@FILE_STATE_OVERWRITE@@@@@@@@@@@@@@@@@@@\n");				
 						app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
-						app_buzz_ctrl(80, 1);
+						app_buzz_ctrl(80, 1, 0);
 						once_over_beep = 1;
+						app_cfg->ste.b.disk_full = ON;
 					}
 				} else {
 					if (!app_rec_state()) {
@@ -650,13 +651,16 @@ static void *THR_file_led_mng(void *prm)
 						once_over_beep = 0;
 					}
 					else
+					{
 						app_leds_mmc_ctrl(LED_MMC_GREEN_BLINK);
+						app_cfg->ste.b.disk_full = ON;
+					}
 				}
 			} else if (state == FILE_STATE_FULL) {
 				if (f_cycle >= CNT_BEEP_FULL) {
 					printf("@@@@@@@@@@@@@@@@@@FILE_STATE_FULL@@@@@@@@@@@@@@@@@@@\n");
 					f_cycle = 0;
-					app_buzz_ctrl(80, 1);
+					app_buzz_ctrl(80, 1, 0);
 				} else 
 					f_cycle++;
 				

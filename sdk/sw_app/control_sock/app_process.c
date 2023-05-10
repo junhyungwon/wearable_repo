@@ -462,7 +462,7 @@ DEBUG_PRI("call req packet reached\n") ;
 
 	status = get_calling_state() ;  // NEXX STATUS
 
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXX360W_CCTV)
     if(app_set->voip.ON_OFF)
 	{
 		Call_res.result = htons(NOT_SUPPORTED_PROTOCOL) ;
@@ -484,7 +484,33 @@ DEBUG_PRI("call req packet reached\n") ;
 		}
 		return ;
 	}
+/*
+#if defined(NEXX360W_CCTV)
+    if(status == APP_STATE_NONE )
+	{
+        Call_res.identifier = htons(IDENTIFIER) ;
+		Call_res.cmd = htons(CMD_CALL_RES) ;
+		Call_res.length = htons(CALLRES_SIZE) ;
+//		Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		if(getconnection_status(channel))
+			Call_res.result = htons(CALL_CONNECT_ESTABLISHED) ;
+		else
+			Call_res.result = htons(CALL_CONNECT_FAIL) ;
+		memset(Call_res.Reserved, 0x00, 32) ;
 
+		memcpy(m_SendBuffer, &Call_res, CALLRES_SIZE) ;
+//		set_calling_state(APP_STATE_CALLING) ;
+
+		if(SystemInfo.Channel[channel] != 0)
+		{
+ 	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+#ifdef NETWORK_DEBUG
+ 	   DEBUG_PRI("Callres ACCEPT packet sendlen = %d, channel = %d\n",sendlen, channel) ;
+#endif
+		}
+	}
+#else
+*/
     if(status == APP_STATE_NONE )
 	{
 		app_incoming_call() ;
@@ -501,14 +527,16 @@ DEBUG_PRI("call req packet reached\n") ;
 
 		if(SystemInfo.Channel[channel] != 0)
 		{
- 	       sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
+ 	        sendlen = send(SystemInfo.Channel[channel], m_SendBuffer, CALLRES_SIZE, 0) ;
 #ifdef NETWORK_DEBUG
  	   DEBUG_PRI("APP_STATE_NONE Callres Default res packet sendlen = %d, channel = %d\n",sendlen, channel) ;
 #endif
 		}
+
 	}
     else if(status == APP_STATE_INCOMING)
 	{
+		app_accept_call() ;
         Call_res.identifier = htons(IDENTIFIER) ;
 		Call_res.cmd = htons(CMD_CALL_RES) ;
 		Call_res.length = htons(CALLRES_SIZE) ;
@@ -572,6 +600,8 @@ DEBUG_PRI("call req packet reached\n") ;
 
 		SystemInfo.call_status[channel] = FALSE ;
 	}
+//#endif  // except NEXX360W_CCTV 
+
 #else
 
 	Call_res.result = htons(NOT_SUPPORTED_DEVICE) ;

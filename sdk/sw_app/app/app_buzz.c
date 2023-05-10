@@ -61,12 +61,16 @@ static void __buzzer_set__(int en)
 * @brief    buzzer control
 * @section  [param] time: ms
 *****************************************************************************/
-void app_buzz_ctrl(int time, int cnt)
+void app_buzz_ctrl(int time, int cnt, int force)
 {
-	if(!app_set->sys_info.beep_sound)
-		return ;
-
-	OSA_mutexLock(&ibuzz->b_lock);		
+	if (!force) {
+		if(!app_set->sys_info.beep_sound) {
+			printf("Beep Alarm disabled\n");
+			return;
+		}
+	}
+	
+	OSA_mutexLock(&ibuzz->b_lock);
 	//# buzzer active
 	while (1)
 	{
@@ -96,7 +100,7 @@ int app_buzz_init(void)
     OSA_assert(status == OSA_SOK);
 	
 	if ((res = open(BEEP_DRV_BASE_PATH, O_WRONLY)) < 0) {
-		eprintf("Error open %s\n", BEEP_DRV_BASE_PATH);
+		printf("Error open %s\n", BEEP_DRV_BASE_PATH);
 		return -1;
 	}
 	
