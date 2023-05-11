@@ -813,7 +813,7 @@ static void cfg_param_check_nexx(app_set_t *pset)
 	if(pset->rec_info.overwrite != ON && pset->rec_info.overwrite != OFF)
 		pset->rec_info.overwrite = ON;
 
-#if defined(NEXX360C) || defined(NEXX360W_CCTV)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 	/* default auto record on */
 	pset->rec_info.auto_rec = ON;
 #else 
@@ -979,10 +979,10 @@ static void cfg_param_check_nexx(app_set_t *pset)
 		pset->stm_info.enable_audio = OFF ;
 
 #else
-	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV/NEXX360W_CCTV_SA
    	if(pset->voip.ON_OFF <= CFG_INVALID)
 		pset->voip.ON_OFF = OFF;
-#if defined(NEXX360W_CCTV)
+#if defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 	if(pset->voip.ON_OFF != ON) // Backchannel audio
 		pset->stm_info.enable_audio = ON ;
 #endif
@@ -1277,7 +1277,7 @@ static void app_set_default(int default_type)
 
 #if defined(NEXXONE) || defined(NEXX360W)	|| defined(NEXXB) || defined(NEXXB_ONE)
 	app_set->rec_info.auto_rec      = OFF ;
-#elif defined(NEXX360C) || defined(NEXX360W_CCTV)
+#elif defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 	/* default auto record on */
 	app_set->rec_info.auto_rec = ON;
 #else //# NEXX360B, NEXX360M, NEXX360W_MUX
@@ -1354,9 +1354,9 @@ static void app_set_default(int default_type)
 #if defined(NEXXONE) || defined(NEXXB) || defined(NEXXB_ONE)	
     app_set->voip.ON_OFF = ON;
 #else
-	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV
+	//# NEXX360B/NEXX360W/NEXX360W_MUX/NEXX360C/NEXX360W_CCTV/NEXX360W_CCTV_SA)
     app_set->voip.ON_OFF = OFF;
-#if defined(NEXX360W_CCTV)
+#if defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 	if(app_set->voip.ON_OFF != ON) // Backchannel audio
 		app_set->stm_info.enable_audio = ON ;
 #endif
