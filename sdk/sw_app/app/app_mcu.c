@@ -368,12 +368,15 @@ static void *THR_micom(void *prm)
 
 				break;
 			}
-			
 			case CMD_PSW_EVT:
 			{
 				short key_type = msg.data[0];
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
+#if defined(NEXX360W_CCTV_SA)
+				if (key_type != PSW_EVT_LONG) 
+#else
 				if (key_type == PSW_EVT_LONG) 
+#endif
 				{
 					if (!app_cfg->ste.b.busy) {
 						sysprint("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
@@ -420,7 +423,7 @@ static void *THR_micom(void *prm)
 				}
 				break;
 			}
-			
+
 			case CMD_DAT_STOP:		//# response data send stop
 			{
 				dprintf("[evt] data stop event\n");

@@ -58,7 +58,7 @@ typedef struct {
 	char deviceId[32];
 	char fname[256];
 	
-	#if defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360C) || defined(NEXX360W_CCTV)
+	#if defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 	int ch2_keyframe;
 	int ch3_keyframe;
 	int ch4_keyframe;

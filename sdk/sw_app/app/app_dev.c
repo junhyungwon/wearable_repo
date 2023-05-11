@@ -189,7 +189,7 @@ static int chk_input_key(int gpiokey)
 	return ste_key;
 }
 
-#if defined(NEXXONE) || defined(NEXX360W_CCTV)
+#if defined(NEXXONE) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 /*****************************************************************************
 * @brief    REC KEY & SD Card Insert/remove Detection thread function (NEXXONE)
 * @section  [desc]
@@ -280,7 +280,7 @@ static void *THR_dev(void *prm)
 #elif defined(NEXX360W) || defined(NEXX360W_MUX) || defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360C) 
 /*****************************************************************************
 * @brief    REC KEY & SD Card Insert/remove Detection thread function 
-*          (NEXX360W/NEX360W_MUX/NEXX360B/NEXX360M/NEXX360C/NEXX360W_CCTV)
+*          (NEXX360W/NEX360W_MUX/NEXX360B/NEXX360M/NEXX360C
 * @section  [desc]
 *****************************************************************************/
 static void *THR_dev(void *prm)

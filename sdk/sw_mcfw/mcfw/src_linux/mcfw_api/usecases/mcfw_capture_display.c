@@ -1030,7 +1030,7 @@ void mcfw_capture_display_init(int mode)
 
 #else
 /*****************************************************************************
-* @brief	mcfw_capture_display_init function for NEXX360W/NEXX360B/NEXX360M/NEXXB/NEXX360C/NEXX360W_CCTV
+* @brief	mcfw_capture_display_init function for NEXX360W/NEXX360B/NEXX360M/NEXXB/NEXX360C/NEXX360W_CCTV/NEXX360W_CCTV_SA
 * @section	DESC Description
 *****************************************************************************/
 void mcfw_capture_display_init(int mode)

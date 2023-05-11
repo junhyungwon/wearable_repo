@@ -31,6 +31,8 @@ endif
 #    ====> STREAMING: OFF, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF, BUZZER: ON
 #  NEXX360W_CCTV: NEXX360 Wireless for CCTV
 #    ====> STREAMING: ON, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF, BACKCHANNEL_AUDIO: ON, BUZZER: ON
+#  NEXX360W_CCTV: NEXX360 Wireless for CCTV STAND ALONE 
+#    ====> STREAMING: ON, CAM: 4CH, GPS: OFF, HDMI: OFF, VOIP: OFF, BACKCHANNEL_AUDIO: ON, BUZZER: ON
 #
 #--- Select SYSTEM PLATFORM -------------------------------
 #SYSTEM_PLATFORM := NEXX360B
@@ -42,6 +44,7 @@ SYSTEM_PLATFORM := NEXXONE_VOIP
 #SYSTEM_PLATFORM := NEXX360W_MUX
 #SYSTEM_PLATFORM := NEXX360C
 #SYSTEM_PLATFORM := NEXX360W_CCTV
+#SYSTEM_PLATFORM := NEXX360W_CCTV_SA
 ######################################################################################
 
 #--- Build Type (debug/release)
@@ -155,6 +158,14 @@ ifeq ($(SYSTEM_PLATFORM), NEXX360C)
 	USE_CCTV = YES
 endif
 ifeq ($(SYSTEM_PLATFORM), NEXX360W_CCTV)
+	#--- Select Wi-Fi method (YES/NO)
+	USE_WIFI = YES
+	#--- Select External Battery method (YES/NO)
+	EXTERNAL_BATTERY_ONLY = NO
+	#--- Select CCTV (YES/NO)
+	USE_CCTV = YES
+endif
+ifeq ($(SYSTEM_PLATFORM), NEXX360W_CCTV_SA)
 	#--- Select Wi-Fi method (YES/NO)
 	USE_WIFI = YES
 	#--- Select External Battery method (YES/NO)

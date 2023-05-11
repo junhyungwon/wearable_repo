@@ -4,19 +4,20 @@ VERSION_TXT_FILE="fw_version.txt"
 
 function fmenu()
 {
- echo "=========================================="
- echo "           NEXX Device MODEL List         "
- echo "=========================================="
- echo "1. NEXX360 Basic                          "
- echo "2. NEXX360 Wireless                       "
- echo "3. NEXX ONE                               "
- echo "4. NEXXB                                  "
- echo "5. NEXXB_ONE                              "
- echo "6. NEXX360 Wireless Mux                   "
- echo "7. NEXX360 Basic for CCTV                 "
- echo "8. NEXX360 Wireless for CCTV              "
- echo "9. NEXX360 Basic for Military             "
- echo "=========================================="
+ echo "==========================================="
+ echo "            NEXX Device MODEL List         "
+ echo "==========================================="
+ echo "1.  NEXX360 Basic                          "
+ echo "2.  NEXX360 Wireless                       "
+ echo "3.  NEXX ONE                               "
+ echo "4.  NEXXB                                  "
+ echo "5.  NEXXB_ONE                              "
+ echo "6.  NEXX360 Wireless Mux                   "
+ echo "7.  NEXX360 Basic for CCTV                 "
+ echo "8.  NEXX360 Wireless for CCTV              "
+ echo "9.  NEXX360 Basic for Military             "
+ echo "10. NEXX360 Wireless for CCTV SA           "
+ echo "==========================================="
 }
 
 function _parsing_fw_ver ()
@@ -92,6 +93,11 @@ do
 			echo " "
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
+			break;;
+		"10" )
+			echo " "
+			echo "select NEXX360 Wireless for CCTV STAND ALONE"
+			FW_PREFIX="NEXX360W_CCTV_SA"
 			break;;
 		"9" )
 			echo " "

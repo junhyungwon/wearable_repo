@@ -156,7 +156,7 @@ static int submit_settings()
 			}
 		}
 #elif defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV)
+	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 		live_stream_account_enable=1; // FIXED
 		if(live_stream_account_enctype  == -1) {
 			CGI_DBG("Not received RTSP Account Enctype\n");
