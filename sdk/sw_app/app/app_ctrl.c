@@ -76,6 +76,8 @@
 #else
 #if defined(NEXX360C) || defined(NEXX360W_CCTV)
 #define FW_MICOM_FNAME			"mcu_cctv.txt"
+#elif defined(NEXX360W_CCTV_SA)
+#define FW_MICOM_FNAME			"mcu_sa.txt"
 #else
 #define FW_MICOM_FNAME			"mcu_fitt.txt"
 #endif /* #if defined(NEXX360C) || defined(NEXX360W_CCTV) */
@@ -178,48 +180,6 @@ static int _unpack_N_check(const char* pFile, const char* root, int* release)
 	return ret;
 }
 
-/* check mcu firmware and delete */
-static void _check_micom_update(void)
-{
-	char cmd[256]={0,};
-	char path[256]={0,};
-	FILE *f = NULL;
-	
-	unsigned int byte1, byte2;
-	int ret = 0, mcu_ver;
-	
-	snprintf(path, sizeof(path), "%s/%s", FW_DIR, FW_MICOM_FNAME);
-	f = fopen(path, "r");
-	if (f != NULL) 
-	{
-		/*
-		 * 1st: @f000
-		 * 2nd: 20 00 .....(ascii 코드로 구성)
-		 *    : 0x32 0x30 0x20(space) 0x30 0x30
-		 */
-		memset(cmd, 0, sizeof(cmd));
-		fgets(cmd, sizeof(cmd), f);
-		/* 2번째 라인에 버전 정보가 있다. */
-		fgets(cmd, sizeof(cmd), f);
-		sscanf(cmd, "%02x %02x\n", &byte1, &byte2);
-		ret = ((byte2 << 8) | byte1);
-		//printf("ver = 0x%04x\n", ret);
-		fclose(f);
-		
-		mcu_ver = ctrl_get_mcu_version(NULL);
-		if ((ret > 0) && (ret == mcu_ver)) {
-			if (access(path, F_OK)==0) {
-				remove(path);
-				//# update 함수 마지막에 sync() 가 호출됨
-				//sync();
-				//printf("remove %s\n", path);
-			}
-		}
-	} else {
-		eprintf("Failed to open %s\n", path);
-	}
-}
-
 /* only application binary update */
 static int __app_only_replace(void)
 {
@@ -272,7 +232,6 @@ static int __normal_update(void)
 		/* TODO : delete unpack update files.... */
 		goto fw_exit;
 	}
-	_check_micom_update();
 	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
@@ -319,9 +278,6 @@ static int __emergency_update(void)
 	sync();
 	/* wait untar done! */
 	sleep(1);
-	
-	/* 만일 micom 버전이 현재 버전과 같은면 업데이트 파일 삭제 */
-	_check_micom_update();
 	
 	//# LED work for firmware update.
 	app_leds_fw_update_ctrl();
@@ -494,8 +450,6 @@ int temp_ctrl_update_fw_by_bkkim(char *fwpath, char *disk)
 		printf("Good, this must be my pot\n. And the next checking is very horrible md5sum. Good luck!!\n");
 	}
 
-	//# micom version check..
-	_check_micom_update();
 	// check md5sum
 	sprintf(cmd, "cd %s && md5sum -c %s", disk, FW_UBIFSMD5_FNAME);
 	FILE *fp = popen(cmd, "r");

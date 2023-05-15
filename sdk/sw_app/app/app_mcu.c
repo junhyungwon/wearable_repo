@@ -43,6 +43,8 @@
 
 #if defined(NEXX360C) || defined(NEXX360W_CCTV)
 #define LOW_POWER_THRES	    	900
+#elif defined(NEXX360W_CCTV_SA)
+#define IBATT_MIN		    	620 //# 6.3V에서 전류 부족으로 갑자기 꺼질 수 있다.
 #else
 #define PSW_EVT_LONG			2
 /* 
@@ -82,7 +84,7 @@ typedef struct {
 static app_mcu_t mcu_obj;
 static app_mcu_t *imcu=&mcu_obj;
 
-#if !defined(NEXX360C) && !defined(NEXX360W_CCTV)
+#if !defined(NEXX360C) && !defined(NEXX360W_CCTV) && !defined(NEXX360W_CCTV_SA)
 static void delay_3sec_exit(void)
 {
 	struct timeval t1, t2;
@@ -116,7 +118,7 @@ void app_mcu_pwr_off(int type)
 	system("/etc/init.d/logging.sh stop");
 	mic_exit_state(type, 0);
 	app_cfg->ste.b.pwr_off = 1;
-#if defined(NEXX360C) || defined(NEXX360W_CCTV)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 	mic_msg_exit();
 #else	
 	delay_3sec_exit();
@@ -217,6 +219,156 @@ static void *THR_micom(void *prm)
 				break;
 			}
 			
+			case CMD_DAT_STOP:		//# response data send stop
+			{
+				dprintf("[evt] data stop event\n");
+				exit = 1;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	tObj->active = 0;
+	aprintf("...exit\n");
+
+	return NULL;
+}
+#elif defined(NEXX360W_CCTV_SA)
+static int c_volt_chk = 0;
+static int c_volt_lv = 0;
+static int power_on_lv = 1;
+/*
+ * Case NEXX_CCTV_SA
+ * remove external batt. mbatt는 주전원으로 사용되는 전압이 측정됨. 크래들 연결 시 16V
+ * 따라서 SA에서는 사용안됨. 외장 배터리가 정전원이라 No 배터리 측정이 안되기 때문 
+ */
+static int mcu_chk_pwr(short mbatt, short ibatt, short ebatt)
+{
+	int bg_lv = -1;
+	int threshold=0;
+	
+	threshold = ibatt;
+	
+	if (power_on_lv) {
+		power_on_lv = 0;
+		if (threshold < BOOTUP_BATT_THRES_0) {
+			bg_lv = 0;
+		} else if (threshold < BOOTUP_BATT_THRES_1) 	{
+			bg_lv = 1;
+		} else if (threshold < BOOTUP_BATT_THRES_2)	{
+			bg_lv = 2;
+		} else	{
+			bg_lv = 3;
+		}
+		
+		app_leds_int_batt_ctrl(bg_lv);
+	} else {
+		if (threshold >= RUNTIME_BATT_THRES_3_MAX) { 
+			bg_lv = 3;
+		} else if (threshold >= RUNTIME_BATT_THRES_2_MIN && threshold < RUNTIME_BATT_THRES_2_MAX) {
+			bg_lv = 2;
+		} else if (threshold >= RUNTIME_BATT_THRES_1_MIN && threshold < RUNTIME_BATT_THRES_1_MAX) {
+			bg_lv = 1;
+		} else if (threshold >= RUNTIME_BATT_THRES_0_MIN && threshold < RUNTIME_BATT_THRES_0_MAX) {
+			bg_lv = 0;
+		}
+
+		if (c_volt_lv) {
+			c_volt_lv--;
+			if (c_volt_lv == 0) {
+				if (bg_lv >= 0) {
+					app_leds_int_batt_ctrl(bg_lv);
+				}
+#if 0
+				dprintf("ibatt %d(V): gauge %d\n", ibatt, bg_lv);
+#endif				
+			}
+		} else {
+			c_volt_lv = CNT_CHK_VLEVEL;
+		}
+	} //# if (first_bg_lv)
+
+	//# low power check
+	if (ibatt < IBATT_MIN) {
+		if (c_volt_chk) {
+			c_volt_chk--;
+			if (c_volt_chk == 0) {
+				sysprint("Peek Low Voltage Detected(thres=%d, i=%d)", threshold, ibatt);
+				ctrl_sys_halt(1); /* for shutdown */
+				return -1;
+			}
+		} else {
+			c_volt_chk = CNT_CHK_VLOW;
+		}
+	} else {
+		c_volt_chk = 0;
+	}
+
+	return 0;
+}
+
+/*****************************************************************************
+* @brief	micom message main function
+* @section  [desc] check power switch and acc power
+*****************************************************************************/
+static void *THR_micom(void *prm)
+{
+	app_thr_obj *tObj = &imcu->cObj;
+	int exit=0, ret=0, value = 0;
+	mic_msg_t msg;
+
+	aprintf("enter...\n");
+	tObj->active = 1;
+
+	mic_set_watchdog(ENA, TIME_WATCHDOG);
+	mic_data_send(1, TIME_DATA_CYCLE);
+
+	while (!exit)
+	{
+		app_cfg->wd_flags |= WD_MICOM;
+
+		ret = mic_recv_msg((char*)&msg, sizeof(mic_msg_t));
+		if(ret < 0) {
+			continue;
+		}
+
+		switch(msg.cmd)
+		{
+			case CMD_DEV_VAL:
+			{
+				dev_val_t *val = (dev_val_t *)msg.data;
+
+				imcu->val.mvolt = val->mvolt;		//# XX.xx V format
+				imcu->val.ibatt = val->ibatt;		//# XX.xx V format
+
+				#if 0
+				printf("[%3d] ibatt:%d.%d V\n", msg.param, (imcu->val.ibatt/100), (imcu->val.ibatt%100));
+				#endif
+
+				ret = mcu_chk_pwr(0, val->ibatt, 0);
+				if(ret < 0) {
+					exit = 1;
+				}
+
+				break;
+			}
+			case CMD_PSW_EVT:
+			{
+				short key_type = msg.data[0];
+				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
+				if (!app_cfg->ste.b.busy) {
+					sysprint("[APP_MICOM] --- Power Switch Pressed. It Will be Shutdown ---\n");
+					//# add rupy
+					ctrl_sys_halt(1); /* for shutdown */
+					exit = 1;
+				} else {
+					dprintf("skip power switch event!!!\n");
+				}
+				break;
+			}
+
 			case CMD_DAT_STOP:		//# response data send stop
 			{
 				dprintf("[evt] data stop event\n");
