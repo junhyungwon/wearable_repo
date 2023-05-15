@@ -138,7 +138,7 @@
 #	define SYS_CONFIG_WLAN				1
 #	define SYS_CONFIG_GPS				0
 #	define SYS_CONFIG_SND_OUT			1
-#	define SYS_MCU_VER					0x0020
+#	define SYS_MCU_VER					0x0010
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif
