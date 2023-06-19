@@ -90,6 +90,7 @@ int createSelfSignedCertificate(char *path_key, char* path_crt, bool force)
 
 	TRACE_INFO("Self Signed Certificate, cmd:%s\n", cmd);
 	system(cmd);
+	sync() ;
 
 	if( access(path_crt, R_OK) != 0 || access(path_key, R_OK) != 0) {
 		TRACE_INFO("Failed to create Self Signed Certificate\n");

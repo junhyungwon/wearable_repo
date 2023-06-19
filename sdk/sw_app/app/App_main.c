@@ -206,6 +206,13 @@ int app_main(void)
     LOGD("[main] Starting NEXX Application with SW_Ver: %s, HW_Ver: %s, Micom_Ver: %s\n", 
 					FITT360_SW_VER, FITT360_HW_VER, micom_ver);
 
+/*
+	app_uds_start();
+	app_web_boot_passwordfile();
+	if (app_web_start_server() ==0) {
+        app_cfg->ste.b.web_server = 1; // have to add this flag....
+	}
+*/
     if(app_set->sslvpn_info.ON_OFF) {
 		app_sslvpn_start();
 	}
@@ -254,12 +261,14 @@ int app_main(void)
 			app_cfg->ste.b.onvifserver = 1; // have to add this flag....
 		}
 	}
+
+/*	
 	app_uds_start();
 	app_web_boot_passwordfile();
 	if (app_web_start_server() ==0) {
         app_cfg->ste.b.web_server = 1; // have to add this flag....
 	}
-
+*/
     CSock_init() ;
 
 	if (app_set->ftp_info.ON_OFF)
@@ -288,9 +297,12 @@ int app_main(void)
 
     if(app_set->voip.ON_OFF)
 		app_voip_init();
-    else
+	else
+	{	
+#if defined(NEXX360W_CCTV) || defined(NEXXONE)	 
     	app_call_control_init() ;
-
+#endif
+	}
 	app_gui_init();
 #ifdef USE_KCMVP
     struct tm ts ;
@@ -508,6 +520,12 @@ int main(int argc, char **argv)
 		LOGE("[main] Failed to init main thread!. system exit!\n");
 		return -1;
 	}
+
+	app_uds_start();
+	app_web_boot_passwordfile();
+	if (app_web_start_server() ==0) {
+        app_cfg->ste.b.web_server = 1; // have to add this flag....
+	}
 	
 	TRACE_INFO("Starting Initialize Video Processor: HD %d[CH]---\n", MODEL_CH_NUM);
 	mcfw_linux_init(0, app_set->ch[MODEL_CH_NUM].resol); 
@@ -516,7 +534,13 @@ int main(int argc, char **argv)
 //	app_gui_init();
 	app_dev_init();
 	LOGD("[main] Initializing Input system(KEY) success!\n");
-	
+/*	
+	app_uds_start();
+	app_web_boot_passwordfile();
+	if (app_web_start_server() ==0) {
+        app_cfg->ste.b.web_server = 1; // have to add this flag....
+	}
+*/
     app_tsync_init();
 //    setting_txtbase() ;
 	if (app_file_init() == SOK) {
