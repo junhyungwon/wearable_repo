@@ -20,8 +20,9 @@ if [ -x ./bin/process_check ]; then
 	./bin/process_check &
 fi
 
+
 if [ -x ./bin/proxy ]; then
-	until [ $VAL -ge 100 ]
+	until [ $VAL -ge 200 ]
 	do
 	    VAL=$(expr $VAL + 1)
 #		echo $VAL
