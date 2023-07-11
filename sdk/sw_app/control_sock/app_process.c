@@ -462,7 +462,7 @@ DEBUG_PRI("call req packet reached\n") ;
 
 	status = get_calling_state() ;  // NEXX STATUS
 
-#if defined(NEXXONE) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+#if defined(NEXXONE) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
     if(app_set->voip.ON_OFF)
 	{
 		Call_res.result = htons(NOT_SUPPORTED_PROTOCOL) ;

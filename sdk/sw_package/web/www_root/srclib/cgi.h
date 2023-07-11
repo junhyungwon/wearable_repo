@@ -70,6 +70,8 @@
 #define MODEL_NAME "NEXX360W_CCTV"
 #elif defined(NEXX360W_CCTV_SA)
 #define MODEL_NAME "NEXX360W_CCTV_SA"
+#elif defined(NEXXONE_CCTV_SA)
+#define MODEL_NAME "NEXXONE_CCTV_SA"
 #endif
 
 

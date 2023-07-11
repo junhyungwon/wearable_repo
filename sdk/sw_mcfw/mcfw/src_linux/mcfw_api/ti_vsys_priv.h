@@ -92,11 +92,11 @@ Int32 MultiCh_prfLoadCalcEnable(Bool enable, Bool printStatus, Bool printTskLoad
 Int32 MultiCh_prfLoadPrint(Bool printTskLoad,Bool resetTaskLoad);
 
 //# for ubx
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
-void mcfw_capture_display_init(void);
-#else
+//#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)
+//void mcfw_capture_display_init(void);
+//#else
 void mcfw_capture_display_init(int mode);
-#endif
+//#endif
 void mcfw_capture_display_exit(void);
 
 #ifdef __cplusplus

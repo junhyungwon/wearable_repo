@@ -17,6 +17,7 @@ function fmenu()
  echo "8.  NEXX360 Wireless for CCTV              "
  echo "9.  NEXX360 Basic for Military             "
  echo "10. NEXX360 Wireless for CCTV SA           "
+ echo "11. NEXXONE Wireless for CCTV SA           "
  echo "==========================================="
 }
 
@@ -93,6 +94,11 @@ do
 			echo " "
 			echo "select NEXX360 Wireless "
 			FW_PREFIX="NEXX360W"
+			break;;
+		"11" )
+			echo " "
+			echo "select NEXXONE Wireless for CCTV STAND ALONE"
+			FW_PREFIX="NEXXONE_CCTV_SA"
 			break;;
 		"10" )
 			echo " "

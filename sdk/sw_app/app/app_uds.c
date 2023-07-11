@@ -107,7 +107,7 @@ static int setStreamVideoQuality( int stm_res, int stm_fps, int stm_bps, int stm
 {
 	int ch = STM_CH_NUM;
 	// STM
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
 	{
 	    ctrl_vid_framerate(ch, stm_fps) ;
@@ -155,7 +155,7 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 	if (enctype == ENC_JPEG) // JPEG
 	{
 		int newRes=app_set->ch[STM_CH_NUM].resol;
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 		if (h == 480  && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
 			newRes = RESOL_480P;
 		else if (h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
@@ -178,7 +178,7 @@ static int onvif_setVideoEncoderConfiguration(int enctype, int w, int h, int kbp
 	else if (enctype == ENC_H264) // H264
 	{
 		int newRes=app_set->ch[STM_CH_NUM].resol;
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 		if (h == 480  && app_set->ch[STM_CH_NUM].resol != RESOL_480P)
 			newRes = RESOL_480P;
 		else if(h == 720 && app_set->ch[STM_CH_NUM].resol != RESOL_720P)
@@ -1686,7 +1686,7 @@ static int setDynamicVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec
 {
 	int ch = STM_CH_NUM;
 	// STM
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 	if(stm_fps <= DEFAULT_FPS && stm_fps > 0 && app_set->ch[ch].framerate != stm_fps)
 	{
 	    ctrl_vid_framerate(ch, stm_fps) ;
@@ -1750,7 +1750,7 @@ static int setVideoQuality(int rec_fps, int rec_bps, int rec_gop, int rec_rc,
 
 	// now start to set streaming channel
 	ch=STM_CH_NUM;
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 	if(stm_res < RESOL_1080P && stm_res >= 0 && app_set->ch[ch].resol != stm_res)
 		ctrl_vid_resolution(stm_res);
 #else 
