@@ -24,7 +24,7 @@ extern "C" {
 #define SW_MS_LINK_MAX_OUT_FRAMES_DEFAULT   (SYSTEM_LINK_FRAMES_PER_CH)
 #define SW_MS_LINK_MAX_OUT_FRAMES           (SW_MS_LINK_MAX_OUT_FRAMES_DEFAULT+4)
 
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)
 #define SW_MS_LINK_TIMER_DEFAULT_PERIOD (33)  //# {1/30}s
 #else
 //#define SW_MS_LINK_TIMER_DEFAULT_PERIOD (50)//# {1/20} for display framerate 20..

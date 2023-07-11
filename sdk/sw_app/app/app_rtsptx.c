@@ -138,9 +138,9 @@ int app_rtsptx_start(void)
     }
 	if(app_set->account_info.ON_OFF)
 	{	
-#if defined(NEXXONE)
+#if defined(NEXXONE) || defined(NEXXONE_CCTV_SA)
 		sprintf(dev_model, "%s", "NEXXONE") ;
-#elif defined(NEXX360W)
+#elif defined(NEXX360W) || defined(NEXX360W_CCTV_SA)
 		sprintf(dev_model, "%s", "NEXX360") ;
 #elif defined(NEXXB)
 		sprintf(dev_model, "%s", "NEXX-B") ;

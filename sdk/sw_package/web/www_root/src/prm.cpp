@@ -36,7 +36,7 @@ static char out_buf[1024];
 #define PUTSTR printf
 #endif
 
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 	#define MAX_FPS 30
 #elif defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX)\
    || defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
@@ -150,7 +150,7 @@ int put_json_all_config()
 		// record info
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360M) || defined(NEXX360W_MUX) \
     || defined(NEXXB) || defined(NEXXB_ONE) \
-    || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+    || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
 		int fpsIdx = p.rec.fps-1;
 		if(fpsIdx < 0 ) fpsIdx = 0;
 		if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1; // fpsIdx is Zero-based number.
@@ -189,7 +189,7 @@ int put_json_all_config()
 		// streaming info
 		json_object_object_add(streamobj, "resolution", json_object_new_int(p.stm.res));
 #if defined(NEXXONE)|| defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-  || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+  || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)		
 
 		fpsIdx = p.stm.fps-1;
 		if(fpsIdx < 0 ) fpsIdx = 0;
@@ -438,7 +438,7 @@ int put_json_all_config()
 		json_object_object_add(servers_obj, "onvif", onvif_obj);
 		
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-  || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+  || defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
 		json_object_object_add(p2p_obj, "p2p_enable",   json_object_new_int(p.p2p.enable));
 		//json_object_object_add(p2p_obj, "p2p_username", json_object_new_string(p.p2p.username));
 		//json_object_object_add(p2p_obj, "p2p_password", json_object_new_string(p.p2p.password));
@@ -991,7 +991,8 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 
 	// record info
 #if defined(NEXXONE)|| defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) \
+	|| defined(NEXXONE_CCTV_SA)
 	int fpsIdx = p->rec.fps-1;
 	if(fpsIdx < 0 ) fpsIdx = 0;
 	if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;
@@ -1028,7 +1029,7 @@ void put_json_camera_config(T_CGI_VIDEO_QUALITY *p)
 	// streaming info
 	json_object_object_add(streamobj, "resolution", json_object_new_int(p->stm.res));
 #if defined(NEXXONE) || defined(NEXX360W) || defined(NEXX360M) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXXB_ONE)\
-	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+	|| defined(NEXX360B) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
 	fpsIdx = p->stm.fps-1;
 	if(fpsIdx < 0 ) fpsIdx = 0;
 	if(fpsIdx > MAX_FPS) fpsIdx = MAX_FPS-1;

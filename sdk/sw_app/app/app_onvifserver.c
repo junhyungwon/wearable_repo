@@ -389,6 +389,8 @@ int app_onvif_init_config()
 		fputs("		<Model>NEXX360W_CCTV</Model>\n", fp);		
 #elif defined(NEXX360W_CCTV_SA)
 		fputs("		<Model>NEXX360W_CCTV_SA</Model>\n", fp);		
+#elif defined(NEXXONE_CCTV_SA)
+		fputs("		<Model>NEXXONE_CCTV_SA</Model>\n", fp);		
 #else
 #error "Check Model Name"
 #endif
@@ -424,7 +426,7 @@ int app_onvif_init_config()
 		fputs("			<height>720</height>\n", fp);
 		fputs("			<quality>5</quality>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
-#if defined(NEXXONE) || defined(NEXXB_ONE) 
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
 		fputs("			<framerate>30</framerate>\n", fp);
 #elif defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 		fputs("			<framerate>15</framerate>\n", fp);
@@ -435,7 +437,7 @@ int app_onvif_init_config()
 		fputs("			<encoding_interval>1</encoding_interval>\n", fp);
 		fputs("			<encoding>H264</encoding>\n", fp);
 		fputs("			<h264>\n", fp);
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) || defined(NEXXONE_CCTV_SA)
         fputs("				<gov_length>30</gov_length>\n", fp);
 #elif defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
         fputs("				<gov_length>15</gov_length>\n", fp);
@@ -477,7 +479,7 @@ int app_onvif_init_config()
 		fputs("			<width>720</width>\n", fp);
 		fputs("			<height>480</height>\n", fp);
 		fputs("			<session_timeout>60</session_timeout>\n", fp);
-#if defined(NEXXONE) || defined(NEXXB_ONE)
+#if defined(NEXXONE) || defined(NEXXB_ONE) | defined(NEXXONE_CCTV_SA)
 		fputs("			<framerate>30</framerate>\n", fp);
 #elif defined(NEXX360B) || defined(NEXX360M) || defined(NEXX360W) || defined(NEXXB) || defined(NEXX360W_MUX) || defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
 		fputs("			<framerate>15</framerate>\n", fp);

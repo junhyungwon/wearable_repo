@@ -43,7 +43,7 @@
 
 #if defined(NEXX360C) || defined(NEXX360W_CCTV)
 #define LOW_POWER_THRES	    	900
-#elif defined(NEXX360W_CCTV_SA)
+#elif defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
 #define IBATT_MIN		    	620 //# 6.3V에서 전류 부족으로 갑자기 꺼질 수 있다.
 #else
 #define PSW_EVT_LONG			2
@@ -84,7 +84,7 @@ typedef struct {
 static app_mcu_t mcu_obj;
 static app_mcu_t *imcu=&mcu_obj;
 
-#if !defined(NEXX360C) && !defined(NEXX360W_CCTV) && !defined(NEXX360W_CCTV_SA)
+#if !defined(NEXX360C) && !defined(NEXX360W_CCTV) && !defined(NEXX360W_CCTV_SA) && !defined(NEXXONE_CCTV_SA)
 static void delay_3sec_exit(void)
 {
 	struct timeval t1, t2;
@@ -118,7 +118,7 @@ void app_mcu_pwr_off(int type)
 	system("/etc/init.d/logging.sh stop");
 	mic_exit_state(type, 0);
 	app_cfg->ste.b.pwr_off = 1;
-#if defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA)
+#if defined(NEXX360C) || defined(NEXX360W_CCTV) || defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
 	mic_msg_exit();
 #else	
 	delay_3sec_exit();
@@ -235,7 +235,7 @@ static void *THR_micom(void *prm)
 
 	return NULL;
 }
-#elif defined(NEXX360W_CCTV_SA)
+#elif defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA)
 static int c_volt_chk = 0;
 static int c_volt_lv = 0;
 static int power_on_lv = 1;
@@ -524,7 +524,7 @@ static void *THR_micom(void *prm)
 			{
 				short key_type = msg.data[0];
 				dprintf("[evt] pwr switch %s event\n", msg.data[0]==2?"long":"short");
-#if defined(NEXX360W_CCTV_SA)
+#if defined(NEXX360W_CCTV_SA) || defined(NEXXONE_CCTV_SA) 
 				if (key_type != PSW_EVT_LONG) 
 #else
 				if (key_type == PSW_EVT_LONG) 

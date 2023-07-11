@@ -139,6 +139,18 @@
 #	define SYS_CONFIG_GPS				0
 #	define SYS_CONFIG_SND_OUT			1
 #	define SYS_MCU_VER					0x0010
+#elif defined(LF_SYS_NEXXONE_CCTV_SA)     //# NEXXONE Wireless CCTV (external battery)
+#	define NEXXONE_CCTV_SA						
+#	define MODEL_NAME					"NEXXONE_CCTV_SA"
+#	define MODEL_CH_NUM					1 
+#	define STREAM_CH_NUM				1 
+#	define JPEG_CH_NUM					2 
+#	define MAX_FPS						30
+#	define SYS_CONFIG_VOIP				0
+#	define SYS_CONFIG_WLAN				1
+#	define SYS_CONFIG_GPS				1
+#	define SYS_CONFIG_SND_OUT			1
+#	define SYS_MCU_VER					0x0010
 #else
     #error "Not Defined SYSTEM_PLATFORM in Rules.make."
 #endif

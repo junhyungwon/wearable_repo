@@ -686,7 +686,7 @@ Int32 CaptureLink_drvCreateInst(CaptureLink_Obj * pObj, UInt16 instId)
 	 * 0x1BDDB6DB,0x1BDDBDDB,0x3BDDBDDB,0x1EF7BDEF,0x1F7DF7DF,
 	 * 0x1F7FF7DF,0x1F7FF7FF,0x1FFFF7FF,0x1FFFFFFF,0x3FFFFFFF
 	 */
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)	
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)	
 	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0);				//# nexxone 30fps
 #else	
 //	CaptureLink_drvInstSetFrameSkip(pObj, instId, 0x24924924);		//# 30fps->20fps

@@ -38,7 +38,7 @@
 #define	dprintf(x...) printf(" [mcfw_api] "	x);
 //#define dprintf(x...)
 
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)
 #define VPS_FPS				30
 static int vid_port[] = {
 	SYSTEM_CAPTURE_INST_VIP1_PORTB,		//# (1)
@@ -67,7 +67,7 @@ static void	capture_link_params_init(CaptureLink_CreateParams *capturePrm, int n
 	capturePrm->isPalMode		= FALSE;
 	capturePrm->numVipInst		= num_ch;
 	
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)
 	pCaptureInstPrm						= &capturePrm->vipInst[0];
 	pCaptureInstPrm->vipInstId			= vid_port[0];
 	pCaptureInstPrm->videoDecoderId		= gVsysModuleContext.vsysConfig.decoderHD;
@@ -514,8 +514,8 @@ static void display_link_delete(void)
 * @section	DESC Description
 *	- desc : HD 2ch, D1 8ch
 *****************************************************************************/
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
-void mcfw_capture_display_init(void)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)
+void mcfw_capture_display_init(int mode)
 {
 	CaptureLink_CreateParams		capturePrm;
 	NsfLink_CreateParams			nsfPrm;
@@ -1263,7 +1263,7 @@ void mcfw_capture_display_init(int mode)
 }
 #endif /* #if defined(LF_SYS_NEXXONE_VOIP) ||defined(LF_SYS_NEXXB_ONE) */
 
-#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXB_ONE) || defined(LF_SYS_NEXXONE_CCTV_SA)
 /*****************************************************************************
 * @brief	mcfw_capture_display_exit function for NEXX 1CH Series.
 * @section	DESC Description
