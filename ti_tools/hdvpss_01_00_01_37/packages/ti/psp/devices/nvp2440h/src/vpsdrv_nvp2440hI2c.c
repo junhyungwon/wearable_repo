@@ -360,7 +360,7 @@ static int nvp2440h_sensor_init(int idx)
 		return FVID2_EFAIL;
 	
 	//# mirror 0:off, 1:H, 2:V, 3:180 rotate (for nvp2440)
-#if defined(LF_SYS_NEXXONE_VOIP)
+#if defined(LF_SYS_NEXXONE_VOIP) || defined(LF_SYS_NEXXONE_CCTV_SA)
 	cam_mode = NVP2440H_MIRRO_HV;
 #else
 	if (idx == 0) {
